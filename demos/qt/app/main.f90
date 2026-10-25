@@ -7,7 +7,9 @@
 !> textured; its axes and labels, and the spacecraft's, can be hidden from the
 !> dock), the spacecraft a Model (or a small Sphere without the data) that
 !> follows a Trajectory (positions and attitudes over one period; LOOP or LIMIT
-!> from the dock), a child of the Earth. A FrameManager holds the scene. Each
+!> from the dock). The Earth rotates: it follows an attitude-only Trajectory
+!> over one sidereal day. Both are children of an inertial root frame, so the
+!> orbit stays inertial. A FrameManager holds the scene. Each
 !> window has a WindowProxy showing it, with three Views (the Earth, the
 !> spacecraft body-fixed, and from the spacecraft toward the Earth; chosen per
 !> window). The main window's simulation time (time scale, pause and reset from
@@ -48,6 +50,7 @@ module vkdemo
     real(wp), parameter :: mu = 398600.4418_wp                  !! Earth's gravitational parameter (km^3/s^2)
     real(wp), parameter :: re = 6378.137_wp                     !! WGS84 equatorial radius (km)
     real(wp), parameter :: flattening = 1.0_wp / 298.257223563_wp
+    real(wp), parameter :: sidereal_day = 86164.0905_wp            !! s
     real(wp), parameter :: sma = 9000.0_wp, ecc = 0.2_wp, inc = 35.0_wp * pi / 180.0_wp
     real(wp), parameter :: model_size = 800.0_wp                 !! spacecraft bounding radius (km, enlarged to be seen)
     integer, parameter :: n_orbit = 721
@@ -82,7 +85,9 @@ module vkdemo
         type(view_window_t) :: windows(max_windows)
         ! the scene
         type(Trajectory) :: orbit                              !! one period of positions and attitudes
-        type(Sphere) :: earth
+        type(ReferenceFrame) :: inertial                       !! the root: inertial axes at the Earth's center
+        type(Sphere) :: earth                                  !! rotating (follows earth_rotation)
+        type(Trajectory) :: earth_rotation                     !! attitudes over one sidereal day
         class(ReferenceFrame), allocatable :: spacecraft      !! a Model, or a Sphere without the data
         type(FrameManager) :: scene
         type(c_ptr) :: orbit_line = c_null_ptr                 !! low-level line node (until artists), in every window
@@ -171,9 +176,26 @@ contains
         if (.not. ok) allocate(app%spacecraft, source=Sphere('Spacecraft', radius=model_size, &
                                                              color=[1.0_wp, 0.3_wp, 0.2_wp]))
         call app%spacecraft%follow(app%orbit)                 ! position and attitude, FOLLOW_LOOP
-        if (.not. app%earth%add_child(app%spacecraft)) write(*, '(a)') 'vkframes: add_child failed'
-        call app%scene%set_frame(app%earth)
-        write(*, '(a)', advance='no') app%earth%frame_string()
+
+        ! the Earth's rotation: attitudes about z over one sidereal day, every 15
+        ! degrees (slerp in between), looped; attitude only
+        app%earth_rotation = Trajectory()
+        do k = 0, 24
+            call app%earth_rotation%add(sidereal_day * real(k, wp) / 24.0_wp, &
+                                        att=quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], 2.0_wp * pi * real(k, wp) / 24.0_wp))
+        end do
+        call app%earth%follow(app%earth_rotation, data=FOLLOW_ATTITUDE)
+
+        ! the tree: an inertial root (no decorations of its own) with the
+        ! rotating Earth and the spacecraft (whose orbit is inertial)
+        app%inertial = ReferenceFrame('Inertial')
+        call app%inertial%show_axes(NO_AXES)
+        call app%inertial%show_axes_labels(NO_AXES)
+        call app%inertial%show_name_label(.false.)
+        if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft))) &
+            write(*, '(a)') 'vkframes: add_child failed'
+        call app%scene%set_frame(app%inertial)
+        write(*, '(a)', advance='no') app%inertial%frame_string()
 
         ! the orbit line from the trajectory's positions (not copied); shown in every window
         call app%orbit%positions(xyz)
@@ -199,9 +221,9 @@ contains
 
         ! views: the Earth, the spacecraft (body-fixed), and from the spacecraft
         ! toward the Earth (inertial axes, a little behind the spacecraft)
-        w%views(1) = View(app%earth, app%earth)
-        w%views(2) = View(app%earth, app%spacecraft)
-        w%views(3) = View(app%earth, app%spacecraft, lookat=app%earth, frame_type=ABSOLUTE_FRAME)
+        w%views(1) = View(app%inertial, app%earth, frame_type=ABSOLUTE_FRAME)   ! inertial axes: the Earth turns
+        w%views(2) = View(app%inertial, app%spacecraft)
+        w%views(3) = View(app%inertial, app%spacecraft, lookat=app%earth, frame_type=ABSOLUTE_FRAME)
         call w%views(3)%set_default_view_distance(1.5_wp * model_size)
 
         ! default surface type, as vsgQt uses: VSG gives the native view its own
