@@ -95,6 +95,7 @@ module vkf_frames
         procedure :: follow, unfollow, follower, is_following
         procedure :: update
         procedure :: realize, build_contents, sync, node
+        procedure :: bound
     end type ReferenceFrame
 
     interface ReferenceFrame
@@ -338,6 +339,16 @@ contains
         class(ReferenceFrame), intent(in) :: self
         contents_shown = self%contents
     end function contents_shown
+
+    !> The bounding sphere of what the frame draws, in its own coordinates
+    !> (radius 0 if it draws nothing; extensions override it). Views use it for
+    !> their default distance.
+    subroutine bound(self, center, radius)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp), intent(out) :: center(3), radius
+        center = 0.0_wp
+        radius = 0.0_wp
+    end subroutine bound
 
     !> What kind of frame this is (shown by `frame_string`; extensions override it).
     function frame_info(self) result(info)

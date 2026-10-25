@@ -4,7 +4,7 @@ module vkframes
 
     use vkf_math, only: wp, pi, quat_identity, quat_from_axis_angle, quat_multiply, quat_conjugate, &
                         quat_normalize, quat_rotate, quat_to_matrix, quat_slerp, &
-                        identity_matrix, translation_matrix, frame_matrix
+                        quat_from_vectors, identity_matrix, translation_matrix, frame_matrix, rigid_inverse
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, &
                               SOURCE_ZERO, SOURCE_TIME, SOURCE_POSOPT, SOURCE_ATTITUDE, &
                               TIME_NOT_FOUND, TIME_OUT_OF_RANGE, TIME_AT_BOUND
@@ -18,6 +18,7 @@ module vkframes
     use vkf_sphere, only: Sphere
     use vkf_model, only: Model
     use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE
+    use vkf_view, only: View, ABSOLUTE_FRAME, RELATIVE_FRAME, VIEW_DIRECT, VIEW_AZEL, ORTHOGRAPHIC, PERSPECTIVE
 
     implicit none
 

@@ -1,10 +1,11 @@
 !> A textured Earth (the WGS84 ellipsoid) and a spacecraft model following an
 !> orbit, with vkframes' API: a Sphere, a Model that follows a Trajectory, a
-!> FrameManager and a WindowProxy.
+!> FrameManager, a WindowProxy and three Views (of the Earth, of the
+!> spacecraft, and from the spacecraft toward the Earth).
 !>
 !> Arguments: texture file, model file, then optionally the number of frames to
-!> run and a file to capture the last frame to. For example, with OpenFrames'
-!> demo data:
+!> run, a file to capture the last frame to, and the view to show (1 to 3).
+!> For example, with OpenFrames' demo data:
 !>   earth ~/git/OpenFrames/Demos/Images/land_shallow_topo_2048.jpg \
 !>         ~/git/OpenFrames/Demos/Models/Hubble.3ds
 program earth
@@ -25,9 +26,10 @@ program earth
     type(Trajectory), target :: orbit
     type(FrameManager), target :: scene
     type(WindowProxy) :: window
+    type(View), target :: earth_view, craft_view, nadir_view
     character(len=1024) :: texture_file, model_file, arg, capture_file
     real(wp) :: t, u, center(3), radius
-    integer :: max_frames, k
+    integer :: max_frames, k, which
 
     if (command_argument_count() < 2) error stop 'usage: earth <texture file> <model file> [frames] [capture file]'
     call get_command_argument(1, texture_file)
@@ -39,6 +41,11 @@ program earth
         read(arg, *) max_frames
     end if
     if (command_argument_count() >= 4) call get_command_argument(4, capture_file)
+    which = 1
+    if (command_argument_count() >= 5) then
+        call get_command_argument(5, arg)
+        read(arg, *) which
+    end if
 
     ! the Earth: a sphere scaled to the WGS84 ellipsoid, textured
     globe = Sphere('Earth', radius=re)
@@ -61,12 +68,21 @@ program earth
     if (.not. globe%add_child(spacecraft)) error stop 'add_child failed'
     write(*, '(a)', advance='no') globe%frame_string()
 
+    ! views: the Earth (framed by its bound), the spacecraft (body-fixed), and
+    ! from the spacecraft toward the Earth (inertial axes)
+    earth_view = View(globe, globe)
+    craft_view = View(globe, spacecraft)
+    nadir_view = View(globe, spacecraft, lookat=globe, frame_type=ABSOLUTE_FRAME)
+    call nadir_view%set_default_view_distance(0.5_wp * model_size)
+
     ! the window
     scene = FrameManager(globe)
     if (.not. window%open(1000, 700, 'vkframes: earth')) error stop 'could not open the window'
     call window%set_scene(scene)
-    call window%set_look_at([3.0_wp, -3.0_wp, 1.5_wp] * re, [0.0_wp, 0.0_wp, 0.0_wp], [0.0_wp, 0.0_wp, 1.0_wp])
-    call window%set_perspective(30.0_wp, 1.0_wp, 1.0e6_wp)
+    call window%add_view(earth_view)
+    call window%add_view(craft_view)
+    call window%add_view(nadir_view)
+    call window%select_view(which)
     call window%run(max_frames)
 
     if (len_trim(capture_file) > 0 .and. window%is_open()) then

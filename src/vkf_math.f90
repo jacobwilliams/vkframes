@@ -18,8 +18,8 @@ module vkf_math
     real(wp), parameter, public :: quat_identity(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
 
     public :: quat_from_axis_angle, quat_multiply, quat_conjugate, quat_normalize
-    public :: quat_rotate, quat_to_matrix, quat_slerp
-    public :: identity_matrix, translation_matrix, frame_matrix
+    public :: quat_rotate, quat_to_matrix, quat_slerp, quat_from_vectors
+    public :: identity_matrix, translation_matrix, frame_matrix, rigid_inverse
 
 contains
 
@@ -118,6 +118,39 @@ contains
         end if
         q = scale_a * a + scale_b * to
     end function quat_slerp
+
+    !> The shortest rotation taking the direction of `from` to that of `to`
+    !> (OpenSceneGraph's osg::Quat::makeRotate(from, to)); a half turn about a
+    !> perpendicular axis if they are opposite, the identity if either is zero.
+    pure function quat_from_vectors(from, to) result(q)
+        real(wp), intent(in) :: from(3), to(3)
+        real(wp) :: q(4)
+        real(wp), parameter :: eps = 1.0e-12_wp
+        real(wp) :: u(3), v(3), d, axis(3)
+        q = quat_identity
+        if (norm2(from) == 0.0_wp .or. norm2(to) == 0.0_wp) return
+        u = from / norm2(from)
+        v = to / norm2(to)
+        d = dot_product(u, v)
+        if (d >= 1.0_wp - eps) return
+        if (d <= -1.0_wp + eps) then
+            axis = cross(u, [1.0_wp, 0.0_wp, 0.0_wp])
+            if (norm2(axis) < 1.0e-6_wp) axis = cross(u, [0.0_wp, 1.0_wp, 0.0_wp])
+            q = [axis / norm2(axis), 0.0_wp]
+            return
+        end if
+        q = quat_normalize([cross(u, v), 1.0_wp + d])
+    end function quat_from_vectors
+
+    !> The inverse of a rigid transform (rotation and translation): [R' -R't].
+    pure function rigid_inverse(m) result(inv)
+        real(wp), intent(in) :: m(4,4)
+        real(wp) :: inv(4,4)
+        inv = 0.0_wp
+        inv(1:3, 1:3) = transpose(m(1:3, 1:3))
+        inv(1:3, 4) = -matmul(inv(1:3, 1:3), m(1:3, 4))
+        inv(4, 4) = 1.0_wp
+    end function rigid_inverse
 
     pure function identity_matrix() result(m)
         real(wp) :: m(4,4)

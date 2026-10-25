@@ -35,6 +35,7 @@ module vkf_model
         procedure :: set_model_scale, model_scale
         procedure :: set_model_pivot, model_pivot
         procedure :: frame_info => model_frame_info
+        procedure :: bound => model_frame_bound
         procedure :: build_contents => model_build_contents
     end type Model
 
@@ -160,6 +161,16 @@ contains
         real(wp) :: p(3)
         p = self%pivot_
     end function model_pivot
+
+    !> The model's bounding sphere in the frame (through the model transform).
+    subroutine model_frame_bound(self, center, radius)
+        class(Model), intent(in) :: self
+        real(wp), intent(out) :: center(3), radius
+        real(wp) :: m(4,4)
+        m = frame_matrix(self%model_position_, self%model_attitude_, self%scale_, self%pivot_)
+        center = matmul(m(1:3, 1:3), self%bound_center) + m(1:3, 4)
+        radius = self%bound_radius * maxval(abs(self%scale_))
+    end subroutine model_frame_bound
 
     function model_frame_info(self) result(info)
         class(Model), intent(in) :: self

@@ -45,6 +45,7 @@ module vkf_sphere
         procedure :: set_auto_lod, auto_lod
         procedure :: set_resolution
         procedure :: frame_info => sphere_frame_info
+        procedure :: bound => sphere_bound
         procedure :: build_contents => sphere_build_contents
     end type Sphere
 
@@ -176,6 +177,14 @@ contains
         self%n_lon = max(3, n_lon)
         self%n_lat = max(2, n_lat)
     end subroutine set_resolution
+
+    !> The body's bounding sphere: its center, and its largest semi-axis.
+    subroutine sphere_bound(self, center, radius)
+        class(Sphere), intent(in) :: self
+        real(wp), intent(out) :: center(3), radius
+        center = self%sphere_position_
+        radius = maxval(self%radii())
+    end subroutine sphere_bound
 
     function sphere_frame_info(self) result(info)
         class(Sphere), intent(in) :: self

@@ -225,6 +225,23 @@ namespace
         }
     };
 
+    // The camera's view: OpenFrames' FollowingTrackball. The trackball keeps
+    // eye, center and up in a view frame's coordinates (it only moves those),
+    // and the view matrix is lookAt * worldToView, with worldToView (world to
+    // view-frame coordinates, in double) set from Fortran each frame.
+    class ViewLookAt : public vsg::Inherit<vsg::LookAt, ViewLookAt>
+    {
+    public:
+        using Inherit::Inherit;
+
+        vsg::dmat4 worldToView; // identity
+
+        vsg::dmat4 transform(const vsg::dvec3& offset = {}) const override
+        {
+            return vsg::LookAt::transform(offset) * worldToView;
+        }
+    };
+
     struct Viewer
     {
         vsg::ref_ptr<vsg::Viewer> viewer;
@@ -375,7 +392,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         update_viewport(*v);
 
         const double aspect = static_cast<double>(extent.width) / static_cast<double>(extent.height);
-        auto lookAt = vsg::LookAt::create(vsg::dvec3(0.0, -4.0, 0.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 1.0));
+        auto lookAt = ViewLookAt::create(vsg::dvec3(0.0, -4.0, 0.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 1.0));
         auto perspective = vsg::Perspective::create(30.0, aspect, 0.001, 1000.0);
         v->camera = vsg::Camera::create(perspective, lookAt, vsg::ViewportState::create(extent));
 
@@ -472,7 +489,46 @@ VKF_API int vkf_viewer_close(void* viewer)
     return 0;
 }
 
-// Set the camera's eye, center and up vectors (3 doubles each).
+// The camera's eye, center and up vectors (3 doubles each, in view-frame
+// coordinates), as the trackball left them.
+VKF_API int vkf_viewer_get_look_at(void* viewer, double* eye, double* center, double* up)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    auto lookAt = v->camera->viewMatrix.cast<vsg::LookAt>();
+    if (!lookAt) return -1;
+    for (int i = 0; i < 3; ++i)
+    {
+        eye[i] = lookAt->eye[i];
+        center[i] = lookAt->center[i];
+        up[i] = lookAt->up[i];
+    }
+    return 0;
+}
+
+// The transform from world (scene root) to view-frame coordinates (4x4
+// doubles), applied after the trackball's eye/center/up (see ViewLookAt).
+VKF_API int vkf_viewer_set_view_transform(void* viewer, const double* m)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    auto lookAt = v->camera->viewMatrix.cast<ViewLookAt>();
+    if (!lookAt) return -1;
+    lookAt->worldToView = to_dmat4(m);
+    return 0;
+}
+
+// An orthographic projection with the given view-volume bounds.
+VKF_API int vkf_viewer_orthographic(void* viewer, double left, double right, double bottom, double top,
+                                    double near_distance, double far_distance)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    v->camera->projectionMatrix = vsg::Orthographic::create(left, right, bottom, top, near_distance, far_distance);
+    return 0;
+}
+
+// Set the camera's eye, center and up vectors (3 doubles each, in view-frame coordinates).
 VKF_API int vkf_viewer_look_at(void* viewer, const double* eye, const double* center, const double* up)
 {
     auto v = static_cast<Viewer*>(viewer);
@@ -507,7 +563,12 @@ VKF_API int vkf_viewer_perspective(void* viewer, double fovy, double near_distan
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
     auto perspective = v->camera->projectionMatrix.cast<vsg::Perspective>();
-    if (!perspective) return -1;
+    if (!perspective) // e.g. after an orthographic projection
+    {
+        const auto extent = v->window->extent2D();
+        perspective = vsg::Perspective::create(fovy, double(extent.width) / double(extent.height), near_distance, far_distance);
+        v->camera->projectionMatrix = perspective;
+    }
     perspective->fieldOfViewY = fovy;
     perspective->nearDistance = near_distance;
     perspective->farDistance = far_distance;

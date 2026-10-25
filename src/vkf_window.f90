@@ -1,21 +1,29 @@
 !> Windows: showing a scene of frames, with its simulation time, as OpenFrames'
-!> FrameManager and WindowProxy (for now with a single viewport: OpenFrames'
-!> grid of RenderRectangles, each with its own views, comes later).
+!> FrameManager and WindowProxy (for now with a single viewport, which holds
+!> the views as OpenFrames' RenderRectangle does; OpenFrames' grid of
+!> viewports comes later).
 !>
 !> A FrameManager holds the root frame of a scene. A WindowProxy shows one: in
 !> a window of its own, or in a host's native window (e.g. a Qt QWindow's
 !> `winId()`), in which case the host forwards the window's events
 !> (`mouse`, `scroll`, `key`, `resize`, `close`). Each `frame()` advances the
 !> simulation clock, updates the frames (followed trajectories), copies their
-!> positions and attitudes to the renderer and draws.
+!> positions and attitudes to the renderer, places the camera for the current
+!> View and draws.
+!>
+!> A window has a list of views (`add_view`, `select_view`, `next_view`, ...);
+!> each keeps its own camera (the trackball) while another one is shown.
+!> Without views, a default view of the scene's root frame is used.
 module vkf_window
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float
     use vkf_math, only: wp
     use vkf_frames, only: ReferenceFrame
     use vkf_clock, only: SimulationClock
+    use vkf_view, only: View, PERSPECTIVE
     use vkf_layer, only: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_add_node, vkf_viewer_frame, &
                          vkf_viewer_capture, vkf_viewer_look_at, vkf_viewer_perspective, vkf_viewer_set_background, &
+                         vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic, &
                          vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
 
     implicit none
@@ -39,6 +47,10 @@ module vkf_window
         module procedure new_frame_manager
     end interface FrameManager
 
+    type :: ViewPointer
+        type(View), pointer :: p => null()
+    end type ViewPointer
+
     !> A window showing a scene (see the module documentation).
     type, public :: WindowProxy
         private
@@ -48,13 +60,23 @@ module vkf_window
         logical :: scene_added = .false.
         real(wp) :: background(3) = [0.0_wp, 0.0_wp, 0.0_wp]
         logical :: running = .false.
+        integer :: width_ = 1, height_ = 1                  !! logical size (for the views' aspect ratio)
+        ! views
+        type(ViewPointer), allocatable :: views(:)
+        integer :: n_views = 0, current = 0
+        type(View) :: default_view                          !! used when there are no views
+        type(View), pointer :: shown => null()              !! the view whose camera is in the renderer
     contains
         procedure :: open, close, is_open
         procedure :: set_scene
         procedure :: frame, run
         procedure :: capture
         procedure :: set_background_color, background_color
-        procedure :: set_look_at, set_perspective
+        ! views (OpenFrames' RenderRectangle)
+        procedure :: add_view, remove_view, remove_all_views
+        procedure :: select_view, next_view, previous_view
+        procedure :: current_view, num_views
+        procedure :: view => window_view
         ! simulation time (OpenFrames' WindowProxy time control)
         procedure :: set_time, time, pause_time, is_time_paused, set_time_scale, time_scale
         procedure :: set_time_range, time_range, clock
@@ -114,6 +136,9 @@ contains
         if (.not. ok) return
         self%running = .true.
         self%scene_added = .false.
+        self%shown => null()
+        self%width_ = max(1, width)
+        self%height_ = max(1, height)
         call self%set_background_color(self%background)
     end function open
 
@@ -161,6 +186,7 @@ contains
             call root%update(t)
             call root%sync()
         end if
+        call place_camera(self)
         status = vkf_viewer_frame(self%viewer_)
         self%running = status == 1
         running = self%running
@@ -207,25 +233,144 @@ contains
         rgb = self%background
     end function background_color
 
-    !> Place the camera (in the scene's root frame). Interim: Views will set the
-    !> camera from the frames they follow.
-    subroutine set_look_at(self, eye, center, up)
-        class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: eye(3), center(3), up(3)
-        if (c_associated(self%viewer_)) then
-            if (vkf_viewer_look_at(self%viewer_, eye, center, up) /= 0) write(*, '(a)') 'vkframes: set_look_at failed'
-        end if
-    end subroutine set_look_at
+    ! ==================================================================
+    ! views
 
-    !> A perspective projection: vertical field of view (degrees) and near and
-    !> far distances.
-    subroutine set_perspective(self, fovy, near, far)
+    !> Add `v` to the end of the window's views (it must stay alive while added).
+    subroutine add_view(self, v)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: fovy, near, far
-        if (c_associated(self%viewer_)) then
-            if (vkf_viewer_perspective(self%viewer_, fovy, near, far) /= 0) write(*, '(a)') 'vkframes: set_perspective failed'
+        type(View), intent(in), target :: v
+        type(ViewPointer), allocatable :: tmp(:)
+        if (.not. allocated(self%views)) allocate(self%views(4))
+        if (self%n_views == size(self%views)) then
+            allocate(tmp(2 * self%n_views))
+            tmp(1:self%n_views) = self%views(1:self%n_views)
+            call move_alloc(tmp, self%views)
         end if
-    end subroutine set_perspective
+        self%n_views = self%n_views + 1
+        self%views(self%n_views)%p => v
+        if (self%current == 0) self%current = 1
+    end subroutine add_view
+
+    !> Remove all instances of `v` from the window's views.
+    subroutine remove_view(self, v)
+        class(WindowProxy), intent(inout) :: self
+        type(View), intent(in), target :: v
+        integer :: k
+        k = 1
+        do while (k <= self%n_views)
+            if (associated(self%views(k)%p, v)) then
+                self%views(k:self%n_views-1) = self%views(k+1:self%n_views)
+                self%n_views = self%n_views - 1
+                if (self%current > k) self%current = self%current - 1
+            else
+                k = k + 1
+            end if
+        end do
+        self%current = min(self%current, self%n_views)
+        if (self%current == 0 .and. self%n_views > 0) self%current = 1
+        if (associated(self%shown, v)) self%shown => null()
+    end subroutine remove_view
+
+    subroutine remove_all_views(self)
+        class(WindowProxy), intent(inout) :: self
+        self%n_views = 0
+        self%current = 0
+    end subroutine remove_all_views
+
+    !> Show view i (1 to num_views).
+    subroutine select_view(self, i)
+        class(WindowProxy), intent(inout) :: self
+        integer, intent(in) :: i
+        if (i >= 1 .and. i <= self%n_views) self%current = i
+    end subroutine select_view
+
+    !> Show the next view (wrapping around).
+    subroutine next_view(self)
+        class(WindowProxy), intent(inout) :: self
+        if (self%n_views > 0) self%current = modulo(self%current, self%n_views) + 1
+    end subroutine next_view
+
+    !> Show the previous view (wrapping around).
+    subroutine previous_view(self)
+        class(WindowProxy), intent(inout) :: self
+        if (self%n_views > 0) self%current = modulo(self%current - 2, self%n_views) + 1
+    end subroutine previous_view
+
+    !> The view shown (the default view of the scene's root if none were added).
+    function current_view(self) result(v)
+        class(WindowProxy), intent(in), target :: self
+        type(View), pointer :: v
+        if (self%current >= 1 .and. self%current <= self%n_views) then
+            v => self%views(self%current)%p
+        else
+            v => self%default_view
+        end if
+    end function current_view
+
+    !> View i (1 to num_views).
+    function window_view(self, i) result(v)
+        class(WindowProxy), intent(in) :: self
+        integer, intent(in) :: i
+        type(View), pointer :: v
+        v => self%views(i)%p
+    end function window_view
+
+    pure integer function num_views(self)
+        class(WindowProxy), intent(in) :: self
+        num_views = self%n_views
+    end function num_views
+
+    !> Set the renderer's camera for the current view: keep the previous view's
+    !> trackball state and restore (or reset) the current one's when the view
+    !> changes, then set its world-to-view transform and projection.
+    subroutine place_camera(self)
+        type(WindowProxy), intent(inout), target :: self
+        type(View), pointer :: v
+        class(ReferenceFrame), pointer :: root
+        real(wp) :: eye(3), center(3), up(3), dist, near, far, bounds(4)
+        logical :: restored
+        v => self%current_view()
+        if (associated(v, self%default_view) .and. associated(self%scene)) then
+            root => self%scene%frame()
+            if (associated(root) .and. .not. self%default_view%is_valid()) call self%default_view%set_view_frame(root, root)
+        end if
+        if (.not. associated(v, self%shown)) then
+            if (associated(self%shown)) then
+                if (vkf_viewer_get_look_at(self%viewer_, eye, center, up) == 0) call self%shown%save_state(eye, center, up)
+            end if
+            restored = v%saved_state(eye, center, up)
+            if (.not. restored) call v%reset_view()
+            if (restored) call set_camera(self, eye, center, up)
+            self%shown => v
+        end if
+        if (v%take_reset()) then
+            call v%home(real(self%width_, wp) / real(self%height_, wp), eye, center, up)
+            call set_camera(self, eye, center, up)
+        end if
+        if (vkf_viewer_set_view_transform(self%viewer_, v%world_to_view()) /= 0) &
+            write(*, '(a)') 'vkframes: could not set the view'
+        ! near and far planes from the camera's distance to its center (reverse-Z
+        ! float depth covers the wide ratio)
+        if (vkf_viewer_get_look_at(self%viewer_, eye, center, up) /= 0) return
+        dist = max(norm2(eye - center), tiny(1.0_wp))
+        near = 1.0e-6_wp * dist
+        far = 1.0e9_wp * dist
+        if (v%projection_type() == PERSPECTIVE) then
+            if (vkf_viewer_perspective(self%viewer_, v%field_of_view(), near, far) /= 0) &
+                write(*, '(a)') 'vkframes: could not set the projection'
+        else
+            bounds = v%orthographic_bounds()
+            if (vkf_viewer_orthographic(self%viewer_, bounds(1), bounds(2), bounds(3), bounds(4), -far, far) /= 0) &
+                write(*, '(a)') 'vkframes: could not set the projection'
+        end if
+    end subroutine place_camera
+
+    subroutine set_camera(self, eye, center, up)
+        type(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: eye(3), center(3), up(3)
+        if (vkf_viewer_look_at(self%viewer_, eye, center, up) /= 0) write(*, '(a)') 'vkframes: could not set the camera'
+    end subroutine set_camera
 
     ! ==================================================================
     ! simulation time
@@ -329,6 +474,8 @@ contains
         class(WindowProxy), intent(inout) :: self
         integer, intent(in) :: width, height
         if (.not. c_associated(self%viewer_)) return
+        self%width_ = max(1, width)
+        self%height_ = max(1, height)
         if (vkf_viewer_resize(self%viewer_, int(width, c_int), int(height, c_int)) /= 0) &
             write(*, '(a)') 'vkframes: resize failed'
     end subroutine resize

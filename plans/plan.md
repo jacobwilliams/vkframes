@@ -461,10 +461,25 @@ Decided so far:
     `frame%update(t)`, rather than an OSG update callback.
   - Frames are owned by the program and the tree holds pointers; `detach`
     replaces OpenFrames' reference counting when a frame goes away.
-- [ ] `View` (follow a frame; view between frames; perspective/orthographic;
-      default distance; reset) and a window with a grid of viewports, each
-      with its own views and background. When it lands, add a view menu to
-      the Qt demo (center on the Earth or the spacecraft).
+- [x] `View` (`src/vkf_view.f90`): follow a frame (RELATIVE_FRAME or
+      ABSOLUTE_FRAME), view between frames (VIEW_DIRECT / VIEW_AZEL),
+      perspective/orthographic, default distance and parameters, reset; a
+      window's list of views (add/select/next/previous), each keeping its
+      own camera. As OpenFrames' FollowingTrackball, the trackball's eye,
+      center and up live in the view frame's coordinates: the C++ camera is
+      `LookAt * worldToView` (`ViewLookAt`), with worldToView computed in
+      Fortran each frame; near/far follow the camera distance. The Qt demo
+      has a view menu (Earth, spacecraft, spacecraft -> Earth) and a reset.
+- [ ] A window with a grid of viewports (OpenFrames' RenderRectangles), each
+      with its own views, scene and background.
+- [ ] Several windows at once, showing the same scene (several views of it)
+      or different scenes. Design notes: each WindowProxy keeps its own
+      viewer, clock (synchronizable) and views; windows showing the same
+      scene must share the Vulkan device so the scene's nodes (and their GPU
+      data) are shared — create later windows with the first one's device
+      (`WindowTraits::device` / `Window::share`). Frames' render nodes are
+      already independent of any one window. Test with the Qt demo (two
+      QWindows) and a standalone example.
 - [ ] Text labels and HUD text.
 - [ ] Headless tests for interpolation, following, time and the frame
       transform chain (done: `test/test_trajectory.f90`, `test_follower`,

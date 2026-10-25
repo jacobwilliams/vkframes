@@ -12,6 +12,7 @@ module vkf_layer
 
     public :: vkf_vulkan_device_name
     public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
+    public :: vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
@@ -97,6 +98,28 @@ module vkf_layer
             type(c_ptr), value :: viewer
             real(c_float), dimension(4), intent(in) :: rgba
         end function vkf_viewer_set_background
+
+        integer(c_int) function vkf_viewer_get_look_at(viewer, eye, center, up) bind(C, name="vkf_viewer_get_look_at")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: viewer
+            real(c_double), dimension(3), intent(out) :: eye, center, up
+        end function vkf_viewer_get_look_at
+
+        integer(c_int) function vkf_viewer_set_view_transform(viewer, m) bind(C, name="vkf_viewer_set_view_transform")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: viewer
+            real(c_double), dimension(4,4), intent(in) :: m
+        end function vkf_viewer_set_view_transform
+
+        integer(c_int) function vkf_viewer_orthographic(viewer, left, right, bottom, top, near_distance, far_distance) &
+                bind(C, name="vkf_viewer_orthographic")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: viewer
+            real(c_double), value :: left, right, bottom, top, near_distance, far_distance
+        end function vkf_viewer_orthographic
 
         integer(c_int) function vkf_viewer_perspective(viewer, fovy, near_distance, far_distance) &
                 bind(C, name="vkf_viewer_perspective")

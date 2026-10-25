@@ -7,7 +7,8 @@
 !> follows a Trajectory (positions and attitudes over one period; LOOP or LIMIT
 !> from the dock), a child of the Earth. A FrameManager holds the scene and a
 !> WindowProxy shows it, with its simulation time (time scale, pause and reset
-!> from the dock). The orbit line is still a low-level line node, drawn from
+!> from the dock) and three Views, chosen from the dock: the Earth, the
+!> spacecraft (body-fixed), and from the spacecraft toward the Earth. The orbit line is still a low-level line node, drawn from
 !> the trajectory's positions, until trajectory artists come.
 !>
 !> How the pieces fit:
@@ -27,7 +28,8 @@
 !> `--data dir` OpenFrames' Demos folder, for the Earth texture and Hubble model
 !> (default: $OPENFRAMES_DATA); `--capture file` saves a frame as an image
 !> (`--capture-frame n`, default 120); `--quit-after seconds` closes the demo;
-!> `--test-resize` resizes the main window after 2 s.
+!> `--test-resize` resizes the main window after 2 s; `--view n` starts in view n
+!> (1 Earth, 2 spacecraft, 3 spacecraft -> Earth).
 module vkdemo
 
     use qt
@@ -54,6 +56,7 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
+        type(QComboBox) :: view_choice
         type(QLabel) :: time_label
         ! the scene
         type(Trajectory) :: orbit                              !! one period of positions and attitudes
@@ -61,10 +64,12 @@ module vkdemo
         class(ReferenceFrame), allocatable :: spacecraft      !! a Model, or a Sphere without the data
         type(FrameManager) :: scene
         type(WindowProxy) :: view
+        type(View) :: earth_view, craft_view, nadir_view
         type(c_ptr) :: orbit_line = c_null_ptr                 !! low-level line node (until artists)
         integer :: frame = 0
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
+        integer :: start_view = 1
         real(wp) :: quit_after = -1.0_wp
         logical :: test_resize = .false.
     end type app_t
@@ -145,6 +150,13 @@ contains
         if (.not. a%earth%add_child(a%spacecraft)) write(*, '(a)') 'vkframes: add_child failed'
         call a%scene%set_frame(a%earth)
         write(*, '(a)', advance='no') a%earth%frame_string()
+
+        ! views: the Earth, the spacecraft (body-fixed), and from the spacecraft
+        ! toward the Earth (inertial axes, a little behind the spacecraft)
+        a%earth_view = View(a%earth, a%earth)
+        a%craft_view = View(a%earth, a%spacecraft)
+        a%nadir_view = View(a%earth, a%spacecraft, lookat=a%earth, frame_type=ABSOLUTE_FRAME)
+        call a%nadir_view%set_default_view_distance(1.5_wp * model_size)
     end subroutine build_model
 
     !> Open the view in the Qt window (first expose) and show the scene.
@@ -158,8 +170,10 @@ contains
         end if
         call a%view%set_scene(a%scene)
         call a%view%set_background_color([0.0_wp, 0.0_wp, 0.0_wp])
-        call a%view%set_look_at([0.0_wp, -38000.0_wp, 14000.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], [0.0_wp, 0.0_wp, 1.0_wp])
-        call a%view%set_perspective(30.0_wp, 1.0_wp, 1.0e7_wp)
+        call a%view%add_view(a%earth_view)
+        call a%view%add_view(a%craft_view)
+        call a%view%add_view(a%nadir_view)
+        call a%view%select_view(a%view_choice%currentIndex() + 1)
         call a%view%set_time_scale(a%time_scale%value())
         call a%view%pause_time(a%pause_time%isChecked())
         call a%view%set_time(0.0_wp)
@@ -409,6 +423,27 @@ contains
         end select
     end subroutine on_follow_mode
 
+    !> Show the chosen view (each keeps its own camera).
+    subroutine on_view(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        select type (a => data)
+        type is (app_t)
+            call a%view%select_view(index + 1)
+        end select
+    end subroutine on_view
+
+    !> Put the current view's camera back at its default position.
+    subroutine on_reset_view(data)
+        class(*), intent(inout), optional :: data
+        type(View), pointer :: v
+        select type (a => data)
+        type is (app_t)
+            v => a%view%current_view()
+            call v%reset_view()
+        end select
+    end subroutine on_reset_view
+
     !> Line width: a style change only (no point data is re-uploaded).
     subroutine on_line_width(value, data)
         real(c_double), intent(in) :: value
@@ -461,7 +496,7 @@ contains
         type(QDockWidget) :: dock
         type(QWidget) :: panel
         type(QFormLayout) :: form
-        type(QPushButton) :: reset
+        type(QPushButton) :: reset, reset_view
 
         a%main = QMainWindow()
         call a%main%setWindowTitle('vkframes in qt-fortran')
@@ -488,6 +523,13 @@ contains
 
         panel = QWidget()
         form = QFormLayout(panel)
+        a%view_choice = QComboBox()
+        call a%view_choice%addItems([character(len=19) :: 'Earth', 'Spacecraft', 'Spacecraft -> Earth'])
+        call a%view_choice%currentIndexChanged%connect(on_view, a)
+        call form%addRow('View', a%view_choice)
+        reset_view = QPushButton('Reset view')
+        call reset_view%clicked%connect(on_reset_view, a)
+        call form%addRow('', reset_view)
         a%time_scale = QDoubleSpinBox()
         call a%time_scale%setRange(0.0_c_double, 5000.0_c_double)
         call a%time_scale%setValue(200.0_c_double)
@@ -554,6 +596,10 @@ program vkframes_qt_demo
             call get_command_argument(i + 1, arg)
             read(arg, *) a%capture_frame
             i = i + 1
+        case ('--view')
+            call get_command_argument(i + 1, arg)
+            read(arg, *) a%start_view
+            i = i + 1
         case ('--test-resize')
             a%test_resize = .true.
         case ('--quit-after')
@@ -566,6 +612,7 @@ program vkframes_qt_demo
 
     call build_model(a)
     call build_ui(a)
+    call a%view_choice%setCurrentIndex(max(0, min(2, a%start_view - 1)))
     if (a%quit_after > 0) call QTimer_singleShot(int(1000 * a%quit_after), on_quit, a)
     if (a%test_resize) call QTimer_singleShot(2000, on_test_resize, a)
     call a%main%resize(1100, 700)
