@@ -1,0 +1,26 @@
+name = "vkframes"
+version = "0.0.1"
+license = "MIT"
+author = "Jacob Williams"
+maintainer = "Jacob Williams"
+description = "Modern Fortran spacecraft trajectory visualization on VulkanSceneGraph"
+keywords = ["vulkan", "visualization", "trajectory", "spacecraft"]
+
+[build]
+auto-executables = true
+auto-tests = true
+auto-examples = true
+module-naming = false
+# The C++ VSG layer in src/vsg is compiled by fpm (C++ compiler and VSG
+# include flags come from FPM_CXX / FPM_CXXFLAGS; see tools/fpm_vsg.py).
+link = ["vsgXchange", "vsg", "vulkan"]
+
+[fortran]
+implicit-typing = false
+implicit-external = false
+source-form = "free"
+
+# The C++ runtime the layer needs (the "default" feature is always enabled).
+[features]
+default.macos.link-time-flags = "-lc++"
+default.linux.link-time-flags = "-lstdc++"

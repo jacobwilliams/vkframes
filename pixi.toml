@@ -1,0 +1,33 @@
+[workspace]
+authors = ["Jacob Williams <jacobwilliams@users.noreply.github.com>"]
+channels = ["conda-forge"]
+name = "vkframes"
+# moltenvk needs macOS >= 14
+platforms = [{ name = "osx-arm64-macos14", platform = "osx-arm64", macos = "14.0" }, "linux-64", "win-64"]
+version = "0.0.1"
+
+[dependencies]
+gfortran = "15.*"
+fpm = ">=0.13.0,<0.14"
+python = "3.13.*"
+cxx-compiler = "*"
+cmake = ">=3.25"
+ninja = "*"
+vulkanscenegraph = "1.1.*"
+vsgxchange = "1.1.*"
+glslang = "*"
+
+[target.unix.dependencies]
+pkg-config = "*"
+
+[target.osx.dependencies]
+moltenvk = "*"
+
+[tasks]
+build = "python tools/fpm_vsg.py build"
+test = "python tools/fpm_vsg.py test"
+example = "python tools/fpm_vsg.py run --example"
+
+# MoltenVK logs every instance/device at "info"; show warnings and errors only
+[target.osx.activation.env]
+MVK_CONFIG_LOG_LEVEL = "2"
