@@ -526,7 +526,17 @@ Decided so far:
       Qt demo draws its orbit with it (width, "Trace orbit").
 - [ ] `CurveArtist` dash pattern (`set_pattern` is kept; drawn solid for
       now: needs the distance along the line in the fragment shader).
-- [ ] `SegmentArtist`.
+- [x] `SegmentArtist`: a segment at every `stride`-th point from the start
+      to the end data sources (default, unlike OpenFrames' nothing: radius
+      vectors from the origin), color, width, trace mode (the segments at the
+      points passed). Same chunked buffers (`src/vkf_line_chain.f90`, shared
+      with `CurveArtist`), drawn by the line shader in a separate-segments
+      mode (a flag in the line's style buffer). Trace with decreasing times
+      follows the trajectory's direction (OpenFrames counts from the wrong
+      end there). Qt demo: "Radius vectors" adds/removes one while running.
+- [x] Artists can be removed and added again while running: the layer keeps
+      removed nodes alive for 32 more frames (frames in flight may still use
+      them), the artist releases its handles and is built anew when added.
 - [ ] `MarkerArtist` (start/intermediate/end markers, spacing by time,
       distance or data; shapes from the ported marker shaders; size;
       auto-attenuation).

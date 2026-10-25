@@ -28,6 +28,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <deque>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -403,9 +404,31 @@ namespace
     struct LineStrip : Node
     {
         vsg::ref_ptr<vsg::floatArray> points; // 6 floats per point: xyz high, xyz low
-        vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, -, -, -)]
+        vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, separate segments, -, -)]
         vsg::ref_ptr<vsg::Draw> draw;
+
+        bool segments() const { return style->at(1).y > 0.5f; }
+        // the vertices drawing points first .. first+n-1 (1-based)
+        void setRange(uint32_t first, uint32_t n)
+        {
+            if (segments()) {
+                draw->firstVertex = 6 * ((first - 1) / 2);
+                draw->vertexCount = 6 * (n / 2);
+            } else {
+                draw->firstVertex = 6 * (first - 1);
+                draw->vertexCount = (n >= 2) ? 6 * (n - 1) : 0;
+            }
+        }
     };
+
+    // Nodes removed from the scene, kept alive until no frame in flight can
+    // still use their GPU resources: released after retire_frames more frames
+    // (of any window; several frames in flight per window, a few windows).
+    constexpr uint64_t retire_frames = 32;
+    uint64_t frames_drawn = 0;
+    std::deque<std::pair<uint64_t, vsg::ref_ptr<vsg::Node>>> retired;
+
+    void retire(vsg::ref_ptr<vsg::Node> node) { retired.emplace_back(frames_drawn + retire_frames, std::move(node)); }
 
     // Options for reading files: vsgXchange's readers (images, models, fonts).
     vsg::ref_ptr<vsg::Options> read_options()
@@ -725,6 +748,8 @@ VKF_API int vkf_viewer_frame(void* viewer)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
+    ++frames_drawn;
+    while (!retired.empty() && retired.front().first <= frames_drawn) retired.pop_front();
     return guarded("vkf_viewer_frame", -1, [&]() {
         if (!v->compiled)
         {
@@ -851,7 +876,9 @@ VKF_API int vkf_node_add_child(void* parent, void* child)
     return -1;
 }
 
-// Remove child from a group node (a transform or a switch). Returns -1 if it is not a child.
+// Remove child from a group node (a transform or a switch), also while
+// running: its GPU data are released a few frames later. Returns -1 if it is
+// not a child.
 VKF_API int vkf_node_remove_child(void* parent, void* child)
 {
     auto p = static_cast<Node*>(parent);
@@ -862,6 +889,7 @@ VKF_API int vkf_node_remove_child(void* parent, void* child)
         auto& children = group->children;
         auto itr = std::find(children.begin(), children.end(), c->node);
         if (itr == children.end()) return -1;
+        retire(c->node);
         children.erase(itr);
         return 0;
     }
@@ -870,6 +898,7 @@ VKF_API int vkf_node_remove_child(void* parent, void* child)
         auto& children = sw->children;
         auto itr = std::find_if(children.begin(), children.end(), [&](const vsg::Switch::Child& ch) { return ch.node == c->node; });
         if (itr == children.end()) return -1;
+        retire(c->node);
         children.erase(itr);
         return 0;
     }
@@ -1212,7 +1241,9 @@ VKF_API float* vkf_line_points(void* line, int* capacity)
     return l->points->data();
 }
 
-// The strip's style buffer: 8 floats (r, g, b, a, width in window units, -, -, -).
+// The strip's style buffer: 8 floats (r, g, b, a, width in window units,
+// 1 for separate segments (pairs of points) or 0 for a strip, -, -). Set the
+// segment flag before drawing points (it changes how they are counted).
 VKF_API float* vkf_line_style(void* line)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
@@ -1227,19 +1258,17 @@ VKF_API int vkf_line_points_changed(void* line, int n)
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l || n < 0 || 6 * static_cast<uint32_t>(n) > l->points->size()) return -1;
     l->points->dirty();
-    l->draw->firstVertex = 0;
-    l->draw->vertexCount = (n >= 2) ? 6 * static_cast<uint32_t>(n - 1) : 0;
+    l->setRange(1, static_cast<uint32_t>(n));
     return 0;
 }
 
 // Draw points first .. first+n-1 only (1-based; no data is uploaded): e.g.
-// for trace mode.
+// for trace mode. (Separate segments: first odd, n even.)
 VKF_API int vkf_line_set_range(void* line, int first, int n)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l || first < 1 || n < 0 || 6 * static_cast<uint32_t>(first - 1 + n) > l->points->size()) return -1;
-    l->draw->firstVertex = 6 * static_cast<uint32_t>(first - 1);
-    l->draw->vertexCount = (n >= 2) ? 6 * static_cast<uint32_t>(n - 1) : 0;
+    l->setRange(static_cast<uint32_t>(first), static_cast<uint32_t>(n));
     return 0;
 }
 

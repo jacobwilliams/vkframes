@@ -3,12 +3,13 @@
 !> precision after a bulk load, many appends (more line chunks, each uploaded
 !> only while filling), a clear, a changed last point and other data sources;
 !> trace mode draws the points passed and ends at the interpolated point, for
-!> increasing and decreasing times.
+!> increasing and decreasing times. SegmentArtist: segments at every stride-th
+!> point from the start to the end sources, appends, trace mode.
 program test_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr
     use vkframes
-    use vkf_artists, only: max_chunk
+    use vkf_line_chain, only: max_chunk
     use vkf_trajectory, only: SOURCE_POSOPT, SOURCE_TIME
     use vkf_layer, only: vkf_switch_create
 
@@ -22,13 +23,14 @@ program test_artists
     call check_trace(1.0_wp)
     call check_trace(-1.0_wp)
     call check_sources()
+    call check_segments()
     call check_drawable()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
         error stop 1
     end if
-    write(*, '(a)') 'PASS: CurveArtist, DrawableTrajectory'
+    write(*, '(a)') 'PASS: CurveArtist, SegmentArtist, DrawableTrajectory'
 
 contains
 
@@ -173,6 +175,65 @@ contains
         call check(v(2) == -1.0_wp, 'changed last point redrawn')
     end subroutine check_sources
 
+    subroutine check_segments()
+        type(Trajectory), target :: traj
+        type(SegmentArtist) :: radius, arrows
+        real(wp) :: a(3), b(3), err
+        integer :: i, s
+        traj = Trajectory(nopt=1)
+        do i = 1, 1000
+            call traj%add(real(i, wp), orbit(real(i, wp)))
+            call traj%set_optional(1, 1.01_wp * orbit(real(i, wp)))
+        end do
+
+        ! default: the origin to the positions, every 7th point
+        radius = SegmentArtist(traj, stride=7)
+        call radius%build(c_null_ptr, vkf_switch_create())
+        call radius%update(0.0_wp)
+        call check(radius%num_drawn() == 143 .and. radius%stride() == 7, 'segments: every 7th point')
+        err = 0.0_wp
+        do s = 1, radius%num_drawn()
+            call radius%drawn_segment(s, a, b)
+            err = max(err, maxval(abs(a)), maxval(abs(b - orbit(real(1 + 7 * (s - 1), wp)))))
+        end do
+        call check(err < 1.0e-6_wp, 'segments: origin to the positions')
+
+        ! position to optional 1, with appends
+        arrows = SegmentArtist(traj, color=[0.0_wp, 1.0_wp, 0.0_wp])
+        call check(arrows%set_start_x_data(DataSource(SOURCE_POSOPT, element=1)) .and. &
+                   arrows%set_start_y_data(DataSource(SOURCE_POSOPT, element=2)) .and. &
+                   arrows%set_start_z_data(DataSource(SOURCE_POSOPT, element=3)), 'segments: start sources')
+        call check(arrows%set_end_x_data(DataSource(SOURCE_POSOPT, element=1, opt=1)) .and. &
+                   arrows%set_end_y_data(DataSource(SOURCE_POSOPT, element=2, opt=1)) .and. &
+                   arrows%set_end_z_data(DataSource(SOURCE_POSOPT, element=3, opt=1)), 'segments: end sources')
+        call arrows%build(c_null_ptr, vkf_switch_create())
+        call arrows%update(0.0_wp)
+        do i = 1001, 100000
+            call traj%add(real(i, wp), orbit(real(i, wp)))
+            call traj%set_optional(1, 1.01_wp * orbit(real(i, wp)))
+            if (modulo(i, 5000) == 0) call arrows%update(0.0_wp)
+        end do
+        call arrows%update(0.0_wp)
+        write(*, '(a,i0,a,i0,a)') 'segments: ', arrows%num_drawn(), ' in ', arrows%num_chunks(), ' chunks'
+        call check(arrows%num_drawn() == 100000, 'segments: appended')
+        err = 0.0_wp
+        do s = 1, arrows%num_drawn()
+            call arrows%drawn_segment(s, a, b)
+            err = max(err, maxval(abs(a - orbit(real(s, wp)))), maxval(abs(b - 1.01_wp * orbit(real(s, wp)))))
+        end do
+        call check(err < 1.0e-6_wp, 'segments: position to optional')
+
+        ! trace mode: the segments at the points passed
+        call radius%set_trace_mode(.true.)
+        call radius%update(50.5_wp)                    ! points 1 .. 50 passed: segments at 1, 8, ..., 50
+        call check(radius%num_drawn() == 8, 'segments: trace')
+        call radius%update(0.5_wp)
+        call check(radius%num_drawn() == 0, 'segments: trace before the start')
+        call radius%set_trace_mode(.false.)
+        call radius%update(0.5_wp)
+        call check(radius%num_drawn() == (100000 - 1) / 7 + 1, 'segments: trace off, appended points too')
+    end subroutine check_segments
+
     subroutine check_drawable()
         type(Trajectory), target :: traj
         type(CurveArtist), target :: a, b
@@ -200,6 +261,9 @@ contains
         call check(associated(p, b), 'artist(i)')
         call dt%remove_artist(a)
         call check(dt%num_artists() == 1 .and. associated(dt%artist(1), b), 'remove_artist')
+        call dt%add_artist(a)                          ! again: built anew
+        call dt%update(0.0_wp)
+        call check(a%num_drawn() == 100 .and. a%num_chunks() == 1, 'artist added again')
         call dt%remove_all_artists()
         call check(dt%num_artists() == 0, 'remove_all_artists')
     end subroutine check_drawable

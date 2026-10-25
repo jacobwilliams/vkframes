@@ -1,9 +1,11 @@
 #version 450
 
-// Thick line strip: each segment between points i and i+1 is drawn as a
-// screen-space quad (two triangles, 6 vertices) of the style's width.
+// Thick lines: each segment is drawn as a screen-space quad (two triangles, 6
+// vertices) of the style's width. A strip joins points i and i+1; with
+// separate segments (style.params.y = 1) segment i joins points 2i and 2i+1.
 // There are no vertex buffers: the points come from a storage buffer indexed
-// by gl_VertexIndex, so a strip of n points is one draw of 6*(n-1) vertices.
+// by gl_VertexIndex, so a strip of n points is one draw of 6*(n-1) vertices,
+// and n/2 separate segments one of 3*n vertices.
 // Segments are extended by half the width at each end (square caps), which
 // covers the gaps at the joins.
 //
@@ -29,7 +31,7 @@ layout(std430, set = 0, binding = 0) readonly buffer Points {
 
 layout(set = 0, binding = 1) uniform Style {
     vec4 color;
-    vec4 params;            // x = width in window units (logical pixels)
+    vec4 params;            // x = width in window units (logical pixels), y = 1 for separate segments
 } style;
 
 layout(location = 0) out vec4 fragColor;
@@ -72,8 +74,9 @@ void main()
     vec2 corner = corners[gl_VertexIndex % 6];
 
     mat4 mvp = pc.projection * pc.modelView;
-    vec4 a = mvp * vec4(eyeRelative(segment), 1.0);
-    vec4 b = mvp * vec4(eyeRelative(segment + 1), 1.0);
+    int first = (style.params.y > 0.5) ? 2 * segment : segment;
+    vec4 a = mvp * vec4(eyeRelative(first), 1.0);
+    vec4 b = mvp * vec4(eyeRelative(first + 1), 1.0);
 
     // clip the segment to the part in front of the eye (w > 0)
     if (a.w < W_MIN && b.w < W_MIN) {

@@ -1,52 +1,51 @@
 !> Trajectory artists: what draws a Trajectory, in a DrawableTrajectory frame, as
-!> OpenFrames' TrajectoryArtist, CurveArtist and DrawableTrajectory.
+!> OpenFrames' TrajectoryArtist, CurveArtist, SegmentArtist and
+!> DrawableTrajectory.
 !>
 !> A DrawableTrajectory is a frame (its points are in its coordinates) holding
-!> artists. Each frame update, an artist draws what changed in its trajectory.
-!>
-!> A curve is drawn as a chain of line buffers ("chunks"; consecutive chunks
-!> share their end point), filled in place with (high, low) float pairs for
-!> double precision (see src/vsg/vkf_layer.cpp: EyeRelative). Appended points
-!> go into the last chunks, so only those are uploaded again; a chain that is
-!> full gets a new chunk (as large as the chain so far, up to `max_chunk`
-!> points), so nothing is ever copied or reallocated. A cleared trajectory is
-!> redrawn into the same chunks.
+!> artists. Each frame update, an artist draws what changed in its trajectory:
+!> appended points are written into the GPU buffers in place, and only the
+!> buffers written to are uploaded (see vkf_line_chain); a cleared trajectory
+!> is redrawn into the same buffers. The last point drawn is always rewritten,
+!> since `set_optional` changes it.
 !>
 !> Trace mode (`set_trace_mode`) draws only the part of the trajectory up to
 !> the current time: the points already passed (a change of the draw ranges, no
-!> upload), plus a two-point tail from the last of them to the point
+!> upload); a curve adds a two-point tail from the last of them to the point
 !> interpolated at the current time (the only data uploaded each frame). The
 !> part passed is from the first point to the current time, in the
-!> trajectory's time direction (times may decrease).
+!> trajectory's time direction (times may decrease: e.g. a trajectory
+!> propagated backwards, shown with time running backwards).
 !>
 !> Artists and their trajectories are not owned: they must stay alive while
 !> drawn.
 module vkf_artists
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
     use vkf_math, only: wp
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, SOURCE_ZERO, SOURCE_POSOPT, &
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
     use vkf_frames, only: ReferenceFrame
-    use vkf_layer, only: vkf_line_create, vkf_line_points, vkf_line_points_changed, vkf_line_set_range, &
-                         vkf_node_add_child, vkf_node_remove_child, vkf_switch_create, &
+    use vkf_layer, only: vkf_line_create, vkf_line_points_changed, vkf_line_set_range, &
+                         vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
                          vkf_viewer_compile_node, line_set_style
+    use vkf_line_chain, only: LineChain, split_points, line_buffer, check
 
     implicit none
 
     private
-
-    integer, parameter :: min_chunk = 64                !! points in the smallest chunk
-    integer, parameter, public :: max_chunk = 65536     !! points in a chunk made for appending (1.5 MB)
 
     !> The base of the trajectory artists (OpenFrames' TrajectoryArtist).
     type, abstract, public :: TrajectoryArtist
         private
         type(Trajectory), pointer :: traj => null()
         logical :: trace = .false.
+        ! what was drawn
+        integer :: seen_generation = -1, seen_revision = -1
     contains
         procedure :: set_trajectory, get_trajectory
         procedure :: set_trace_mode, trace_mode
+        procedure :: release => artist_release
         procedure(artist_build), deferred :: build
         procedure(artist_update), deferred :: update
     end type TrajectoryArtist
@@ -70,12 +69,6 @@ module vkf_artists
         end subroutine artist_update
     end interface
 
-    !> A line buffer holding points first .. first+capacity-1 of a curve.
-    type :: LineChunk
-        type(c_ptr) :: line = c_null_ptr
-        integer :: first = 1, capacity = 0
-    end type LineChunk
-
     !> Draws a trajectory's points connected by a line (OpenFrames' CurveArtist).
     !> The x, y and z of the points come from data sources (default: the
     !> trajectory's positions).
@@ -88,27 +81,68 @@ module vkf_artists
         integer :: pattern_factor = 1
         integer :: pattern_ = int(z'FFFF')
         ! rendering
-        type(c_ptr) :: viewer = c_null_ptr, group = c_null_ptr, tail = c_null_ptr
-        type(LineChunk), allocatable :: chunks(:)
-        integer :: n_chunks = 0
-        integer :: n_written = 0                    !! points written to the chunks
-        integer :: n_drawn = 0                      !! points drawn from them
+        type(LineChain) :: chain
+        type(c_ptr) :: tail = c_null_ptr
+        integer :: n_written = 0                    !! points written to the chain
+        integer :: n_drawn = 0                      !! points drawn from it
         logical :: tail_shown = .false.
-        integer :: seen_generation = -1, seen_revision = -1
         real(wp) :: tail_time = huge(1.0_wp)        !! the time the tail was drawn for
     contains
         procedure :: set_trajectory => curve_set_trajectory
         procedure :: set_x_data, set_y_data, set_z_data, data_sources
-        procedure :: set_color, color, set_width, width
-        procedure :: set_pattern, pattern
+        procedure :: set_color => curve_set_color, color => curve_color
+        procedure :: set_width => curve_set_width, width => curve_width
+        procedure :: set_pattern => curve_set_pattern, pattern => curve_pattern
         procedure :: build => curve_build
         procedure :: update => curve_update
-        procedure :: num_chunks, num_drawn, drawn_point, trace_end
+        procedure :: release => curve_release
+        procedure :: num_chunks => curve_num_chunks, num_drawn => curve_num_drawn
+        procedure :: drawn_point, trace_end
     end type CurveArtist
 
     interface CurveArtist
         module procedure new_curve_artist
     end interface CurveArtist
+
+    !> Draws a line segment at every `stride`-th point of a trajectory
+    !> (OpenFrames' SegmentArtist), from the point given by the start data
+    !> sources to the one given by the end data sources: e.g. radius vectors
+    !> (the origin to the positions), or from the positions to points stored as
+    !> an optional (the tip of a velocity vector, a target). Default (an
+    !> addition to OpenFrames, which draws nothing until the sources are set):
+    !> from the frame's origin to the trajectory's positions.
+    type, extends(TrajectoryArtist), public :: SegmentArtist
+        private
+        type(DataSource) :: start_(3), end_(3)
+        logical :: default_data = .true.
+        integer :: stride_ = 1
+        real(wp) :: color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]
+        real(wp) :: width_ = 1.0_wp
+        integer :: pattern_factor = 1
+        integer :: pattern_ = int(z'FFFF')
+        ! rendering
+        type(LineChain) :: chain
+        integer :: n_written = 0                    !! segments written to the chain
+        integer :: n_drawn = 0                      !! segments drawn from it
+    contains
+        procedure :: set_trajectory => segment_set_trajectory
+        procedure :: set_start_x_data, set_start_y_data, set_start_z_data
+        procedure :: set_end_x_data, set_end_y_data, set_end_z_data
+        procedure :: start_data_sources, end_data_sources
+        procedure :: set_stride, stride
+        procedure :: set_color => segment_set_color, color => segment_color
+        procedure :: set_width => segment_set_width, width => segment_width
+        procedure :: set_pattern => segment_set_pattern, pattern => segment_pattern
+        procedure :: build => segment_build
+        procedure :: update => segment_update
+        procedure :: release => segment_release
+        procedure :: num_chunks => segment_num_chunks, num_drawn => segment_num_drawn
+        procedure :: drawn_segment
+    end type SegmentArtist
+
+    interface SegmentArtist
+        module procedure new_segment_artist
+    end interface SegmentArtist
 
     type :: ArtistPointer
         class(TrajectoryArtist), pointer :: p => null()
@@ -143,6 +177,7 @@ contains
         class(TrajectoryArtist), intent(inout) :: self
         type(Trajectory), intent(in), target :: traj
         self%traj => traj
+        self%seen_generation = -1                     ! redraw
     end subroutine set_trajectory
 
     function get_trajectory(self) result(traj)
@@ -162,6 +197,80 @@ contains
         class(TrajectoryArtist), intent(in) :: self
         trace_mode = self%trace
     end function trace_mode
+
+    !> Forget the render nodes (after the artist's group was removed from the
+    !> scene): build starts again.
+    subroutine artist_release(self)
+        class(TrajectoryArtist), intent(inout) :: self
+        self%seen_generation = -1
+    end subroutine artist_release
+
+    !> Whether the trajectory changed since last drawn; `redraw` if everything
+    !> must be drawn again (cleared, or a new trajectory or data sources).
+    logical function data_changed(self, redraw) result(changed)
+        class(TrajectoryArtist), intent(inout) :: self
+        logical, intent(out) :: redraw
+        redraw = .false.
+        changed = .false.
+        if (.not. associated(self%traj)) return
+        if (self%traj%generation() /= self%seen_generation) then
+            redraw = .true.
+            self%seen_generation = self%traj%generation()
+            self%seen_revision = -1
+        end if
+        changed = self%traj%revision() /= self%seen_revision
+        self%seen_revision = self%traj%revision()
+    end function data_changed
+
+    !> Number of points up to time t, from the first point in the trajectory's
+    !> time direction (at most n).
+    integer function points_passed(traj, t, n) result(k)
+        type(Trajectory), intent(in) :: traj
+        real(wp), intent(in) :: t
+        integer, intent(in) :: n
+        integer :: status, index
+        status = traj%time_index(t, index)
+        select case (status)
+        case (TIME_OUT_OF_RANGE)
+            k = merge(0, n, index < 1)
+        case (TIME_NOT_FOUND)
+            k = n
+        case default                                    ! found or at a bound: index is the last point passed
+            k = index
+        end select
+        k = max(0, min(n, k))
+    end function points_passed
+
+    !> Number of points the data sources give: 0 for invalid sources or no
+    !> trajectory, huge() if all are zero.
+    integer function source_points(traj, sources) result(n)
+        type(Trajectory), pointer, intent(in) :: traj
+        type(DataSource), intent(in) :: sources(3)
+        n = 0
+        if (.not. associated(traj)) return
+        if (.not. traj%verify_data(sources)) return
+        n = traj%num_points(sources)
+    end function source_points
+
+    !> The sources are x, y, z of the position, unscaled.
+    pure logical function is_position_xyz(s)
+        type(DataSource), intent(in) :: s(3)
+        integer :: k
+        is_position_xyz = .true.
+        do k = 1, 3
+            if (s(k)%src /= SOURCE_POSOPT .or. s(k)%opt /= 0 .or. s(k)%element /= k .or. s(k)%scale /= 1.0_wp) &
+                is_position_xyz = .false.
+        end do
+    end function is_position_xyz
+
+    !> Color [r, g, b] (alpha unchanged) or [r, g, b, a] into rgba.
+    pure subroutine set_rgba(rgba, color)
+        real(wp), intent(inout) :: rgba(4)
+        real(wp), intent(in) :: color(:)
+        integer :: n
+        n = min(4, size(color))
+        rgba(1:n) = color(1:n)
+    end subroutine set_rgba
 
     ! ==================================================================
     ! CurveArtist
@@ -184,7 +293,7 @@ contains
         type(Trajectory), intent(in), target :: traj
         self%traj => traj
         if (self%default_data) self%sources_ = position_sources(traj%dof())
-        self%seen_generation = -1                     ! redraw
+        self%seen_generation = -1
     end subroutine curve_set_trajectory
 
     !> Where the x (y, z) of the points come from. Returns whether the
@@ -192,31 +301,31 @@ contains
     logical function set_x_data(self, src) result(valid)
         class(CurveArtist), intent(inout) :: self
         type(DataSource), intent(in) :: src
-        valid = set_source(self, 1, src)
+        valid = set_curve_source(self, 1, src)
     end function set_x_data
 
     logical function set_y_data(self, src) result(valid)
         class(CurveArtist), intent(inout) :: self
         type(DataSource), intent(in) :: src
-        valid = set_source(self, 2, src)
+        valid = set_curve_source(self, 2, src)
     end function set_y_data
 
     logical function set_z_data(self, src) result(valid)
         class(CurveArtist), intent(inout) :: self
         type(DataSource), intent(in) :: src
-        valid = set_source(self, 3, src)
+        valid = set_curve_source(self, 3, src)
     end function set_z_data
 
-    logical function set_source(self, k, src) result(valid)
+    logical function set_curve_source(self, k, src) result(valid)
         class(CurveArtist), intent(inout) :: self
         integer, intent(in) :: k
         type(DataSource), intent(in) :: src
         self%sources_(k) = src
         self%default_data = .false.
-        self%seen_generation = -1                     ! redraw
+        self%seen_generation = -1
         valid = .true.
         if (associated(self%traj)) valid = self%traj%verify_data(self%sources_)
-    end function set_source
+    end function set_curve_source
 
     pure function data_sources(self) result(s)
         class(CurveArtist), intent(in) :: self
@@ -225,79 +334,67 @@ contains
     end function data_sources
 
     !> The line's color: [r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1.
-    subroutine set_color(self, color)
+    subroutine curve_set_color(self, color)
         class(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: color(:)
-        integer :: n
-        n = min(4, size(color))
-        self%color_(1:n) = color(1:n)
-        call apply_style(self)
-    end subroutine set_color
+        call set_rgba(self%color_, color)
+        call curve_style(self)
+    end subroutine curve_set_color
 
-    pure function color(self) result(c)
+    pure function curve_color(self) result(c)
         class(CurveArtist), intent(in) :: self
         real(wp) :: c(4)
         c = self%color_
-    end function color
+    end function curve_color
 
     !> The line's width in window units (logical pixels).
-    subroutine set_width(self, width)
+    subroutine curve_set_width(self, width)
         class(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: width
         self%width_ = width
-        call apply_style(self)
-    end subroutine set_width
+        call curve_style(self)
+    end subroutine curve_set_width
 
-    pure real(wp) function width(self)
+    pure real(wp) function curve_width(self)
         class(CurveArtist), intent(in) :: self
-        width = self%width_
-    end function width
+        curve_width = self%width_
+    end function curve_width
 
     !> A dash pattern, as OpenGL's line stipple (OpenFrames' setPattern): each
     !> bit of the 16-bit `pattern` covers `factor` pixels. Kept for later; lines
     !> are drawn solid for now.
-    subroutine set_pattern(self, factor, pattern)
+    subroutine curve_set_pattern(self, factor, pattern)
         class(CurveArtist), intent(inout) :: self
         integer, intent(in) :: factor, pattern
         self%pattern_factor = factor
         self%pattern_ = iand(pattern, int(z'FFFF'))
-    end subroutine set_pattern
+    end subroutine curve_set_pattern
 
-    pure subroutine pattern(self, factor, bits)
+    pure subroutine curve_pattern(self, factor, bits)
         class(CurveArtist), intent(in) :: self
         integer, intent(out) :: factor, bits
         factor = self%pattern_factor
         bits = self%pattern_
-    end subroutine pattern
+    end subroutine curve_pattern
 
     !> Number of line buffers the curve is drawn with (0 until built).
-    pure integer function num_chunks(self)
+    pure integer function curve_num_chunks(self)
         class(CurveArtist), intent(in) :: self
-        num_chunks = self%n_chunks
-    end function num_chunks
+        curve_num_chunks = self%chain%num_chunks()
+    end function curve_num_chunks
 
     !> Number of points drawn now (all of them, or in trace mode those passed).
-    pure integer function num_drawn(self)
+    pure integer function curve_num_drawn(self)
         class(CurveArtist), intent(in) :: self
-        num_drawn = self%n_drawn
-    end function num_drawn
+        curve_num_drawn = self%n_drawn
+    end function curve_num_drawn
 
     !> Point i (1 to num_drawn) as drawn: read back from the line buffers.
     function drawn_point(self, i) result(v)
         class(CurveArtist), intent(in) :: self
         integer, intent(in) :: i
         real(wp) :: v(3)
-        real(c_float), dimension(:,:,:), pointer :: p
-        integer :: j
-        v = 0.0_wp
-        do j = 1, self%n_chunks
-            associate (c => self%chunks(j))
-                if (i < c%first .or. i > c%first + c%capacity - 1) cycle
-                call buffer(c%line, p)
-                if (associated(p)) v = real(p(:, 1, i-c%first+1), wp) + real(p(:, 2, i-c%first+1), wp)
-                return
-            end associate
-        end do
+        v = self%chain%point(i)
     end function drawn_point
 
     !> In trace mode, the end of the line (the point at the current time) as
@@ -309,54 +406,55 @@ contains
         v = 0.0_wp
         trace_end = self%tail_shown
         if (.not. trace_end) return
-        call buffer(self%tail, p)
+        call line_buffer(self%tail, p)
         if (associated(p)) v = real(p(:, 1, 2), wp) + real(p(:, 2, 2), wp)
     end function trace_end
 
     subroutine curve_build(self, viewer, group)
         class(CurveArtist), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
-        self%group = group
-        self%viewer = c_null_ptr                      ! compiled with the group
-        call ensure_capacity(self, point_count(self))
-        self%viewer = viewer
+        call self%chain%init(group, segments=.false.)
+        call self%chain%set_style(self%color_, self%width_)
+        call self%chain%reserve(curve_points(self))       ! compiled with the group
+        call self%chain%set_viewer(viewer)
         self%tail = vkf_line_create(2_c_int)
         if (c_associated(self%tail)) call check(vkf_node_add_child(group, self%tail))
-        call apply_style(self)
+        call curve_style(self)
         self%seen_generation = -1
     end subroutine curve_build
+
+    subroutine curve_release(self)
+        class(CurveArtist), intent(inout) :: self
+        call self%chain%release()
+        if (c_associated(self%tail)) call vkf_node_delete(self%tail)
+        self%tail = c_null_ptr
+        self%n_written = 0
+        self%n_drawn = 0
+        self%tail_shown = .false.
+        call artist_release(self)
+    end subroutine curve_release
 
     subroutine curve_update(self, t)
         class(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: t
         integer :: n, i1
-        logical :: changed
-        if (.not. c_associated(self%group)) return
-        n = point_count(self)
+        logical :: changed, redraw
+        if (.not. self%chain%is_built()) return
+        n = curve_points(self)
 
         ! new points, or a redraw (cleared, new trajectory or data sources)
-        changed = .false.
-        if (associated(self%traj)) then
-            if (self%traj%generation() /= self%seen_generation) then
-                self%n_written = 0
-                self%seen_generation = self%traj%generation()
-                self%seen_revision = -1
-            end if
-            if (self%traj%revision() /= self%seen_revision) then
-                ! from the last point written: set_optional may have changed it
-                i1 = max(1, min(self%n_written, n))
-                call ensure_capacity(self, n)
-                if (n >= i1) call write_points(self, i1, n)
-                self%n_written = n
-                self%seen_revision = self%traj%revision()
-                changed = .true.
-            end if
-        else
-            self%n_written = 0
+        changed = data_changed(self, redraw)
+        if (redraw .or. .not. associated(self%traj)) self%n_written = 0
+        if (changed) then
+            i1 = max(1, min(self%n_written, n))          ! from the last point written (set_optional)
+            call self%chain%reserve(n)
+            if (n >= i1) call write_curve(self, i1, n)
+            self%n_written = n
         end if
 
         if (.not. self%trace) then
-            call set_ranges(self, self%n_written)
+            self%n_drawn = self%n_written
+            call self%chain%draw(self%n_drawn)
             if (c_associated(self%tail)) call check(vkf_line_set_range(self%tail, 1_c_int, 0_c_int))
             self%tail_shown = .false.
             self%tail_time = huge(1.0_wp)
@@ -364,56 +462,43 @@ contains
         end if
         ! trace mode: the points passed, and a tail to the point at time t
         if (.not. changed .and. t == self%tail_time) return
-        n = points_passed(self, t, self%n_written)
-        call set_ranges(self, n)
-        call update_tail(self, t, n)
+        self%n_drawn = 0
+        if (associated(self%traj)) self%n_drawn = points_passed(self%traj, t, self%n_written)
+        call self%chain%draw(self%n_drawn)
+        call update_tail(self, t, self%n_drawn)
         self%tail_time = t
     end subroutine curve_update
 
-    !> Number of points the data sources give (0 for invalid sources or no
-    !> trajectory; 1 if all sources are zero: a point at the origin).
-    integer function point_count(self) result(n)
+    !> Number of points to draw (1 if all sources are zero: a point at the origin).
+    integer function curve_points(self) result(n)
         type(CurveArtist), intent(in) :: self
-        n = 0
-        if (.not. associated(self%traj)) return
-        if (.not. self%traj%verify_data(self%sources_)) return
-        n = self%traj%num_points(self%sources_)
-        if (all(self%sources_%src == SOURCE_ZERO)) n = min(1, self%traj%num_times())
-    end function point_count
+        n = source_points(self%traj, self%sources_)
+        if (all(self%sources_%src == SOURCE_ZERO) .and. n > 0) n = min(1, self%traj%num_times())
+    end function curve_points
 
-    !> Number of points up to time t, from the first point in the trajectory's
-    !> time direction.
-    integer function points_passed(self, t, n) result(k)
-        type(CurveArtist), intent(in) :: self
-        real(wp), intent(in) :: t
-        integer, intent(in) :: n
-        integer :: status, index
-        k = 0
-        if (.not. associated(self%traj)) return
-        status = self%traj%time_index(t, index)
-        select case (status)
-        case (TIME_OUT_OF_RANGE)
-            k = merge(0, n, index < 1)
-        case (TIME_NOT_FOUND)
-            k = n
-        case default                                    ! found or at a bound: index is the last point passed
-            k = index
-        end select
-        k = max(0, min(n, k))
-    end function points_passed
-
-    !> Draw points 1 .. k of the curve.
-    subroutine set_ranges(self, k)
+    !> Write points i1 .. i2 into the chain (and upload the chunks written to).
+    subroutine write_curve(self, i1, i2)
         type(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: k
-        integer :: j, m
-        self%n_drawn = k
-        do j = 1, self%n_chunks
-            m = max(0, min(self%chunks(j)%capacity, k - self%chunks(j)%first + 1))
-            if (m == 1) m = 0                                 ! (only the shared point: nothing to draw)
-            call check(vkf_line_set_range(self%chunks(j)%line, 1_c_int, int(m, c_int)))
+        integer, intent(in) :: i1, i2
+        real(c_float), dimension(:,:,:), pointer :: p
+        real(wp), dimension(:,:), pointer :: pos
+        real(wp) :: v(3, 1)
+        integer :: j, lo, hi, i
+        do j = 1, self%chain%num_chunks()
+            call self%chain%slice(j, i1, i2, lo, hi, p)
+            if (.not. associated(p)) cycle
+            if (is_position_xyz(self%sources_)) then        ! the usual case: straight from the positions
+                call self%traj%positions(pos)
+                call split_points(pos(:, lo:hi), p)
+            else
+                do i = lo, hi
+                    v(:, 1) = self%traj%point(i, self%sources_)
+                    call split_points(v, p(:, :, i-lo+1:i-lo+1))
+                end do
+            end if
+            call self%chain%changed(j, hi)
         end do
-    end subroutine set_ranges
+    end subroutine write_curve
 
     !> The tail: from point k to the point interpolated at time t (none if
     !> before the first point or at/after the last).
@@ -423,7 +508,6 @@ contains
         integer, intent(in) :: k
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp) :: t0, t1, frac, xyz(3, 2)
-        integer :: i
         self%tail_shown = .false.
         if (.not. c_associated(self%tail)) return
         if (k < 1 .or. k >= self%n_written) then
@@ -436,126 +520,263 @@ contains
         if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
         xyz(:, 1) = self%traj%point(k, self%sources_)
         xyz(:, 2) = xyz(:, 1) + frac * (self%traj%point(k + 1, self%sources_) - xyz(:, 1))
-        call buffer(self%tail, p)
+        call line_buffer(self%tail, p)
         if (.not. associated(p)) return
-        do i = 1, 2
-            p(:, 1, i) = real(xyz(:, i), c_float)
-            p(:, 2, i) = real(xyz(:, i) - real(p(:, 1, i), wp), c_float)
-        end do
+        call split_points(xyz, p(:, :, 1:2))
         call check(vkf_line_points_changed(self%tail, 2_c_int))
         self%tail_shown = .true.
     end subroutine update_tail
 
-    !> Chunks for at least n points (at least one chunk).
-    subroutine ensure_capacity(self, n)
+    subroutine curve_style(self)
         type(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: n
-        type(LineChunk), allocatable :: tmp(:)
-        type(LineChunk) :: c
-        integer :: covered
-        covered = 0
-        if (self%n_chunks > 0) covered = self%chunks(self%n_chunks)%first + self%chunks(self%n_chunks)%capacity - 1
-        do while (self%n_chunks == 0 .or. covered < n)
-            if (self%n_chunks == 0) then
-                c%first = 1
-                c%capacity = max(min_chunk, n)                 ! the data so far in one chunk
-            else
-                c%first = covered                              ! sharing the previous chunk's last point
-                c%capacity = max(n - covered + 1, min(max_chunk, max(min_chunk, covered)))
-            end if
-            c%line = vkf_line_create(int(c%capacity, c_int))
-            if (.not. c_associated(c%line)) return
-            call check(line_set_style(c%line, real(self%color_, c_float), real(self%width_, c_float)))
-            if (c_associated(self%viewer)) call check(vkf_viewer_compile_node(self%viewer, c%line))
-            call check(vkf_node_add_child(self%group, c%line))
-            if (.not. allocated(self%chunks)) allocate(self%chunks(4))
-            if (self%n_chunks == size(self%chunks)) then
-                allocate(tmp(2 * self%n_chunks))
-                tmp(1:self%n_chunks) = self%chunks(1:self%n_chunks)
-                call move_alloc(tmp, self%chunks)
-            end if
-            self%n_chunks = self%n_chunks + 1
-            self%chunks(self%n_chunks) = c
-            covered = c%first + c%capacity - 1
-        end do
-    end subroutine ensure_capacity
-
-    !> Write points i1 .. i2 into the chunks holding them, and upload those.
-    subroutine write_points(self, i1, i2)
-        type(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: i1, i2
-        real(c_float), dimension(:,:,:), pointer :: p        ! (xyz, high/low, point)
-        integer :: j, lo, hi
-        do j = 1, self%n_chunks
-            associate (c => self%chunks(j))
-                lo = max(i1, c%first)
-                hi = min(i2, c%first + c%capacity - 1)
-                if (lo > hi) cycle
-                call buffer(c%line, p)
-                if (.not. associated(p)) cycle
-                call fill(self, p(:, :, lo-c%first+1:hi-c%first+1), lo, hi)
-                call check(vkf_line_points_changed(c%line, int(hi - c%first + 1, c_int)))
-            end associate
-        end do
-    end subroutine write_points
-
-    !> Points i1 .. i2 of the trajectory, split into (high, low) floats.
-    subroutine fill(self, p, i1, i2)
-        type(CurveArtist), intent(in) :: self
-        real(c_float), intent(out) :: p(:,:,:)
-        integer, intent(in) :: i1, i2
-        real(wp), dimension(:,:), pointer :: pos
-        real(wp) :: v(3)
-        integer :: i
-        if (is_position_xyz(self%sources_)) then          ! the usual case: straight from the positions
-            call self%traj%positions(pos)
-            p(:, 1, :) = real(pos(:, i1:i2), c_float)
-            p(:, 2, :) = real(pos(:, i1:i2) - real(p(:, 1, :), wp), c_float)
-            return
-        end if
-        do i = i1, i2
-            v = self%traj%point(i, self%sources_)
-            p(:, 1, i-i1+1) = real(v, c_float)
-            p(:, 2, i-i1+1) = real(v - real(p(:, 1, i-i1+1), wp), c_float)
-        end do
-    end subroutine fill
-
-    !> The sources are x, y, z of the position, unscaled.
-    pure logical function is_position_xyz(s)
-        type(DataSource), intent(in) :: s(3)
-        integer :: k
-        is_position_xyz = .true.
-        do k = 1, 3
-            if (s(k)%src /= SOURCE_POSOPT .or. s(k)%opt /= 0 .or. s(k)%element /= k .or. s(k)%scale /= 1.0_wp) &
-                is_position_xyz = .false.
-        end do
-    end function is_position_xyz
-
-    !> The point buffer of `line`: (xyz, high/low, point).
-    subroutine buffer(line, p)
-        type(c_ptr), intent(in) :: line
-        real(c_float), dimension(:,:,:), pointer, intent(out) :: p
-        integer(c_int) :: capacity
-        type(c_ptr) :: data
-        p => null()
-        data = vkf_line_points(line, capacity)
-        if (c_associated(data)) call c_f_pointer(data, p, [3, 2, int(capacity)])
-    end subroutine buffer
-
-    subroutine apply_style(self)
-        class(CurveArtist), intent(inout) :: self
-        integer :: j
-        do j = 1, self%n_chunks
-            call check(line_set_style(self%chunks(j)%line, real(self%color_, c_float), real(self%width_, c_float)))
-        end do
+        call self%chain%set_style(self%color_, self%width_)
         if (c_associated(self%tail)) &
             call check(line_set_style(self%tail, real(self%color_, c_float), real(self%width_, c_float)))
-    end subroutine apply_style
+    end subroutine curve_style
 
-    subroutine check(status)
-        integer(c_int), intent(in) :: status
-        if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (vkf_artists)'
-    end subroutine check
+    ! ==================================================================
+    ! SegmentArtist
+
+    !> A segment artist for `traj` (optional), drawn in color `color` ([r, g,
+    !> b] or [r, g, b, a]; default white) and `width` (window units; default
+    !> 1), at every `stride`-th point (default 1).
+    function new_segment_artist(traj, color, width, stride) result(a)
+        type(Trajectory), intent(in), target, optional :: traj
+        real(wp), intent(in), optional :: color(:), width
+        integer, intent(in), optional :: stride
+        type(SegmentArtist) :: a
+        a%end_ = position_sources(3)
+        if (present(traj)) call a%set_trajectory(traj)
+        if (present(color)) call a%set_color(color)
+        if (present(width)) a%width_ = width
+        if (present(stride)) call a%set_stride(stride)
+    end function new_segment_artist
+
+    !> Draw `traj`; with the default data sources, from the origin to its
+    !> positions (per its DOF).
+    subroutine segment_set_trajectory(self, traj)
+        class(SegmentArtist), intent(inout) :: self
+        type(Trajectory), intent(in), target :: traj
+        self%traj => traj
+        if (self%default_data) self%end_ = position_sources(traj%dof())
+        self%seen_generation = -1
+    end subroutine segment_set_trajectory
+
+    !> Where the x (y, z) of the segments' start (end) points come from.
+    !> Returns whether the trajectory has the data of all sources.
+    logical function set_start_x_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_segment_source(self, 1, 1, src)
+    end function set_start_x_data
+
+    logical function set_start_y_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_segment_source(self, 1, 2, src)
+    end function set_start_y_data
+
+    logical function set_start_z_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_segment_source(self, 1, 3, src)
+    end function set_start_z_data
+
+    logical function set_end_x_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_segment_source(self, 2, 1, src)
+    end function set_end_x_data
+
+    logical function set_end_y_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_segment_source(self, 2, 2, src)
+    end function set_end_y_data
+
+    logical function set_end_z_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_segment_source(self, 2, 3, src)
+    end function set_end_z_data
+
+    !> Set component k of the start (side 1) or end (side 2) sources.
+    logical function set_segment_source(self, side, k, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        integer, intent(in) :: side, k
+        type(DataSource), intent(in) :: src
+        if (side == 1) then
+            self%start_(k) = src
+        else
+            self%end_(k) = src
+        end if
+        self%default_data = .false.
+        self%seen_generation = -1
+        valid = .true.
+        if (associated(self%traj)) valid = self%traj%verify_data(self%start_) .and. self%traj%verify_data(self%end_)
+    end function set_segment_source
+
+    pure function start_data_sources(self) result(s)
+        class(SegmentArtist), intent(in) :: self
+        type(DataSource) :: s(3)
+        s = self%start_
+    end function start_data_sources
+
+    pure function end_data_sources(self) result(s)
+        class(SegmentArtist), intent(in) :: self
+        type(DataSource) :: s(3)
+        s = self%end_
+    end function end_data_sources
+
+    !> Draw a segment at points 1, 1 + stride, 1 + 2 stride, ... (stride >= 1).
+    subroutine set_stride(self, stride)
+        class(SegmentArtist), intent(inout) :: self
+        integer, intent(in) :: stride
+        if (max(1, stride) == self%stride_) return
+        self%stride_ = max(1, stride)
+        self%seen_generation = -1
+    end subroutine set_stride
+
+    pure integer function stride(self)
+        class(SegmentArtist), intent(in) :: self
+        stride = self%stride_
+    end function stride
+
+    subroutine segment_set_color(self, color)
+        class(SegmentArtist), intent(inout) :: self
+        real(wp), intent(in) :: color(:)
+        call set_rgba(self%color_, color)
+        call self%chain%set_style(self%color_, self%width_)
+    end subroutine segment_set_color
+
+    pure function segment_color(self) result(c)
+        class(SegmentArtist), intent(in) :: self
+        real(wp) :: c(4)
+        c = self%color_
+    end function segment_color
+
+    subroutine segment_set_width(self, width)
+        class(SegmentArtist), intent(inout) :: self
+        real(wp), intent(in) :: width
+        self%width_ = width
+        call self%chain%set_style(self%color_, self%width_)
+    end subroutine segment_set_width
+
+    pure real(wp) function segment_width(self)
+        class(SegmentArtist), intent(in) :: self
+        segment_width = self%width_
+    end function segment_width
+
+    !> A dash pattern (see CurveArtist%set_pattern; drawn solid for now).
+    subroutine segment_set_pattern(self, factor, pattern)
+        class(SegmentArtist), intent(inout) :: self
+        integer, intent(in) :: factor, pattern
+        self%pattern_factor = factor
+        self%pattern_ = iand(pattern, int(z'FFFF'))
+    end subroutine segment_set_pattern
+
+    pure subroutine segment_pattern(self, factor, bits)
+        class(SegmentArtist), intent(in) :: self
+        integer, intent(out) :: factor, bits
+        factor = self%pattern_factor
+        bits = self%pattern_
+    end subroutine segment_pattern
+
+    pure integer function segment_num_chunks(self)
+        class(SegmentArtist), intent(in) :: self
+        segment_num_chunks = self%chain%num_chunks()
+    end function segment_num_chunks
+
+    !> Number of segments drawn now (all of them, or in trace mode those at
+    !> the points passed).
+    pure integer function segment_num_drawn(self)
+        class(SegmentArtist), intent(in) :: self
+        segment_num_drawn = self%n_drawn
+    end function segment_num_drawn
+
+    !> Segment s (1 to num_drawn; at point 1 + (s-1) stride) as drawn: read back
+    !> from the line buffers.
+    subroutine drawn_segment(self, s, a, b)
+        class(SegmentArtist), intent(in) :: self
+        integer, intent(in) :: s
+        real(wp), intent(out) :: a(3), b(3)
+        a = self%chain%point(2 * s - 1)
+        b = self%chain%point(2 * s)
+    end subroutine drawn_segment
+
+    subroutine segment_build(self, viewer, group)
+        class(SegmentArtist), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer, group
+        call self%chain%init(group, segments=.true.)
+        call self%chain%set_style(self%color_, self%width_)
+        call self%chain%reserve(2 * segment_count(self))  ! compiled with the group
+        call self%chain%set_viewer(viewer)
+        self%seen_generation = -1
+    end subroutine segment_build
+
+    subroutine segment_release(self)
+        class(SegmentArtist), intent(inout) :: self
+        call self%chain%release()
+        self%n_written = 0
+        self%n_drawn = 0
+        call artist_release(self)
+    end subroutine segment_release
+
+    subroutine segment_update(self, t)
+        class(SegmentArtist), intent(inout) :: self
+        real(wp), intent(in) :: t
+        integer :: m, s1, k
+        logical :: changed, redraw
+        if (.not. self%chain%is_built()) return
+        m = segment_count(self)
+
+        changed = data_changed(self, redraw)
+        if (redraw .or. .not. associated(self%traj)) self%n_written = 0
+        if (changed) then
+            s1 = max(1, min(self%n_written, m))          ! from the last segment written (set_optional)
+            call self%chain%reserve(2 * m)
+            if (m >= s1) call write_segments(self, s1, m)
+            self%n_written = m
+        end if
+
+        self%n_drawn = self%n_written
+        if (self%trace .and. associated(self%traj)) then  ! the segments at the points passed
+            k = points_passed(self%traj, t, self%traj%num_times())
+            self%n_drawn = 0
+            if (k >= 1) self%n_drawn = min(self%n_written, (k - 1) / self%stride_ + 1)
+        end if
+        call self%chain%draw(2 * self%n_drawn)
+    end subroutine segment_update
+
+    !> Number of segments to draw (none if all sources are zero).
+    integer function segment_count(self) result(m)
+        type(SegmentArtist), intent(in) :: self
+        integer :: n
+        m = 0
+        if (all(self%start_%src == SOURCE_ZERO) .and. all(self%end_%src == SOURCE_ZERO)) return
+        n = min(source_points(self%traj, self%start_), source_points(self%traj, self%end_))
+        if (n > 0) m = (n - 1) / self%stride_ + 1
+    end function segment_count
+
+    !> Write segments s1 .. s2 into the chain (and upload the chunks written to).
+    subroutine write_segments(self, s1, s2)
+        type(SegmentArtist), intent(inout) :: self
+        integer, intent(in) :: s1, s2
+        real(c_float), dimension(:,:,:), pointer :: p
+        real(wp) :: v(3, 2)
+        integer :: j, lo, hi, s, i
+        do j = 1, self%chain%num_chunks()
+            call self%chain%slice(j, 2 * s1 - 1, 2 * s2, lo, hi, p)   ! chunks hold whole segments
+            if (.not. associated(p)) cycle
+            do s = (lo + 1) / 2, hi / 2
+                i = 1 + (s - 1) * self%stride_
+                v(:, 1) = self%traj%point(i, self%start_)
+                v(:, 2) = self%traj%point(i, self%end_)
+                call split_points(v, p(:, :, 2*s-lo:2*s-lo+1))
+            end do
+            call self%chain%changed(j, hi)
+        end do
+    end subroutine write_segments
 
     ! ==================================================================
     ! DrawableTrajectory
@@ -589,15 +810,19 @@ contains
         self%artists(self%n_artists)%group = c_null_ptr
     end subroutine add_artist
 
-    !> Remove an artist (it stops being drawn).
+    !> Remove an artist (it stops being drawn; it can be added again, also to
+    !> another frame).
     subroutine remove_artist(self, a)
         class(DrawableTrajectory), intent(inout) :: self
         class(TrajectoryArtist), intent(in), target :: a
         integer :: k
         do k = 1, self%n_artists
             if (associated(self%artists(k)%p, a)) then
-                if (c_associated(self%artists(k)%group)) &
+                if (c_associated(self%artists(k)%group)) then
                     call check(vkf_node_remove_child(self%contents_group, self%artists(k)%group))
+                    call vkf_node_delete(self%artists(k)%group)
+                    call self%artists(k)%p%release()
+                end if
                 self%artists(k:self%n_artists-1) = self%artists(k+1:self%n_artists)
                 self%n_artists = self%n_artists - 1
                 return

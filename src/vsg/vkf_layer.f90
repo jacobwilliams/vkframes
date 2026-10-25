@@ -25,7 +25,7 @@ module vkf_layer
     public :: vkf_viewer_hud_add
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range
-    public :: vulkan_device_name, line_set_points, line_set_style, mesh_arrays
+    public :: vulkan_device_name, line_set_points, line_set_style, line_set_segments, mesh_arrays
 
     interface
 
@@ -387,6 +387,23 @@ contains
         style(5) = width
         status = vkf_line_style_changed(line)
     end function line_set_style
+
+    !> Draw a line's points as separate segments (pairs of points: 1-2, 3-4,
+    !> ...) instead of a strip. Set before its points are drawn.
+    integer(c_int) function line_set_segments(line, segments) result(status)
+        type(c_ptr), intent(in) :: line
+        logical, intent(in) :: segments
+        real(c_float), dimension(:), pointer :: style
+        type(c_ptr) :: buffer
+        buffer = vkf_line_style(line)
+        if (.not. c_associated(buffer)) then
+            status = -1
+            return
+        end if
+        call c_f_pointer(buffer, style, [8])
+        style(6) = merge(1.0_c_float, 0.0_c_float, segments)
+        status = vkf_line_style_changed(line)
+    end function line_set_segments
 
     !> Pointers to the arrays of a mesh of `n_vertices` vertices and `n_indices`
     !> indices (as created by `vkf_mesh_create`), to fill in place before the

@@ -15,7 +15,9 @@
 !> window). The main window's simulation time (time scale, pause and reset from
 !> the dock) drives the others, whose clocks are synchronized to it. The orbit
 !> is drawn by a CurveArtist in a DrawableTrajectory (a child of the inertial
-!> frame), whole or traced up to the spacecraft (trace mode, from the dock).
+!> frame), whole or traced up to the spacecraft (trace mode, from the dock);
+!> radius vectors (a SegmentArtist at every 12th point) are added to it and
+!> removed while running.
 !>
 !> How the pieces fit:
 !>
@@ -40,7 +42,7 @@
 !> n (1 Earth, 2 spacecraft, 3 spacecraft -> Earth); `--windows n` opens n
 !> windows at startup (the others start in the next views); `--rotation-speed n`
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
-!> starts with the orbit traced.
+!> starts with the orbit traced; `--radius` with the radius vectors shown.
 module vkdemo
 
     use qt
@@ -82,7 +84,7 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
-        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit
+        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
@@ -99,6 +101,7 @@ module vkdemo
         type(FrameManager) :: scene
         type(DrawableTrajectory) :: orbit_frame                !! draws the orbit (in inertial coordinates)
         type(CurveArtist) :: orbit_curve
+        type(SegmentArtist) :: radius_vectors                  !! from the Earth's center, added from the dock
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -108,6 +111,7 @@ module vkdemo
         real(wp) :: quit_after = -1.0_wp
         logical :: test_resize = .false.
         logical :: start_trace = .false.
+        logical :: start_radius = .false.
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -203,6 +207,7 @@ contains
         call app%orbit_frame%show_axes_labels(NO_AXES)
         call app%orbit_frame%show_name_label(.false.)
         call app%orbit_frame%add_artist(app%orbit_curve)
+        app%radius_vectors = SegmentArtist(app%orbit, color=[0.4_wp, 0.8_wp, 1.0_wp, 0.8_wp], stride=12)
 
         ! the tree: an inertial root (no decorations of its own) with the
         ! rotating Earth, the spacecraft and its orbit (both inertial)
@@ -254,6 +259,7 @@ contains
         ! views: the Earth, the spacecraft (body-fixed), and from the spacecraft
         ! toward the Earth (inertial axes, a little behind the spacecraft)
         w%views(1) = View(app%inertial, app%earth, frame_type=ABSOLUTE_FRAME)   ! inertial axes: the Earth turns
+        call w%views(1)%set_default_view_distance(2.5_wp * sma)                ! the whole orbit in view
         w%views(2) = View(app%inertial, app%spacecraft)
         w%views(3) = View(app%inertial, app%spacecraft, lookat=app%earth, frame_type=ABSOLUTE_FRAME)
         call w%views(3)%set_default_view_distance(1.5_wp * model_size)
@@ -657,7 +663,20 @@ contains
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
         call app%orbit_curve%set_trace_mode(checked)
+        call app%radius_vectors%set_trace_mode(checked)
     end subroutine on_trace_orbit
+
+    !> Radius vectors: an artist added to the orbit's frame while running (built
+    !> and compiled at the next frame), or removed.
+    subroutine on_show_radius(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        if (checked) then
+            call app%orbit_frame%add_artist(app%radius_vectors)
+        else
+            call app%orbit_frame%remove_artist(app%radius_vectors)
+        end if
+    end subroutine on_show_radius
 
     !> Open another window on the scene (up to max_windows).
     subroutine on_new_window(data)
@@ -774,6 +793,9 @@ contains
         app%trace_orbit = QCheckBox('Trace orbit')
         call app%trace_orbit%toggled%connect(on_trace_orbit)
         call form%addRow('', app%trace_orbit)
+        app%show_radius = QCheckBox('Radius vectors')
+        call app%show_radius%toggled%connect(on_show_radius)
+        call form%addRow('', app%show_radius)
         app%time_label = QLabel('Simulation time:')
         call form%addRow(app%time_label)
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
@@ -833,6 +855,8 @@ program vkframes_qt_demo
             app%test_resize = .true.
         case ('--trace')
             app%start_trace = .true.
+        case ('--radius')
+            app%start_radius = .true.
         case ('--quit-after')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%quit_after
@@ -845,6 +869,7 @@ program vkframes_qt_demo
     call build_ui()
     call app%rotation_speed%setValue(app%start_rotation_speed)
     call app%trace_orbit%setChecked(app%start_trace)
+    call app%show_radius%setChecked(app%start_radius)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
     call app%main%resize(1100, 700)
