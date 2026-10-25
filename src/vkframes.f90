@@ -1,0 +1,23 @@
+!> vkframes: a modern Fortran library for visualizing spacecraft trajectories,
+!> rendering with VulkanSceneGraph. `use vkframes` gives the whole public API.
+module vkframes
+
+    use vkf_math, only: wp, pi, quat_identity, quat_from_axis_angle, quat_multiply, quat_conjugate, &
+                        quat_normalize, quat_rotate, quat_to_matrix, quat_slerp, &
+                        identity_matrix, translation_matrix, frame_matrix
+    use vkf_trajectory, only: Trajectory, DataSource, position_sources, &
+                              SOURCE_ZERO, SOURCE_TIME, SOURCE_POSOPT, SOURCE_ATTITUDE, &
+                              TIME_NOT_FOUND, TIME_OUT_OF_RANGE, TIME_AT_BOUND
+    use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_LIMIT, FOLLOW_POSITION, FOLLOW_ATTITUDE
+    use vkf_clock, only: SimulationClock, wall_time
+    use vkf_frames, only: ReferenceFrame, FramePointer, NO_AXES, X_AXIS, Y_AXIS, Z_AXIS, ALL_AXES, &
+                          ALIGN_LEFT_TOP, ALIGN_LEFT_CENTER, ALIGN_LEFT_BOTTOM, &
+                          ALIGN_CENTER_TOP, ALIGN_CENTER_CENTER, ALIGN_CENTER_BOTTOM, &
+                          ALIGN_RIGHT_TOP, ALIGN_RIGHT_CENTER, ALIGN_RIGHT_BOTTOM, &
+                          ALIGN_LEFT_BASE_LINE, ALIGN_CENTER_BASE_LINE, ALIGN_RIGHT_BASE_LINE
+
+    implicit none
+
+    public
+
+end module vkframes

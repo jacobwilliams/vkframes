@@ -429,17 +429,34 @@ Decided so far:
 ### 2. Core engine
 
 - [ ] Fortran types:
-  - `ReferenceFrame` (tree, position, attitude, color, axes, name label);
-  - `Sphere`, `Model`;
-  - `Trajectory` (time, position, attitude, optionals; interpolation);
-  - `TrajectoryFollower`;
-  - simulation clock (time, scale, pause).
+  - [x] `ReferenceFrame` (tree, position, attitude, color; axes, label and
+        light settings stored, drawn later) — `src/vkf_frames.f90`;
+  - [ ] `Sphere`, `Model`;
+  - [x] `Trajectory` (time, position, attitude, optionals; data sources) —
+        `src/vkf_trajectory.f90`;
+  - [x] `TrajectoryFollower` (LOOP/LIMIT, several trajectories, linear and
+        slerp interpolation, fixed/offset time) — `src/vkf_follower.f90`;
+  - [x] simulation clock (time, scale, pause, range, synchronization) —
+        `src/vkf_clock.f90` (`SimulationClock`).
+  - [ ] the scene: frames drawn through the C++ layer (transforms, axes,
+        labels), updated each frame from the clock.
+
+  Engine notes (deviations from OpenFrames):
+  - Trajectories grow by doubling, positions and attitudes separately, and
+    count changes (`revision`, `generation`) instead of notifying
+    subscribers, so artists can upload only appended points. No locks (one
+    thread). Indices are 1-based.
+  - The follower is part of its frame (`frame%follow(traj)`), updated by
+    `frame%update(t)`, rather than an OSG update callback.
+  - Frames are owned by the program and the tree holds pointers; `detach`
+    replaces OpenFrames' reference counting when a frame goes away.
 - [ ] `View` (follow a frame; view between frames; perspective/orthographic;
       default distance; reset) and a window with a grid of viewports, each
       with its own views and background.
 - [ ] Text labels and HUD text.
 - [ ] Headless tests for interpolation, following, time and the frame
-      transform chain; render tests by screen capture.
+      transform chain (done: `test/test_trajectory.f90`, `test_follower`,
+      `test_clock`, `test_frames`); render tests by screen capture.
 
 ### 3. Artists and backgrounds
 
