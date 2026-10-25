@@ -172,7 +172,7 @@ namespace
 
     struct LineStrip : Node
     {
-        vsg::ref_ptr<vsg::vec4Array> points; // (high, low) pair per point; capacity = size / 2
+        vsg::ref_ptr<vsg::floatArray> points; // 6 floats per point: xyz high, xyz low
         vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, -, -, -)]
         vsg::ref_ptr<vsg::Draw> draw;
     };
@@ -454,19 +454,19 @@ void* vkf_sphere_create(double radius, const float* rgba)
 // Line strips: thick lines of constant pixel width (shaders/line.vert), with
 // points kept to double precision (drawn relative to the eye)
 
-// A line strip holding up to capacity points (initially none), drawn with the
-// given color (rgba) and width in window units (logical pixels: points on macOS). Belongs to the viewer's scene.
-void* vkf_line_create(void* viewer, int capacity, const float* rgba, float width)
+// A line strip holding up to capacity points (initially none). Fortran fills
+// its point and style buffers in place (vkf_line_points, vkf_line_style) and
+// then calls vkf_line_points_changed / vkf_line_style_changed.
+void* vkf_line_create(void* viewer, int capacity)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v || capacity < 2) return nullptr;
     return guarded("vkf_line_create", static_cast<void*>(nullptr), [&]() -> void* {
         auto& pipeline = v->lines();
         auto line = std::make_unique<LineStrip>();
-        line->points = dynamic_vec4_array(2 * static_cast<uint32_t>(capacity));
+        line->points = vsg::floatArray::create(6 * static_cast<uint32_t>(capacity), 0.0f);
+        line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
         line->style = dynamic_vec4_array(2);
-        line->style->set(0, vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]));
-        line->style->set(1, vsg::vec4(width, 0.0f, 0.0f, 0.0f));
 
         auto descriptorSet = vsg::DescriptorSet::create(pipeline.descriptorSetLayout, vsg::Descriptors{
             vsg::DescriptorBuffer::create(line->points, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
@@ -486,30 +486,40 @@ void* vkf_line_create(void* viewer, int capacity, const float* rgba, float width
     });
 }
 
-// Set the strip's points: n points, xyz as 3*n doubles. Returns 0, or -1 if n
-// exceeds the capacity.
-int vkf_line_set_points(void* line, int n, const double* xyz)
+// The strip's point buffer, 6 floats per point (x, y, z high parts, then x, y,
+// z low parts; see shaders/line.vert), and its capacity in points. Valid while
+// the line handle exists.
+float* vkf_line_points(void* line, int* capacity)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
-    if (!l || n < 0 || 2 * static_cast<uint32_t>(n) > l->points->size()) return -1;
-    for (int i = 0; i < n; ++i)
-    {
-        vsg::vec4 high(0.0f, 0.0f, 0.0f, 1.0f), low(0.0f, 0.0f, 0.0f, 0.0f);
-        for (int k = 0; k < 3; ++k) split(xyz[3 * i + k], high[k], low[k]);
-        l->points->set(2 * i, high);
-        l->points->set(2 * i + 1, low);
-    }
+    if (!l) return nullptr;
+    *capacity = static_cast<int>(l->points->size() / 6);
+    return l->points->data();
+}
+
+// The strip's style buffer: 8 floats (r, g, b, a, width in window units, -, -, -).
+float* vkf_line_style(void* line)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l) return nullptr;
+    return &(l->style->at(0).x);
+}
+
+// The first n points of the buffer have been written: draw n points and upload
+// the buffer. Returns 0, or -1 if n exceeds the capacity.
+int vkf_line_points_changed(void* line, int n)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l || n < 0 || 6 * static_cast<uint32_t>(n) > l->points->size()) return -1;
     l->points->dirty();
     l->draw->vertexCount = (n >= 2) ? 6 * static_cast<uint32_t>(n - 1) : 0;
     return 0;
 }
 
-int vkf_line_set_style(void* line, const float* rgba, float width)
+int vkf_line_style_changed(void* line)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l) return -1;
-    l->style->set(0, vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]));
-    l->style->set(1, vsg::vec4(width, 0.0f, 0.0f, 0.0f));
     l->style->dirty();
     return 0;
 }

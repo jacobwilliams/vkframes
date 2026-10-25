@@ -311,6 +311,18 @@ Decided so far:
   expanded to a screen-space quad in the vertex shader (`gl_VertexIndex`),
   square caps at the joins, clipped at `w = ε`. Widths are in window units
   (logical pixels), scaled by the framebuffer/window pixel ratio on Retina.
+- **Line data path:** Fortran writes points straight into the VSG-owned
+  storage buffer (`c_f_pointer`, no intermediate copy): 6 floats per point
+  (xyz high, xyz low; 24 bytes). Style (color, width) is a separate 32-byte
+  buffer, so restyling never re-uploads points. The C++ layer only creates
+  the buffers and marks them changed.
+- **Efficiency follow-ups** (trajectories can be very large):
+  - VSG re-uploads a whole dynamic array when it is marked dirty. Growing
+    trajectories should upload only the appended range, or use fixed-size
+    chunks.
+  - Each segment's quad transforms both endpoints in each of its 6
+    vertices; instancing or a geometry-free indexed layout could cut that.
+  - Decimation/LOD for very long trajectories seen from far away.
 - **Precision:** OpenFrames' method, adapted to VSG.
   - Trajectory points are (high, low) float pairs, drawn relative to the eye
     (RTE): a node in the record traversal inverts VSG's double model-view to

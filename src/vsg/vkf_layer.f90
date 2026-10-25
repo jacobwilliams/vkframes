@@ -16,8 +16,8 @@ module vkf_layer
     public :: vkf_node_delete, vkf_node_add_child
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_sphere_create
-    public :: vkf_line_create, vkf_line_set_points, vkf_line_set_style
-    public :: vulkan_device_name
+    public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
+    public :: vulkan_device_name, line_set_points, line_set_style
 
     interface
 
@@ -95,27 +95,33 @@ module vkf_layer
             type(c_ptr), value :: node
         end subroutine vkf_node_delete
 
-        type(c_ptr) function vkf_line_create(viewer, capacity, rgba, width) bind(C, name="vkf_line_create")
-            import :: c_ptr, c_int, c_float
+        type(c_ptr) function vkf_line_create(viewer, capacity) bind(C, name="vkf_line_create")
+            import :: c_ptr, c_int
             type(c_ptr), value :: viewer
             integer(c_int), value :: capacity
-            real(c_float), dimension(4), intent(in) :: rgba
-            real(c_float), value :: width
         end function vkf_line_create
 
-        integer(c_int) function vkf_line_set_points(line, n, xyz) bind(C, name="vkf_line_set_points")
-            import :: c_ptr, c_int, c_double
+        type(c_ptr) function vkf_line_points(line, capacity) bind(C, name="vkf_line_points")
+            import :: c_ptr, c_int
+            type(c_ptr), value :: line
+            integer(c_int), intent(out) :: capacity
+        end function vkf_line_points
+
+        type(c_ptr) function vkf_line_style(line) bind(C, name="vkf_line_style")
+            import :: c_ptr
+            type(c_ptr), value :: line
+        end function vkf_line_style
+
+        integer(c_int) function vkf_line_points_changed(line, n) bind(C, name="vkf_line_points_changed")
+            import :: c_ptr, c_int
             type(c_ptr), value :: line
             integer(c_int), value :: n
-            real(c_double), dimension(3,*), intent(in) :: xyz
-        end function vkf_line_set_points
+        end function vkf_line_points_changed
 
-        integer(c_int) function vkf_line_set_style(line, rgba, width) bind(C, name="vkf_line_set_style")
-            import :: c_ptr, c_int, c_float
+        integer(c_int) function vkf_line_style_changed(line) bind(C, name="vkf_line_style_changed")
+            import :: c_ptr, c_int
             type(c_ptr), value :: line
-            real(c_float), dimension(4), intent(in) :: rgba
-            real(c_float), value :: width
-        end function vkf_line_set_style
+        end function vkf_line_style_changed
 
     end interface
 
@@ -133,5 +139,47 @@ contains
             name = buf(1:min(n, len(buf)))
         end if
     end function vulkan_device_name
+
+    !> Set the points of a line strip (`xyz(3, n)`, double precision), splitting
+    !> each coordinate into the (high, low) float pair the line shader reads, in
+    !> place in the strip's buffer. Returns 0, or -1 if `n` exceeds the capacity.
+    integer(c_int) function line_set_points(line, xyz) result(status)
+        type(c_ptr), intent(in) :: line
+        real(c_double), dimension(:,:), intent(in) :: xyz
+        real(c_float), dimension(:,:,:), pointer :: p  !! (xyz, high/low, point)
+        type(c_ptr) :: buffer
+        integer(c_int) :: capacity, n
+        integer :: i
+        n = int(size(xyz, 2), c_int)
+        buffer = vkf_line_points(line, capacity)
+        if (.not. c_associated(buffer) .or. n > capacity) then
+            status = -1
+            return
+        end if
+        call c_f_pointer(buffer, p, [3, 2, int(capacity)])
+        do i = 1, n
+            p(:, 1, i) = real(xyz(:, i), c_float)
+            p(:, 2, i) = real(xyz(:, i) - real(p(:, 1, i), c_double), c_float)
+        end do
+        status = vkf_line_points_changed(line, n)
+    end function line_set_points
+
+    !> Set the color (`rgba`) and width (window units: logical pixels) of a line strip.
+    integer(c_int) function line_set_style(line, rgba, width) result(status)
+        type(c_ptr), intent(in) :: line
+        real(c_float), dimension(4), intent(in) :: rgba
+        real(c_float), intent(in) :: width
+        real(c_float), dimension(:), pointer :: style
+        type(c_ptr) :: buffer
+        buffer = vkf_line_style(line)
+        if (.not. c_associated(buffer)) then
+            status = -1
+            return
+        end if
+        call c_f_pointer(buffer, style, [8])
+        style(1:4) = rgba
+        style(5) = width
+        status = vkf_line_style_changed(line)
+    end function line_set_style
 
 end module vkf_layer
