@@ -21,6 +21,7 @@ module vkf_layer
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
     public :: vkf_mesh_create, vkf_mesh_array
+    public :: vkf_font_read, vkf_font_delete, vkf_label_create
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, mesh_arrays
 
@@ -227,6 +228,32 @@ module vkf_layer
             type(c_ptr), value :: mesh
             integer(c_int), value :: which
         end function vkf_mesh_array
+
+        type(c_ptr) function vkf_font_read(filename, filename_len) bind(C, name="vkf_font_read")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            character(kind=c_char), dimension(*), intent(in) :: filename
+            integer(c_int), value :: filename_len
+        end function vkf_font_read
+
+        subroutine vkf_font_delete(font) bind(C, name="vkf_font_delete")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: font
+        end subroutine vkf_font_delete
+
+        type(c_ptr) function vkf_label_create(font, text, text_len, rgba, position, size, max_size, halign, valign) &
+                bind(C, name="vkf_label_create")
+            import :: c_ptr, c_int, c_char, c_float, c_double
+            implicit none
+            type(c_ptr), value :: font
+            character(kind=c_char), dimension(*), intent(in) :: text
+            integer(c_int), value :: text_len
+            real(c_float), dimension(4), intent(in) :: rgba
+            real(c_double), dimension(3), intent(in) :: position
+            real(c_float), value :: size, max_size
+            integer(c_int), value :: halign, valign
+        end function vkf_label_create
 
         type(c_ptr) function vkf_line_create(capacity) bind(C, name="vkf_line_create")
             import :: c_ptr, c_int

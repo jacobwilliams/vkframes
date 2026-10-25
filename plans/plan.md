@@ -450,7 +450,10 @@ Decided so far:
         each frame. For now the tree must be complete before the first
         frame (adding nodes to a running window needs VSG's compile
         manager), and a frame's nodes are shared by all windows showing it.
-  - [ ] axes and labels drawn (needs text).
+  - [x] axes and labels drawn (`build_decorations`): OpenFrames' axis
+        vectors (cylinder + cone, generated in Fortran: `vkf_geometry::arrow`)
+        and labels; defaults as OpenFrames (all shown, label size 20, axes on
+        a Sphere/Model's bound); `move_x_axis`/... as moveXAxis.
 
   Engine notes (deviations from OpenFrames):
   - Trajectories grow by doubling, positions and attitudes separately, and
@@ -482,7 +485,18 @@ Decided so far:
       its pixel ratio, stored on the vsg::View) with the eye position, and
       the line pipeline is shared. `example/two_windows.f90` (standalone) and
       the Qt demo's "New window" (`--windows n`) show it.
-- [ ] Text labels and HUD text.
+- [ ] Text labels and HUD text. Labels done (`src/vkf_text.f90`,
+      `shaders/label.vert`): vsg::Text with VSG's text shader set, whose
+      billboard CPU-layout variant is replaced by our shaders (compiled at
+      build time), sizing glyphs per view from the viewport pushed at record
+      time, so labels are right in every window: name labels at a fixed
+      screen size, axis labels in object size capped on screen (OpenFrames'
+      SCREEN_COORDS and OBJECT_COORDS_WITH_MAXIMUM_SCREEN_SIZE). Fonts by
+      name on a search path (VKFRAMES_FONT_PATH, the environment's `fonts`,
+      system font directories); DejaVu Sans from conda-forge
+      (`font-ttf-dejavu`) is the default. Still to do: HUD text (screen
+      overlay text, OpenFrames' RenderRectangle HUD), and changing a label's
+      text or color after it is shown.
 - [ ] Headless tests for interpolation, following, time and the frame
       transform chain (done: `test/test_trajectory.f90`, `test_follower`,
       `test_clock`, `test_frames`); render tests by screen capture.

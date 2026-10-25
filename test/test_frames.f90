@@ -24,8 +24,9 @@ program test_frames
     ! defaults (as OpenFrames)
     call check(all(root%color() == [1.0_wp, 1.0_wp, 1.0_wp, 0.9_wp]), 'default color: white, 90% opaque')
     call check(all(a%color() == [1.0_wp, 0.0_wp, 0.0_wp, 0.9_wp]), 'color [r, g, b] keeps alpha')
-    call check(root%axis_label(X_AXIS) == 'X' .and. root%label_size() == 30, 'default labels')
-    call check(root%axes_shown() == NO_AXES .and. root%name_label_shown(), 'default decorations')
+    call check(root%axis_label(X_AXIS) == 'X' .and. root%label_size() == 20, 'default labels (OpenFrames: size 20)')
+    call check(root%axes_shown() == ALL_AXES .and. root%axes_labels_shown() == ALL_AXES .and. root%name_label_shown(), &
+               'default decorations (OpenFrames: all shown)')
     call root%set_z_label('Pole')
     call check(root%axis_label(Z_AXIS) == 'Pole', 'set_z_label')
 

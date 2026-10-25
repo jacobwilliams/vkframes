@@ -10,6 +10,7 @@ module vkf_geometry
     private
 
     public :: ellipsoid_size, ellipsoid, ellipsoid_create, sphere_create
+    public :: arrow_size, arrow, arrow_create
 
 contains
 
@@ -124,5 +125,136 @@ contains
         type(c_ptr) :: mesh
         mesh = ellipsoid_create([radius, radius, radius], rgba, texture, n_lon, n_lat)
     end function sphere_create
+
+    !> Number of vertices and triangle indices of `arrow(..., n_segments, ...)`.
+    pure subroutine arrow_size(n_segments, n_vertices, n_indices)
+        integer, intent(in) :: n_segments
+        integer, intent(out) :: n_vertices, n_indices
+        n_vertices = 6 * (n_segments + 1) + 2
+        n_indices = 15 * n_segments
+    end subroutine arrow_size
+
+    !> An arrow (OpenFrames' Vector: a cylinder body and a cone head) from
+    !> `base` along `direction`: body of length `body_length` and radius
+    !> `body_radius`, then a head of length `head_length` and base radius
+    !> `head_radius`, closed at the bottom of the body and of the head, with
+    !> `n_segments` around. Triangles are counter-clockwise seen from outside;
+    !> indices are 0-based; uv is zero. Sizes are given by `arrow_size`.
+    subroutine arrow(base, direction, body_length, head_length, body_radius, head_radius, n_segments, &
+                          xyz, normals, uv, indices)
+        real(c_double), intent(in) :: base(3), direction(3)
+        real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius
+        integer, intent(in) :: n_segments
+        real(c_float), dimension(:,:), intent(out) :: xyz, normals, uv
+        integer(c_int32_t), dimension(:), intent(out) :: indices
+        real(c_double), parameter :: pi = acos(-1.0_c_double)
+        real(c_double) :: w(3), u(3), v(3), r(3), a, cone_normal(3)
+        integer :: i, n, nv, ni, body0, cap0, head0, apex0, disk0
+
+        n = n_segments
+        w = direction / norm2(direction)
+        u = cross(w, [1.0_c_double, 0.0_c_double, 0.0_c_double])
+        if (norm2(u) < 1.0e-6_c_double) u = cross(w, [0.0_c_double, 1.0_c_double, 0.0_c_double])
+        u = u / norm2(u)
+        v = cross(w, u)
+        uv = 0.0_c_float
+        nv = 0
+        ni = 0
+
+        ! body side: rings at the base and the top of the body
+        body0 = nv
+        do i = 0, n
+            r = radial(i)
+            call put(base + body_radius * r, r)
+            call put(base + body_radius * r + body_length * w, r)
+        end do
+        ! body bottom cap (facing -w): center, then a ring
+        cap0 = nv
+        call put(base, -w)
+        do i = 0, n
+            call put(base + body_radius * radial(i), -w)
+        end do
+        ! head side: ring at the head's base, and the apex for each segment
+        head0 = nv
+        do i = 0, n
+            r = radial(i)
+            cone_normal = r * head_length + w * head_radius
+            call put(base + body_length * w + head_radius * r, cone_normal / norm2(cone_normal))
+        end do
+        apex0 = nv
+        do i = 0, n
+            a = 2.0_c_double * pi * (real(i, c_double) + 0.5_c_double) / real(n, c_double)
+            r = cos(a) * u + sin(a) * v
+            cone_normal = r * head_length + w * head_radius
+            call put(base + (body_length + head_length) * w, cone_normal / norm2(cone_normal))
+        end do
+        ! head base disk (facing -w): center, then a ring
+        disk0 = nv
+        call put(base + body_length * w, -w)
+        do i = 0, n
+            call put(base + body_length * w + head_radius * radial(i), -w)
+        end do
+
+        do i = 0, n - 1
+            ! body side: (a_i, a_i+1, b_i+1) and (a_i, b_i+1, b_i)
+            call tri(body0 + 2*i, body0 + 2*(i+1), body0 + 2*(i+1) + 1)
+            call tri(body0 + 2*i, body0 + 2*(i+1) + 1, body0 + 2*i + 1)
+            ! caps facing -w: (center, ring_i+1, ring_i)
+            call tri(cap0, cap0 + 1 + i + 1, cap0 + 1 + i)
+            call tri(disk0, disk0 + 1 + i + 1, disk0 + 1 + i)
+            ! head side: (ring_i, ring_i+1, apex_i)
+            call tri(head0 + i, head0 + i + 1, apex0 + i)
+        end do
+
+    contains
+
+        pure function radial(k) result(rad)
+            integer, intent(in) :: k
+            real(c_double) :: rad(3), ang
+            ang = 2.0_c_double * pi * real(k, c_double) / real(n, c_double)
+            rad = cos(ang) * u + sin(ang) * v
+        end function radial
+
+        subroutine put(p, nrm)
+            real(c_double), intent(in) :: p(3), nrm(3)
+            nv = nv + 1
+            xyz(:, nv) = real(p, c_float)
+            normals(:, nv) = real(nrm, c_float)
+        end subroutine put
+
+        subroutine tri(i1, i2, i3)
+            integer, intent(in) :: i1, i2, i3
+            indices(ni+1:ni+3) = int([i1, i2, i3], c_int32_t)
+            ni = ni + 3
+        end subroutine tri
+
+    end subroutine arrow
+
+    !> An arrow mesh node (see `arrow`) of color `rgba`, with 24 segments by
+    !> default. Null on failure.
+    function arrow_create(base, direction, body_length, head_length, body_radius, head_radius, rgba, n_segments) &
+            result(mesh)
+        real(c_double), intent(in) :: base(3), direction(3)
+        real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius
+        real(c_float), dimension(4), intent(in) :: rgba
+        integer, intent(in), optional :: n_segments
+        type(c_ptr) :: mesh
+        real(c_float), dimension(:,:), pointer :: xyz, normals, uv
+        integer(c_int32_t), dimension(:), pointer :: indices
+        integer :: n, n_vertices, n_indices
+        n = 24
+        if (present(n_segments)) n = max(3, n_segments)
+        call arrow_size(n, n_vertices, n_indices)
+        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, c_null_ptr)
+        if (.not. c_associated(mesh)) return
+        call mesh_arrays(mesh, n_vertices, n_indices, xyz, normals, uv, indices)
+        call arrow(base, direction, body_length, head_length, body_radius, head_radius, n, xyz, normals, uv, indices)
+    end function arrow_create
+
+    pure function cross(a, b) result(c)
+        real(c_double), intent(in) :: a(3), b(3)
+        real(c_double) :: c(3)
+        c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
+    end function cross
 
 end module vkf_geometry

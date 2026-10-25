@@ -19,9 +19,11 @@
 !> a tree must be complete before its window's first frame.
 module vkf_frames
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
     use vkf_layer, only: vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
-                         vkf_node_add_child
+                         vkf_node_add_child, vkf_node_delete
+    use vkf_geometry, only: arrow_create
+    use vkf_text, only: label_create
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
     use vkf_trajectory, only: Trajectory
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE
@@ -59,12 +61,12 @@ module vkf_frames
         type(TrajectoryFollower) :: follower_
         logical :: following = .false.
         ! decorations (drawn by the renderer)
-        integer :: axes = NO_AXES
-        integer :: axes_labels = NO_AXES
+        integer :: axes = ALL_AXES                          !! OpenFrames' defaults: all shown
+        integer :: axes_labels = ALL_AXES
         logical :: name_label = .true.
         character(len=:), allocatable :: x_label_, y_label_, z_label_
         character(len=:), allocatable :: label_font_
-        integer :: label_size_ = 30
+        integer :: label_size_ = 20
         integer :: label_alignment_ = ALIGN_LEFT_BASE_LINE
         logical :: light_source = .false.
         logical :: contents = .true.
@@ -72,6 +74,15 @@ module vkf_frames
         type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
         type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
         logical :: realized = .false.
+        ! axes (OpenFrames' moveXAxis/...: base, length, head ratio, radii; 0 radius: auto)
+        real(wp) :: axis_base(3,3) = 0.0_wp
+        real(wp) :: axis_length(3) = 1.0_wp
+        real(wp) :: axis_head_ratio(3) = 0.3_wp
+        real(wp) :: axis_body_radius(3) = 0.0_wp, axis_head_radius(3) = 0.0_wp
+        logical :: axes_moved = .false.                     !! set by move_*_axis (else reposition_axes places them)
+        type(c_ptr) :: axis_node(3) = c_null_ptr            !! switches: axis arrows, axis labels, name label
+        type(c_ptr) :: axis_label_node(3) = c_null_ptr
+        type(c_ptr) :: name_label_node = c_null_ptr
     contains
         procedure :: set_name, name
         procedure :: set_color, color
@@ -96,6 +107,7 @@ module vkf_frames
         procedure :: update
         procedure :: realize, build_contents, sync, node
         procedure :: bound
+        procedure :: move_x_axis, move_y_axis, move_z_axis, reposition_axes
     end type ReferenceFrame
 
     interface ReferenceFrame
@@ -201,6 +213,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         integer, intent(in) :: axes
         self%axes = iand(axes, ALL_AXES)
+        call update_switches(self)
     end subroutine show_axes
 
     pure integer function axes_shown(self)
@@ -213,6 +226,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         integer, intent(in) :: labels
         self%axes_labels = iand(labels, ALL_AXES)
+        call update_switches(self)
     end subroutine show_axes_labels
 
     pure integer function axes_labels_shown(self)
@@ -224,6 +238,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         logical, intent(in) :: show
         self%name_label = show
+        call update_switches(self)
     end subroutine show_name_label
 
     pure logical function name_label_shown(self)
@@ -288,7 +303,7 @@ contains
         end if
     end function label_font
 
-    !> The size of the labels in pixels (default 30): the name label's size,
+    !> The size of the labels in pixels (default 20): the name label's size,
     !> and the maximum size of the axes labels (which shrink with distance).
     subroutine set_label_size(self, size)
         class(ReferenceFrame), intent(inout) :: self
@@ -349,6 +364,66 @@ contains
         center = 0.0_wp
         radius = 0.0_wp
     end subroutine bound
+
+    !> Place the x axis vector: from `base`, `length` long, with a head of
+    !> `head_ratio` of the length (default 0.3) and body and head radii (default
+    !> 0.05 and 0.1 of the length); its label is at the tip, 0.4 of the length
+    !> tall (at most `label_size` pixels). As OpenFrames' moveXAxis. Set before
+    !> the frame is first shown.
+    subroutine move_x_axis(self, base, length, head_ratio, body_radius, head_radius)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: base(3), length
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        call move_axis(self, 1, base, length, head_ratio, body_radius, head_radius)
+    end subroutine move_x_axis
+
+    subroutine move_y_axis(self, base, length, head_ratio, body_radius, head_radius)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: base(3), length
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        call move_axis(self, 2, base, length, head_ratio, body_radius, head_radius)
+    end subroutine move_y_axis
+
+    subroutine move_z_axis(self, base, length, head_ratio, body_radius, head_radius)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: base(3), length
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        call move_axis(self, 3, base, length, head_ratio, body_radius, head_radius)
+    end subroutine move_z_axis
+
+    subroutine move_axis(self, k, base, length, head_ratio, body_radius, head_radius)
+        class(ReferenceFrame), intent(inout) :: self
+        integer, intent(in) :: k
+        real(wp), intent(in) :: base(3), length
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        self%axis_base(:, k) = base
+        self%axis_length(k) = length
+        self%axis_head_ratio(k) = 0.3_wp
+        self%axis_body_radius(k) = 0.0_wp
+        self%axis_head_radius(k) = 0.0_wp
+        if (present(head_ratio)) self%axis_head_ratio(k) = head_ratio
+        if (present(body_radius)) self%axis_body_radius(k) = body_radius
+        if (present(head_radius)) self%axis_head_radius(k) = head_radius
+        self%axes_moved = .true.
+    end subroutine move_axis
+
+    !> Place the axes for what the frame draws, when it is first shown (unless
+    !> move_*_axis was called): at its bound's surface, half the bound's radius
+    !> long (as OpenFrames' Sphere and Model do); at the origin, 1 long, for a
+    !> frame that draws nothing.
+    subroutine reposition_axes(self)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp) :: c(3), r, e(3)
+        integer :: k
+        call self%bound(c, r)
+        if (r <= 0.0_wp) return
+        do k = 1, 3
+            e = 0.0_wp
+            e(k) = 1.0_wp
+            self%axis_base(:, k) = c + r * e
+            self%axis_length(k) = 0.5_wp * r
+        end do
+    end subroutine reposition_axes
 
     !> What kind of frame this is (shown by `frame_string`; extensions override it).
     function frame_info(self) result(info)
@@ -535,6 +610,7 @@ contains
         self%contents_node = vkf_switch_create()
         call check(vkf_node_add_child(self%node_, self%contents_node))
         call self%build_contents(viewer, self%contents_node)
+        call build_decorations(self)
         if (.not. self%contents) call check(vkf_switch_set(self%contents_node, 0_c_int))
         call self%sync()
         do k = 1, self%n_children
@@ -574,6 +650,70 @@ contains
         integer(c_int), intent(in) :: status
         if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed'
     end subroutine check
+
+    !> The axes (arrows), axes labels and name label, each under a switch, in
+    !> the frame's color (OpenFrames' ReferenceFrame decorations).
+    subroutine build_decorations(self)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp) :: e(3), len, head, rb, rh, tip(3)
+        type(c_ptr) :: node
+        integer :: k
+        if (.not. self%axes_moved) call self%reposition_axes()
+        do k = 1, 3
+            e = 0.0_wp
+            e(k) = 1.0_wp
+            len = self%axis_length(k)
+            head = self%axis_head_ratio(k)
+            if (head <= 0.0_wp .or. head >= 1.0_wp) head = 0.3_wp
+            rb = self%axis_body_radius(k)
+            if (rb <= 0.0_wp) rb = 0.05_wp * len
+            rh = self%axis_head_radius(k)
+            if (rh <= 0.0_wp) rh = 0.1_wp * len
+            self%axis_node(k) = vkf_switch_create()
+            node = arrow_create(self%axis_base(:, k), e, (1.0_wp - head) * len, head * len, rb, rh, real(self%color_, c_float))
+            if (c_associated(node)) then
+                call check(vkf_node_add_child(self%axis_node(k), node))
+                call vkf_node_delete(node)
+            end if
+            call check(vkf_node_add_child(self%node_, self%axis_node(k)))
+            ! the label at the tip, 0.4 of the axis length tall, at most label_size pixels
+            tip = self%axis_base(:, k) + len * e
+            self%axis_label_node(k) = vkf_switch_create()
+            node = label_create(self%axis_label(2**(k-1)), tip, self%color_, -0.4_wp * len, &
+                                real(self%label_size_, wp), self%label_alignment_, self%label_font())
+            if (c_associated(node)) then
+                call check(vkf_node_add_child(self%axis_label_node(k), node))
+                call vkf_node_delete(node)
+            end if
+            call check(vkf_node_add_child(self%node_, self%axis_label_node(k)))
+        end do
+        ! the name label at the origin, label_size pixels tall
+        self%name_label_node = vkf_switch_create()
+        node = label_create(self%name(), [0.0_wp, 0.0_wp, 0.0_wp], self%color_, real(self%label_size_, wp), 0.0_wp, &
+                            self%label_alignment_, self%label_font())
+        if (c_associated(node)) then
+            call check(vkf_node_add_child(self%name_label_node, node))
+            call vkf_node_delete(node)
+        end if
+        call check(vkf_node_add_child(self%node_, self%name_label_node))
+        call update_switches(self)
+    end subroutine build_decorations
+
+    !> Show or hide the decorations' switches as set.
+    subroutine update_switches(self)
+        class(ReferenceFrame), intent(inout) :: self
+        integer :: k
+        if (.not. self%realized) return
+        do k = 1, 3
+            if (c_associated(self%axis_node(k))) &
+                call check(vkf_switch_set(self%axis_node(k), merge(1_c_int, 0_c_int, iand(self%axes, 2**(k-1)) /= 0)))
+            if (c_associated(self%axis_label_node(k))) &
+                call check(vkf_switch_set(self%axis_label_node(k), &
+                                          merge(1_c_int, 0_c_int, iand(self%axes_labels, 2**(k-1)) /= 0)))
+        end do
+        if (c_associated(self%name_label_node)) &
+            call check(vkf_switch_set(self%name_label_node, merge(1_c_int, 0_c_int, self%name_label)))
+    end subroutine update_switches
 
     ! ==================================================================
     ! helpers

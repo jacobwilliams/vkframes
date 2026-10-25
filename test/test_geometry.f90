@@ -5,7 +5,7 @@
 program test_geometry
 
     use, intrinsic :: iso_c_binding, only: c_double, c_float, c_int32_t
-    use vkf_geometry, only: ellipsoid_size, ellipsoid
+    use vkf_geometry, only: ellipsoid_size, ellipsoid, arrow_size, arrow
 
     implicit none
 
@@ -20,6 +20,7 @@ program test_geometry
     call check_ellipsoid('WGS84', wgs84, 128, 64)
     call check_ellipsoid('triaxial', triaxial, 36, 18)
     call check_geodetic_latitude(128, 64)
+    call check_arrow()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
@@ -112,6 +113,34 @@ contains
         write(*, '(a,es10.2,a)') 'WGS84: max geodetic latitude error =', err, ' rad'
         call expect(err < 1.0e-6_wp, 'WGS84: texture rows at geodetic latitude')
     end subroutine check_geodetic_latitude
+
+    !> An arrow along an oblique direction: sizes, extent, and triangles facing
+    !> the side their vertices' normals point to (outward).
+    subroutine check_arrow()
+        real(c_float), allocatable :: xyz(:,:), normals(:,:), uv(:,:)
+        integer(c_int32_t), allocatable :: indices(:)
+        real(wp) :: dir(3), e1(3), e2(3), along
+        integer :: n_vertices, n_indices, t, ia, ib, ic, bad
+        call arrow_size(16, n_vertices, n_indices)
+        allocate(xyz(3, n_vertices), normals(3, n_vertices), uv(2, n_vertices), indices(n_indices))
+        dir = [1.0_wp, 2.0_wp, 2.0_wp] / 3.0_wp
+        call arrow([1.0_wp, 0.0_wp, 0.0_wp], dir, 0.7_wp, 0.3_wp, 0.05_wp, 0.1_wp, 16, xyz, normals, uv, indices)
+        call expect(all(indices >= 0 .and. indices < n_vertices), 'arrow: indices in range')
+        along = maxval(matmul(dir, real(xyz, wp) - spread([1.0_wp, 0.0_wp, 0.0_wp], 2, n_vertices)))
+        call expect(abs(along - 1.0_wp) < 1.0e-6_wp, 'arrow: tip at base + (body + head) along the direction')
+        bad = 0
+        do t = 1, n_indices, 3
+            ia = indices(t) + 1
+            ib = indices(t + 1) + 1
+            ic = indices(t + 2) + 1
+            e1 = real(xyz(:, ib) - xyz(:, ia), wp)
+            e2 = real(xyz(:, ic) - xyz(:, ia), wp)
+            if (dot_product(cross(e1, e2), real(normals(:, ia) + normals(:, ib) + normals(:, ic), wp)) <= 0.0_wp) &
+                bad = bad + 1
+        end do
+        write(*, '(a,i0,a,i0,a)') 'arrow: ', n_vertices, ' vertices, ', n_indices / 3, ' triangles'
+        call expect(bad == 0, 'arrow: triangles counter-clockwise seen from outside')
+    end subroutine check_arrow
 
     pure function cross(a, b) result(c)
         real(wp), intent(in) :: a(3), b(3)

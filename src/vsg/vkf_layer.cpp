@@ -29,6 +29,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <typeinfo>
@@ -187,6 +188,99 @@ namespace
     // Framebuffer pixels per window unit, stored on each vsg::View (2 on Retina).
     constexpr const char* pixel_ratio_key = "vkf_pixel_ratio";
 
+    // The viewport of the view being recorded: (width, height, pixel ratio, 0),
+    // from the record traversal (a node can be shown in several windows).
+    void recorded_viewport(vsg::RecordTraversal& visitor, float viewport[4])
+    {
+        viewport[0] = viewport[1] = viewport[2] = 1.0f;
+        viewport[3] = 0.0f;
+        if (!visitor.viewDependentState || !visitor.viewDependentState->view) return;
+        const auto* view = visitor.viewDependentState->view;
+        if (view->camera)
+        {
+            const auto area = view->camera->getRenderArea();
+            viewport[0] = static_cast<float>(area.extent.width);
+            viewport[1] = static_cast<float>(area.extent.height);
+        }
+        float ratio = 1.0f;
+        if (view->getValue(pixel_ratio_key, ratio)) viewport[2] = ratio;
+    }
+
+    // Labels: vsg::Text with VSG's text shader set, except for its
+    // billboard CPU-layout variant, which uses shaders/label.vert and
+    // label.frag (pixel-sized glyphs; the viewport pushed at offset 128).
+    struct LabelShaders
+    {
+        vsg::ref_ptr<vsg::ShaderSet> shaderSet;
+        VkShaderStageFlags pushStages = VK_SHADER_STAGE_ALL;
+        // per device: a pipeline layout compatible for push constants with the
+        // text pipelines (same push constant range), to push the viewport
+        std::map<const vsg::Device*, VkPipelineLayout> pushLayouts;
+
+        VkPipelineLayout pushLayout(const vsg::Device* device)
+        {
+            auto& layout = pushLayouts[device];
+            if (layout == VK_NULL_HANDLE)
+            {
+                VkPushConstantRange range{pushStages, 0, 144};
+                VkPipelineLayoutCreateInfo info{};
+                info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+                info.pushConstantRangeCount = 1;
+                info.pPushConstantRanges = &range;
+                if (vkCreatePipelineLayout(*device, &info, nullptr, &layout) != VK_SUCCESS) layout = VK_NULL_HANDLE;
+            }
+            return layout;
+        }
+
+        LabelShaders()
+        {
+            shaderSet = vsg::createTextShaderSet();
+            for (auto& [hints, stages] : shaderSet->variants)
+            {
+                if (hints && hints->defines.count("BILLBOARD") && hints->defines.count("CPU_LAYOUT"))
+                {
+                    auto vert = vsg::ShaderModule::create(vkf_shaders::label_vert);
+                    auto frag = vsg::ShaderModule::create(vkf_shaders::label_frag);
+                    vert->hints = frag->hints = hints; // this variant: never recompiled
+                    stages = {vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vert),
+                              vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", frag)};
+                }
+            }
+            for (auto& range : shaderSet->pushConstantRanges)
+            {
+                range.range.size = 144; // projection, model-view, viewport
+                pushStages = range.range.stageFlags;
+            }
+        }
+    };
+
+    LabelShaders& label_shaders()
+    {
+        static LabelShaders* shaders = new LabelShaders; // kept for the whole run, as line_pipeline()
+        return *shaders;
+    }
+
+    // Pushes the recorded view's viewport (offset 128) for its label children.
+    class LabelGroup : public vsg::Inherit<vsg::Group, LabelGroup>
+    {
+    public:
+        void traverse(vsg::RecordTraversal& visitor) const override
+        {
+            float viewport[4];
+            recorded_viewport(visitor, viewport);
+            auto& commandBuffer = *visitor.getState()->_commandBuffer;
+            auto& shaders = label_shaders();
+            if (auto layout = shaders.pushLayout(commandBuffer.getDevice()))
+                vkCmdPushConstants(commandBuffer, layout, shaders.pushStages, 128, sizeof(viewport), viewport);
+            Group::traverse(visitor);
+        }
+    };
+
+    struct Font
+    {
+        vsg::ref_ptr<vsg::Font> font;
+    };
+
     // Splits x into a float pair (high, low) with high + low == x to about 48 bits.
     void split(double x, float& high, float& low)
     {
@@ -224,19 +318,7 @@ namespace
 
             float constants[12] = {};       // eye high, eye low, viewport (width, height, pixel ratio)
             for (int i = 0; i < 3; ++i) split(eye[i], constants[i], constants[4 + i]);
-            constants[8] = constants[9] = constants[10] = 1.0f;
-            if (visitor.viewDependentState && visitor.viewDependentState->view)
-            {
-                const auto* view = visitor.viewDependentState->view;
-                if (view->camera)
-                {
-                    const auto area = view->camera->getRenderArea();
-                    constants[8] = static_cast<float>(area.extent.width);
-                    constants[9] = static_cast<float>(area.extent.height);
-                }
-                float ratio = 1.0f;
-                if (view->getValue(pixel_ratio_key, ratio)) constants[10] = ratio;
-            }
+            recorded_viewport(visitor, constants + 8);
             auto& commandBuffer = *state->_commandBuffer;
             vkCmdPushConstants(commandBuffer, pipelineLayout->vk(commandBuffer.deviceID), VK_SHADER_STAGE_VERTEX_BIT,
                                128, sizeof(constants), constants);
@@ -902,6 +984,68 @@ VKF_API void* vkf_mesh_array(void* mesh, int which)
     case 4: return m->indices->dataPointer();
     default: return nullptr;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Labels: text that always faces the screen (shaders/label.vert)
+
+// Read a font file (TrueType, ... through vsgXchange's freetype); null on failure.
+VKF_API void* vkf_font_read(const char* filename, int filename_len)
+{
+    return guarded("vkf_font_read", static_cast<void*>(nullptr), [&]() -> void* {
+        const auto path = to_string(filename, filename_len);
+        auto font = vsg::read_cast<vsg::Font>(path, read_options());
+        if (!font)
+        {
+            std::cerr << "vkf_font_read: could not read " << path << std::endl;
+            return nullptr;
+        }
+        auto f = std::make_unique<Font>();
+        f->font = font;
+        return f.release();
+    });
+}
+
+VKF_API void vkf_font_delete(void* font)
+{
+    delete static_cast<Font*>(font);
+}
+
+// A label: `text` at `position` (3 doubles, in its parent's coordinates) in
+// color `rgba`, facing the screen. size > 0: `size` window units tall (a fixed
+// screen size); size < 0: -size scene units tall, but at most `max_size` window
+// units on screen. halign, valign: vsg::StandardLayout's alignments (0
+// baseline, 1 left/top, 2 center, 3 right/bottom).
+VKF_API void* vkf_label_create(void* font, const char* text, int text_len, const float* rgba, const double* position,
+                               float size, float max_size, int halign, int valign)
+{
+    auto f = static_cast<Font*>(font);
+    if (!f) return nullptr;
+    return guarded("vkf_label_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto layout = vsg::StandardLayout::create();
+        layout->billboard = true;
+        layout->billboardAutoScaleDistance = size;       // read by label.vert as the size mode
+        layout->outlineWidth = max_size;                 // read by label.vert as the maximum size
+        layout->position = vsg::vec3(static_cast<float>(position[0]), static_cast<float>(position[1]), static_cast<float>(position[2]));
+        layout->horizontal = vsg::vec3(1.0f, 0.0f, 0.0f);  // character size 1: scaled by label.vert
+        layout->vertical = vsg::vec3(0.0f, 1.0f, 0.0f);
+        layout->color = vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]);
+        layout->horizontalAlignment = static_cast<vsg::StandardLayout::Alignment>(halign);
+        layout->verticalAlignment = static_cast<vsg::StandardLayout::Alignment>(valign);
+
+        auto label = vsg::Text::create();
+        label->font = f->font;
+        label->layout = layout;
+        label->text = vsg::stringValue::create(to_string(text, text_len));
+        label->shaderSet = label_shaders().shaderSet;
+        label->setup(0, read_options());
+
+        auto group = LabelGroup::create();
+        group->addChild(label);
+        auto n = std::make_unique<Node>();
+        n->node = group;
+        return n.release();
+    });
 }
 
 // ---------------------------------------------------------------------------

@@ -4,7 +4,8 @@
 !> same scene with its own view.
 !>
 !> The scene uses vkframes' API: the Earth is a Sphere (the WGS84 ellipsoid,
-!> textured), the spacecraft a Model (or a small Sphere without the data) that
+!> textured; its axes and labels, and the spacecraft's, can be hidden from the
+!> dock), the spacecraft a Model (or a small Sphere without the data) that
 !> follows a Trajectory (positions and attitudes over one period; LOOP or LIMIT
 !> from the dock), a child of the Earth. A FrameManager holds the scene. Each
 !> window has a WindowProxy showing it, with three Views (the Earth, the
@@ -76,6 +77,7 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
+        type(QCheckBox) :: show_axes, show_labels
         type(QLabel) :: time_label
         type(view_window_t) :: windows(max_windows)
         ! the scene
@@ -541,6 +543,24 @@ contains
         call follower%set_follow_type(ior(FOLLOW_POSITION, FOLLOW_ATTITUDE), merge(FOLLOW_LIMIT, FOLLOW_LOOP, index == 1))
     end subroutine on_follow_mode
 
+    !> Show or hide the frames' axes (OpenFrames' showAxes).
+    subroutine on_show_axes(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%earth%show_axes(merge(ALL_AXES, NO_AXES, checked))
+        call app%spacecraft%show_axes(merge(ALL_AXES, NO_AXES, checked))
+    end subroutine on_show_axes
+
+    !> Show or hide the frames' name and axis labels.
+    subroutine on_show_labels(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%earth%show_axes_labels(merge(ALL_AXES, NO_AXES, checked))
+        call app%earth%show_name_label(checked)
+        call app%spacecraft%show_axes_labels(merge(ALL_AXES, NO_AXES, checked))
+        call app%spacecraft%show_name_label(checked)
+    end subroutine on_show_labels
+
     !> Line width: a style change only (no point data is re-uploaded).
     subroutine on_line_width(value, data)
         real(c_double), intent(in) :: value
@@ -637,6 +657,14 @@ contains
         call app%follow_mode%addItems([character(len=23) :: 'Loop the orbit', 'Stop at the end (limit)'])
         call app%follow_mode%currentIndexChanged%connect(on_follow_mode)
         call form%addRow('After one period', app%follow_mode)
+        app%show_axes = QCheckBox('Show axes')
+        call app%show_axes%setChecked(.true.)
+        call app%show_axes%toggled%connect(on_show_axes)
+        call form%addRow('', app%show_axes)
+        app%show_labels = QCheckBox('Show labels')
+        call app%show_labels%setChecked(.true.)
+        call app%show_labels%toggled%connect(on_show_labels)
+        call form%addRow('', app%show_labels)
         app%line_width = QDoubleSpinBox()
         call app%line_width%setRange(0.5_c_double, 20.0_c_double)
         call app%line_width%setValue(2.0_c_double)
