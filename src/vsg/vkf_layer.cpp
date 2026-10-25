@@ -15,10 +15,19 @@
 #include <vsgXchange/all.h>
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <memory>
 #include <string>
+#include <typeinfo>
+
+#if defined(__APPLE__)
+#    include <CoreGraphics/CGGeometry.h>
+#    include <cxxabi.h>
+#    include <objc/message.h>
+#    include <objc/runtime.h>
+#endif
 
 namespace
 {
@@ -39,6 +48,59 @@ namespace
         return static_cast<int>(s.size());
     }
 
+    // The message of the vsg::Exception being handled (by its type name, see guarded).
+    std::string current_vsg_exception_message()
+    {
+#if defined(__APPLE__)
+        const std::type_info* type = abi::__cxa_current_exception_type();
+        if (type && std::strcmp(type->name(), typeid(vsg::Exception).name()) == 0)
+        {
+            void* object = abi::__cxa_current_primary_exception();
+            const auto* e = static_cast<const vsg::Exception*>(object);
+            std::string message = e->message + " (VkResult " + std::to_string(e->result) + ")";
+            abi::__cxa_decrement_exception_refcount(object);
+            return message;
+        }
+        if (type) return std::string("exception of type ") + type->name();
+#endif
+        return "unknown exception";
+    }
+
+#if defined(__APPLE__)
+    // A plain NSView filling `parent` (and resizing with it), for VSG to render
+    // into. A host's view may keep its own layer tree (Qt 6's QNSView has a
+    // container layer), where MoltenVK finds no CAMetalLayer; a plain NSView
+    // takes VSG's CAMetalLayer as its layer. It handles no events, so mouse and
+    // keys go on to `parent` (the host). Objective-C runtime calls, so this
+    // stays plain C++.
+    void* create_child_view(void* parent)
+    {
+        auto send = [](auto f, auto... args) { return reinterpret_cast<decltype(f)>(objc_msgSend)(args...); };
+        using IdSel = id (*)(id, SEL);
+        id p = static_cast<id>(parent);
+#    if defined(__x86_64__)
+        CGRect bounds;
+        reinterpret_cast<void (*)(CGRect*, id, SEL)>(objc_msgSend_stret)(&bounds, p, sel_registerName("bounds"));
+#    else
+        CGRect bounds = send(static_cast<CGRect (*)(id, SEL)>(nullptr), p, sel_registerName("bounds"));
+#    endif
+        id view = send(static_cast<IdSel>(nullptr), reinterpret_cast<id>(objc_getClass("NSView")), sel_registerName("alloc"));
+        view = send(static_cast<id (*)(id, SEL, CGRect)>(nullptr), view, sel_registerName("initWithFrame:"), bounds);
+        // NSViewWidthSizable | NSViewHeightSizable
+        send(static_cast<void (*)(id, SEL, unsigned long)>(nullptr), view, sel_registerName("setAutoresizingMask:"), 2ul | 16ul);
+        send(static_cast<void (*)(id, SEL, id)>(nullptr), p, sel_registerName("addSubview:"), view);
+        return view;
+    }
+
+    void delete_child_view(void* view)
+    {
+        if (!view) return;
+        id v = static_cast<id>(view);
+        reinterpret_cast<void (*)(id, SEL)>(objc_msgSend)(v, sel_registerName("removeFromSuperview"));
+        reinterpret_cast<void (*)(id, SEL)>(objc_msgSend)(v, sel_registerName("release"));
+    }
+#endif
+
     // Run f, reporting any exception (vsg::Exception is not a std::exception)
     // and returning fallback instead, so that no exception reaches Fortran.
     template<typename R, typename F>
@@ -55,6 +117,12 @@ namespace
         catch (const std::exception& e)
         {
             std::cerr << name << ": " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            // libvsg exports no type_info for vsg::Exception, so on macOS one thrown
+            // inside libvsg doesn't match the catch above; recognize it by name.
+            std::cerr << name << ": " << current_vsg_exception_message() << std::endl;
         }
         return fallback;
     }
@@ -152,6 +220,7 @@ namespace
         vsg::ref_ptr<vsg::Window> window;
         vsg::ref_ptr<vsg::Group> scene;
         vsg::ref_ptr<vsg::Camera> camera;
+        void* childView = nullptr;             // macOS: the view VSG renders into, in the host's view
         vsg::ref_ptr<vsg::vec4Array> viewport; // (width, height, pixel ratio, -), for the line shader
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
         std::unique_ptr<LinePipeline> linePipeline;
@@ -247,7 +316,15 @@ int vkf_vulkan_device_name(char* buf, int buflen)
 // Viewer: one window, one scene, one trackball camera
 
 // A viewer with one window, an empty scene and a trackball camera; null on failure.
-void* vkf_viewer_create(int width, int height, const char* title, int title_len)
+//
+// width, height: the window size in window units (logical pixels).
+// native_window: 0 for a window of its own, or the native handle of an existing
+//   window to render into (e.g. a Qt QWindow's winId(): an NSView* on macOS, an
+//   HWND on Windows, an xcb window on Linux). The host then owns that window's
+//   events and forwards them (vkf_viewer_mouse, ..., vkf_viewer_resize).
+// pixel_ratio: framebuffer pixels per window unit of an existing window (Qt's
+//   devicePixelRatio); ignored for a window of its own.
+void* vkf_viewer_create(int width, int height, const char* title, int title_len, long long native_window, double pixel_ratio)
 {
     return guarded("vkf_viewer_create", static_cast<void*>(nullptr), [&]() -> void* {
         auto traits = vsg::WindowTraits::create();
@@ -255,14 +332,33 @@ void* vkf_viewer_create(int width, int height, const char* title, int title_len)
         traits->width = static_cast<uint32_t>(width);
         traits->height = static_cast<uint32_t>(height);
         traits->swapchainPreferences.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT; // for capture
+        void* childView = nullptr;
+        if (native_window != 0)
+        {
+            // the type each VSG platform window expects in nativeWindow
+#if defined(_WIN32)
+            traits->nativeWindow = reinterpret_cast<HWND>(native_window);
+#elif defined(__APPLE__)
+            childView = create_child_view(reinterpret_cast<void*>(native_window));
+            traits->nativeWindow = reinterpret_cast<unsigned long long>(childView); // takes the size in points
+#else
+            traits->nativeWindow = static_cast<uint32_t>(native_window); // xcb_window_t
+#endif
+#if !defined(__APPLE__)
+            traits->width = static_cast<uint32_t>(std::lround(width * pixel_ratio)); // in pixels
+            traits->height = static_cast<uint32_t>(std::lround(height * pixel_ratio));
+#endif
+        }
 
         auto v = std::make_unique<Viewer>();
+        v->childView = childView;
         v->window = vsg::Window::create(traits);
         v->viewer = vsg::Viewer::create();
         v->viewer->addWindow(v->window);
         v->scene = vsg::Group::create();
         const auto extent = v->window->extent2D();
-        v->pixelRatio = static_cast<float>(extent.width) / static_cast<float>(traits->width);
+        v->pixelRatio = (native_window != 0) ? static_cast<float>(pixel_ratio)
+                                             : static_cast<float>(extent.width) / static_cast<float>(width);
         v->viewport = dynamic_vec4_array(1);
         update_viewport(*v);
 
@@ -280,8 +376,88 @@ void* vkf_viewer_create(int width, int height, const char* title, int title_len)
 void vkf_viewer_delete(void* viewer)
 {
     auto v = static_cast<Viewer*>(viewer);
-    if (v && v->viewer) v->viewer->deviceWaitIdle();
-    delete v;
+    guarded("vkf_viewer_delete", 0, [&]() {
+        if (v && v->compiled) v->viewer->deviceWaitIdle();
+#if defined(__APPLE__)
+        void* childView = v ? v->childView : nullptr;
+        delete v;
+        delete_child_view(childView);
+#else
+        delete v;
+#endif
+        return 0;
+    });
+}
+
+// Events from a host that owns the window (native_window in vkf_viewer_create),
+// already converted to VSG's conventions by the caller: positions in
+// framebuffer pixels from the top left; button 1 = left, 2 = middle, 3 =
+// right; mask = the buttons held (VSG's BUTTON_MASK_1/2/3 = 256/512/1024).
+
+// kind: 1 = move, 2 = button press, 3 = button release.
+int vkf_viewer_mouse(void* viewer, int kind, int x, int y, int mask, int button)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    const auto t = vsg::clock::now();
+    const auto m = static_cast<vsg::ButtonMask>(mask);
+    auto& events = v->window->bufferedEvents;
+    switch (kind)
+    {
+    case 1: events.push_back(vsg::MoveEvent::create(v->window, t, x, y, m)); break;
+    case 2: events.push_back(vsg::ButtonPressEvent::create(v->window, t, x, y, m, static_cast<uint32_t>(button))); break;
+    case 3: events.push_back(vsg::ButtonReleaseEvent::create(v->window, t, x, y, m, static_cast<uint32_t>(button))); break;
+    default: return -1;
+    }
+    return 0;
+}
+
+// Scroll wheel: dy > 0 away from the user.
+int vkf_viewer_scroll(void* viewer, float dy)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    v->window->bufferedEvents.push_back(vsg::ScrollWheelEvent::create(v->window, vsg::clock::now(), vsg::vec3(0.0f, dy, 0.0f)));
+    return 0;
+}
+
+// A key press (pressed = 1) or release (0), as VSG key symbols and modifiers
+// (vsg/ui/KeyEvent.h: ASCII for printable keys, X11-style codes otherwise).
+int vkf_viewer_key(void* viewer, int pressed, int symbol, int modified_symbol, int modifier)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    const auto t = vsg::clock::now();
+    const auto key = static_cast<vsg::KeySymbol>(symbol);
+    const auto modifiedKey = static_cast<vsg::KeySymbol>(modified_symbol);
+    const auto mod = static_cast<vsg::KeyModifier>(modifier);
+    if (pressed)
+        v->window->bufferedEvents.push_back(vsg::KeyPressEvent::create(v->window, t, key, modifiedKey, mod));
+    else
+        v->window->bufferedEvents.push_back(vsg::KeyReleaseEvent::create(v->window, t, key, modifiedKey, mod));
+    return 0;
+}
+
+// The host resized the window (new size in framebuffer pixels): rebuild the swapchain.
+int vkf_viewer_resize(void* viewer, int width, int height)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    return guarded("vkf_viewer_resize", -1, [&]() {
+        v->window->bufferedEvents.push_back(vsg::ConfigureWindowEvent::create(
+            v->window, vsg::clock::now(), 0, 0, static_cast<uint32_t>(width), static_cast<uint32_t>(height)));
+        v->window->resize();
+        return 0;
+    });
+}
+
+// The host is closing the window: the next vkf_viewer_frame returns 0.
+int vkf_viewer_close(void* viewer)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    v->window->bufferedEvents.push_back(vsg::CloseWindowEvent::create(v->window, vsg::clock::now()));
+    return 0;
 }
 
 // Set the camera's eye, center and up vectors (3 doubles each).

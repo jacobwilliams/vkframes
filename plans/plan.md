@@ -270,8 +270,10 @@ moltenvk = "*"
 
 # for the Qt-embedded variant (with qt-fortran as an fpm dependency):
 # qt6-main = ">=6.11,<7"
-# vsgqt = "0.5.*"
 ```
+
+(As set up: the Qt dependencies are a pixi feature and environment, `qt`,
+used by `demos/qt`; vsgqt is not used.)
 
 - **macOS (MoltenVK) environment:** the Vulkan loader must find MoltenVK's
   ICD JSON (`VK_ICD_FILENAMES` / `VK_DRIVER_FILES`). Check how conda-forge's
@@ -311,8 +313,9 @@ Goal: settle the platform and design risks before writing the engine.
 - [x] Camera-relative double-precision rendering with reverse-Z, checked
       with an Earth-sized body and a 10 m spacecraft in the same view
       (`example/precision.f90`).
-- [ ] Embedding in a qt-fortran GUI (vsgQt, or the native-handle fallback),
-      including resize and mouse forwarding.
+- [x] Embedding in a qt-fortran GUI (the native-handle route; see below),
+      including resize and mouse forwarding (`demos/qt`; resize checked by
+      capture, mouse and keys not yet tried by hand).
 - [x] Screen capture to PNG (needed for automated render tests).
 
 Exit: decide vsgQt or native handle, the shader build approach, and the
@@ -356,6 +359,35 @@ Decided so far:
 - **Test assets:** the examples take OpenFrames' demo data by path
   (`Demos/Images`, `Demos/Models`). Still to decide: which assets to ship
   in `data/`, and the search path.
+- **Qt embedding: native handle, not vsgQt.**
+  - conda-forge's `vsgqt` 0.5.0 is built against Qt 5, and qt-fortran is
+    Qt 6. VSG 1.1.16 can itself render into an existing native window
+    (`WindowTraits::nativeWindow`), which is all vsgQt does, so the C++
+    layer needs no Qt.
+  - Fortran owns the `QWindow` (qt-fortran; `winId()` was added to
+    qt-fortran for this). On the first expose it creates the viewer on
+    `winId()` with the `devicePixelRatio`. A `QtfEventFilter` forwards
+    resize, mouse, wheel and keys, converted to VSG's conventions in Fortran
+    (`vkf_viewer_mouse`, `_scroll`, `_key`, `_resize`, `_close` only push VSG
+    events).
+  - One thread: `updateRequest` advances the simulation, renders, and asks
+    for the next frame.
+  - macOS: Qt 6's `QNSView` keeps its own layer tree (a container layer), so
+    MoltenVK finds no `CAMetalLayer` on it. The layer adds a plain child
+    `NSView` filling Qt's view (Objective-C runtime calls, about 20 lines,
+    `#if __APPLE__`) and gives that to VSG; events still reach Qt's view.
+    The `QWindow` keeps the default surface type (with `VulkanSurface`, Qt
+    manages the layer itself).
+  - Windows/Linux: VSG's own embedding path (`HWND`, `xcb_window_t`), as
+    vsgQt uses. **Not tried yet.** Risk on Linux: VSG's xcb window polls its
+    own X connection, and only one X client may select `ButtonPress` on a
+    window, so it may conflict with Qt's mouse handling. Wayland would need
+    another route.
+  - The demo is a separate fpm project (`demos/qt`, pixi environment `qt`:
+    `pixi run -e qt qt-demo`); the vkframes library does not depend on Qt.
+  - libvsg exports no `type_info` for `vsg::Exception`, so on macOS a
+    `vsg::Exception` thrown inside libvsg is not caught by type in our code;
+    the layer's `guarded()` has a catch-all that recognizes it by name.
 - **Efficiency follow-ups** (trajectories can be very large):
   - VSG re-uploads a whole dynamic array when it is marked dirty. Growing
     trajectories should upload only the appended range, or use fixed-size

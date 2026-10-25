@@ -12,7 +12,7 @@ links the libraries declared in fpm.toml. This script supplies the settings that
 depend on the environment, through fpm's standard environment variables:
     FPM_CXX       clang++ (macOS) / g++
     FPM_CXXFLAGS  -std=c++17 -fPIC, VSG's compile definitions, the env's include dir
-    FPM_LDFLAGS   the env's library directory and rpath
+    FPM_LDFLAGS   the env's library directory and rpath (and -lobjc on macOS)
 
 VSG ships only CMake package files (no pkg-config), so the flags its CMake
 targets carry are reproduced here: VSG_SHARED_LIBRARY, VSGXCHANGE_SHARED_LIBRARY,
@@ -66,7 +66,9 @@ def fpm_settings():
     cxx = os.environ.get("FPM_CXX") or (which("clang++") if MACOS else which("g++", "c++"))
     cxxflags = ["-std=c++17", "-fPIC", "-DVSG_SHARED_LIBRARY", "-DVSGXCHANGE_SHARED_LIBRARY", f"-I{inc}"]
     ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}"]
-    if not MACOS:
+    if MACOS:
+        ldflags.append("-lobjc")   # the layer's child NSView for embedding (Objective-C runtime calls)
+    else:
         ldflags.append(f"-Wl,-rpath-link,{lib}")
     settings = {"FPM_CXX": cxx, "FPM_CXXFLAGS": " ".join(cxxflags), "FPM_LDFLAGS": " ".join(ldflags)}
     for key in ("FPM_CXXFLAGS", "FPM_LDFLAGS"):

@@ -22,7 +22,7 @@ program hello_sphere
 
     write(*, '(a)') 'Vulkan device: '//vulkan_device_name()
 
-    viewer = vkf_viewer_create(800_c_int, 600_c_int, title, len(title, kind=c_int))
+    viewer = vkf_viewer_create(800_c_int, 600_c_int, title, len(title, kind=c_int), 0_c_long_long, 1.0_c_double)
     if (.not. c_associated(viewer)) error stop 'could not create the viewer'
 
     sphere = sphere_create(1.0_c_double, [0.2_c_float, 0.4_c_float, 1.0_c_float, 1.0_c_float])

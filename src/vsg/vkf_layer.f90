@@ -13,6 +13,7 @@ module vkf_layer
     public :: vkf_vulkan_device_name
     public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
+    public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
     public :: vkf_node_delete, vkf_node_add_child, vkf_node_bound
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
@@ -24,24 +25,66 @@ module vkf_layer
 
         integer(c_int) function vkf_vulkan_device_name(buf, buflen) bind(C, name="vkf_vulkan_device_name")
             import :: c_int, c_char
+            implicit none
             character(kind=c_char), dimension(*), intent(out) :: buf
             integer(c_int), value :: buflen
         end function vkf_vulkan_device_name
 
-        type(c_ptr) function vkf_viewer_create(width, height, title, title_len) bind(C, name="vkf_viewer_create")
-            import :: c_ptr, c_int, c_char
+        type(c_ptr) function vkf_viewer_create(width, height, title, title_len, native_window, pixel_ratio) &
+                bind(C, name="vkf_viewer_create")
+            import :: c_ptr, c_int, c_char, c_long_long, c_double
+            implicit none
             integer(c_int), value :: width, height
             character(kind=c_char), dimension(*), intent(in) :: title
             integer(c_int), value :: title_len
+            integer(c_long_long), value :: native_window
+            real(c_double), value :: pixel_ratio
         end function vkf_viewer_create
+
+        integer(c_int) function vkf_viewer_mouse(viewer, kind, x, y, mask, button) bind(C, name="vkf_viewer_mouse")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer
+            integer(c_int), value :: kind, x, y, mask, button
+        end function vkf_viewer_mouse
+
+        integer(c_int) function vkf_viewer_scroll(viewer, dy) bind(C, name="vkf_viewer_scroll")
+            import :: c_ptr, c_int, c_float
+            implicit none
+            type(c_ptr), value :: viewer
+            real(c_float), value :: dy
+        end function vkf_viewer_scroll
+
+        integer(c_int) function vkf_viewer_key(viewer, pressed, symbol, modified_symbol, modifier) &
+                bind(C, name="vkf_viewer_key")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer
+            integer(c_int), value :: pressed, symbol, modified_symbol, modifier
+        end function vkf_viewer_key
+
+        integer(c_int) function vkf_viewer_resize(viewer, width, height) bind(C, name="vkf_viewer_resize")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer
+            integer(c_int), value :: width, height
+        end function vkf_viewer_resize
+
+        integer(c_int) function vkf_viewer_close(viewer) bind(C, name="vkf_viewer_close")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer
+        end function vkf_viewer_close
 
         subroutine vkf_viewer_delete(viewer) bind(C, name="vkf_viewer_delete")
             import :: c_ptr
+            implicit none
             type(c_ptr), value :: viewer
         end subroutine vkf_viewer_delete
 
         integer(c_int) function vkf_viewer_look_at(viewer, eye, center, up) bind(C, name="vkf_viewer_look_at")
             import :: c_ptr, c_int, c_double
+            implicit none
             type(c_ptr), value :: viewer
             real(c_double), dimension(3), intent(in) :: eye, center, up
         end function vkf_viewer_look_at
@@ -49,22 +92,26 @@ module vkf_layer
         integer(c_int) function vkf_viewer_perspective(viewer, fovy, near_distance, far_distance) &
                 bind(C, name="vkf_viewer_perspective")
             import :: c_ptr, c_int, c_double
+            implicit none
             type(c_ptr), value :: viewer
             real(c_double), value :: fovy, near_distance, far_distance
         end function vkf_viewer_perspective
 
         integer(c_int) function vkf_viewer_add_node(viewer, node) bind(C, name="vkf_viewer_add_node")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: viewer, node
         end function vkf_viewer_add_node
 
         integer(c_int) function vkf_viewer_frame(viewer) bind(C, name="vkf_viewer_frame")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: viewer
         end function vkf_viewer_frame
 
         integer(c_int) function vkf_viewer_capture(viewer, filename, filename_len) bind(C, name="vkf_viewer_capture")
             import :: c_ptr, c_int, c_char
+            implicit none
             type(c_ptr), value :: viewer
             character(kind=c_char), dimension(*), intent(in) :: filename
             integer(c_int), value :: filename_len
@@ -72,11 +119,13 @@ module vkf_layer
 
         integer(c_int) function vkf_node_add_child(parent, child) bind(C, name="vkf_node_add_child")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: parent, child
         end function vkf_node_add_child
 
         integer(c_int) function vkf_node_bound(node, center, radius) bind(C, name="vkf_node_bound")
             import :: c_ptr, c_int, c_double
+            implicit none
             type(c_ptr), value :: node
             real(c_double), dimension(3), intent(out) :: center
             real(c_double), intent(out) :: radius
@@ -84,38 +133,45 @@ module vkf_layer
 
         type(c_ptr) function vkf_transform_create() bind(C, name="vkf_transform_create")
             import :: c_ptr
+            implicit none
         end function vkf_transform_create
 
         integer(c_int) function vkf_transform_set_matrix(transform, m) bind(C, name="vkf_transform_set_matrix")
             import :: c_ptr, c_int, c_double
+            implicit none
             type(c_ptr), value :: transform
             real(c_double), dimension(4,4), intent(in) :: m
         end function vkf_transform_set_matrix
 
         subroutine vkf_node_delete(node) bind(C, name="vkf_node_delete")
             import :: c_ptr
+            implicit none
             type(c_ptr), value :: node
         end subroutine vkf_node_delete
 
         type(c_ptr) function vkf_image_read(filename, filename_len) bind(C, name="vkf_image_read")
             import :: c_ptr, c_int, c_char
+            implicit none
             character(kind=c_char), dimension(*), intent(in) :: filename
             integer(c_int), value :: filename_len
         end function vkf_image_read
 
         subroutine vkf_image_delete(image) bind(C, name="vkf_image_delete")
             import :: c_ptr
+            implicit none
             type(c_ptr), value :: image
         end subroutine vkf_image_delete
 
         type(c_ptr) function vkf_model_read(filename, filename_len) bind(C, name="vkf_model_read")
             import :: c_ptr, c_int, c_char
+            implicit none
             character(kind=c_char), dimension(*), intent(in) :: filename
             integer(c_int), value :: filename_len
         end function vkf_model_read
 
         type(c_ptr) function vkf_mesh_create(n_vertices, n_indices, rgba, texture) bind(C, name="vkf_mesh_create")
             import :: c_ptr, c_int, c_float
+            implicit none
             integer(c_int), value :: n_vertices, n_indices
             real(c_float), dimension(4), intent(in) :: rgba
             type(c_ptr), value :: texture
@@ -123,35 +179,41 @@ module vkf_layer
 
         type(c_ptr) function vkf_mesh_array(mesh, which) bind(C, name="vkf_mesh_array")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: mesh
             integer(c_int), value :: which
         end function vkf_mesh_array
 
         type(c_ptr) function vkf_line_create(viewer, capacity) bind(C, name="vkf_line_create")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: viewer
             integer(c_int), value :: capacity
         end function vkf_line_create
 
         type(c_ptr) function vkf_line_points(line, capacity) bind(C, name="vkf_line_points")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: line
             integer(c_int), intent(out) :: capacity
         end function vkf_line_points
 
         type(c_ptr) function vkf_line_style(line) bind(C, name="vkf_line_style")
             import :: c_ptr
+            implicit none
             type(c_ptr), value :: line
         end function vkf_line_style
 
         integer(c_int) function vkf_line_points_changed(line, n) bind(C, name="vkf_line_points_changed")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: line
             integer(c_int), value :: n
         end function vkf_line_points_changed
 
         integer(c_int) function vkf_line_style_changed(line) bind(C, name="vkf_line_style_changed")
             import :: c_ptr, c_int
+            implicit none
             type(c_ptr), value :: line
         end function vkf_line_style_changed
 

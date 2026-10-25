@@ -45,7 +45,7 @@ program precision
     along = along / norm2(along)
     eye = sc - 30.0_wp * along + 6.0_wp * radial
 
-    viewer = vkf_viewer_create(1000_c_int, 700_c_int, title, len(title, kind=c_int))
+    viewer = vkf_viewer_create(1000_c_int, 700_c_int, title, len(title, kind=c_int), 0_c_long_long, 1.0_c_double)
     if (.not. c_associated(viewer)) error stop 'could not create the viewer'
     call check(vkf_viewer_look_at(viewer, eye, sc, radial))
     call check(vkf_viewer_perspective(viewer, 40.0_wp, 0.1_wp, 1.0e8_wp))

@@ -38,7 +38,7 @@ program orbit
     end if
     if (command_argument_count() >= 2) call get_command_argument(2, capture_file)
 
-    viewer = vkf_viewer_create(1000_c_int, 700_c_int, title, len(title, kind=c_int))
+    viewer = vkf_viewer_create(1000_c_int, 700_c_int, title, len(title, kind=c_int), 0_c_long_long, 1.0_c_double)
     if (.not. c_associated(viewer)) error stop 'could not create the viewer'
     call check(vkf_viewer_look_at(viewer, [0.0_wp, -14.0_wp, 6.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], [0.0_wp, 0.0_wp, 1.0_wp]))
 

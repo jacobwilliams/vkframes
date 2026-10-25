@@ -31,3 +31,14 @@ example = "python tools/fpm_vsg.py run --example"
 # MoltenVK logs every instance/device at "info"; show warnings and errors only
 [target.osx.activation.env]
 MVK_CONFIG_LOG_LEVEL = "2"
+
+# Qt embedding (qt-fortran GUIs): `pixi run -e qt ...`
+[feature.qt.dependencies]
+qt6-main = ">=6.11,<7"
+
+[environments]
+qt = ["qt"]
+
+[feature.qt.tasks]
+qt-build = { cmd = "python demo.py build", cwd = "demos/qt" }
+qt-demo = { cmd = "python demo.py run", cwd = "demos/qt" }

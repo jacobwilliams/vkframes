@@ -41,7 +41,7 @@ program earth
     end if
     if (command_argument_count() >= 4) call get_command_argument(4, capture_file)
 
-    viewer = vkf_viewer_create(1000_c_int, 700_c_int, title, len(title, kind=c_int))
+    viewer = vkf_viewer_create(1000_c_int, 700_c_int, title, len(title, kind=c_int), 0_c_long_long, 1.0_c_double)
     if (.not. c_associated(viewer)) error stop 'could not create the viewer'
     call check(vkf_viewer_look_at(viewer, [3.0_wp, -3.0_wp, 1.5_wp], [0.0_wp, 0.0_wp, 0.0_wp], [0.0_wp, 0.0_wp, 1.0_wp]))
 
