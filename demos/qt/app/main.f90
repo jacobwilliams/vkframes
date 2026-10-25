@@ -8,7 +8,7 @@
 !> dock), the spacecraft a Model (or a small Sphere without the data) that
 !> follows a Trajectory (positions and attitudes over one period; LOOP or LIMIT
 !> from the dock). The Earth rotates: it follows an attitude-only Trajectory
-!> over one sidereal day. Both are children of an inertial root frame, so the
+!> over one sidereal day, at a speed set with a slider. Both are children of an inertial root frame, so the
 !> orbit stays inertial. A FrameManager holds the scene. Each
 !> window has a WindowProxy showing it, with three Views (the Earth, the
 !> spacecraft body-fixed, and from the spacecraft toward the Earth; chosen per
@@ -38,7 +38,8 @@
 !> default 120); `--quit-after seconds` closes the demo; `--test-resize`
 !> resizes the main window after 2 s; `--view n` starts the main window in view
 !> n (1 Earth, 2 spacecraft, 3 spacecraft -> Earth); `--windows n` opens n
-!> windows at startup (the others start in the next views).
+!> windows at startup (the others start in the next views); `--rotation-speed n`
+!> sets the Earth's rotation speed slider (0 to 50 x the real rate).
 module vkdemo
 
     use qt
@@ -81,6 +82,8 @@ module vkdemo
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels
+        type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
+        type(QLabel) :: rotation_label
         type(QLabel) :: time_label
         type(view_window_t) :: windows(max_windows)
         ! the scene
@@ -88,6 +91,8 @@ module vkdemo
         type(ReferenceFrame) :: inertial                       !! the root: inertial axes at the Earth's center
         type(Sphere) :: earth                                  !! rotating (follows earth_rotation)
         type(Trajectory) :: earth_rotation                     !! attitudes over one sidereal day
+        real(wp) :: rotation_time = 0.0_wp                     !! time along earth_rotation (advances at speed x)
+        real(wp) :: last_time = 0.0_wp                         !! the simulation time at the last frame
         class(ReferenceFrame), allocatable :: spacecraft      !! a Model, or a Sphere without the data
         type(FrameManager) :: scene
         type(c_ptr) :: orbit_line = c_null_ptr                 !! low-level line node (until artists), in every window
@@ -96,6 +101,7 @@ module vkdemo
         integer :: capture_frame = 120
         integer :: start_view = 1
         integer :: start_windows = 1
+        integer :: start_rotation_speed = 1
         real(wp) :: quit_after = -1.0_wp
         logical :: test_resize = .false.
     end type app_t
@@ -185,6 +191,7 @@ contains
                                         att=quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], 2.0_wp * pi * real(k, wp) / 24.0_wp))
         end do
         call app%earth%follow(app%earth_rotation, data=FOLLOW_ATTITUDE)
+        call set_rotation_time(0.0_wp)            ! the rotation's own time (see advance_rotation)
 
         ! the tree: an inertial root (no decorations of its own) with the
         ! rotating Earth and the spacecraft (whose orbit is inertial)
@@ -203,6 +210,25 @@ contains
         if (line_set_style(app%orbit_line, orbit_color, 2.0_c_float) /= 0 .or. line_set_points(app%orbit_line, xyz) /= 0) &
             write(*, '(a)') 'vkframes: could not make the orbit line'
     end subroutine build_model
+
+    !> The Earth follows its rotation trajectory at a fixed time, which the demo
+    !> advances itself: a speed change then changes the rotation rate without
+    !> a jump in the Earth's attitude.
+    subroutine set_rotation_time(t)
+        real(wp), intent(in) :: t
+        type(TrajectoryFollower), pointer :: follower
+        app%rotation_time = t
+        follower => app%earth%follower()
+        call follower%set_time(t)
+    end subroutine set_rotation_time
+
+    !> After a frame of the main window: advance the rotation time by the
+    !> simulation time elapsed, times the speed from the slider.
+    subroutine advance_rotation(t)
+        real(wp), intent(in) :: t
+        call set_rotation_time(app%rotation_time + real(app%rotation_speed%value(), wp) * (t - app%last_time))
+        app%last_time = t
+    end subroutine advance_rotation
 
     ! ==================================================================
     ! windows
@@ -329,6 +355,7 @@ contains
             if (w%index == 1) then
                 write(text, '(a,f10.1,a)') 'Simulation time: ', w%proxy%time(), ' s'
                 call app%time_label%setText(trim(text))
+                call advance_rotation(w%proxy%time())
             end if
             if (allocated(app%capture) .and. w%frame == app%capture_frame) then
                 file = app%capture
@@ -583,6 +610,15 @@ contains
         call app%spacecraft%show_name_label(checked)
     end subroutine on_show_labels
 
+    !> The Earth's rotation speed changed (the slider): show it.
+    subroutine on_rotation_speed(value, data)
+        integer, intent(in) :: value
+        class(*), intent(inout), optional :: data
+        character(len=24) :: text
+        write(text, '(i0,a)') value, ' x the real rate'
+        call app%rotation_label%setText(trim(text))
+    end subroutine on_rotation_speed
+
     !> Line width: a style change only (no point data is re-uploaded).
     subroutine on_line_width(value, data)
         real(c_double), intent(in) :: value
@@ -679,6 +715,13 @@ contains
         call app%follow_mode%addItems([character(len=23) :: 'Loop the orbit', 'Stop at the end (limit)'])
         call app%follow_mode%currentIndexChanged%connect(on_follow_mode)
         call form%addRow('After one period', app%follow_mode)
+        app%rotation_speed = QSlider(Qt_Horizontal)
+        call app%rotation_speed%setRange(0, 50)
+        app%rotation_label = QLabel('')
+        call app%rotation_speed%valueChanged%connect(on_rotation_speed)
+        call app%rotation_speed%setValue(1)
+        call form%addRow('Earth rotation', app%rotation_speed)
+        call form%addRow('', app%rotation_label)
         app%show_axes = QCheckBox('Show axes')
         call app%show_axes%setChecked(.true.)
         call app%show_axes%toggled%connect(on_show_axes)
@@ -744,6 +787,10 @@ program vkframes_qt_demo
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_windows
             i = i + 1
+        case ('--rotation-speed')
+            call get_command_argument(i + 1, arg)
+            read(arg, *) app%start_rotation_speed
+            i = i + 1
         case ('--test-resize')
             app%test_resize = .true.
         case ('--quit-after')
@@ -756,6 +803,7 @@ program vkframes_qt_demo
 
     call build_model()
     call build_ui()
+    call app%rotation_speed%setValue(app%start_rotation_speed)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
     call app%main%resize(1100, 700)
