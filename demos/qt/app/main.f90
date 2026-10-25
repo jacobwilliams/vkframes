@@ -2,6 +2,12 @@
 !> VulkanSceneGraph into a QWindow embedded in a QMainWindow, next to a dock of
 !> qt-fortran controls.
 !>
+!> The scene uses vkframes' engine types: the orbit is a Trajectory (positions
+!> and attitudes over one period), the spacecraft a ReferenceFrame that follows
+!> it (LOOP or LIMIT, from the dock), a child of the Earth's frame, and time
+!> comes from a SimulationClock (time scale, pause and reset from the dock).
+!> The orbit line is drawn from the trajectory's positions.
+!>
 !> How the pieces fit:
 !>
 !> * The host owns a plain QWindow. On its first expose,
@@ -25,12 +31,11 @@ module vkdemo
     use qt
     use vkf_layer
     use vkf_geometry, only: ellipsoid_create, sphere_create
+    use vkframes, only: wp, pi, Trajectory, ReferenceFrame, SimulationClock, TrajectoryFollower, &
+                        FOLLOW_LOOP, FOLLOW_LIMIT, FOLLOW_POSITION, FOLLOW_ATTITUDE, &
+                        quat_from_axis_angle, quat_multiply
     use iso_c_binding
-    use iso_fortran_env, only: int64
     implicit none
-
-    integer, parameter :: wp = c_double
-    real(wp), parameter :: pi = acos(-1.0_wp)
     real(wp), parameter :: mu = 398600.4418_wp                  !! Earth's gravitational parameter (km^3/s^2)
     real(wp), parameter :: radii(3) = [6378.137_wp, 6378.137_wp, 6356.752314245_wp]  !! WGS84 (km)
     real(wp), parameter :: sma = 9000.0_wp, ecc = 0.2_wp, inc = 35.0_wp * pi / 180.0_wp
@@ -46,13 +51,17 @@ module vkdemo
         type(QDoubleSpinBox) :: time_scale
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
-        type(QLabel) :: clock
+        type(QComboBox) :: follow_mode
+        type(QLabel) :: time_label
+        ! the model
+        type(Trajectory) :: orbit                              !! one period of positions and attitudes
+        type(ReferenceFrame) :: earth_frame, sc_frame          !! the spacecraft follows the orbit
+        type(SimulationClock) :: clock
+        ! rendering
         type(c_ptr) :: viewer = c_null_ptr
         type(c_ptr) :: spacecraft = c_null_ptr                 !! the spacecraft's transform
         type(c_ptr) :: orbit_line = c_null_ptr
         real(wp) :: model_center(3) = 0.0_wp, model_scale = 1.0_wp
-        real(wp) :: sim_time = 0.0_wp                          !! s
-        integer(int64) :: last_tick = -1
         integer :: frame = 0
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -81,8 +90,21 @@ contains
         r = [x, y * cos(inc), y * sin(inc)]
     end function orbit_position
 
-    pure function transform(position, scale, center) result(m)
-        real(wp), intent(in) :: position(3), scale, center(3)
+    !> The spacecraft's attitude at orbit position r: its x axis radial (from
+    !> the Earth), z along the orbit normal.
+    pure function orbit_attitude(r) result(q)
+        real(wp), intent(in) :: r(3)
+        real(wp) :: q(4)
+        real(wp) :: x, y
+        x = r(1)                                   ! in the orbit plane (before the inclination)
+        y = r(2) * cos(inc) + r(3) * sin(inc)
+        q = quat_multiply(quat_from_axis_angle([1.0_wp, 0.0_wp, 0.0_wp], inc), &
+                          quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], atan2(y, x)))
+    end function orbit_attitude
+
+    !> scale(s) * translate(-center): a model centered on its bound and sized.
+    pure function model_matrix(scale, center) result(m)
+        real(wp), intent(in) :: scale, center(3)
         real(wp) :: m(4,4)
         integer :: k
         m = 0.0_wp
@@ -90,8 +112,8 @@ contains
             m(k, k) = scale
         end do
         m(4, 4) = 1.0_wp
-        m(1:3, 4) = position - scale * center      ! translate(position) * scale * translate(-center)
-    end function transform
+        m(1:3, 4) = -scale * center
+    end function model_matrix
 
     subroutine check(status, what)
         integer(c_int), intent(in) :: status
@@ -99,13 +121,37 @@ contains
         if (status /= 0) write(*, '(a)') 'vkframes: '//what//' failed'
     end subroutine check
 
+    !> The model: the orbit trajectory (one period), the Earth's frame and the
+    !> spacecraft's frame, which follows the orbit. `a` is a target (the frames
+    !> keep pointers to the trajectory and to each other).
+    subroutine build_model(a)
+        type(app_t), intent(inout), target :: a
+        real(wp) :: period, t, r(3)
+        integer :: k
+        a%orbit = Trajectory()
+        call a%orbit%reserve(n_orbit)
+        period = 2.0_wp * pi * sqrt(sma**3 / mu)
+        do k = 1, n_orbit
+            t = period * real(k - 1, wp) / real(n_orbit - 1, wp)
+            r = orbit_position(t)
+            call a%orbit%add(t, pos=r, att=orbit_attitude(r))
+        end do
+        a%earth_frame = ReferenceFrame('Earth', [0.3_wp, 0.5_wp, 1.0_wp])
+        a%sc_frame = ReferenceFrame('Spacecraft', [1.0_wp, 0.85_wp, 0.2_wp])
+        if (.not. a%earth_frame%add_child(a%sc_frame)) write(*, '(a)') 'vkframes: add_child failed'
+        call a%sc_frame%follow(a%orbit)                ! position and attitude, FOLLOW_LOOP
+        call a%clock%set_time_scale(200.0_wp)
+        call a%clock%set_time(0.0_wp)
+        write(*, '(a)', advance='no') a%earth_frame%frame_string()
+    end subroutine build_model
+
     !> Build the scene in the viewer: the Earth, the orbit and the spacecraft.
     subroutine build_scene(a)
         type(app_t), intent(inout) :: a
         type(c_ptr) :: texture, earth, model
-        real(wp) :: xyz(3, n_orbit), period, model_radius
+        real(wp), pointer :: xyz(:,:)
+        real(wp) :: model_radius
         character(len=:), allocatable :: file
-        integer :: k
 
         call check(vkf_viewer_look_at(a%viewer, [0.0_wp, -38000.0_wp, 14000.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], &
                                       [0.0_wp, 0.0_wp, 1.0_wp]), 'look_at')
@@ -121,11 +167,8 @@ contains
         call vkf_node_delete(earth)
         if (c_associated(texture)) call vkf_image_delete(texture)
 
-        period = 2.0_wp * pi * sqrt(sma**3 / mu)
-        do k = 1, n_orbit
-            xyz(:, k) = orbit_position(period * real(k - 1, wp) / real(n_orbit - 1, wp))
-        end do
-        a%orbit_line = vkf_line_create(a%viewer, int(n_orbit, c_int))
+        call a%orbit%positions(xyz)                    ! the trajectory's positions, not copied
+        a%orbit_line = vkf_line_create(a%viewer, int(a%orbit%num_positions(), c_int))
         call check(line_set_style(a%orbit_line, [1.0_c_float, 0.85_c_float, 0.2_c_float, 1.0_c_float], 2.0_c_float), &
                    'line style')
         call check(line_set_points(a%orbit_line, xyz), 'line points')
@@ -150,10 +193,13 @@ contains
         call place_spacecraft(a)
     end subroutine build_scene
 
+    !> The spacecraft's transform from its frame (position and attitude set by
+    !> the followed trajectory).
     subroutine place_spacecraft(a)
         type(app_t), intent(inout) :: a
         call check(vkf_transform_set_matrix(a%spacecraft, &
-                   transform(orbit_position(a%sim_time), a%model_scale, a%model_center)), 'spacecraft transform')
+                   matmul(a%sc_frame%world_matrix(), model_matrix(a%model_scale, a%model_center))), &
+                   'spacecraft transform')
     end subroutine place_spacecraft
 
     ! ==================================================================
@@ -178,26 +224,24 @@ contains
         end select
     end subroutine on_expose
 
-    !> Advance the simulation by the elapsed wall-clock time (times the time
-    !> scale), render a frame, and ask for the next one.
+    !> Advance the clock, update the frames (the spacecraft follows its
+    !> trajectory), render a frame, and ask for the next one.
     subroutine on_update(data)
         class(*), intent(inout), optional :: data
-        integer(int64) :: tick, rate
         integer(c_int) :: status
+        real(wp) :: t
         character(len=40) :: text
         select type (a => data)
         type is (app_t)
             if (.not. c_associated(a%viewer)) return
-            call system_clock(tick, rate)
-            if (a%last_tick >= 0 .and. .not. a%pause_time%isChecked()) &
-                a%sim_time = a%sim_time + a%time_scale%value() * real(tick - a%last_tick, wp) / real(rate, wp)
-            a%last_tick = tick
+            t = a%clock%update()
+            call a%earth_frame%update(t)
             call place_spacecraft(a)
             status = vkf_viewer_frame(a%viewer)
             if (status /= 1) return
             a%frame = a%frame + 1
-            write(text, '(a,f10.1,a)') 'Simulation time: ', a%sim_time, ' s'
-            call a%clock%setText(trim(text))
+            write(text, '(a,f10.1,a)') 'Simulation time: ', t, ' s'
+            call a%time_label%setText(trim(text))
             if (allocated(a%capture) .and. a%frame == a%capture_frame) then
                 call check(vkf_viewer_capture(a%viewer, a%capture, len(a%capture, kind=c_int)), 'capture')
                 write(*, '(a)') 'captured '//a%capture
@@ -374,6 +418,47 @@ contains
     ! ==================================================================
     ! controls and lifetime (GUI thread)
 
+    !> Time scale (simulation seconds per second).
+    subroutine on_time_scale(value, data)
+        real(c_double), intent(in) :: value
+        class(*), intent(inout), optional :: data
+        select type (a => data)
+        type is (app_t)
+            call a%clock%set_time_scale(value)
+        end select
+    end subroutine on_time_scale
+
+    !> Pause or resume the simulation time.
+    subroutine on_pause_time(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        select type (a => data)
+        type is (app_t)
+            call a%clock%pause(checked)
+        end select
+    end subroutine on_pause_time
+
+    !> Back to time 0.
+    subroutine on_reset_time(data)
+        class(*), intent(inout), optional :: data
+        select type (a => data)
+        type is (app_t)
+            call a%clock%set_time(0.0_wp)
+        end select
+    end subroutine on_reset_time
+
+    !> How the spacecraft follows the orbit after one period: loop, or stop at the end.
+    subroutine on_follow_mode(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        type(TrajectoryFollower), pointer :: follower
+        select type (a => data)
+        type is (app_t)
+            follower => a%sc_frame%follower()
+            call follower%set_follow_type(ior(FOLLOW_POSITION, FOLLOW_ATTITUDE), merge(FOLLOW_LIMIT, FOLLOW_LOOP, index == 1))
+        end select
+    end subroutine on_follow_mode
+
     !> Line width: a style change only (no point data is re-uploaded).
     subroutine on_line_width(value, data)
         real(c_double), intent(in) :: value
@@ -430,6 +515,7 @@ contains
         type(QDockWidget) :: dock
         type(QWidget) :: panel
         type(QFormLayout) :: form
+        type(QPushButton) :: reset
 
         a%main = QMainWindow()
         call a%main%setWindowTitle('vkframes in qt-fortran')
@@ -460,17 +546,26 @@ contains
         call a%time_scale%setRange(0.0_c_double, 5000.0_c_double)
         call a%time_scale%setValue(200.0_c_double)
         call a%time_scale%setSuffix(' x')
+        call a%time_scale%valueChanged%connect(on_time_scale, a)
         call form%addRow('Time scale', a%time_scale)
         a%pause_time = QCheckBox('Pause time')
+        call a%pause_time%toggled%connect(on_pause_time, a)
         call form%addRow('', a%pause_time)
+        reset = QPushButton('Reset time')
+        call reset%clicked%connect(on_reset_time, a)
+        call form%addRow('', reset)
+        a%follow_mode = QComboBox()
+        call a%follow_mode%addItems([character(len=23) :: 'Loop the orbit', 'Stop at the end (limit)'])
+        call a%follow_mode%currentIndexChanged%connect(on_follow_mode, a)
+        call form%addRow('After one period', a%follow_mode)
         a%line_width = QDoubleSpinBox()
         call a%line_width%setRange(0.5_c_double, 20.0_c_double)
         call a%line_width%setValue(2.0_c_double)
         call a%line_width%setSuffix(' pt')
         call a%line_width%valueChanged%connect(on_line_width, a)
         call form%addRow('Orbit width', a%line_width)
-        a%clock = QLabel('Simulation time:')
-        call form%addRow(a%clock)
+        a%time_label = QLabel('Simulation time:')
+        call form%addRow(a%time_label)
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
                                 'Wheel: zoom</small>'))
         dock = QDockWidget('Controls', a%main)
@@ -523,6 +618,7 @@ program vkframes_qt_demo
         i = i + 1
     end do
 
+    call build_model(a)
     call build_ui(a)
     if (a%quit_after > 0) call QTimer_singleShot(int(1000 * a%quit_after), on_quit, a)
     if (a%test_resize) call QTimer_singleShot(2000, on_test_resize, a)
