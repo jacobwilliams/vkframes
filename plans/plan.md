@@ -452,7 +452,8 @@ Decided so far:
     replaces OpenFrames' reference counting when a frame goes away.
 - [ ] `View` (follow a frame; view between frames; perspective/orthographic;
       default distance; reset) and a window with a grid of viewports, each
-      with its own views and background.
+      with its own views and background. When it lands, add a view menu to
+      the Qt demo (center on the Earth or the spacecraft).
 - [ ] Text labels and HUD text.
 - [ ] Headless tests for interpolation, following, time and the frame
       transform chain (done: `test/test_trajectory.f90`, `test_follower`,

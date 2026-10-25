@@ -231,6 +231,7 @@ namespace
         vsg::ref_ptr<vsg::Window> window;
         vsg::ref_ptr<vsg::Group> scene;
         vsg::ref_ptr<vsg::Camera> camera;
+        vsg::ref_ptr<vsg::CommandGraph> commandGraph;
         void* childView = nullptr;             // macOS: the view VSG renders into, in the host's view
         vsg::ref_ptr<vsg::vec4Array> viewport; // (width, height, pixel ratio, -), for the line shader
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
@@ -484,6 +485,22 @@ VKF_API int vkf_viewer_look_at(void* viewer, const double* eye, const double* ce
     return 0;
 }
 
+// The background (clear) color, rgba.
+VKF_API int vkf_viewer_set_background(void* viewer, const float* rgba)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    const vsg::vec4 color(rgba[0], rgba[1], rgba[2], rgba[3]);
+    v->window->clearColor() = color;          // used when the scene is compiled
+    if (v->commandGraph)                      // already compiled: the render graph has its own copy
+    {
+        for (auto& child : v->commandGraph->children)
+            if (auto renderGraph = child.cast<vsg::RenderGraph>())
+                renderGraph->setClearValues(VkClearColorValue{{color.r, color.g, color.b, color.a}});
+    }
+    return 0;
+}
+
 // Set the camera's vertical field of view (degrees) and near/far distances.
 VKF_API int vkf_viewer_perspective(void* viewer, double fovy, double near_distance, double far_distance)
 {
@@ -517,8 +534,8 @@ VKF_API int vkf_viewer_frame(void* viewer)
     return guarded("vkf_viewer_frame", -1, [&]() {
         if (!v->compiled)
         {
-            auto commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene);
-            v->viewer->assignRecordAndSubmitTaskAndPresentation({commandGraph});
+            v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene);
+            v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
             v->viewer->compile();
             v->compiled = true;
         }

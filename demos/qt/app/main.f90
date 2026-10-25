@@ -156,6 +156,8 @@ contains
         call check(vkf_viewer_look_at(a%viewer, [0.0_wp, -38000.0_wp, 14000.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], &
                                       [0.0_wp, 0.0_wp, 1.0_wp]), 'look_at')
         call check(vkf_viewer_perspective(a%viewer, 30.0_wp, 1.0_wp, 1.0e7_wp), 'perspective')
+        call check(vkf_viewer_set_background(a%viewer, [0.0_c_float, 0.0_c_float, 0.0_c_float, 1.0_c_float]), &
+                   'background')
 
         texture = c_null_ptr
         if (len(a%data_dir) > 0) then
