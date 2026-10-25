@@ -15,4 +15,6 @@ namespace vkf_shaders
     extern const std::vector<uint32_t> line_frag;
     extern const std::vector<uint32_t> label_vert;
     extern const std::vector<uint32_t> label_frag;
+    extern const std::vector<uint32_t> marker_vert;
+    extern const std::vector<uint32_t> marker_frag;
 } // namespace vkf_shaders

@@ -1,11 +1,12 @@
-!> A growing line drawn from a chain of line buffers ("chunks"), for the
-!> trajectory artists: points (or separate segments, pairs of points) are
-!> written in place, as (high, low) float pairs for double precision (see
-!> src/vsg/vkf_layer.cpp: EyeRelative), and only the chunks written to are
-!> uploaded again. A full chain gets a new chunk as large as the chain so far
-!> (at least min_chunk, at most max_chunk points, or what is needed at once),
-!> so nothing is ever copied or reallocated. In a strip, consecutive chunks
-!> share their end point so that the line is continuous.
+!> A growing set of points drawn from a chain of GPU buffers ("chunks"), for
+!> the trajectory artists: a line strip, separate segments (pairs of points)
+!> or markers (one per point). Points are written in place, as (high, low)
+!> float pairs for double precision (see src/vsg/vkf_layer.cpp: EyeRelative),
+!> and only the chunks written to are uploaded again. A full chain gets a new
+!> chunk as large as the chain so far (at least min_chunk, at most max_chunk
+!> points, or what is needed at once), so nothing is ever copied or
+!> reallocated. In a strip, consecutive chunks share their end point so that
+!> the line is continuous.
 !>
 !> Writing points i1 .. i2 (indices along the whole chain):
 !>
@@ -21,9 +22,9 @@ module vkf_line_chain
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
     use vkf_math, only: wp
-    use vkf_layer, only: vkf_line_create, vkf_line_points, vkf_line_points_changed, vkf_line_set_range, &
-                         vkf_node_add_child, vkf_node_delete, vkf_viewer_compile_node, line_set_style, &
-                         line_set_segments
+    use vkf_layer, only: vkf_line_create, vkf_marker_create, vkf_line_points, vkf_line_points_changed, &
+                         vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
+                         vkf_viewer_compile_node, line_set_style, line_set_segments, marker_set_style
 
     implicit none
 
@@ -32,9 +33,12 @@ module vkf_line_chain
     integer, parameter :: min_chunk = 64                !! points in the smallest chunk
     integer, parameter, public :: max_chunk = 65536     !! points in a chunk made for appending (1.5 MB)
 
+    ! what a chain draws
+    integer, parameter, public :: CHAIN_STRIP = 0, CHAIN_SEGMENTS = 1, CHAIN_MARKERS = 2
+
     public :: split_points, line_buffer, check
 
-    !> A line buffer holding points first .. first+capacity-1 of the chain.
+    !> A buffer holding points first .. first+capacity-1 of the chain.
     type :: LineChunk
         type(c_ptr) :: line = c_null_ptr
         integer :: first = 1, capacity = 0
@@ -45,25 +49,34 @@ module vkf_line_chain
         type(c_ptr) :: viewer = c_null_ptr, group = c_null_ptr
         type(LineChunk), allocatable :: chunks(:)
         integer :: n_chunks = 0
-        logical :: segments = .false.
-        real(c_float) :: color(4) = 1.0_c_float, width = 1.0_c_float
+        integer :: kind = CHAIN_STRIP
+        type(c_ptr) :: image = c_null_ptr               !! markers: the image (shape 10)
+        ! style
+        real(c_float) :: color(4) = 1.0_c_float
+        real(c_float) :: width = 1.0_c_float            !! line width, or marker size
+        integer :: shape = 0                            !! markers
+        real(c_float) :: radius = 0.0_c_float           !! markers: attenuation radius
     contains
-        procedure :: init, set_viewer, is_built, release
+        procedure :: init, set_viewer, is_built, release, detach
         procedure :: reserve, slice, changed, draw
-        procedure :: set_style, point, num_chunks
+        procedure :: set_style, set_marker_style, point, num_chunks
     end type LineChain
 
 contains
 
-    !> Draw under `group`: a strip, or separate segments (points 1-2, 3-4, ...).
-    !> Chunks made later are compiled by the viewer set with set_viewer.
-    subroutine init(self, group, segments)
+    !> Draw under `group` (a CHAIN_* kind; markers with `image`, a
+    !> vkf_image_read handle, for the image shape). Chunks made later are
+    !> compiled by the viewer set with set_viewer.
+    subroutine init(self, group, kind, image)
         class(LineChain), intent(inout) :: self
         type(c_ptr), intent(in) :: group
-        logical, intent(in) :: segments
+        integer, intent(in) :: kind
+        type(c_ptr), intent(in), optional :: image
         self%group = group
-        self%segments = segments
+        self%kind = kind
         self%viewer = c_null_ptr
+        self%image = c_null_ptr
+        if (present(image)) self%image = image
     end subroutine init
 
     !> Forget the chunks (after their group was removed from the scene): init
@@ -78,6 +91,16 @@ contains
         self%group = c_null_ptr
         self%viewer = c_null_ptr
     end subroutine release
+
+    !> Remove the chunks from the group (also while running), and release them.
+    subroutine detach(self)
+        class(LineChain), intent(inout) :: self
+        integer :: j
+        do j = 1, self%n_chunks
+            call check(vkf_node_remove_child(self%group, self%chunks(j)%line))
+        end do
+        call self%release()
+    end subroutine detach
 
     !> The viewer that compiles chunks made from now on (null: none, e.g. while
     !> building, when they are compiled with the group).
@@ -111,18 +134,22 @@ contains
             if (self%n_chunks == 0) then
                 c%first = 1
                 c%capacity = max(min_chunk, n)                 ! the data so far in one chunk
-            else if (self%segments) then
-                c%first = covered + 1
-                c%capacity = max(n - covered, min(max_chunk, max(min_chunk, covered)))
-            else
+            else if (self%kind == CHAIN_STRIP) then
                 c%first = covered                              ! sharing the previous chunk's last point
                 c%capacity = max(n - covered + 1, min(max_chunk, max(min_chunk, covered)))
+            else
+                c%first = covered + 1
+                c%capacity = max(n - covered, min(max_chunk, max(min_chunk, covered)))
             end if
-            if (self%segments) c%capacity = c%capacity + modulo(c%capacity, 2)
-            c%line = vkf_line_create(int(c%capacity, c_int))
+            if (self%kind == CHAIN_SEGMENTS) c%capacity = c%capacity + modulo(c%capacity, 2)
+            if (self%kind == CHAIN_MARKERS) then
+                c%line = vkf_marker_create(int(c%capacity, c_int), self%image)
+            else
+                c%line = vkf_line_create(int(c%capacity, c_int))
+            end if
             if (.not. c_associated(c%line)) return
-            if (self%segments) call check(line_set_segments(c%line, .true.))
-            call check(line_set_style(c%line, self%color, self%width))
+            if (self%kind == CHAIN_SEGMENTS) call check(line_set_segments(c%line, .true.))
+            call apply_style(self, c%line)
             if (c_associated(self%viewer)) call check(vkf_viewer_compile_node(self%viewer, c%line))
             call check(vkf_node_add_child(self%group, c%line))
             if (.not. allocated(self%chunks)) allocate(self%chunks(4))
@@ -181,9 +208,35 @@ contains
         self%color = real(color, c_float)
         self%width = real(width, c_float)
         do j = 1, self%n_chunks
-            call check(line_set_style(self%chunks(j)%line, self%color, self%width))
+            call apply_style(self, self%chunks(j)%line)
         end do
     end subroutine set_style
+
+    !> Markers: color (rgba), size (window units), shape (shaders/marker.frag)
+    !> and attenuation radius (scene units, 0 for none).
+    subroutine set_marker_style(self, color, size, shape, radius)
+        class(LineChain), intent(inout) :: self
+        real(wp), intent(in) :: color(4), size, radius
+        integer, intent(in) :: shape
+        integer :: j
+        self%color = real(color, c_float)
+        self%width = real(size, c_float)
+        self%shape = shape
+        self%radius = real(radius, c_float)
+        do j = 1, self%n_chunks
+            call apply_style(self, self%chunks(j)%line)
+        end do
+    end subroutine set_marker_style
+
+    subroutine apply_style(self, line)
+        type(LineChain), intent(in) :: self
+        type(c_ptr), intent(in) :: line
+        if (self%kind == CHAIN_MARKERS) then
+            call check(marker_set_style(line, self%color, self%width, self%shape, self%radius))
+        else
+            call check(line_set_style(line, self%color, self%width))
+        end if
+    end subroutine apply_style
 
     !> Point i as written: read back from the buffers.
     function point(self, i) result(v)
@@ -212,7 +265,7 @@ contains
         p(:, 2, :) = real(x - real(p(:, 1, :), wp), c_float)
     end subroutine split_points
 
-    !> The point buffer of a line node: (xyz, high/low, point).
+    !> The point buffer of a line or marker node: (xyz, high/low, point).
     subroutine line_buffer(line, p)
         type(c_ptr), intent(in) :: line
         real(c_float), dimension(:,:,:), pointer, intent(out) :: p

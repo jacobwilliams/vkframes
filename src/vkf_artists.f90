@@ -1,5 +1,5 @@
 !> Trajectory artists: what draws a Trajectory, in a DrawableTrajectory frame, as
-!> OpenFrames' TrajectoryArtist, CurveArtist, SegmentArtist and
+!> OpenFrames' TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist and
 !> DrawableTrajectory.
 !>
 !> A DrawableTrajectory is a frame (its points are in its coordinates) holding
@@ -28,8 +28,8 @@ module vkf_artists
     use vkf_frames, only: ReferenceFrame
     use vkf_layer, only: vkf_line_create, vkf_line_points_changed, vkf_line_set_range, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
-                         vkf_viewer_compile_node, line_set_style
-    use vkf_line_chain, only: LineChain, split_points, line_buffer, check
+                         vkf_viewer_compile_node, line_set_style, vkf_image_read, vkf_image_delete
+    use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, split_points, line_buffer, check
 
     implicit none
 
@@ -143,6 +143,78 @@ module vkf_artists
     interface SegmentArtist
         module procedure new_segment_artist
     end interface SegmentArtist
+
+    ! which markers a MarkerArtist draws (OpenFrames' DrawnMarkers; combine with ior)
+    integer, parameter, public :: MARKER_START = 1, MARKER_INTERMEDIATE = 2, MARKER_END = 4
+    ! how intermediate markers are spaced (OpenFrames' IntermediateType)
+    integer, parameter, public :: INTERMEDIATE_TIME = 1      !! every `spacing` time units
+    integer, parameter, public :: INTERMEDIATE_DISTANCE = 2  !! every `spacing` of arc length
+    integer, parameter, public :: INTERMEDIATE_DATA = 3      !! every `spacing`-th data point
+    ! marker shapes (OpenFrames' disk, image, and its Demos/Shaders/Marker_*.frag)
+    integer, parameter, public :: MARKER_DISK = 0, MARKER_CIRCLE = 1, MARKER_SQUARE = 2, MARKER_PLUS = 3, &
+                                  MARKER_X = 4, MARKER_TARGET = 5, MARKER_ROSE = 6, MARKER_CIRCLE_PULSE = 7, &
+                                  MARKER_DISK_PULSE = 8, MARKER_SPIRAL = 9, MARKER_IMAGE = 10
+
+    !> Draws markers at a trajectory's points (OpenFrames' MarkerArtist): at
+    !> its start and end, and intermediate markers spaced by time, arc length
+    !> or data points, counted from the start or from the end. Markers keep
+    !> their size on screen (window units), or with auto-attenuation shrink
+    !> when the camera is farther than the trajectory's size. In trace mode
+    !> (an addition), the markers passed are drawn, and the end marker is at
+    !> the point at the current time.
+    type, extends(TrajectoryArtist), public :: MarkerArtist
+        private
+        type(DataSource) :: sources_(3)
+        logical :: default_data = .true.
+        integer :: markers_ = ior(MARKER_START, MARKER_END)
+        integer :: intermediate_type_ = INTERMEDIATE_DATA
+        real(wp) :: spacing_ = 1.0_wp
+        integer :: direction_ = MARKER_START
+        real(wp) :: start_color(4) = [1.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
+        real(wp) :: end_color(4) = [1.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
+        real(wp) :: intermediate_color(4) = [1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]
+        real(wp) :: size_ = 10.0_wp
+        integer :: shape_ = MARKER_DISK
+        character(len=:), allocatable :: image_file
+        type(c_ptr) :: image = c_null_ptr
+        logical :: attenuate = .false.
+        ! rendering
+        type(c_ptr) :: viewer = c_null_ptr, group = c_null_ptr
+        type(LineChain) :: start_node, end_node, inter
+        logical :: drawn = .false.                  !! drawn at least once since built
+        integer :: n_seen = 0                       !! points seen (for the bounds)
+        real(wp) :: lo(3) = 0.0_wp, hi(3) = 0.0_wp  !! bounds of the points seen
+        real(wp) :: radius = 0.0_wp                 !! attenuation radius applied
+        real(wp) :: end_time = huge(1.0_wp)         !! trace mode: the time the end marker was drawn for
+        ! intermediate markers: in trajectory order, and where to continue
+        real(wp), allocatable :: inter_xyz(:,:), inter_t(:)
+        integer :: n_inter = 0, n_inter_written = 0, n_inter_drawn = 0
+        real(wp) :: next_time = 0.0_wp
+        integer :: next_index = 0
+        real(wp) :: arc = 0.0_wp, prev_arc = 0.0_wp, target = 0.0_wp, prev_point(3) = 0.0_wp
+        logical :: start_shown = .false., end_shown = .false.
+    contains
+        procedure :: set_trajectory => marker_set_trajectory
+        procedure :: set_x_data => marker_set_x_data, set_y_data => marker_set_y_data
+        procedure :: set_z_data => marker_set_z_data, data_sources => marker_data_sources
+        procedure :: set_markers, markers
+        procedure :: set_marker_color, marker_color
+        procedure :: set_marker_size, marker_size
+        procedure :: set_marker_shape, marker_shape
+        procedure :: set_marker_image, marker_image_file
+        procedure :: set_auto_attenuate, auto_attenuate
+        procedure :: set_intermediate_type, intermediate_type
+        procedure :: set_intermediate_spacing, intermediate_spacing
+        procedure :: set_intermediate_direction, intermediate_direction
+        procedure :: build => marker_build
+        procedure :: update => marker_update
+        procedure :: release => marker_release
+        procedure :: num_intermediate, drawn_marker
+    end type MarkerArtist
+
+    interface MarkerArtist
+        module procedure new_marker_artist
+    end interface MarkerArtist
 
     type :: ArtistPointer
         class(TrajectoryArtist), pointer :: p => null()
@@ -413,7 +485,7 @@ contains
     subroutine curve_build(self, viewer, group)
         class(CurveArtist), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
-        call self%chain%init(group, segments=.false.)
+        call self%chain%init(group, CHAIN_STRIP)
         call self%chain%set_style(self%color_, self%width_)
         call self%chain%reserve(curve_points(self))       ! compiled with the group
         call self%chain%set_viewer(viewer)
@@ -707,7 +779,7 @@ contains
     subroutine segment_build(self, viewer, group)
         class(SegmentArtist), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
-        call self%chain%init(group, segments=.true.)
+        call self%chain%init(group, CHAIN_SEGMENTS)
         call self%chain%set_style(self%color_, self%width_)
         call self%chain%reserve(2 * segment_count(self))  ! compiled with the group
         call self%chain%set_viewer(viewer)
@@ -777,6 +849,614 @@ contains
             call self%chain%changed(j, hi)
         end do
     end subroutine write_segments
+
+    ! ==================================================================
+    ! MarkerArtist
+
+    !> A marker artist for `traj` (optional; without one, or with all data
+    !> sources zero, a start marker at the origin), drawing `markers` (an ior
+    !> of MARKER_START, MARKER_INTERMEDIATE, MARKER_END; default start and end)
+    !> of `size` window units (default 10) in `color` (all markers; default red
+    !> start and end, white intermediate).
+    function new_marker_artist(traj, markers, size, color) result(a)
+        type(Trajectory), intent(in), target, optional :: traj
+        integer, intent(in), optional :: markers
+        real(wp), intent(in), optional :: size, color(:)
+        type(MarkerArtist) :: a
+        a%sources_ = position_sources(3)
+        a%image_file = ''
+        if (present(traj)) call a%set_trajectory(traj)
+        if (present(markers)) a%markers_ = markers
+        if (present(size)) a%size_ = size
+        if (present(color)) call a%set_marker_color(ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END), color)
+    end function new_marker_artist
+
+    !> Draw `traj`; with the default data sources, its positions (per its DOF).
+    subroutine marker_set_trajectory(self, traj)
+        class(MarkerArtist), intent(inout) :: self
+        type(Trajectory), intent(in), target :: traj
+        self%traj => traj
+        if (self%default_data) self%sources_ = position_sources(traj%dof())
+        self%seen_generation = -1
+    end subroutine marker_set_trajectory
+
+    !> Where the x (y, z) of the markers come from. Returns whether the
+    !> trajectory has those data.
+    logical function marker_set_x_data(self, src) result(valid)
+        class(MarkerArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_marker_source(self, 1, src)
+    end function marker_set_x_data
+
+    logical function marker_set_y_data(self, src) result(valid)
+        class(MarkerArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_marker_source(self, 2, src)
+    end function marker_set_y_data
+
+    logical function marker_set_z_data(self, src) result(valid)
+        class(MarkerArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_marker_source(self, 3, src)
+    end function marker_set_z_data
+
+    logical function set_marker_source(self, k, src) result(valid)
+        class(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: k
+        type(DataSource), intent(in) :: src
+        self%sources_(k) = src
+        self%default_data = .false.
+        call redraw_markers(self)
+        valid = .true.
+        if (associated(self%traj)) valid = self%traj%verify_data(self%sources_)
+    end function set_marker_source
+
+    pure function marker_data_sources(self) result(s)
+        class(MarkerArtist), intent(in) :: self
+        type(DataSource) :: s(3)
+        s = self%sources_
+    end function marker_data_sources
+
+    !> Which markers to draw: an ior of MARKER_START, MARKER_INTERMEDIATE and
+    !> MARKER_END (0 for none).
+    subroutine set_markers(self, markers)
+        class(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: markers
+        if (markers == self%markers_) return
+        self%markers_ = markers
+        call redraw_markers(self)
+    end subroutine set_markers
+
+    pure integer function markers(self)
+        class(MarkerArtist), intent(in) :: self
+        markers = self%markers_
+    end function markers
+
+    !> The color of the markers in `which` (an ior of MARKER_* flags): [r, g,
+    !> b] (alpha unchanged) or [r, g, b, a].
+    subroutine set_marker_color(self, which, color)
+        class(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: which
+        real(wp), intent(in) :: color(:)
+        if (iand(which, MARKER_START) /= 0) call set_rgba(self%start_color, color)
+        if (iand(which, MARKER_END) /= 0) call set_rgba(self%end_color, color)
+        if (iand(which, MARKER_INTERMEDIATE) /= 0) call set_rgba(self%intermediate_color, color)
+        call marker_style(self)
+    end subroutine set_marker_color
+
+    !> The color of the start, intermediate or end markers (`which`: one MARKER_* flag).
+    pure function marker_color(self, which) result(c)
+        class(MarkerArtist), intent(in) :: self
+        integer, intent(in) :: which
+        real(wp) :: c(4)
+        select case (which)
+        case (MARKER_START)
+            c = self%start_color
+        case (MARKER_END)
+            c = self%end_color
+        case default
+            c = self%intermediate_color
+        end select
+    end function marker_color
+
+    !> Marker size in window units (logical pixels; > 0).
+    subroutine set_marker_size(self, size)
+        class(MarkerArtist), intent(inout) :: self
+        real(wp), intent(in) :: size
+        if (size <= 0.0_wp) return
+        self%size_ = size
+        call marker_style(self)
+    end subroutine set_marker_size
+
+    pure real(wp) function marker_size(self)
+        class(MarkerArtist), intent(in) :: self
+        marker_size = self%size_
+    end function marker_size
+
+    !> Marker shape: a MARKER_* shape constant (MARKER_DISK to MARKER_SPIRAL;
+    !> MARKER_IMAGE after set_marker_image). These are OpenFrames' disk and its
+    !> marker shaders (Demos/Shaders/Marker_*.frag), built in.
+    subroutine set_marker_shape(self, shape)
+        class(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: shape
+        self%shape_ = max(MARKER_DISK, min(MARKER_IMAGE, shape))
+        call marker_style(self)
+    end subroutine set_marker_shape
+
+    pure integer function marker_shape(self)
+        class(MarkerArtist), intent(in) :: self
+        marker_shape = self%shape_
+    end function marker_shape
+
+    !> Draw the markers as an image file (tinted by the marker color; its
+    !> transparent parts left out), or as a disk again with ''. Returns false
+    !> if the image cannot be read (the markers are then unchanged).
+    logical function set_marker_image(self, file) result(ok)
+        class(MarkerArtist), intent(inout) :: self
+        character(len=*), intent(in) :: file
+        type(c_ptr) :: image
+        ok = .true.
+        if (len_trim(file) == 0) then
+            image = c_null_ptr
+            self%shape_ = MARKER_DISK
+        else
+            image = vkf_image_read(trim(file), len_trim(file, kind=c_int))
+            ok = c_associated(image)
+            if (.not. ok) return
+            self%shape_ = MARKER_IMAGE
+        end if
+        if (c_associated(self%image)) call vkf_image_delete(self%image)
+        self%image = image
+        self%image_file = trim(file)
+        call rebuild_markers(self)                    ! the image is part of the marker nodes
+    end function set_marker_image
+
+    function marker_image_file(self) result(file)
+        class(MarkerArtist), intent(in) :: self
+        character(len=:), allocatable :: file
+        file = self%image_file
+    end function marker_image_file
+
+    !> Shrink markers farther from the camera than the trajectory's size
+    !> (OpenFrames' auto-attenuation; see shaders/marker.vert).
+    subroutine set_auto_attenuate(self, attenuate)
+        class(MarkerArtist), intent(inout) :: self
+        logical, intent(in) :: attenuate
+        self%attenuate = attenuate
+        call marker_style(self)
+    end subroutine set_auto_attenuate
+
+    pure logical function auto_attenuate(self)
+        class(MarkerArtist), intent(in) :: self
+        auto_attenuate = self%attenuate
+    end function auto_attenuate
+
+    !> How intermediate markers are spaced: INTERMEDIATE_TIME, _DISTANCE or _DATA.
+    subroutine set_intermediate_type(self, type)
+        class(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: type
+        if (type == self%intermediate_type_) return
+        self%intermediate_type_ = type
+        call redraw_markers(self)
+    end subroutine set_intermediate_type
+
+    pure integer function intermediate_type(self)
+        class(MarkerArtist), intent(in) :: self
+        intermediate_type = self%intermediate_type_
+    end function intermediate_type
+
+    !> Spacing of intermediate markers (> 0): time units, arc length, or a
+    !> number of data points (rounded down, at least 1).
+    subroutine set_intermediate_spacing(self, spacing)
+        class(MarkerArtist), intent(inout) :: self
+        real(wp), intent(in) :: spacing
+        if (spacing <= 0.0_wp .or. spacing == self%spacing_) return
+        self%spacing_ = spacing
+        call redraw_markers(self)
+    end subroutine set_intermediate_spacing
+
+    pure real(wp) function intermediate_spacing(self)
+        class(MarkerArtist), intent(in) :: self
+        intermediate_spacing = self%spacing_
+    end function intermediate_spacing
+
+    !> Count intermediate markers from the start (MARKER_START, default) or
+    !> from the end (MARKER_END; recomputed whenever points are added).
+    subroutine set_intermediate_direction(self, direction)
+        class(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: direction
+        if (direction == self%direction_) return
+        self%direction_ = merge(MARKER_END, MARKER_START, direction == MARKER_END)
+        call redraw_markers(self)
+    end subroutine set_intermediate_direction
+
+    pure integer function intermediate_direction(self)
+        class(MarkerArtist), intent(in) :: self
+        intermediate_direction = self%direction_
+    end function intermediate_direction
+
+    !> Number of intermediate markers drawn now.
+    pure integer function num_intermediate(self)
+        class(MarkerArtist), intent(in) :: self
+        num_intermediate = self%n_inter_drawn
+    end function num_intermediate
+
+    !> Where marker `which` (MARKER_START, MARKER_END, or MARKER_INTERMEDIATE
+    !> number i) is drawn, read back from its buffer; false if not drawn.
+    logical function drawn_marker(self, which, v, i) result(shown)
+        class(MarkerArtist), intent(in) :: self
+        integer, intent(in) :: which
+        real(wp), intent(out) :: v(3)
+        integer, intent(in), optional :: i
+        v = 0.0_wp
+        select case (which)
+        case (MARKER_START)
+            shown = self%start_shown
+            if (shown) v = self%start_node%point(1)
+        case (MARKER_END)
+            shown = self%end_shown
+            if (shown) v = self%end_node%point(1)
+        case default
+            shown = .false.
+            if (.not. present(i)) return
+            shown = i >= 1 .and. i <= self%n_inter_drawn
+            if (shown) v = self%inter%point(i)
+        end select
+    end function drawn_marker
+
+    subroutine marker_build(self, viewer, group)
+        class(MarkerArtist), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer, group
+        self%group = group
+        self%viewer = viewer
+        call build_marker_nodes(self, compile=.false.)
+    end subroutine marker_build
+
+    !> The start, end and intermediate marker nodes, in the artist's group
+    !> (compiled now if it is already shown).
+    subroutine build_marker_nodes(self, compile)
+        type(MarkerArtist), intent(inout) :: self
+        logical, intent(in) :: compile
+        type(c_ptr) :: viewer
+        viewer = c_null_ptr
+        if (compile) viewer = self%viewer
+        call self%start_node%init(self%group, CHAIN_MARKERS, self%image)
+        call self%end_node%init(self%group, CHAIN_MARKERS, self%image)
+        call self%inter%init(self%group, CHAIN_MARKERS, self%image)
+        call self%start_node%set_viewer(viewer)
+        call self%end_node%set_viewer(viewer)
+        call self%inter%set_viewer(viewer)
+        call self%start_node%reserve(1)
+        call self%end_node%reserve(1)
+        call self%inter%reserve(1)
+        call self%start_node%set_viewer(self%viewer)
+        call self%end_node%set_viewer(self%viewer)
+        call self%inter%set_viewer(self%viewer)
+        call marker_style(self)
+        call redraw_markers(self)
+    end subroutine build_marker_nodes
+
+    !> New marker nodes (for a new image), in place of the old ones.
+    subroutine rebuild_markers(self)
+        type(MarkerArtist), intent(inout) :: self
+        if (.not. c_associated(self%group)) return
+        call self%start_node%detach()
+        call self%end_node%detach()
+        call self%inter%detach()
+        call build_marker_nodes(self, compile=.true.)
+    end subroutine rebuild_markers
+
+    !> Compute and write everything again at the next update.
+    subroutine redraw_markers(self)
+        type(MarkerArtist), intent(inout) :: self
+        self%seen_generation = -1
+        self%drawn = .false.
+    end subroutine redraw_markers
+
+    subroutine marker_release(self)
+        class(MarkerArtist), intent(inout) :: self
+        call self%start_node%release()
+        call self%end_node%release()
+        call self%inter%release()
+        self%group = c_null_ptr
+        self%start_shown = .false.
+        self%end_shown = .false.
+        self%n_inter_drawn = 0
+        call redraw_markers(self)
+        call artist_release(self)
+    end subroutine marker_release
+
+    subroutine marker_style(self)
+        type(MarkerArtist), intent(inout) :: self
+        real(wp) :: r
+        r = 0.0_wp
+        if (self%attenuate) r = self%radius
+        call self%start_node%set_marker_style(self%start_color, self%size_, self%shape_, r)
+        call self%end_node%set_marker_style(self%end_color, self%size_, self%shape_, r)
+        call self%inter%set_marker_style(self%intermediate_color, self%size_, self%shape_, r)
+    end subroutine marker_style
+
+    subroutine marker_update(self, t)
+        class(MarkerArtist), intent(inout) :: self
+        real(wp), intent(in) :: t
+        logical :: changed, redraw, zero
+        integer :: n, k
+        if (.not. c_associated(self%group)) return
+        zero = all(self%sources_%src == SOURCE_ZERO)
+        if (zero) then
+            n = 1                                         ! a marker at the origin
+        else
+            n = source_points(self%traj, self%sources_)
+        end if
+
+        changed = data_changed(self, redraw)
+        if (.not. self%drawn) then
+            changed = .true.
+            redraw = .true.
+            self%drawn = .true.
+        end if
+        if (changed) then
+            if (redraw .or. n < self%n_seen) call reset_markers(self)
+            call update_bounds(self, n, zero)
+            call write_marker(self%start_node, marker_point(self, 1, zero))
+            if (n > 1) call write_marker(self%end_node, marker_point(self, n, zero))
+            if (iand(self%markers_, MARKER_INTERMEDIATE) /= 0 .and. .not. zero .and. n > 2) call add_intermediates(self, n)
+            self%end_time = huge(1.0_wp)
+        end if
+
+        ! what is drawn: everything, or in trace mode what was passed
+        k = n
+        if (self%trace .and. .not. zero) k = points_passed(self%traj, t, n)
+        self%start_shown = iand(self%markers_, MARKER_START) /= 0 .and. n >= 1 .and. k >= 1
+        call self%start_node%draw(merge(1, 0, self%start_shown))
+        self%end_shown = iand(self%markers_, MARKER_END) /= 0 .and. n > 1 .and. k >= 1
+        if (self%end_shown .and. self%trace .and. k < n .and. t /= self%end_time) then
+            call write_marker(self%end_node, point_at_time(self%traj, self%sources_, t, k))   ! the trace's head
+            self%end_time = t
+        else if (self%end_shown .and. self%trace .and. k == n .and. self%end_time /= huge(1.0_wp)) then
+            call write_marker(self%end_node, marker_point(self, n, zero))
+            self%end_time = huge(1.0_wp)
+        end if
+        call self%end_node%draw(merge(1, 0, self%end_shown))
+        self%n_inter_drawn = self%n_inter_written
+        if (self%trace .and. self%n_inter_written > 0) self%n_inter_drawn = markers_passed(self, t)
+        call self%inter%draw(self%n_inter_drawn)
+    end subroutine marker_update
+
+    function marker_point(self, i, zero) result(v)
+        type(MarkerArtist), intent(in) :: self
+        integer, intent(in) :: i
+        logical, intent(in) :: zero
+        real(wp) :: v(3)
+        v = 0.0_wp
+        if (.not. zero) v = self%traj%point(i, self%sources_)
+    end function marker_point
+
+    !> The point at time t, interpolated between points k and k + 1.
+    function point_at_time(traj, sources, t, k) result(v)
+        type(Trajectory), intent(in) :: traj
+        type(DataSource), intent(in) :: sources(3)
+        real(wp), intent(in) :: t
+        integer, intent(in) :: k
+        real(wp) :: v(3), t0, t1, frac
+        v = traj%point(k, sources)
+        if (k >= traj%num_times()) return
+        t0 = traj%time(k)
+        t1 = traj%time(k + 1)
+        frac = 0.0_wp
+        if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
+        v = v + frac * (traj%point(k + 1, sources) - v)
+    end function point_at_time
+
+    !> A single marker's point (in a chain of one marker), uploaded.
+    subroutine write_marker(chain, v)
+        type(LineChain), intent(inout) :: chain
+        real(wp), intent(in) :: v(3)
+        real(c_float), dimension(:,:,:), pointer :: p
+        integer :: lo, hi
+        if (chain%num_chunks() < 1) return
+        call chain%slice(1, 1, 1, lo, hi, p)
+        if (.not. associated(p)) return
+        call split_points(reshape(v, [3, 1]), p)
+        call chain%changed(1, 1)
+    end subroutine write_marker
+
+    !> Start the intermediate markers and the bounds again.
+    subroutine reset_markers(self)
+        type(MarkerArtist), intent(inout) :: self
+        self%n_seen = 0
+        self%n_inter = 0
+        self%n_inter_written = 0
+        self%next_index = 0                           ! (0: not started)
+    end subroutine reset_markers
+
+    !> The bounds of the points (for the attenuation radius: OpenFrames uses
+    !> the artist's bounding sphere).
+    subroutine update_bounds(self, n, zero)
+        type(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: n
+        logical, intent(in) :: zero
+        real(wp) :: v(3), r
+        integer :: i
+        if (zero) then
+            self%lo = 0.0_wp
+            self%hi = 0.0_wp
+        else
+            do i = self%n_seen + 1, n
+                v = self%traj%point(i, self%sources_)
+                if (i == 1) then
+                    self%lo = v
+                    self%hi = v
+                else
+                    self%lo = min(self%lo, v)
+                    self%hi = max(self%hi, v)
+                end if
+            end do
+        end if
+        self%n_seen = n
+        r = 0.5_wp * norm2(self%hi - self%lo)
+        if (r < 1.0e-8_wp) r = 0.0_wp                 ! too small: no attenuation (as OpenFrames)
+        if (r /= self%radius) then
+            self%radius = r
+            if (self%attenuate) call marker_style(self)
+        end if
+    end subroutine update_bounds
+
+    !> Compute the intermediate markers not computed yet (all of them when
+    !> counted from the end), and write them.
+    subroutine add_intermediates(self, n)
+        type(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: n
+        integer :: first
+        if (self%direction_ == MARKER_END) then          ! everything changes when points are added
+            self%n_inter = 0
+            self%n_inter_written = 0
+            self%next_index = 0
+        end if
+        select case (self%intermediate_type_)
+        case (INTERMEDIATE_TIME)
+            call intermediates_by_time(self, n)
+        case (INTERMEDIATE_DISTANCE)
+            call intermediates_by_distance(self, n)
+        case default
+            call intermediates_by_data(self, n)
+        end select
+        if (self%direction_ == MARKER_END) then          ! in trajectory order
+            self%inter_xyz(:, 1:self%n_inter) = self%inter_xyz(:, self%n_inter:1:-1)
+            self%inter_t(1:self%n_inter) = self%inter_t(self%n_inter:1:-1)
+        end if
+        first = self%n_inter_written + 1
+        if (self%n_inter >= first) call write_intermediates(self, first, self%n_inter)
+        self%n_inter_written = self%n_inter
+    end subroutine add_intermediates
+
+    !> Index of the j-th point counted in the intermediate markers' direction.
+    pure integer function counted(self, j, n)
+        type(MarkerArtist), intent(in) :: self
+        integer, intent(in) :: j, n
+        counted = merge(n + 1 - j, j, self%direction_ == MARKER_END)
+    end function counted
+
+    !> Every `spacing` time units after the first time, before the last
+    !> (counted from the start or the end).
+    subroutine intermediates_by_time(self, n)
+        type(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: n
+        real(wp) :: t_first, t_last, step, tm
+        integer :: status, index
+        t_first = self%traj%time(counted(self, 1, n))
+        t_last = self%traj%time(counted(self, n, n))
+        step = sign(self%spacing_, t_last - t_first)
+        if (self%next_index == 0) then
+            self%next_time = t_first + step
+            self%next_index = 1
+        end if
+        do while (sign(1.0_wp, step) * (t_last - self%next_time) > 0.0_wp)
+            tm = self%next_time
+            status = self%traj%time_index(tm, index)
+            index = max(1, min(n - 1, index))
+            call push_intermediate(self, point_at_time(self%traj, self%sources_, tm, index), tm)
+            self%next_time = self%next_time + step
+        end do
+    end subroutine intermediates_by_time
+
+    !> Every int(spacing)-th point after the first, before the last.
+    subroutine intermediates_by_data(self, n)
+        type(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: n
+        integer :: step, i
+        step = max(1, int(self%spacing_))
+        if (self%next_index == 0) self%next_index = 1 + step
+        do while (self%next_index < n)
+            i = counted(self, self%next_index, n)
+            call push_intermediate(self, self%traj%point(i, self%sources_), self%traj%time(i))
+            self%next_index = self%next_index + step
+        end do
+    end subroutine intermediates_by_data
+
+    !> Every `spacing` of arc length (the points joined by straight lines).
+    subroutine intermediates_by_distance(self, n)
+        type(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: n
+        real(wp) :: p(3), frac, t0, t1
+        integer :: j
+        if (self%next_index == 0) then
+            self%next_index = 2
+            self%arc = 0.0_wp
+            self%prev_arc = 0.0_wp
+            self%target = self%spacing_
+            self%prev_point = self%traj%point(counted(self, 1, n), self%sources_)
+        end if
+        do j = self%next_index, n
+            p = self%traj%point(counted(self, j, n), self%sources_)
+            self%arc = self%arc + norm2(p - self%prev_point)
+            t0 = self%traj%time(counted(self, j - 1, n))
+            t1 = self%traj%time(counted(self, j, n))
+            do while (self%arc >= self%target)
+                frac = (self%target - self%prev_arc) / (self%arc - self%prev_arc)
+                call push_intermediate(self, self%prev_point + frac * (p - self%prev_point), t0 + frac * (t1 - t0))
+                self%target = self%target + self%spacing_
+            end do
+            self%prev_arc = self%arc
+            self%prev_point = p
+        end do
+        self%next_index = n + 1
+    end subroutine intermediates_by_distance
+
+    subroutine push_intermediate(self, v, t)
+        type(MarkerArtist), intent(inout) :: self
+        real(wp), intent(in) :: v(3), t
+        real(wp), allocatable :: xyz(:,:), times(:)
+        integer :: m
+        if (.not. allocated(self%inter_xyz)) allocate(self%inter_xyz(3, 64), self%inter_t(64))
+        m = size(self%inter_t)
+        if (self%n_inter == m) then
+            allocate(xyz(3, 2 * m), times(2 * m))
+            xyz(:, 1:m) = self%inter_xyz
+            times(1:m) = self%inter_t
+            call move_alloc(xyz, self%inter_xyz)
+            call move_alloc(times, self%inter_t)
+        end if
+        self%n_inter = self%n_inter + 1
+        self%inter_xyz(:, self%n_inter) = v
+        self%inter_t(self%n_inter) = t
+    end subroutine push_intermediate
+
+    subroutine write_intermediates(self, i1, i2)
+        type(MarkerArtist), intent(inout) :: self
+        integer, intent(in) :: i1, i2
+        real(c_float), dimension(:,:,:), pointer :: p
+        integer :: j, lo, hi
+        call self%inter%reserve(i2)
+        do j = 1, self%inter%num_chunks()
+            call self%inter%slice(j, i1, i2, lo, hi, p)
+            if (.not. associated(p)) cycle
+            call split_points(self%inter_xyz(:, lo:hi), p)
+            call self%inter%changed(j, hi)
+        end do
+    end subroutine write_intermediates
+
+    !> Number of intermediate markers up to time t (in trajectory order: in the
+    !> trajectory's time direction), by bisection.
+    integer function markers_passed(self, t) result(k)
+        type(MarkerArtist), intent(in) :: self
+        real(wp), intent(in) :: t
+        real(wp) :: dir
+        integer :: low, high, mid
+        dir = 1.0_wp
+        if (self%traj%num_times() > 1) dir = sign(1.0_wp, self%traj%time(self%traj%num_times()) - self%traj%time(1))
+        low = 0                                           ! markers 1 .. low passed
+        high = self%n_inter_written + 1                   ! markers high .. not passed
+        do while (high - low > 1)
+            mid = (low + high) / 2
+            if (dir * (self%inter_t(mid) - t) <= 0.0_wp) then
+                low = mid
+            else
+                high = mid
+            end if
+        end do
+        k = low
+    end function markers_passed
 
     ! ==================================================================
     ! DrawableTrajectory

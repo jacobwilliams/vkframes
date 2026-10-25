@@ -4,13 +4,15 @@
 !> only while filling), a clear, a changed last point and other data sources;
 !> trace mode draws the points passed and ends at the interpolated point, for
 !> increasing and decreasing times. SegmentArtist: segments at every stride-th
-!> point from the start to the end sources, appends, trace mode.
+!> point from the start to the end sources, appends, trace mode. MarkerArtist:
+!> start and end markers, intermediate markers by data, time and distance,
+!> from the start or the end, appends, trace mode.
 program test_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr
     use vkframes
     use vkf_line_chain, only: max_chunk
-    use vkf_trajectory, only: SOURCE_POSOPT, SOURCE_TIME
+    use vkf_trajectory, only: SOURCE_POSOPT, SOURCE_TIME, SOURCE_ZERO
     use vkf_layer, only: vkf_switch_create
 
     implicit none
@@ -24,13 +26,14 @@ program test_artists
     call check_trace(-1.0_wp)
     call check_sources()
     call check_segments()
+    call check_markers()
     call check_drawable()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
         error stop 1
     end if
-    write(*, '(a)') 'PASS: CurveArtist, SegmentArtist, DrawableTrajectory'
+    write(*, '(a)') 'PASS: CurveArtist, SegmentArtist, MarkerArtist, DrawableTrajectory'
 
 contains
 
@@ -233,6 +236,106 @@ contains
         call radius%update(0.5_wp)
         call check(radius%num_drawn() == (100000 - 1) / 7 + 1, 'segments: trace off, appended points too')
     end subroutine check_segments
+
+    !> Marker `which` is drawn, at [x, 0, 0].
+    logical function marker_at(a, which, x) result(ok)
+        type(MarkerArtist), intent(in) :: a
+        integer, intent(in) :: which
+        real(wp), intent(in) :: x
+        real(wp) :: v(3)
+        ok = a%drawn_marker(which, v)
+        if (ok) ok = maxval(abs(v - [x, 0.0_wp, 0.0_wp])) < 1.0e-6_wp
+    end function marker_at
+
+    !> Intermediate markers at x = 1000 * expected(:) (on the x axis).
+    logical function markers_at(a, expected) result(ok)
+        type(MarkerArtist), intent(in) :: a
+        real(wp), intent(in) :: expected(:)
+        real(wp) :: v(3)
+        integer :: i
+        ok = a%num_intermediate() == size(expected)
+        if (.not. ok) then
+            write(*, '(a,i0,a,i0)') '  intermediate markers: ', a%num_intermediate(), ', expected ', size(expected)
+            return
+        end if
+        do i = 1, size(expected)
+            if (.not. a%drawn_marker(MARKER_INTERMEDIATE, v, i)) ok = .false.
+            if (maxval(abs(v - [1000.0_wp * expected(i), 0.0_wp, 0.0_wp])) >= 1.0e-6_wp) ok = .false.
+        end do
+    end function markers_at
+
+    subroutine check_markers()
+        type(Trajectory), target :: traj
+        type(MarkerArtist) :: a, origin
+        real(wp) :: v(3)
+        integer :: i, k
+        traj = Trajectory()
+        do i = 1, 101                                  ! x = 1000 t, t = 0 .. 100
+            call traj%add(real(i - 1, wp), [1000.0_wp * (i - 1), 0.0_wp, 0.0_wp])
+        end do
+        a = MarkerArtist(traj)
+        call a%build(c_null_ptr, vkf_switch_create())
+        call a%update(0.0_wp)
+        call check(marker_at(a, MARKER_START, 0.0_wp), 'markers: start')
+        call check(marker_at(a, MARKER_END, 1.0e5_wp), 'markers: end')
+        call check(a%num_intermediate() == 0 .and. all(a%marker_color(MARKER_START) == [1.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]), &
+                   'markers: OpenFrames defaults')
+
+        call a%set_markers(ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END))
+        call a%set_intermediate_spacing(10.0_wp)       ! data: points 11, 21, ..., 91
+        call a%update(0.0_wp)
+        call check(markers_at(a, [(10.0_wp * k, k = 1, 9)]), 'markers: every 10th point')
+        call a%set_intermediate_spacing(30.0_wp)
+        call a%set_intermediate_direction(MARKER_END)  ! points 71, 41, 11 (in trajectory order)
+        call a%update(0.0_wp)
+        call check(markers_at(a, [10.0_wp, 40.0_wp, 70.0_wp]), 'markers: data from the end')
+        call a%set_intermediate_direction(MARKER_START)
+        call a%set_intermediate_type(INTERMEDIATE_TIME)
+        call a%set_intermediate_spacing(7.5_wp)
+        call a%update(0.0_wp)
+        call check(markers_at(a, [(7.5_wp * k, k = 1, 13)]), 'markers: by time')
+        call a%set_intermediate_type(INTERMEDIATE_DISTANCE)
+        call a%set_intermediate_spacing(2500.0_wp)     ! the last at the end (arc length reaches 100000)
+        call a%update(0.0_wp)
+        call check(markers_at(a, [(2.5_wp * k, k = 1, 40)]), 'markers: by distance')
+
+        ! appends: markers continued
+        call a%set_intermediate_type(INTERMEDIATE_TIME)
+        call a%set_intermediate_spacing(7.5_wp)
+        call a%update(0.0_wp)
+        do i = 102, 151
+            call traj%add(real(i - 1, wp), [1000.0_wp * (i - 1), 0.0_wp, 0.0_wp])
+            if (modulo(i, 10) == 0) call a%update(0.0_wp)
+        end do
+        call a%update(0.0_wp)
+        call check(markers_at(a, [(7.5_wp * k, k = 1, 19)]), 'markers: appended (by time)')
+        call check(marker_at(a, MARKER_END, 1.5e5_wp), 'markers: end after appends')
+
+        ! trace mode: markers passed, the end marker at the current time
+        call a%set_trace_mode(.true.)
+        call a%update(45.5_wp)
+        call check(markers_at(a, [(7.5_wp * k, k = 1, 6)]), 'markers: trace')
+        call check(marker_at(a, MARKER_END, 45500.0_wp), 'markers: trace end at t')
+        call a%update(-1.0_wp)
+        call check(.not. a%drawn_marker(MARKER_START, v) .and. .not. a%drawn_marker(MARKER_END, v) .and. &
+                   a%num_intermediate() == 0, 'markers: trace before the start')
+        call a%update(1000.0_wp)
+        call check(marker_at(a, MARKER_END, 1.5e5_wp) .and. a%num_intermediate() == 19, 'markers: trace after the end')
+
+        call check(.not. a%set_marker_image('does/not/exist.png') .and. a%marker_shape() == MARKER_DISK, &
+                   'markers: missing image')
+        call a%set_marker_shape(MARKER_TARGET)
+        call check(a%marker_shape() == MARKER_TARGET, 'markers: shape')
+
+        ! no trajectory: a marker at the origin
+        origin = MarkerArtist()
+        call check(origin%set_x_data(DataSource(SOURCE_ZERO)) .and. origin%set_y_data(DataSource(SOURCE_ZERO)) .and. &
+                   origin%set_z_data(DataSource(SOURCE_ZERO)), 'markers: zero sources')
+        call origin%build(c_null_ptr, vkf_switch_create())
+        call origin%update(0.0_wp)
+        call check(marker_at(origin, MARKER_START, 0.0_wp) .and. .not. origin%drawn_marker(MARKER_END, v), &
+                   'markers: at the origin')
+    end subroutine check_markers
 
     subroutine check_drawable()
         type(Trajectory), target :: traj

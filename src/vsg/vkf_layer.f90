@@ -24,8 +24,8 @@ module vkf_layer
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
     public :: vkf_viewer_hud_add
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
-    public :: vkf_line_set_range
-    public :: vulkan_device_name, line_set_points, line_set_style, line_set_segments, mesh_arrays
+    public :: vkf_line_set_range, vkf_marker_create
+    public :: vulkan_device_name, line_set_points, line_set_style, line_set_segments, marker_set_style, mesh_arrays
 
     interface
 
@@ -303,6 +303,13 @@ module vkf_layer
             integer(c_int), value :: capacity
         end function vkf_line_create
 
+        type(c_ptr) function vkf_marker_create(capacity, image) bind(C, name="vkf_marker_create")
+            import :: c_ptr, c_int
+            implicit none
+            integer(c_int), value :: capacity
+            type(c_ptr), value :: image
+        end function vkf_marker_create
+
         type(c_ptr) function vkf_line_points(line, capacity) bind(C, name="vkf_line_points")
             import :: c_ptr, c_int
             implicit none
@@ -404,6 +411,26 @@ contains
         style(6) = merge(1.0_c_float, 0.0_c_float, segments)
         status = vkf_line_style_changed(line)
     end function line_set_segments
+
+    !> Set the color (`rgba`), size (window units), shape (see shaders/
+    !> marker.frag) and attenuation radius (scene units; 0 for none) of markers.
+    integer(c_int) function marker_set_style(marker, rgba, size, shape, radius) result(status)
+        type(c_ptr), intent(in) :: marker
+        real(c_float), dimension(4), intent(in) :: rgba
+        real(c_float), intent(in) :: size, radius
+        integer, intent(in) :: shape
+        real(c_float), dimension(:), pointer :: style
+        type(c_ptr) :: buffer
+        buffer = vkf_line_style(marker)
+        if (.not. c_associated(buffer)) then
+            status = -1
+            return
+        end if
+        call c_f_pointer(buffer, style, [8])
+        style(1:4) = rgba
+        style(5:7) = [size, real(shape, c_float), radius]
+        status = vkf_line_style_changed(marker)
+    end function marker_set_style
 
     !> Pointers to the arrays of a mesh of `n_vertices` vertices and `n_indices`
     !> indices (as created by `vkf_mesh_create`), to fill in place before the

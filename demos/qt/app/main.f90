@@ -17,7 +17,8 @@
 !> is drawn by a CurveArtist in a DrawableTrajectory (a child of the inertial
 !> frame), whole or traced up to the spacecraft (trace mode, from the dock);
 !> radius vectors (a SegmentArtist at every 12th point) are added to it and
-!> removed while running.
+!> removed while running; markers (a MarkerArtist: start, end, and every 10
+!> minutes) in a shape chosen from the dock, optionally auto-attenuated.
 !>
 !> How the pieces fit:
 !>
@@ -42,7 +43,8 @@
 !> n (1 Earth, 2 spacecraft, 3 spacecraft -> Earth); `--windows n` opens n
 !> windows at startup (the others start in the next views); `--rotation-speed n`
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
-!> starts with the orbit traced; `--radius` with the radius vectors shown.
+!> starts with the orbit traced; `--radius` with the radius vectors shown;
+!> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral).
 module vkdemo
 
     use qt
@@ -84,7 +86,8 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
-        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius
+        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
+        type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
@@ -102,6 +105,7 @@ module vkdemo
         type(DrawableTrajectory) :: orbit_frame                !! draws the orbit (in inertial coordinates)
         type(CurveArtist) :: orbit_curve
         type(SegmentArtist) :: radius_vectors                  !! from the Earth's center, added from the dock
+        type(MarkerArtist) :: orbit_markers                    !! start, end, every 10 minutes
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -112,6 +116,7 @@ module vkdemo
         logical :: test_resize = .false.
         logical :: start_trace = .false.
         logical :: start_radius = .false.
+        integer :: start_marker = 1
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -208,6 +213,13 @@ contains
         call app%orbit_frame%show_name_label(.false.)
         call app%orbit_frame%add_artist(app%orbit_curve)
         app%radius_vectors = SegmentArtist(app%orbit, color=[0.4_wp, 0.8_wp, 1.0_wp, 0.8_wp], stride=12)
+        app%orbit_markers = MarkerArtist(app%orbit, markers=ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END), &
+                                         size=12.0_wp)
+        call app%orbit_markers%set_marker_color(MARKER_START, [0.2_wp, 1.0_wp, 0.3_wp])
+        call app%orbit_markers%set_marker_color(MARKER_INTERMEDIATE, orbit_color)
+        call app%orbit_markers%set_intermediate_type(INTERMEDIATE_TIME)
+        call app%orbit_markers%set_intermediate_spacing(600.0_wp)
+        call app%orbit_frame%add_artist(app%orbit_markers)
 
         ! the tree: an inertial root (no decorations of its own) with the
         ! rotating Earth, the spacecraft and its orbit (both inertial)
@@ -664,7 +676,26 @@ contains
         class(*), intent(inout), optional :: data
         call app%orbit_curve%set_trace_mode(checked)
         call app%radius_vectors%set_trace_mode(checked)
+        call app%orbit_markers%set_trace_mode(checked)
     end subroutine on_trace_orbit
+
+    !> Marker shape (0: none; 1 + a MARKER_* shape).
+    subroutine on_marker_shape(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        if (index == 0) then
+            call app%orbit_markers%set_markers(0)
+        else
+            call app%orbit_markers%set_markers(ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END))
+            call app%orbit_markers%set_marker_shape(index - 1)
+        end if
+    end subroutine on_marker_shape
+
+    subroutine on_attenuate(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%orbit_markers%set_auto_attenuate(checked)
+    end subroutine on_attenuate
 
     !> Radius vectors: an artist added to the orbit's frame while running (built
     !> and compiled at the next frame), or removed.
@@ -796,6 +827,15 @@ contains
         app%show_radius = QCheckBox('Radius vectors')
         call app%show_radius%toggled%connect(on_show_radius)
         call form%addRow('', app%show_radius)
+        app%marker_shape = QComboBox()
+        call app%marker_shape%addItems([character(len=15) :: 'None', 'Disk', 'Circle', 'Square', 'Plus', 'X', 'Target', &
+                                        'Rose', 'Pulsing circle', 'Pulsing disk', 'Spiral'])
+        call app%marker_shape%setCurrentIndex(1)
+        call app%marker_shape%currentIndexChanged%connect(on_marker_shape)
+        call form%addRow('Markers', app%marker_shape)
+        app%attenuate = QCheckBox('Shrink markers with distance')
+        call app%attenuate%toggled%connect(on_attenuate)
+        call form%addRow('', app%attenuate)
         app%time_label = QLabel('Simulation time:')
         call form%addRow(app%time_label)
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
@@ -857,6 +897,10 @@ program vkframes_qt_demo
             app%start_trace = .true.
         case ('--radius')
             app%start_radius = .true.
+        case ('--marker')
+            call get_command_argument(i + 1, arg)
+            read(arg, *) app%start_marker
+            i = i + 1
         case ('--quit-after')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%quit_after
@@ -870,6 +914,7 @@ program vkframes_qt_demo
     call app%rotation_speed%setValue(app%start_rotation_speed)
     call app%trace_orbit%setChecked(app%start_trace)
     call app%show_radius%setChecked(app%start_radius)
+    call app%marker_shape%setCurrentIndex(app%start_marker)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
     call app%main%resize(1100, 700)

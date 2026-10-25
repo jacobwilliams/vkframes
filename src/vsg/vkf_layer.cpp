@@ -26,6 +26,7 @@
 #include <vsgXchange/all.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstring>
 #include <deque>
@@ -140,26 +141,31 @@ namespace
         return fallback;
     }
 
-    // The pipeline shared by all line strips, in all windows (shaders/line.vert, line.frag).
-    struct LinePipeline
+    // A pipeline drawing quads from a storage buffer of points, shared by all
+    // nodes of a kind, in all windows: line strips and segments (shaders/
+    // line.vert, line.frag), markers (marker.vert, marker.frag; textured: a
+    // marker image at binding 2).
+    struct PointsPipeline
     {
         vsg::ref_ptr<vsg::DescriptorSetLayout> descriptorSetLayout;
         vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
         vsg::ref_ptr<vsg::BindGraphicsPipeline> bindPipeline;
 
-        LinePipeline()
+        PointsPipeline(const std::vector<uint32_t>& vert, const std::vector<uint32_t>& frag, bool textured)
         {
-            descriptorSetLayout = vsg::DescriptorSetLayout::create(vsg::DescriptorSetLayoutBindings{
+            vsg::DescriptorSetLayoutBindings bindings{
                 {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // points
-                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // style
-            });
+                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}, // style
+            };
+            if (textured) bindings.push_back({2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
+            descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
             // EyeRelative pushes the eye position and the viewport (3 x vec4, offset 128)
             pipelineLayout = vsg::PipelineLayout::create(vsg::DescriptorSetLayouts{descriptorSetLayout},
                                                          vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 176}});
             vsg::ShaderStages stages{
-                vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vsg::ShaderModule::create(vkf_shaders::line_vert)),
-                vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", vsg::ShaderModule::create(vkf_shaders::line_frag)),
+                vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vsg::ShaderModule::create(vert)),
+                vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", vsg::ShaderModule::create(frag)),
             };
             auto rasterization = vsg::RasterizationState::create();
             rasterization->cullMode = VK_CULL_MODE_NONE;
@@ -180,10 +186,25 @@ namespace
     // The line pipeline, created on first use and kept for the whole run (VSG
     // compiles it once per device; not destroyed at exit, to avoid depending
     // on the order of static destruction).
-    LinePipeline& line_pipeline()
+    PointsPipeline& line_pipeline()
     {
-        static LinePipeline* pipeline = new LinePipeline;
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::line_vert, vkf_shaders::line_frag, false);
         return *pipeline;
+    }
+
+    PointsPipeline& marker_pipeline()
+    {
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::marker_vert, vkf_shaders::marker_frag, true);
+        return *pipeline;
+    }
+
+    // Seconds since the first call, for animated markers (as osg_FrameTime;
+    // wrapped every hour to keep float precision).
+    float frame_time()
+    {
+        using clock = std::chrono::steady_clock;
+        static const auto start = clock::now();
+        return static_cast<float>(std::fmod(std::chrono::duration<double>(clock::now() - start).count(), 3600.0));
     }
 
     // Framebuffer pixels per window unit, stored on each vsg::View (2 on Retina).
@@ -332,9 +353,10 @@ namespace
             const vsg::dmat4 modelView = state->modelviewMatrixStack.top();
             const vsg::dvec3 eye = vsg::inverse(modelView) * vsg::dvec3(0.0, 0.0, 0.0);
 
-            float constants[12] = {};       // eye high, eye low, viewport (width, height, pixel ratio)
+            float constants[12] = {};       // eye high, eye low, viewport (width, height, pixel ratio, time)
             for (int i = 0; i < 3; ++i) split(eye[i], constants[i], constants[4 + i]);
             recorded_viewport(visitor, constants + 8);
+            constants[11] = frame_time();
             auto& commandBuffer = *state->_commandBuffer;
             vkCmdPushConstants(commandBuffer, pipelineLayout->vk(commandBuffer.deviceID), VK_SHADER_STAGE_VERTEX_BIT,
                                128, sizeof(constants), constants);
@@ -404,14 +426,18 @@ namespace
     struct LineStrip : Node
     {
         vsg::ref_ptr<vsg::floatArray> points; // 6 floats per point: xyz high, xyz low
-        vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, separate segments, -, -)]
+        vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, separate segments, -, -)]; markers: see marker.vert
         vsg::ref_ptr<vsg::Draw> draw;
+        bool markers = false;                // a quad per point
 
         bool segments() const { return style->at(1).y > 0.5f; }
         // the vertices drawing points first .. first+n-1 (1-based)
         void setRange(uint32_t first, uint32_t n)
         {
-            if (segments()) {
+            if (markers) {
+                draw->firstVertex = 6 * (first - 1);
+                draw->vertexCount = 6 * n;
+            } else if (segments()) {
                 draw->firstVertex = 6 * ((first - 1) / 2);
                 draw->vertexCount = 6 * (n / 2);
             } else {
@@ -1227,6 +1253,46 @@ VKF_API void* vkf_line_create(int capacity)
         eyeRelative->addChild(stateGroup);
         line->node = eyeRelative;
         return line.release();
+    });
+}
+
+// Markers at up to capacity points (initially none): a screen-space quad per
+// point, of the shape and size in the style buffer (shaders/marker.vert), with
+// image (a vkf_image_read handle, or null) for the image shape. The point and
+// style buffers are those of a line (vkf_line_points, vkf_line_style,
+// vkf_line_points_changed, vkf_line_set_range, vkf_line_style_changed).
+VKF_API void* vkf_marker_create(int capacity, void* image)
+{
+    if (capacity < 1) return nullptr;
+    return guarded("vkf_marker_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto& pipeline = marker_pipeline();
+        auto marker = std::make_unique<LineStrip>();
+        marker->markers = true;
+        marker->points = vsg::floatArray::create(6 * static_cast<uint32_t>(capacity), 0.0f);
+        marker->points->properties.dataVariance = vsg::DYNAMIC_DATA;
+        marker->style = dynamic_vec4_array(2);
+
+        vsg::ref_ptr<vsg::Data> data;
+        if (image) data = static_cast<Image*>(image)->data;
+        else data = vsg::ubvec4Array2D::create(1, 1, vsg::ubvec4(255, 255, 255, 255), vsg::Data::Properties{VK_FORMAT_R8G8B8A8_UNORM});
+        auto sampler = vsg::Sampler::create();
+        sampler->addressModeU = sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+        auto descriptorSet = vsg::DescriptorSet::create(pipeline.descriptorSetLayout, vsg::Descriptors{
+            vsg::DescriptorBuffer::create(marker->points, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
+            vsg::DescriptorBuffer::create(marker->style, 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER),
+            vsg::DescriptorImage::create(sampler, data, 2, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER),
+        });
+
+        auto stateGroup = vsg::StateGroup::create();
+        stateGroup->add(pipeline.bindPipeline);
+        stateGroup->add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, descriptorSet));
+        marker->draw = vsg::Draw::create(0, 1, 0, 0);
+        stateGroup->addChild(marker->draw);
+        auto eyeRelative = EyeRelative::create(pipeline.pipelineLayout);
+        eyeRelative->addChild(stateGroup);
+        marker->node = eyeRelative;
+        return marker.release();
     });
 }
 

@@ -537,9 +537,20 @@ Decided so far:
 - [x] Artists can be removed and added again while running: the layer keeps
       removed nodes alive for 32 more frames (frames in flight may still use
       them), the artist releases its handles and is built anew when added.
-- [ ] `MarkerArtist` (start/intermediate/end markers, spacing by time,
-      distance or data; shapes from the ported marker shaders; size;
-      auto-attenuation).
+- [x] `MarkerArtist`: start/intermediate/end markers (colors per kind),
+      intermediate spacing by time, arc length or data points, counted from
+      the start (computed incrementally as points are appended) or the end;
+      size in window units; auto-attenuation (OpenFrames' size *
+      sqrt(R/d) for d > R, R from the points' bounds); shapes: OpenFrames'
+      disk and all its Demos/Shaders/Marker_*.frag built into one fragment
+      shader (`MARKER_*`; animated ones use the frame time), or an image
+      (`set_marker_image`, tinted, transparent parts left out). Markers are
+      screen-space quads (shaders/marker.vert), not point sprites: no
+      device point-size limits, the same on all platforms. Trace mode (an
+      addition): markers passed, the end marker at the current point.
+- [ ] `MarkerArtist%set_marker_shader` (a user GLSL file): needs runtime
+      GLSL → SPIR-V (VSG's ShaderCompiler / glslang); the shapes of
+      OpenFrames' shader files are built in instead.
 - [ ] Star background from the HYG catalog (magnitude range → size and
       color).
 

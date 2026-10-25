@@ -19,7 +19,11 @@ module vkframes
     use vkf_model, only: Model
     use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE
     use vkf_hud, only: HUDText
-    use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, DrawableTrajectory
+    use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist, DrawableTrajectory, &
+                           MARKER_START, MARKER_INTERMEDIATE, MARKER_END, &
+                           INTERMEDIATE_TIME, INTERMEDIATE_DISTANCE, INTERMEDIATE_DATA, &
+                           MARKER_DISK, MARKER_CIRCLE, MARKER_SQUARE, MARKER_PLUS, MARKER_X, MARKER_TARGET, &
+                           MARKER_ROSE, MARKER_CIRCLE_PULSE, MARKER_DISK_PULSE, MARKER_SPIRAL, MARKER_IMAGE
     use vkf_view, only: View, ABSOLUTE_FRAME, RELATIVE_FRAME, VIEW_DIRECT, VIEW_AZEL, ORTHOGRAPHIC, PERSPECTIVE
 
     implicit none
