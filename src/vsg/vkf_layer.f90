@@ -11,8 +11,12 @@ module vkf_layer
     private
 
     public :: vkf_vulkan_device_name
-    public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_add_node, vkf_viewer_frame
-    public :: vkf_sphere_create, vkf_node_delete
+    public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
+    public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
+    public :: vkf_node_delete, vkf_node_add_child
+    public :: vkf_transform_create, vkf_transform_set_matrix
+    public :: vkf_sphere_create
+    public :: vkf_line_create, vkf_line_set_points, vkf_line_set_style
     public :: vulkan_device_name
 
     interface
@@ -35,6 +39,19 @@ module vkf_layer
             type(c_ptr), value :: viewer
         end subroutine vkf_viewer_delete
 
+        integer(c_int) function vkf_viewer_look_at(viewer, eye, center, up) bind(C, name="vkf_viewer_look_at")
+            import :: c_ptr, c_int, c_double
+            type(c_ptr), value :: viewer
+            real(c_double), dimension(3), intent(in) :: eye, center, up
+        end function vkf_viewer_look_at
+
+        integer(c_int) function vkf_viewer_perspective(viewer, fovy, near_distance, far_distance) &
+                bind(C, name="vkf_viewer_perspective")
+            import :: c_ptr, c_int, c_double
+            type(c_ptr), value :: viewer
+            real(c_double), value :: fovy, near_distance, far_distance
+        end function vkf_viewer_perspective
+
         integer(c_int) function vkf_viewer_add_node(viewer, node) bind(C, name="vkf_viewer_add_node")
             import :: c_ptr, c_int
             type(c_ptr), value :: viewer, node
@@ -44,6 +61,28 @@ module vkf_layer
             import :: c_ptr, c_int
             type(c_ptr), value :: viewer
         end function vkf_viewer_frame
+
+        integer(c_int) function vkf_viewer_capture(viewer, filename, filename_len) bind(C, name="vkf_viewer_capture")
+            import :: c_ptr, c_int, c_char
+            type(c_ptr), value :: viewer
+            character(kind=c_char), dimension(*), intent(in) :: filename
+            integer(c_int), value :: filename_len
+        end function vkf_viewer_capture
+
+        integer(c_int) function vkf_node_add_child(parent, child) bind(C, name="vkf_node_add_child")
+            import :: c_ptr, c_int
+            type(c_ptr), value :: parent, child
+        end function vkf_node_add_child
+
+        type(c_ptr) function vkf_transform_create() bind(C, name="vkf_transform_create")
+            import :: c_ptr
+        end function vkf_transform_create
+
+        integer(c_int) function vkf_transform_set_matrix(transform, m) bind(C, name="vkf_transform_set_matrix")
+            import :: c_ptr, c_int, c_double
+            type(c_ptr), value :: transform
+            real(c_double), dimension(4,4), intent(in) :: m
+        end function vkf_transform_set_matrix
 
         type(c_ptr) function vkf_sphere_create(radius, rgba) bind(C, name="vkf_sphere_create")
             import :: c_ptr, c_double, c_float
@@ -55,6 +94,28 @@ module vkf_layer
             import :: c_ptr
             type(c_ptr), value :: node
         end subroutine vkf_node_delete
+
+        type(c_ptr) function vkf_line_create(viewer, capacity, rgba, width) bind(C, name="vkf_line_create")
+            import :: c_ptr, c_int, c_float
+            type(c_ptr), value :: viewer
+            integer(c_int), value :: capacity
+            real(c_float), dimension(4), intent(in) :: rgba
+            real(c_float), value :: width
+        end function vkf_line_create
+
+        integer(c_int) function vkf_line_set_points(line, n, xyz) bind(C, name="vkf_line_set_points")
+            import :: c_ptr, c_int, c_double
+            type(c_ptr), value :: line
+            integer(c_int), value :: n
+            real(c_double), dimension(3,*), intent(in) :: xyz
+        end function vkf_line_set_points
+
+        integer(c_int) function vkf_line_set_style(line, rgba, width) bind(C, name="vkf_line_set_style")
+            import :: c_ptr, c_int, c_float
+            type(c_ptr), value :: line
+            real(c_float), dimension(4), intent(in) :: rgba
+            real(c_float), value :: width
+        end function vkf_line_set_style
 
     end interface
 

@@ -285,23 +285,31 @@ test/           headless tests (geometry, interpolation, time) + render tests
 
 Goal: settle the platform and design risks before writing the engine.
 
-- [ ] A pixi env with VSG, vsgXchange and MoltenVK. A C++ layer with a
+- [x] A pixi env with VSG, vsgXchange and MoltenVK. A C++ layer with a
       handful of `extern "C"` functions, called from a Fortran program.
 - [ ] A VSG window on macOS, Linux and Windows showing:
   - [ ] a textured sphere (vsgXchange image loading);
   - [ ] a loaded model (`.3ds` or glTF through vsgXchange);
-  - [ ] an orbit drawn with **thick lines** (screen-space quads), proven on
+  - [x] an orbit drawn with **thick lines** (screen-space quads), proven on
         MoltenVK;
   - [ ] trackball control;
-  - [ ] a per-frame Fortran update moving a frame along a sampled orbit.
+  - [x] a per-frame Fortran update moving a frame along a sampled orbit.
 - [ ] Camera-relative double-precision rendering with reverse-Z, checked
       with an Earth-sized body and a 10 m spacecraft in the same view.
 - [ ] Embedding in a qt-fortran GUI (vsgQt, or the native-handle fallback),
       including resize and mouse forwarding.
-- [ ] Screen capture to PNG (needed for automated render tests).
+- [x] Screen capture to PNG (needed for automated render tests).
 
 Exit: decide vsgQt or native handle, the shader build approach, and the
 line-rendering technique.
+
+Decided so far:
+- **Shaders:** compiled to SPIR-V at build time (`glslangValidator`, by
+  `tools/fpm_vsg.py`) into a generated `src/vsg/vkf_shaders.cpp`.
+- **Lines:** no vertex buffers; points in a storage buffer, each segment
+  expanded to a screen-space quad in the vertex shader (`gl_VertexIndex`),
+  square caps at the joins, clipped at `w = ε`. Widths are in window units
+  (logical pixels), scaled by the framebuffer/window pixel ratio on Retina.
 
 ### 2. Core engine
 
