@@ -73,9 +73,10 @@ namespace
                 {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // style
                 {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // viewport
             });
-            // VSG pushes the projection and model-view matrices (2 x mat4)
+            // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
+            // EyeRelative pushes the eye position (2 x vec4, offset 128)
             pipelineLayout = vsg::PipelineLayout::create(vsg::DescriptorSetLayouts{descriptorSetLayout},
-                                                         vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 128}});
+                                                         vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 160}});
             vsg::ShaderStages stages{
                 vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vsg::ShaderModule::create(vkf_shaders::line_vert)),
                 vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", vsg::ShaderModule::create(vkf_shaders::line_frag)),
@@ -93,6 +94,55 @@ namespace
                 vsg::DepthStencilState::create(),
             };
             bindPipeline = vsg::BindGraphicsPipeline::create(vsg::GraphicsPipeline::create(pipelineLayout, stages, states));
+        }
+    };
+
+    // Splits x into a float pair (high, low) with high + low == x to about 48 bits.
+    void split(double x, float& high, float& low)
+    {
+        high = static_cast<float>(x);
+        low = static_cast<float>(x - static_cast<double>(high));
+    }
+
+    // Records its children relative to the eye (RTE), for geometry whose
+    // coordinates are too large for float precision (trajectories far from their
+    // frame's origin). The vertex shader gets each point as a (high, low) float
+    // pair. In the record traversal this node takes VSG's double model-view
+    // matrix, inverts it to find the eye position in the local frame, pushes that
+    // as a (high, low) pair (push constants at offset 128), and replaces the
+    // model-view matrix with a copy whose translation is zeroed. The shader then
+    // subtracts the eye from each point in double-single arithmetic.
+    //
+    // This is OpenFrames' method (DrawableTrajectory's UniformCallback and
+    // TrajectoryArtist's vertex shader; Cozzi & Ring, "3D Engine Design for
+    // Virtual Globes"), with push constants in place of uniforms.
+    class EyeRelative : public vsg::Inherit<vsg::Group, EyeRelative>
+    {
+    public:
+        explicit EyeRelative(vsg::ref_ptr<vsg::PipelineLayout> layout) :
+            pipelineLayout(layout) {}
+
+        vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
+
+        void traverse(vsg::RecordTraversal& visitor) const override
+        {
+            auto state = visitor.getState();
+            const vsg::dmat4 modelView = state->modelviewMatrixStack.top();
+            const vsg::dvec3 eye = vsg::inverse(modelView) * vsg::dvec3(0.0, 0.0, 0.0);
+
+            float eyeHighLow[8] = {};
+            for (int i = 0; i < 3; ++i) split(eye[i], eyeHighLow[i], eyeHighLow[4 + i]);
+            auto& commandBuffer = *state->_commandBuffer;
+            vkCmdPushConstants(commandBuffer, pipelineLayout->vk(commandBuffer.deviceID), VK_SHADER_STAGE_VERTEX_BIT,
+                               128, sizeof(eyeHighLow), eyeHighLow);
+
+            vsg::dmat4 rotationOnly = modelView;
+            rotationOnly[3][0] = rotationOnly[3][1] = rotationOnly[3][2] = 0.0;
+            state->modelviewMatrixStack.push(rotationOnly);
+            state->dirty = true;
+            Group::traverse(visitor);
+            state->modelviewMatrixStack.pop();
+            state->dirty = true;
         }
     };
 
@@ -122,7 +172,7 @@ namespace
 
     struct LineStrip : Node
     {
-        vsg::ref_ptr<vsg::vec4Array> points; // capacity = size of the array
+        vsg::ref_ptr<vsg::vec4Array> points; // (high, low) pair per point; capacity = size / 2
         vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, -, -, -)]
         vsg::ref_ptr<vsg::Draw> draw;
     };
@@ -401,7 +451,8 @@ void* vkf_sphere_create(double radius, const float* rgba)
 }
 
 // ---------------------------------------------------------------------------
-// Line strips: thick lines of constant pixel width (shaders/line.vert)
+// Line strips: thick lines of constant pixel width (shaders/line.vert), with
+// points kept to double precision (drawn relative to the eye)
 
 // A line strip holding up to capacity points (initially none), drawn with the
 // given color (rgba) and width in window units (logical pixels: points on macOS). Belongs to the viewer's scene.
@@ -412,7 +463,7 @@ void* vkf_line_create(void* viewer, int capacity, const float* rgba, float width
     return guarded("vkf_line_create", static_cast<void*>(nullptr), [&]() -> void* {
         auto& pipeline = v->lines();
         auto line = std::make_unique<LineStrip>();
-        line->points = dynamic_vec4_array(static_cast<uint32_t>(capacity));
+        line->points = dynamic_vec4_array(2 * static_cast<uint32_t>(capacity));
         line->style = dynamic_vec4_array(2);
         line->style->set(0, vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]));
         line->style->set(1, vsg::vec4(width, 0.0f, 0.0f, 0.0f));
@@ -428,7 +479,9 @@ void* vkf_line_create(void* viewer, int capacity, const float* rgba, float width
         stateGroup->add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, descriptorSet));
         line->draw = vsg::Draw::create(0, 1, 0, 0);
         stateGroup->addChild(line->draw);
-        line->node = stateGroup;
+        auto eyeRelative = EyeRelative::create(pipeline.pipelineLayout);
+        eyeRelative->addChild(stateGroup);
+        line->node = eyeRelative;
         return line.release();
     });
 }
@@ -438,9 +491,14 @@ void* vkf_line_create(void* viewer, int capacity, const float* rgba, float width
 int vkf_line_set_points(void* line, int n, const double* xyz)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
-    if (!l || n < 0 || static_cast<uint32_t>(n) > l->points->size()) return -1;
+    if (!l || n < 0 || 2 * static_cast<uint32_t>(n) > l->points->size()) return -1;
     for (int i = 0; i < n; ++i)
-        l->points->set(i, vsg::vec4(static_cast<float>(xyz[3 * i]), static_cast<float>(xyz[3 * i + 1]), static_cast<float>(xyz[3 * i + 2]), 1.0f));
+    {
+        vsg::vec4 high(0.0f, 0.0f, 0.0f, 1.0f), low(0.0f, 0.0f, 0.0f, 0.0f);
+        for (int k = 0; k < 3; ++k) split(xyz[3 * i + k], high[k], low[k]);
+        l->points->set(2 * i, high);
+        l->points->set(2 * i + 1, low);
+    }
     l->points->dirty();
     l->draw->vertexCount = (n >= 2) ? 6 * static_cast<uint32_t>(n - 1) : 0;
     return 0;

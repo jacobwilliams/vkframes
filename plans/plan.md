@@ -294,8 +294,9 @@ Goal: settle the platform and design risks before writing the engine.
         MoltenVK;
   - [ ] trackball control;
   - [x] a per-frame Fortran update moving a frame along a sampled orbit.
-- [ ] Camera-relative double-precision rendering with reverse-Z, checked
-      with an Earth-sized body and a 10 m spacecraft in the same view.
+- [x] Camera-relative double-precision rendering with reverse-Z, checked
+      with an Earth-sized body and a 10 m spacecraft in the same view
+      (`example/precision.f90`).
 - [ ] Embedding in a qt-fortran GUI (vsgQt, or the native-handle fallback),
       including resize and mouse forwarding.
 - [x] Screen capture to PNG (needed for automated render tests).
@@ -310,6 +311,23 @@ Decided so far:
   expanded to a screen-space quad in the vertex shader (`gl_VertexIndex`),
   square caps at the joins, clipped at `w = ε`. Widths are in window units
   (logical pixels), scaled by the framebuffer/window pixel ratio on Retina.
+- **Precision:** OpenFrames' method, adapted to VSG.
+  - Trajectory points are (high, low) float pairs, drawn relative to the eye
+    (RTE): a node in the record traversal inverts VSG's double model-view to
+    get the eye, pushes it as a (high, low) pair (push constants), and zeroes
+    the model-view translation; the shader uses OpenFrames' double-single
+    subtraction. This is the same as OpenFrames' `DrawableTrajectory` /
+    `TrajectoryArtist` (Cozzi & Ring, *3D Engine Design for Virtual Globes*).
+  - Bodies and models under transforms need nothing extra: VSG accumulates
+    transforms in double and converts only the final model-view to float.
+  - Depth: reverse-Z with a 32-bit float depth buffer (VSG's default)
+    replaces `DepthPartitioner`; 0.1 m to 1e8 m in one pass works.
+  - Plain float puts a 7000 km orbit line about 1 m off a spacecraft seen
+    from 30 m; RTE puts it through the center. (MoltenVK's fast math does
+    not break the error-compensated subtraction.)
+  - Still open: a planet's own surface vertices are float in the planet's
+    frame (about 0.5 m at Earth radius). Fine for a textured sphere;
+    close-up terrain would need tiles with local origins.
 
 ### 2. Core engine
 

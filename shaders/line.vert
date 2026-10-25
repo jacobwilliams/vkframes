@@ -6,14 +6,23 @@
 // by gl_VertexIndex, so a strip of n points is one draw of 6*(n-1) vertices.
 // Segments are extended by half the width at each end (square caps), which
 // covers the gaps at the joins.
+//
+// Points are drawn relative to the eye (RTE) to keep double precision far from
+// the origin (see EyeRelative in src/vsg/vkf_layer.cpp): each point is a (high,
+// low) float pair, the eye position in the same frame is pushed as a pair, and
+// the model-view matrix has its translation zeroed. The subtraction is
+// OpenFrames' (TrajectoryArtist.cpp), a double-single difference that carries
+// the rounding error of each step.
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;
-    mat4 modelView;
+    mat4 modelView;         // with its translation zeroed
+    vec4 eyeHigh;           // eye position in the points' frame, (high, low) pair
+    vec4 eyeLow;
 } pc;
 
 layout(std430, set = 0, binding = 0) readonly buffer Points {
-    vec4 p[];               // xyz = position, w unused
+    vec4 p[];               // point i: p[2i] = high part, p[2i+1] = low part (xyz)
 } points;
 
 layout(set = 0, binding = 1) uniform Style {
@@ -38,14 +47,35 @@ const vec2 corners[6] = vec2[](vec2(0.0, -1.0), vec2(1.0, -1.0), vec2(0.0, 1.0),
 
 const float W_MIN = 1.0e-6;
 
+// Position of point i relative to the eye: (high + low) - (eyeHigh + eyeLow)
+// in double-single arithmetic.
+vec3 eyeRelative(int i)
+{
+    vec3 high = points.p[2 * i].xyz;
+    vec3 low = points.p[2 * i + 1].xyz;
+
+    // low part of point - eye, and its rounding error
+    precise vec3 t1 = low - pc.eyeLow.xyz;
+    precise vec3 e = t1 - low;
+
+    // high part of point - eye, including the error of the low part
+    precise vec3 t2 = ((-pc.eyeLow.xyz - e) + (low - (t1 - e))) + high - pc.eyeHigh.xyz;
+
+    // sum of the low and high parts, and its rounding error
+    precise vec3 diffHigh = t1 + t2;
+    precise vec3 diffLow = t2 - (diffHigh - t1);
+    precise vec3 r = diffHigh + diffLow;
+    return r;
+}
+
 void main()
 {
     int segment = gl_VertexIndex / 6;
     vec2 corner = corners[gl_VertexIndex % 6];
 
     mat4 mvp = pc.projection * pc.modelView;
-    vec4 a = mvp * vec4(points.p[segment].xyz, 1.0);
-    vec4 b = mvp * vec4(points.p[segment + 1].xyz, 1.0);
+    vec4 a = mvp * vec4(eyeRelative(segment), 1.0);
+    vec4 b = mvp * vec4(eyeRelative(segment + 1), 1.0);
 
     // clip the segment to the part in front of the eye (w > 0)
     if (a.w < W_MIN && b.w < W_MIN) {
