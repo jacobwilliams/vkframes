@@ -16,6 +16,7 @@ module vkf_layer
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
     public :: vkf_node_delete, vkf_node_add_child, vkf_node_bound
+    public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
     public :: vkf_mesh_create, vkf_mesh_array
@@ -138,6 +139,18 @@ module vkf_layer
             real(c_double), dimension(3), intent(out) :: center
             real(c_double), intent(out) :: radius
         end function vkf_node_bound
+
+        type(c_ptr) function vkf_switch_create() bind(C, name="vkf_switch_create")
+            import :: c_ptr
+            implicit none
+        end function vkf_switch_create
+
+        integer(c_int) function vkf_switch_set(node, visible) bind(C, name="vkf_switch_set")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: node
+            integer(c_int), value :: visible
+        end function vkf_switch_set
 
         type(c_ptr) function vkf_transform_create() bind(C, name="vkf_transform_create")
             import :: c_ptr

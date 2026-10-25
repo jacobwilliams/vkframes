@@ -431,15 +431,26 @@ Decided so far:
 - [ ] Fortran types:
   - [x] `ReferenceFrame` (tree, position, attitude, color; axes, label and
         light settings stored, drawn later) — `src/vkf_frames.f90`;
-  - [ ] `Sphere`, `Model`;
+  - [x] `Sphere` (radius, `set_sphere_scale` as an exact ellipsoid, sphere
+        position/attitude, texture; night texture and auto LOD stored, drawn
+        later) — `src/vkf_sphere.f90`; `Model` (file read at once so its
+        bound is known, `share_model`, model position/attitude/scale/pivot)
+        — `src/vkf_model.f90`;
   - [x] `Trajectory` (time, position, attitude, optionals; data sources) —
         `src/vkf_trajectory.f90`;
   - [x] `TrajectoryFollower` (LOOP/LIMIT, several trajectories, linear and
         slerp interpolation, fixed/offset time) — `src/vkf_follower.f90`;
   - [x] simulation clock (time, scale, pause, range, synchronization) —
         `src/vkf_clock.f90` (`SimulationClock`).
-  - [ ] the scene: frames drawn through the C++ layer (transforms, axes,
-        labels), updated each frame from the clock.
+  - [x] the scene: `FrameManager` and `WindowProxy` (`src/vkf_window.f90`:
+        own or host window, scene, OpenFrames' time calls, background,
+        interim camera, `frame`/`run`, capture, host events). Frames get a
+        transform node and a switch for their contents when first shown
+        (`realize`, `build_contents`), and `sync` copies their transforms
+        each frame. For now the tree must be complete before the first
+        frame (adding nodes to a running window needs VSG's compile
+        manager), and a frame's nodes are shared by all windows showing it.
+  - [ ] axes and labels drawn (needs text).
 
   Engine notes (deviations from OpenFrames):
   - Trajectories grow by doubling, positions and attitudes separately, and

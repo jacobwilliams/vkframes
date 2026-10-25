@@ -628,15 +628,44 @@ VKF_API void vkf_node_delete(void* node)
     delete static_cast<Node*>(node);
 }
 
-// Add child to a group node (e.g. a transform). Must be called before the first frame.
+// Add child to a group node (a transform or a switch). Must be called before the first frame.
 VKF_API int vkf_node_add_child(void* parent, void* child)
 {
     auto p = static_cast<Node*>(parent);
     auto c = static_cast<Node*>(child);
     if (!p || !c) return -1;
-    auto group = p->node.cast<vsg::Group>();
-    if (!group) return -1;
-    group->addChild(c->node);
+    if (auto group = p->node.cast<vsg::Group>())
+    {
+        group->addChild(c->node);
+        return 0;
+    }
+    if (auto sw = p->node.cast<vsg::Switch>())
+    {
+        // a new child takes the switch's current state (that of its first child, on if none)
+        sw->addChild(sw->children.empty() ? true : sw->children.front().mask != vsg::MASK_OFF, c->node);
+        return 0;
+    }
+    return -1;
+}
+
+// A switch node: a group whose children can be hidden and shown together.
+VKF_API void* vkf_switch_create()
+{
+    return guarded("vkf_switch_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto n = std::make_unique<Node>();
+        n->node = vsg::Switch::create();
+        return n.release();
+    });
+}
+
+// Show (visible = 1) or hide (0) all children of a switch.
+VKF_API int vkf_switch_set(void* node, int visible)
+{
+    auto n = static_cast<Node*>(node);
+    if (!n) return -1;
+    auto sw = n->node.cast<vsg::Switch>();
+    if (!sw) return -1;
+    sw->setAllChildren(visible != 0);
     return 0;
 }
 

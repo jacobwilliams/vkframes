@@ -10,8 +10,18 @@
 !> pointers, so a frame (declared `target`, or allocated) must stay alive while
 !> it is in a tree, or be removed first (`detach`). A frame may have several
 !> parents; adding a child that is an ancestor of the parent is refused.
+!>
+!> Rendering: when a window first shows a tree (`realize`), each frame gets a
+!> transform node, with its contents (`build_contents`, which extensions
+!> override) under a switch for `show_contents`; children's nodes go under the
+!> parent's transform, so a frame with several parents is drawn under each.
+!> Each frame, `sync` copies positions and attitudes to the transforms. For now
+!> a tree must be complete before its window's first frame.
 module vkf_frames
 
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int
+    use vkf_layer, only: vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
+                         vkf_node_add_child
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
     use vkf_trajectory, only: Trajectory
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE
@@ -58,6 +68,10 @@ module vkf_frames
         integer :: label_alignment_ = ALIGN_LEFT_BASE_LINE
         logical :: light_source = .false.
         logical :: contents = .true.
+        ! rendering
+        type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
+        type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
+        logical :: realized = .false.
     contains
         procedure :: set_name, name
         procedure :: set_color, color
@@ -80,6 +94,7 @@ module vkf_frames
         procedure :: frame_string
         procedure :: follow, unfollow, follower, is_following
         procedure :: update
+        procedure :: realize, build_contents, sync, node
     end type ReferenceFrame
 
     interface ReferenceFrame
@@ -316,6 +331,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         logical, intent(in) :: show
         self%contents = show
+        if (c_associated(self%contents_node)) call check(vkf_switch_set(self%contents_node, merge(1_c_int, 0_c_int, show)))
     end subroutine show_contents
 
     pure logical function contents_shown(self)
@@ -492,6 +508,61 @@ contains
             call self%children(k)%p%update(t)
         end do
     end subroutine update
+
+    ! ==================================================================
+    ! rendering
+
+    !> Create the render nodes of this frame and its descendants (once; for
+    !> `viewer`, the window's viewer handle, which some contents need).
+    recursive subroutine realize(self, viewer)
+        class(ReferenceFrame), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer
+        integer :: k
+        if (self%realized) return
+        self%realized = .true.
+        self%node_ = vkf_transform_create()
+        self%contents_node = vkf_switch_create()
+        call check(vkf_node_add_child(self%node_, self%contents_node))
+        call self%build_contents(viewer, self%contents_node)
+        if (.not. self%contents) call check(vkf_switch_set(self%contents_node, 0_c_int))
+        call self%sync()
+        do k = 1, self%n_children
+            call self%children(k)%p%realize(viewer)
+            call check(vkf_node_add_child(self%node_, self%children(k)%p%node_))
+        end do
+    end subroutine realize
+
+    !> Add what this frame draws to `group` (a node handle). ReferenceFrame
+    !> draws nothing itself (its axes and labels come later); extensions such as
+    !> Sphere and Model override this.
+    subroutine build_contents(self, viewer, group)
+        class(ReferenceFrame), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer, group
+    end subroutine build_contents
+
+    !> Copy the positions and attitudes of this frame and its descendants to
+    !> their transform nodes.
+    recursive subroutine sync(self)
+        class(ReferenceFrame), intent(inout) :: self
+        integer :: k
+        if (.not. self%realized) return
+        call check(vkf_transform_set_matrix(self%node_, self%local_matrix()))
+        do k = 1, self%n_children
+            call self%children(k)%p%sync()
+        end do
+    end subroutine sync
+
+    !> The frame's transform node (null until realized).
+    function node(self) result(n)
+        class(ReferenceFrame), intent(in) :: self
+        type(c_ptr) :: n
+        n = self%node_
+    end function node
+
+    subroutine check(status)
+        integer(c_int), intent(in) :: status
+        if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed'
+    end subroutine check
 
     ! ==================================================================
     ! helpers

@@ -2,24 +2,26 @@
 !> VulkanSceneGraph into a QWindow embedded in a QMainWindow, next to a dock of
 !> qt-fortran controls.
 !>
-!> The scene uses vkframes' engine types: the orbit is a Trajectory (positions
-!> and attitudes over one period), the spacecraft a ReferenceFrame that follows
-!> it (LOOP or LIMIT, from the dock), a child of the Earth's frame, and time
-!> comes from a SimulationClock (time scale, pause and reset from the dock).
-!> The orbit line is drawn from the trajectory's positions.
+!> The scene uses vkframes' API: the Earth is a Sphere (the WGS84 ellipsoid,
+!> textured), the spacecraft a Model (or a small Sphere without the data) that
+!> follows a Trajectory (positions and attitudes over one period; LOOP or LIMIT
+!> from the dock), a child of the Earth. A FrameManager holds the scene and a
+!> WindowProxy shows it, with its simulation time (time scale, pause and reset
+!> from the dock). The orbit line is still a low-level line node, drawn from
+!> the trajectory's positions, until trajectory artists come.
 !>
 !> How the pieces fit:
 !>
-!> * The host owns a plain QWindow. On its first expose,
-!>   vkframes creates its viewer on the window's native handle (`winId()`):
-!>   VSG renders into that window and leaves its events to Qt.
-!> * A QtfEventFilter forwards the window's events to the viewer: resizes, and
-!>   mouse, wheel and keys for the trackball, converted here to VSG's
-!>   conventions (framebuffer pixels: logical * devicePixelRatio).
+!> * The host owns a plain QWindow. On its first expose, the WindowProxy opens
+!>   on the window's native handle (`winId()`): VSG renders into that window and
+!>   leaves its events to Qt.
+!> * A QtfEventFilter forwards the window's events to the WindowProxy:
+!>   resizes, and mouse, wheel and keys for the trackball, converted here to
+!>   VSG's conventions (framebuffer pixels: logical * devicePixelRatio).
 !> * Everything runs on the GUI thread (Vulkan has no current context, so there
 !>   is no render thread and none of OpenGL's macOS workarounds): each
-!>   `updateRequest` advances the simulation, renders a frame and asks for the
-!>   next one, so frames follow the display's refresh.
+!>   `updateRequest` renders a frame (WindowProxy%frame: time, frames, draw)
+!>   and asks for the next one, so frames follow the display's refresh.
 !>
 !> Run with `pixi run -e qt qt-demo` (from the vkframes root). Options:
 !> `--data dir` OpenFrames' Demos folder, for the Earth texture and Hubble model
@@ -29,18 +31,18 @@
 module vkdemo
 
     use qt
-    use vkf_layer
-    use vkf_geometry, only: ellipsoid_create, sphere_create
-    use vkframes, only: wp, pi, Trajectory, ReferenceFrame, SimulationClock, TrajectoryFollower, &
-                        FOLLOW_LOOP, FOLLOW_LIMIT, FOLLOW_POSITION, FOLLOW_ATTITUDE, &
-                        quat_from_axis_angle, quat_multiply
+    use vkframes
+    use vkf_layer, only: vkf_line_create, line_set_points, line_set_style, vkf_viewer_add_node, vkf_node_delete
     use iso_c_binding
     implicit none
+
     real(wp), parameter :: mu = 398600.4418_wp                  !! Earth's gravitational parameter (km^3/s^2)
-    real(wp), parameter :: radii(3) = [6378.137_wp, 6378.137_wp, 6356.752314245_wp]  !! WGS84 (km)
+    real(wp), parameter :: re = 6378.137_wp                     !! WGS84 equatorial radius (km)
+    real(wp), parameter :: flattening = 1.0_wp / 298.257223563_wp
     real(wp), parameter :: sma = 9000.0_wp, ecc = 0.2_wp, inc = 35.0_wp * pi / 180.0_wp
     real(wp), parameter :: model_size = 800.0_wp                 !! spacecraft bounding radius (km, enlarged to be seen)
     integer, parameter :: n_orbit = 721
+    real(c_float), parameter :: orbit_color(4) = [1.0_c_float, 0.85_c_float, 0.2_c_float, 1.0_c_float]
 
     !> The GUI and the scene (used by the slots).
     type :: app_t
@@ -53,15 +55,13 @@ module vkdemo
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QLabel) :: time_label
-        ! the model
+        ! the scene
         type(Trajectory) :: orbit                              !! one period of positions and attitudes
-        type(ReferenceFrame) :: earth_frame, sc_frame          !! the spacecraft follows the orbit
-        type(SimulationClock) :: clock
-        ! rendering
-        type(c_ptr) :: viewer = c_null_ptr
-        type(c_ptr) :: spacecraft = c_null_ptr                 !! the spacecraft's transform
-        type(c_ptr) :: orbit_line = c_null_ptr
-        real(wp) :: model_center(3) = 0.0_wp, model_scale = 1.0_wp
+        type(Sphere) :: earth
+        class(ReferenceFrame), allocatable :: spacecraft      !! a Model, or a Sphere without the data
+        type(FrameManager) :: scene
+        type(WindowProxy) :: view
+        type(c_ptr) :: orbit_line = c_null_ptr                 !! low-level line node (until artists)
         integer :: frame = 0
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -102,32 +102,15 @@ contains
                           quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], atan2(y, x)))
     end function orbit_attitude
 
-    !> scale(s) * translate(-center): a model centered on its bound and sized.
-    pure function model_matrix(scale, center) result(m)
-        real(wp), intent(in) :: scale, center(3)
-        real(wp) :: m(4,4)
-        integer :: k
-        m = 0.0_wp
-        do k = 1, 3
-            m(k, k) = scale
-        end do
-        m(4, 4) = 1.0_wp
-        m(1:3, 4) = -scale * center
-    end function model_matrix
-
-    subroutine check(status, what)
-        integer(c_int), intent(in) :: status
-        character(len=*), intent(in) :: what
-        if (status /= 0) write(*, '(a)') 'vkframes: '//what//' failed'
-    end subroutine check
-
-    !> The model: the orbit trajectory (one period), the Earth's frame and the
-    !> spacecraft's frame, which follows the orbit. `a` is a target (the frames
-    !> keep pointers to the trajectory and to each other).
+    !> The scene: the orbit trajectory (one period), the Earth, and the
+    !> spacecraft following the orbit. `a` is a target (frames keep pointers to
+    !> the trajectory and to each other).
     subroutine build_model(a)
         type(app_t), intent(inout), target :: a
-        real(wp) :: period, t, r(3)
+        real(wp) :: period, t, r(3), center(3), radius
+        logical :: ok
         integer :: k
+
         a%orbit = Trajectory()
         call a%orbit%reserve(n_orbit)
         period = 2.0_wp * pi * sqrt(sma**3 / mu)
@@ -136,117 +119,85 @@ contains
             r = orbit_position(t)
             call a%orbit%add(t, pos=r, att=orbit_attitude(r))
         end do
-        a%earth_frame = ReferenceFrame('Earth', [0.3_wp, 0.5_wp, 1.0_wp])
-        a%sc_frame = ReferenceFrame('Spacecraft', [1.0_wp, 0.85_wp, 0.2_wp])
-        if (.not. a%earth_frame%add_child(a%sc_frame)) write(*, '(a)') 'vkframes: add_child failed'
-        call a%sc_frame%follow(a%orbit)                ! position and attitude, FOLLOW_LOOP
-        call a%clock%set_time_scale(200.0_wp)
-        call a%clock%set_time(0.0_wp)
-        write(*, '(a)', advance='no') a%earth_frame%frame_string()
-    end subroutine build_model
 
-    !> Build the scene in the viewer: the Earth, the orbit and the spacecraft.
-    subroutine build_scene(a)
-        type(app_t), intent(inout) :: a
-        type(c_ptr) :: texture, earth, model
-        real(wp), pointer :: xyz(:,:)
-        real(wp) :: model_radius
-        character(len=:), allocatable :: file
-
-        call check(vkf_viewer_look_at(a%viewer, [0.0_wp, -38000.0_wp, 14000.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], &
-                                      [0.0_wp, 0.0_wp, 1.0_wp]), 'look_at')
-        call check(vkf_viewer_perspective(a%viewer, 30.0_wp, 1.0_wp, 1.0e7_wp), 'perspective')
-        call check(vkf_viewer_set_background(a%viewer, [0.0_c_float, 0.0_c_float, 0.0_c_float, 1.0_c_float]), &
-                   'background')
-
-        texture = c_null_ptr
-        if (len(a%data_dir) > 0) then
-            file = a%data_dir//'/Images/land_shallow_topo_2048.jpg'
-            texture = vkf_image_read(file, len(file, kind=c_int))
-        end if
-        earth = ellipsoid_create(radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], texture)
-        call check(vkf_viewer_add_node(a%viewer, earth), 'add Earth')
-        call vkf_node_delete(earth)
-        if (c_associated(texture)) call vkf_image_delete(texture)
-
-        call a%orbit%positions(xyz)                    ! the trajectory's positions, not copied
-        a%orbit_line = vkf_line_create(a%viewer, int(a%orbit%num_positions(), c_int))
-        call check(line_set_style(a%orbit_line, [1.0_c_float, 0.85_c_float, 0.2_c_float, 1.0_c_float], 2.0_c_float), &
-                   'line style')
-        call check(line_set_points(a%orbit_line, xyz), 'line points')
-        call check(vkf_viewer_add_node(a%viewer, a%orbit_line), 'add orbit')
+        a%earth = Sphere('Earth', radius=re, color=[0.3_wp, 0.5_wp, 1.0_wp])
+        call a%earth%set_sphere_scale([1.0_wp, 1.0_wp, 1.0_wp - flattening])
+        if (len(a%data_dir) > 0) call a%earth%set_texture_map(a%data_dir//'/Images/land_shallow_topo_2048.jpg')
 
         ! the spacecraft: OpenFrames' Hubble model, or a small sphere without the data
-        model = c_null_ptr
+        ok = .false.
         if (len(a%data_dir) > 0) then
-            file = a%data_dir//'/Models/Hubble.3ds'
-            model = vkf_model_read(file, len(file, kind=c_int))
+            allocate(a%spacecraft, source=Model('Spacecraft', color=[1.0_wp, 0.85_wp, 0.2_wp]))
+            select type (sc => a%spacecraft)
+            type is (Model)
+                ok = sc%set_model(a%data_dir//'/Models/Hubble.3ds')
+                if (ok) then
+                    call sc%model_bound(center, radius)
+                    call sc%set_model_pivot(center)
+                    call sc%set_model_scale([1.0_wp, 1.0_wp, 1.0_wp] * model_size / radius)
+                end if
+            end select
+            if (.not. ok) deallocate(a%spacecraft)
         end if
-        if (c_associated(model)) then
-            call check(vkf_node_bound(model, a%model_center, model_radius), 'model bound')
-            a%model_scale = model_size / model_radius
-        else
-            model = sphere_create(model_size, [1.0_c_float, 0.3_c_float, 0.2_c_float, 1.0_c_float])
-        end if
-        a%spacecraft = vkf_transform_create()
-        call check(vkf_node_add_child(a%spacecraft, model), 'add model')
-        call vkf_node_delete(model)
-        call check(vkf_viewer_add_node(a%viewer, a%spacecraft), 'add spacecraft')
-        call place_spacecraft(a)
-    end subroutine build_scene
+        if (.not. ok) allocate(a%spacecraft, source=Sphere('Spacecraft', radius=model_size, &
+                                                           color=[1.0_wp, 0.3_wp, 0.2_wp]))
+        call a%spacecraft%follow(a%orbit)                 ! position and attitude, FOLLOW_LOOP
+        if (.not. a%earth%add_child(a%spacecraft)) write(*, '(a)') 'vkframes: add_child failed'
+        call a%scene%set_frame(a%earth)
+        write(*, '(a)', advance='no') a%earth%frame_string()
+    end subroutine build_model
 
-    !> The spacecraft's transform from its frame (position and attitude set by
-    !> the followed trajectory).
-    subroutine place_spacecraft(a)
+    !> Open the view in the Qt window (first expose) and show the scene.
+    subroutine open_view(a)
         type(app_t), intent(inout) :: a
-        call check(vkf_transform_set_matrix(a%spacecraft, &
-                   matmul(a%sc_frame%world_matrix(), model_matrix(a%model_scale, a%model_center))), &
-                   'spacecraft transform')
-    end subroutine place_spacecraft
+        real(wp), pointer :: xyz(:,:)
+        if (.not. a%view%open(a%window%width(), a%window%height(), 'vkframes', &
+                              native_window=a%window%winId(), pixel_ratio=a%window%devicePixelRatio())) then
+            write(*, '(a)') 'vkframes: could not open the view'
+            return
+        end if
+        call a%view%set_scene(a%scene)
+        call a%view%set_background_color([0.0_wp, 0.0_wp, 0.0_wp])
+        call a%view%set_look_at([0.0_wp, -38000.0_wp, 14000.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], [0.0_wp, 0.0_wp, 1.0_wp])
+        call a%view%set_perspective(30.0_wp, 1.0_wp, 1.0e7_wp)
+        call a%view%set_time_scale(a%time_scale%value())
+        call a%view%pause_time(a%pause_time%isChecked())
+        call a%view%set_time(0.0_wp)
+
+        ! the orbit line from the trajectory's positions (not copied)
+        call a%orbit%positions(xyz)
+        a%orbit_line = vkf_line_create(a%view%viewer(), int(a%orbit%num_positions(), c_int))
+        if (line_set_style(a%orbit_line, orbit_color, real(a%line_width%value(), c_float)) /= 0 .or. &
+            line_set_points(a%orbit_line, xyz) /= 0 .or. vkf_viewer_add_node(a%view%viewer(), a%orbit_line) /= 0) &
+            write(*, '(a)') 'vkframes: could not add the orbit line'
+    end subroutine open_view
 
     ! ==================================================================
     ! window events (GUI thread)
 
-    !> First expose: create the viewer on the window's native handle, then start
-    !> the frame loop.
+    !> First expose: open the view, then start the frame loop.
     subroutine on_expose(data)
         class(*), intent(inout), optional :: data
-        character(len=*), parameter :: title = 'vkframes'
         select type (a => data)
         type is (app_t)
-            if (c_associated(a%viewer) .or. .not. a%window%isExposed()) return
-            a%viewer = vkf_viewer_create(int(a%window%width(), c_int), int(a%window%height(), c_int), &
-                                         title, len(title, kind=c_int), a%window%winId(), a%window%devicePixelRatio())
-            if (.not. c_associated(a%viewer)) then
-                write(*, '(a)') 'vkframes: could not create the viewer'
-                return
-            end if
-            call build_scene(a)
-            call a%window%requestUpdate()
+            if (a%view%is_open() .or. .not. a%window%isExposed()) return
+            call open_view(a)
+            if (a%view%is_open()) call a%window%requestUpdate()
         end select
     end subroutine on_expose
 
-    !> Advance the clock, update the frames (the spacecraft follows its
-    !> trajectory), render a frame, and ask for the next one.
+    !> Render a frame (time, frames, draw) and ask for the next one.
     subroutine on_update(data)
         class(*), intent(inout), optional :: data
-        integer(c_int) :: status
-        real(wp) :: t
         character(len=40) :: text
         select type (a => data)
         type is (app_t)
-            if (.not. c_associated(a%viewer)) return
-            t = a%clock%update()
-            call a%earth_frame%update(t)
-            call place_spacecraft(a)
-            status = vkf_viewer_frame(a%viewer)
-            if (status /= 1) return
+            if (.not. a%view%frame()) return
             a%frame = a%frame + 1
-            write(text, '(a,f10.1,a)') 'Simulation time: ', t, ' s'
+            write(text, '(a,f10.1,a)') 'Simulation time: ', a%view%time(), ' s'
             call a%time_label%setText(trim(text))
             if (allocated(a%capture) .and. a%frame == a%capture_frame) then
-                call check(vkf_viewer_capture(a%viewer, a%capture, len(a%capture, kind=c_int)), 'capture')
-                write(*, '(a)') 'captured '//a%capture
+                if (a%view%capture(a%capture)) write(*, '(a)') 'captured '//a%capture
             end if
             call a%window%requestUpdate()
         end select
@@ -259,16 +210,15 @@ contains
         real(wp) :: dpr
         select type (a => data)
         type is (app_t)
-            if (.not. c_associated(a%viewer)) return
+            if (.not. a%view%is_open()) return
             dpr = a%window%devicePixelRatio()
-            call check(vkf_viewer_resize(a%viewer, nint(event%width() * dpr, c_int), nint(event%height() * dpr, c_int)), &
-                       'resize')
+            call a%view%resize(nint(event%width() * dpr), nint(event%height() * dpr))
             call a%window%requestUpdate()
         end select
     end subroutine on_resize
 
     !> VSG's mouse button number: 1 left, 2 middle, 3 right (0: other).
-    integer(c_int) function vsg_button(qt_button)
+    integer function vsg_button(qt_button)
         integer, intent(in) :: qt_button
         select case (qt_button)
         case (Qt_LeftButton)
@@ -283,7 +233,7 @@ contains
     end function vsg_button
 
     !> VSG's button mask (BUTTON_MASK_1/2/3 = 256/512/1024) for Qt's held buttons.
-    integer(c_int) function vsg_mask(qt_buttons)
+    integer function vsg_mask(qt_buttons)
         integer, intent(in) :: qt_buttons
         vsg_mask = 0
         if (iand(qt_buttons, Qt_LeftButton) /= 0) vsg_mask = ior(vsg_mask, 256)
@@ -291,16 +241,15 @@ contains
         if (iand(qt_buttons, Qt_RightButton) /= 0) vsg_mask = ior(vsg_mask, 1024)
     end function vsg_mask
 
-    !> Forward a mouse event (kind 1 move, 2 press, 3 release), in framebuffer pixels.
+    !> Forward a mouse event (MOUSE_MOVE, MOUSE_PRESS or MOUSE_RELEASE), in framebuffer pixels.
     subroutine forward_mouse(a, kind, event)
         type(app_t), intent(inout) :: a
-        integer(c_int), intent(in) :: kind
+        integer, intent(in) :: kind
         type(QMouseEvent), intent(in) :: event
         real(wp) :: dpr
-        if (.not. c_associated(a%viewer)) return
         dpr = a%window%devicePixelRatio()
-        call check(vkf_viewer_mouse(a%viewer, kind, nint(event%x() * dpr, c_int), nint(event%y() * dpr, c_int), &
-                                    vsg_mask(event%buttons()), vsg_button(event%button())), 'mouse')
+        call a%view%mouse(kind, nint(event%x() * dpr), nint(event%y() * dpr), vsg_mask(event%buttons()), &
+                          vsg_button(event%button()))
         call event%accept()
     end subroutine forward_mouse
 
@@ -309,7 +258,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call forward_mouse(a, 1_c_int, event)
+            call forward_mouse(a, MOUSE_MOVE, event)
         end select
     end subroutine on_move
 
@@ -318,7 +267,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call forward_mouse(a, 2_c_int, event)
+            call forward_mouse(a, MOUSE_PRESS, event)
         end select
     end subroutine on_press
 
@@ -327,7 +276,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call forward_mouse(a, 3_c_int, event)
+            call forward_mouse(a, MOUSE_RELEASE, event)
         end select
     end subroutine on_release
 
@@ -336,8 +285,8 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            if (.not. c_associated(a%viewer) .or. event%angleDeltaY() == 0) return
-            call check(vkf_viewer_scroll(a%viewer, merge(1.0_c_float, -1.0_c_float, event%angleDeltaY() > 0)), 'scroll')
+            if (event%angleDeltaY() == 0) return
+            call a%view%scroll(merge(1.0_wp, -1.0_wp, event%angleDeltaY() > 0))
             call event%accept()
         end select
     end subroutine on_wheel
@@ -347,7 +296,7 @@ contains
     !> unmapped.
     subroutine vsg_key(event, symbol, modified_symbol, modifier)
         type(QKeyEvent), intent(in) :: event
-        integer(c_int), intent(out) :: symbol, modified_symbol, modifier
+        integer, intent(out) :: symbol, modified_symbol, modifier
         character(len=:), allocatable :: text
         integer :: key, mods
         key = event%key()
@@ -359,19 +308,19 @@ contains
         if (iand(mods, Qt_MetaModifier) /= 0) modifier = ior(modifier, 128)
         select case (key)
         case (Qt_Key_Left)
-            symbol = int(z'FF51', c_int)
+            symbol = int(z'FF51')
         case (Qt_Key_Up)
-            symbol = int(z'FF52', c_int)
+            symbol = int(z'FF52')
         case (Qt_Key_Right)
-            symbol = int(z'FF53', c_int)
+            symbol = int(z'FF53')
         case (Qt_Key_Down)
-            symbol = int(z'FF54', c_int)
+            symbol = int(z'FF54')
         case (Qt_Key_Home)
-            symbol = int(z'FF50', c_int)
+            symbol = int(z'FF50')
         case (Qt_Key_Escape)
-            symbol = int(z'FF1B', c_int)
+            symbol = int(z'FF1B')
         case (Qt_Key_Return)
-            symbol = int(z'FF0D', c_int)
+            symbol = int(z'FF0D')
         case (Qt_Key_Space)
             symbol = 32
         case (Qt_Key_A:Qt_Key_Z)
@@ -389,13 +338,12 @@ contains
 
     subroutine forward_key(a, pressed, event)
         type(app_t), intent(inout) :: a
-        integer(c_int), intent(in) :: pressed
+        logical, intent(in) :: pressed
         type(QKeyEvent), intent(in) :: event
-        integer(c_int) :: symbol, modified_symbol, modifier
-        if (.not. c_associated(a%viewer)) return
+        integer :: symbol, modified_symbol, modifier
         call vsg_key(event, symbol, modified_symbol, modifier)
         if (symbol == 0) return
-        call check(vkf_viewer_key(a%viewer, pressed, symbol, modified_symbol, modifier), 'key')
+        call a%view%key(pressed, symbol, modified_symbol, modifier)
         call event%accept()
     end subroutine forward_key
 
@@ -404,7 +352,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call forward_key(a, 1_c_int, event)
+            call forward_key(a, .true., event)
         end select
     end subroutine on_key_press
 
@@ -413,7 +361,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call forward_key(a, 0_c_int, event)
+            call forward_key(a, .false., event)
         end select
     end subroutine on_key_release
 
@@ -426,7 +374,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call a%clock%set_time_scale(value)
+            call a%view%set_time_scale(value)
         end select
     end subroutine on_time_scale
 
@@ -436,7 +384,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call a%clock%pause(checked)
+            call a%view%pause_time(checked)
         end select
     end subroutine on_pause_time
 
@@ -445,7 +393,7 @@ contains
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            call a%clock%set_time(0.0_wp)
+            call a%view%set_time(0.0_wp)
         end select
     end subroutine on_reset_time
 
@@ -456,7 +404,7 @@ contains
         type(TrajectoryFollower), pointer :: follower
         select type (a => data)
         type is (app_t)
-            follower => a%sc_frame%follower()
+            follower => a%spacecraft%follower()
             call follower%set_follow_type(ior(FOLLOW_POSITION, FOLLOW_ATTITUDE), merge(FOLLOW_LIMIT, FOLLOW_LOOP, index == 1))
         end select
     end subroutine on_follow_mode
@@ -468,8 +416,8 @@ contains
         select type (a => data)
         type is (app_t)
             if (.not. c_associated(a%orbit_line)) return
-            call check(line_set_style(a%orbit_line, [1.0_c_float, 0.85_c_float, 0.2_c_float, 1.0_c_float], &
-                                      real(value, c_float)), 'line style')
+            if (line_set_style(a%orbit_line, orbit_color, real(value, c_float)) /= 0) &
+                write(*, '(a)') 'vkframes: line style failed'
         end select
     end subroutine on_line_width
 
@@ -491,20 +439,16 @@ contains
         end select
     end subroutine on_quit
 
-    !> The main window closes: release the viewer (waiting for the GPU) before
-    !> Qt destroys the native window it renders into.
+    !> The main window closes: close the view (waiting for the GPU) before Qt
+    !> destroys the native window it renders into.
     subroutine on_close(event, data)
         type(QCloseEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
         select type (a => data)
         type is (app_t)
-            if (.not. c_associated(a%viewer)) return
-            call vkf_node_delete(a%spacecraft)
-            call vkf_node_delete(a%orbit_line)
-            call vkf_viewer_delete(a%viewer)
-            a%viewer = c_null_ptr
-            a%spacecraft = c_null_ptr
+            if (c_associated(a%orbit_line)) call vkf_node_delete(a%orbit_line)
             a%orbit_line = c_null_ptr
+            call a%view%close()
         end select
     end subroutine on_close
 

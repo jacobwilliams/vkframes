@@ -15,6 +15,9 @@ module vkframes
                           ALIGN_CENTER_TOP, ALIGN_CENTER_CENTER, ALIGN_CENTER_BOTTOM, &
                           ALIGN_RIGHT_TOP, ALIGN_RIGHT_CENTER, ALIGN_RIGHT_BOTTOM, &
                           ALIGN_LEFT_BASE_LINE, ALIGN_CENTER_BASE_LINE, ALIGN_RIGHT_BASE_LINE
+    use vkf_sphere, only: Sphere
+    use vkf_model, only: Model
+    use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE
 
     implicit none
 
