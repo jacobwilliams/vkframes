@@ -186,7 +186,7 @@ plain VSG window.
 | `TrajectoryFollower` (loop/limit, position/attitude) | Fortran, per frame | Easy |
 | Simulation time, time scale, pause, set time | Fortran, per frame | Easy |
 | Models (`.3ds`, `.obj`, glTF; OSG formats) | vsgXchange (assimp; `osg2vsg`) | Easy |
-| Textured sphere (`Sphere`), LOD | `vsg::Builder` sphere + vsgXchange textures | Easy |
+| Textured sphere or ellipsoid (`Sphere`: radius, `setSphereScale` for ellipsoids, position/attitude within its frame, color, material), LOD | Ellipsoid mesh generated in Fortran (exact normals, geodetic texture mapping) + vsgXchange textures | Easy |
 | Day/night textures on a sphere | Custom shader (sun direction uniform) | Moderate |
 | Name labels, axis labels, HUD text | `vsg::Text` (font via vsgXchange/freetype, or `.vsgt`) | Moderate |
 | Coordinate axes (with ticks), lat/lon grid, radial plane | Geometry generated in Fortran; line and transparent-surface pipelines | Moderate |
@@ -323,6 +323,19 @@ Decided so far:
   texture, longitude 0 on +x), instead of OpenFrames' `ShapeDrawable` that is
   retessellated on the CPU when the view distance changes. `vsg::Builder` is
   not used.
+- **Ellipsoids:** `vkf_geometry::ellipsoid` builds triaxial ellipsoids
+  directly (spheres are the equal-axes case), parametrized by the surface
+  normal: the vertex at geodetic (lat, lon) is the point whose normal is
+  n(lat, lon). Normals are exact and texture rows are at geodetic latitude
+  (`test/test_geometry.f90`: WGS84 within 4e-8 rad). OpenFrames instead
+  scales a sphere (`setSphereScale` with `GL_RESCALE_NORMAL`), which skews
+  the normals and maps the texture by parametric latitude.
+- Still to port from OpenFrames' `Sphere`: body position/attitude within its
+  frame (to reorient textures; a transform in the engine type), night
+  texture on the dark side (needs a Sun light and a custom shader), material
+  control, and auto LOD (a fixed 128 x 64 mesh may be too coarse for close
+  views of large bodies; levels of a `vsg::LOD` rather than CPU
+  retessellation).
 - **Models:** read through vsgXchange (`.3ds` from OpenFrames' demo data
   works, with textures); `vkf_node_bound` gives the bounding sphere for
   scaling and default view distances (as OpenFrames' `Model` uses it).

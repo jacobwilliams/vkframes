@@ -1,5 +1,6 @@
-!> A textured, rotating Earth (equirectangular texture on a sphere generated in
-!> Fortran) and a spacecraft model (read through vsgXchange) orbiting it.
+!> A textured, rotating Earth (equirectangular texture on the WGS84 ellipsoid,
+!> generated in Fortran) and a spacecraft model (read through vsgXchange)
+!> orbiting it.
 !>
 !> Arguments: texture file, model file, then optionally the number of frames to
 !> run and a file to capture the last frame to. For example, with OpenFrames'
@@ -10,15 +11,16 @@ program earth
 
     use, intrinsic :: iso_c_binding
     use vkf_layer
-    use vkf_geometry, only: sphere_create
+    use vkf_geometry, only: ellipsoid_create
 
     implicit none
 
     integer, parameter :: wp = c_double
     real(wp), parameter :: pi = acos(-1.0_wp)
-    real(wp), parameter :: r_orbit = 1.6_wp             !! Earth radii
+    real(wp), parameter :: radii(3) = [1.0_wp, 1.0_wp, 6356752.314245_wp / 6378137.0_wp]  !! WGS84, equatorial radii
+    real(wp), parameter :: r_orbit = 1.6_wp             !! equatorial radii
     real(wp), parameter :: inc = 30.0_wp * pi / 180.0_wp
-    real(wp), parameter :: model_size = 0.15_wp         !! radius of the model's bounding sphere, Earth radii
+    real(wp), parameter :: model_size = 0.15_wp         !! radius of the model's bounding sphere, equatorial radii
     real(wp), parameter :: orbit_period = 600.0_wp      !! frames
     real(wp), parameter :: day = 2400.0_wp              !! frames
 
@@ -45,7 +47,7 @@ program earth
 
     texture = vkf_image_read(trim(texture_file), len_trim(texture_file, kind=c_int))
     if (.not. c_associated(texture)) error stop 'could not read the texture'
-    globe = sphere_create(1.0_wp, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], texture)
+    globe = ellipsoid_create(radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], texture)
     if (.not. c_associated(globe)) error stop 'could not create the globe'
     earth_transform = vkf_transform_create()
     call check(vkf_node_add_child(earth_transform, globe))
