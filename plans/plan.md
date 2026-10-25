@@ -288,8 +288,8 @@ Goal: settle the platform and design risks before writing the engine.
 - [x] A pixi env with VSG, vsgXchange and MoltenVK. A C++ layer with a
       handful of `extern "C"` functions, called from a Fortran program.
 - [ ] A VSG window on macOS, Linux and Windows showing:
-  - [ ] a textured sphere (vsgXchange image loading);
-  - [ ] a loaded model (`.3ds` or glTF through vsgXchange);
+  - [x] a textured sphere (vsgXchange image loading);
+  - [x] a loaded model (`.3ds` or glTF through vsgXchange);
   - [x] an orbit drawn with **thick lines** (screen-space quads), proven on
         MoltenVK;
   - [ ] trackball control;
@@ -316,6 +316,19 @@ Decided so far:
   (xyz high, xyz low; 24 bytes). Style (color, width) is a separate 32-byte
   buffer, so restyling never re-uploads points. The C++ layer only creates
   the buffers and marks them changed.
+- **Meshes:** one generic C++ mesh primitive (vertices, normals, texture
+  coordinates, indices; optional texture) drawn with VSG's Phong shader set;
+  Fortran fills its arrays in place. Spheres are generated in Fortran
+  (`vkf_geometry`: UV sphere, 128 x 64 segments by default, equirectangular
+  texture, longitude 0 on +x), instead of OpenFrames' `ShapeDrawable` that is
+  retessellated on the CPU when the view distance changes. `vsg::Builder` is
+  not used.
+- **Models:** read through vsgXchange (`.3ds` from OpenFrames' demo data
+  works, with textures); `vkf_node_bound` gives the bounding sphere for
+  scaling and default view distances (as OpenFrames' `Model` uses it).
+- **Test assets:** the examples take OpenFrames' demo data by path
+  (`Demos/Images`, `Demos/Models`). Still to decide: which assets to ship
+  in `data/`, and the search path.
 - **Efficiency follow-ups** (trajectories can be very large):
   - VSG re-uploads a whole dynamic array when it is marked dirty. Growing
     trajectories should upload only the appended range, or use fixed-size

@@ -9,6 +9,7 @@ program precision
 
     use, intrinsic :: iso_c_binding
     use vkf_layer
+    use vkf_geometry, only: sphere_create
 
     implicit none
 
@@ -49,7 +50,7 @@ program precision
     call check(vkf_viewer_look_at(viewer, eye, sc, radial))
     call check(vkf_viewer_perspective(viewer, 40.0_wp, 0.1_wp, 1.0e8_wp))
 
-    earth = vkf_sphere_create(r_earth, [0.2_c_float, 0.4_c_float, 1.0_c_float, 1.0_c_float])
+    earth = sphere_create(r_earth, [0.2_c_float, 0.4_c_float, 1.0_c_float, 1.0_c_float])
     call check(vkf_viewer_add_node(viewer, earth))
     call vkf_node_delete(earth)
 
@@ -66,7 +67,7 @@ program precision
     end do
     m(1:3, 4) = sc
     call check(vkf_transform_set_matrix(sc_transform, m))
-    spacecraft = vkf_sphere_create(sc_radius, [1.0_c_float, 0.25_c_float, 0.2_c_float, 1.0_c_float])
+    spacecraft = sphere_create(sc_radius, [1.0_c_float, 0.25_c_float, 0.2_c_float, 1.0_c_float])
     call check(vkf_node_add_child(sc_transform, spacecraft))
     call vkf_node_delete(spacecraft)
     call check(vkf_viewer_add_node(viewer, sc_transform))

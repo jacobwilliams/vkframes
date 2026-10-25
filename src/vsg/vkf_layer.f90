@@ -13,11 +13,12 @@ module vkf_layer
     public :: vkf_vulkan_device_name
     public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
-    public :: vkf_node_delete, vkf_node_add_child
+    public :: vkf_node_delete, vkf_node_add_child, vkf_node_bound
     public :: vkf_transform_create, vkf_transform_set_matrix
-    public :: vkf_sphere_create
+    public :: vkf_image_read, vkf_image_delete, vkf_model_read
+    public :: vkf_mesh_create, vkf_mesh_array
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
-    public :: vulkan_device_name, line_set_points, line_set_style
+    public :: vulkan_device_name, line_set_points, line_set_style, mesh_arrays
 
     interface
 
@@ -74,6 +75,13 @@ module vkf_layer
             type(c_ptr), value :: parent, child
         end function vkf_node_add_child
 
+        integer(c_int) function vkf_node_bound(node, center, radius) bind(C, name="vkf_node_bound")
+            import :: c_ptr, c_int, c_double
+            type(c_ptr), value :: node
+            real(c_double), dimension(3), intent(out) :: center
+            real(c_double), intent(out) :: radius
+        end function vkf_node_bound
+
         type(c_ptr) function vkf_transform_create() bind(C, name="vkf_transform_create")
             import :: c_ptr
         end function vkf_transform_create
@@ -84,16 +92,40 @@ module vkf_layer
             real(c_double), dimension(4,4), intent(in) :: m
         end function vkf_transform_set_matrix
 
-        type(c_ptr) function vkf_sphere_create(radius, rgba) bind(C, name="vkf_sphere_create")
-            import :: c_ptr, c_double, c_float
-            real(c_double), value :: radius
-            real(c_float), dimension(4), intent(in) :: rgba
-        end function vkf_sphere_create
-
         subroutine vkf_node_delete(node) bind(C, name="vkf_node_delete")
             import :: c_ptr
             type(c_ptr), value :: node
         end subroutine vkf_node_delete
+
+        type(c_ptr) function vkf_image_read(filename, filename_len) bind(C, name="vkf_image_read")
+            import :: c_ptr, c_int, c_char
+            character(kind=c_char), dimension(*), intent(in) :: filename
+            integer(c_int), value :: filename_len
+        end function vkf_image_read
+
+        subroutine vkf_image_delete(image) bind(C, name="vkf_image_delete")
+            import :: c_ptr
+            type(c_ptr), value :: image
+        end subroutine vkf_image_delete
+
+        type(c_ptr) function vkf_model_read(filename, filename_len) bind(C, name="vkf_model_read")
+            import :: c_ptr, c_int, c_char
+            character(kind=c_char), dimension(*), intent(in) :: filename
+            integer(c_int), value :: filename_len
+        end function vkf_model_read
+
+        type(c_ptr) function vkf_mesh_create(n_vertices, n_indices, rgba, texture) bind(C, name="vkf_mesh_create")
+            import :: c_ptr, c_int, c_float
+            integer(c_int), value :: n_vertices, n_indices
+            real(c_float), dimension(4), intent(in) :: rgba
+            type(c_ptr), value :: texture
+        end function vkf_mesh_create
+
+        type(c_ptr) function vkf_mesh_array(mesh, which) bind(C, name="vkf_mesh_array")
+            import :: c_ptr, c_int
+            type(c_ptr), value :: mesh
+            integer(c_int), value :: which
+        end function vkf_mesh_array
 
         type(c_ptr) function vkf_line_create(viewer, capacity) bind(C, name="vkf_line_create")
             import :: c_ptr, c_int
@@ -181,5 +213,21 @@ contains
         style(5) = width
         status = vkf_line_style_changed(line)
     end function line_set_style
+
+    !> Pointers to the arrays of a mesh of `n_vertices` vertices and `n_indices`
+    !> indices (as created by `vkf_mesh_create`), to fill in place before the
+    !> first frame. Indices are 0-based.
+    subroutine mesh_arrays(mesh, n_vertices, n_indices, xyz, normals, uv, indices)
+        type(c_ptr), intent(in) :: mesh
+        integer, intent(in) :: n_vertices, n_indices
+        real(c_float), dimension(:,:), pointer, intent(out) :: xyz      !! (3, n_vertices)
+        real(c_float), dimension(:,:), pointer, intent(out) :: normals  !! (3, n_vertices)
+        real(c_float), dimension(:,:), pointer, intent(out) :: uv       !! (2, n_vertices)
+        integer(c_int32_t), dimension(:), pointer, intent(out) :: indices
+        call c_f_pointer(vkf_mesh_array(mesh, 1_c_int), xyz, [3, n_vertices])
+        call c_f_pointer(vkf_mesh_array(mesh, 2_c_int), normals, [3, n_vertices])
+        call c_f_pointer(vkf_mesh_array(mesh, 3_c_int), uv, [2, n_vertices])
+        call c_f_pointer(vkf_mesh_array(mesh, 4_c_int), indices, [n_indices])
+    end subroutine mesh_arrays
 
 end module vkf_layer

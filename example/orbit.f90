@@ -7,6 +7,7 @@ program orbit
 
     use, intrinsic :: iso_c_binding
     use vkf_layer
+    use vkf_geometry, only: sphere_create
 
     implicit none
 
@@ -41,7 +42,7 @@ program orbit
     if (.not. c_associated(viewer)) error stop 'could not create the viewer'
     call check(vkf_viewer_look_at(viewer, [0.0_wp, -14.0_wp, 6.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], [0.0_wp, 0.0_wp, 1.0_wp]))
 
-    planet = vkf_sphere_create(1.0_wp, [0.2_c_float, 0.4_c_float, 1.0_c_float, 1.0_c_float])
+    planet = sphere_create(1.0_wp, [0.2_c_float, 0.4_c_float, 1.0_c_float, 1.0_c_float])
     call check(vkf_viewer_add_node(viewer, planet))
     call vkf_node_delete(planet)
 
@@ -69,7 +70,7 @@ program orbit
 
     ! the spacecraft: a small sphere under a transform
     sc_transform = vkf_transform_create()
-    spacecraft = vkf_sphere_create(0.08_wp, [1.0_c_float, 0.25_c_float, 0.2_c_float, 1.0_c_float])
+    spacecraft = sphere_create(0.08_wp, [1.0_c_float, 0.25_c_float, 0.2_c_float, 1.0_c_float])
     call check(vkf_node_add_child(sc_transform, spacecraft))
     call vkf_node_delete(spacecraft)
     call check(vkf_viewer_add_node(viewer, sc_transform))

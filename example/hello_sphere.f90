@@ -5,6 +5,7 @@ program hello_sphere
 
     use, intrinsic :: iso_c_binding
     use vkf_layer
+    use vkf_geometry, only: sphere_create
 
     implicit none
 
@@ -24,7 +25,7 @@ program hello_sphere
     viewer = vkf_viewer_create(800_c_int, 600_c_int, title, len(title, kind=c_int))
     if (.not. c_associated(viewer)) error stop 'could not create the viewer'
 
-    sphere = vkf_sphere_create(1.0_c_double, [0.2_c_float, 0.4_c_float, 1.0_c_float, 1.0_c_float])
+    sphere = sphere_create(1.0_c_double, [0.2_c_float, 0.4_c_float, 1.0_c_float, 1.0_c_float])
     if (.not. c_associated(sphere)) error stop 'could not create the sphere'
     if (vkf_viewer_add_node(viewer, sphere) /= 0) error stop 'could not add the sphere'
     call vkf_node_delete(sphere)

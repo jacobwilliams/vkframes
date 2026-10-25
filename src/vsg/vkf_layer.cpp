@@ -177,6 +177,28 @@ namespace
         vsg::ref_ptr<vsg::Draw> draw;
     };
 
+    // Options for reading files: vsgXchange's readers (images, models, fonts).
+    vsg::ref_ptr<vsg::Options> read_options()
+    {
+        static auto options = vsg::Options::create(vsgXchange::all::create());
+        return options;
+    }
+
+    struct Image
+    {
+        vsg::ref_ptr<vsg::Data> data;
+    };
+
+    // A triangle mesh drawn with VSG's Phong shader set; its arrays are filled
+    // by Fortran in place before the first frame.
+    struct Mesh : Node
+    {
+        vsg::ref_ptr<vsg::vec3Array> vertices;
+        vsg::ref_ptr<vsg::vec3Array> normals;
+        vsg::ref_ptr<vsg::vec2Array> texcoords;
+        vsg::ref_ptr<vsg::uintArray> indices;
+    };
+
     vsg::ref_ptr<vsg::vec4Array> dynamic_vec4_array(uint32_t n)
     {
         auto a = vsg::vec4Array::create(n, vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -414,6 +436,22 @@ int vkf_node_add_child(void* parent, void* child)
     return 0;
 }
 
+// Bounding sphere of a node in its own coordinates (center: 3 doubles).
+// Returns 0, or -1 if the node is empty.
+int vkf_node_bound(void* node, double* center, double* radius)
+{
+    auto n = static_cast<Node*>(node);
+    if (!n) return -1;
+    auto computeBounds = vsg::ComputeBounds::create();
+    n->node->accept(*computeBounds);
+    const auto& box = computeBounds->bounds;
+    if (!box.valid()) return -1;
+    const vsg::dvec3 c = (box.min + box.max) * 0.5;
+    for (int i = 0; i < 3; ++i) center[i] = c[i];
+    *radius = vsg::length(box.max - box.min) * 0.5;
+    return 0;
+}
+
 // A transform node (a group whose children are placed by a 4x4 matrix), initially identity.
 void* vkf_transform_create()
 {
@@ -434,20 +472,115 @@ int vkf_transform_set_matrix(void* transform, const double* m)
     return 0;
 }
 
-// A lit sphere of the given radius and color (rgba), centered at the origin.
-void* vkf_sphere_create(double radius, const float* rgba)
+// ---------------------------------------------------------------------------
+// Images and models (read through vsgXchange)
+
+// Read an image file (png, jpg, ...); null on failure.
+void* vkf_image_read(const char* filename, int filename_len)
 {
-    return guarded("vkf_sphere_create", static_cast<void*>(nullptr), [&]() -> void* {
-        vsg::GeometryInfo geom;
-        const float d = static_cast<float>(2.0 * radius);
-        geom.dx.set(d, 0.0f, 0.0f);
-        geom.dy.set(0.0f, d, 0.0f);
-        geom.dz.set(0.0f, 0.0f, d);
-        if (rgba) geom.color.set(rgba[0], rgba[1], rgba[2], rgba[3]);
+    return guarded("vkf_image_read", static_cast<void*>(nullptr), [&]() -> void* {
+        const auto path = to_string(filename, filename_len);
+        auto data = vsg::read_cast<vsg::Data>(path, read_options());
+        if (!data)
+        {
+            std::cerr << "vkf_image_read: could not read " << path << std::endl;
+            return nullptr;
+        }
+        auto image = std::make_unique<Image>();
+        image->data = data;
+        return image.release();
+    });
+}
+
+void vkf_image_delete(void* image)
+{
+    delete static_cast<Image*>(image);
+}
+
+// Read a model file (3ds, obj, gltf, ...); null on failure.
+void* vkf_model_read(const char* filename, int filename_len)
+{
+    return guarded("vkf_model_read", static_cast<void*>(nullptr), [&]() -> void* {
+        const auto path = to_string(filename, filename_len);
+        auto node = vsg::read_cast<vsg::Node>(path, read_options());
+        if (!node)
+        {
+            std::cerr << "vkf_model_read: could not read " << path << std::endl;
+            return nullptr;
+        }
         auto n = std::make_unique<Node>();
-        n->node = vsg::Builder::create()->createSphere(geom);
+        n->node = node;
         return n.release();
     });
+}
+
+// ---------------------------------------------------------------------------
+// Meshes: indexed triangles with normals and texture coordinates, lit by VSG's
+// Phong shader set
+
+// A mesh of n_vertices vertices and n_indices triangle indices, with a color
+// (rgba, multiplying the texture) and an optional texture (image handle, or
+// null). Fill its arrays with vkf_mesh_array before the first frame.
+void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture)
+{
+    if (n_vertices < 3 || n_indices < 3) return nullptr;
+    return guarded("vkf_mesh_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto mesh = std::make_unique<Mesh>();
+        mesh->vertices = vsg::vec3Array::create(static_cast<uint32_t>(n_vertices));
+        mesh->normals = vsg::vec3Array::create(static_cast<uint32_t>(n_vertices));
+        mesh->texcoords = vsg::vec2Array::create(static_cast<uint32_t>(n_vertices));
+        mesh->indices = vsg::uintArray::create(static_cast<uint32_t>(n_indices));
+        auto colors = vsg::vec4Array::create(1, vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]));
+
+        auto config = vsg::GraphicsPipelineConfigurator::create(vsg::createPhongShaderSet(read_options()));
+        vsg::DataList arrays;
+        bool ok = config->assignArray(arrays, "vsg_Vertex", VK_VERTEX_INPUT_RATE_VERTEX, mesh->vertices) &&
+                  config->assignArray(arrays, "vsg_Normal", VK_VERTEX_INPUT_RATE_VERTEX, mesh->normals) &&
+                  config->assignArray(arrays, "vsg_TexCoord0", VK_VERTEX_INPUT_RATE_VERTEX, mesh->texcoords) &&
+                  config->assignArray(arrays, "vsg_Color", VK_VERTEX_INPUT_RATE_INSTANCE, colors) &&
+                  config->assignDescriptor("material", vsg::PhongMaterialValue::create());
+        if (ok && texture)
+        {
+            auto sampler = vsg::Sampler::create();
+            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            ok = config->assignTexture("diffuseMap", static_cast<Image*>(texture)->data, sampler);
+        }
+        if (!ok)
+        {
+            std::cerr << "vkf_mesh_create: the Phong shader set lacks an expected attribute" << std::endl;
+            return nullptr;
+        }
+        config->init();
+
+        auto stateGroup = vsg::StateGroup::create();
+        config->copyTo(stateGroup);
+        auto draw = vsg::VertexIndexDraw::create();
+        draw->assignArrays(arrays);
+        draw->assignIndices(mesh->indices);
+        draw->indexCount = static_cast<uint32_t>(n_indices);
+        draw->instanceCount = 1;
+        stateGroup->addChild(draw);
+        mesh->node = stateGroup;
+        return mesh.release();
+    });
+}
+
+// One of the mesh's arrays, to fill in place: 1 = vertices (3 floats each),
+// 2 = normals (3 floats), 3 = texture coordinates (2 floats), 4 = triangle
+// indices (uint32, 0-based). Valid while the mesh handle exists.
+void* vkf_mesh_array(void* mesh, int which)
+{
+    auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
+    if (!m) return nullptr;
+    switch (which)
+    {
+    case 1: return m->vertices->dataPointer();
+    case 2: return m->normals->dataPointer();
+    case 3: return m->texcoords->dataPointer();
+    case 4: return m->indices->dataPointer();
+    default: return nullptr;
+    }
 }
 
 // ---------------------------------------------------------------------------
