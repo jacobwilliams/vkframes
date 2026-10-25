@@ -9,6 +9,17 @@
 //   - no C++ exception crosses the boundary: each entry point catches and
 //     reports failure through its return value.
 
+// On Windows this file is built into vkf.dll by tools/fpm_vsg.py, and fpm
+// compiles it as an empty file (VKF_EXTERNAL_LAYER).
+#ifndef VKF_EXTERNAL_LAYER
+
+#if defined(_WIN32)
+#    define VKF_API __declspec(dllexport)
+#    include <windows.h>
+#else
+#    define VKF_API
+#endif
+
 #include "vkf_shaders.h"
 
 #include <vsg/all.h>
@@ -299,7 +310,7 @@ extern "C" {
 
 // Name of the first Vulkan physical device; returns its length, or -1 on failure.
 // Needs no window, so it checks that the Vulkan loader finds a driver (MoltenVK on macOS).
-int vkf_vulkan_device_name(char* buf, int buflen)
+VKF_API int vkf_vulkan_device_name(char* buf, int buflen)
 {
     return guarded("vkf_vulkan_device_name", -1, [&]() {
         vsg::Names extensions;
@@ -324,7 +335,7 @@ int vkf_vulkan_device_name(char* buf, int buflen)
 //   events and forwards them (vkf_viewer_mouse, ..., vkf_viewer_resize).
 // pixel_ratio: framebuffer pixels per window unit of an existing window (Qt's
 //   devicePixelRatio); ignored for a window of its own.
-void* vkf_viewer_create(int width, int height, const char* title, int title_len, long long native_window, double pixel_ratio)
+VKF_API void* vkf_viewer_create(int width, int height, const char* title, int title_len, long long native_window, double pixel_ratio)
 {
     return guarded("vkf_viewer_create", static_cast<void*>(nullptr), [&]() -> void* {
         auto traits = vsg::WindowTraits::create();
@@ -373,7 +384,7 @@ void* vkf_viewer_create(int width, int height, const char* title, int title_len,
     });
 }
 
-void vkf_viewer_delete(void* viewer)
+VKF_API void vkf_viewer_delete(void* viewer)
 {
     auto v = static_cast<Viewer*>(viewer);
     guarded("vkf_viewer_delete", 0, [&]() {
@@ -395,7 +406,7 @@ void vkf_viewer_delete(void* viewer)
 // right; mask = the buttons held (VSG's BUTTON_MASK_1/2/3 = 256/512/1024).
 
 // kind: 1 = move, 2 = button press, 3 = button release.
-int vkf_viewer_mouse(void* viewer, int kind, int x, int y, int mask, int button)
+VKF_API int vkf_viewer_mouse(void* viewer, int kind, int x, int y, int mask, int button)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -413,7 +424,7 @@ int vkf_viewer_mouse(void* viewer, int kind, int x, int y, int mask, int button)
 }
 
 // Scroll wheel: dy > 0 away from the user.
-int vkf_viewer_scroll(void* viewer, float dy)
+VKF_API int vkf_viewer_scroll(void* viewer, float dy)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -423,7 +434,7 @@ int vkf_viewer_scroll(void* viewer, float dy)
 
 // A key press (pressed = 1) or release (0), as VSG key symbols and modifiers
 // (vsg/ui/KeyEvent.h: ASCII for printable keys, X11-style codes otherwise).
-int vkf_viewer_key(void* viewer, int pressed, int symbol, int modified_symbol, int modifier)
+VKF_API int vkf_viewer_key(void* viewer, int pressed, int symbol, int modified_symbol, int modifier)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -439,7 +450,7 @@ int vkf_viewer_key(void* viewer, int pressed, int symbol, int modified_symbol, i
 }
 
 // The host resized the window (new size in framebuffer pixels): rebuild the swapchain.
-int vkf_viewer_resize(void* viewer, int width, int height)
+VKF_API int vkf_viewer_resize(void* viewer, int width, int height)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -452,7 +463,7 @@ int vkf_viewer_resize(void* viewer, int width, int height)
 }
 
 // The host is closing the window: the next vkf_viewer_frame returns 0.
-int vkf_viewer_close(void* viewer)
+VKF_API int vkf_viewer_close(void* viewer)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -461,7 +472,7 @@ int vkf_viewer_close(void* viewer)
 }
 
 // Set the camera's eye, center and up vectors (3 doubles each).
-int vkf_viewer_look_at(void* viewer, const double* eye, const double* center, const double* up)
+VKF_API int vkf_viewer_look_at(void* viewer, const double* eye, const double* center, const double* up)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -474,7 +485,7 @@ int vkf_viewer_look_at(void* viewer, const double* eye, const double* center, co
 }
 
 // Set the camera's vertical field of view (degrees) and near/far distances.
-int vkf_viewer_perspective(void* viewer, double fovy, double near_distance, double far_distance)
+VKF_API int vkf_viewer_perspective(void* viewer, double fovy, double near_distance, double far_distance)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -488,7 +499,7 @@ int vkf_viewer_perspective(void* viewer, double fovy, double near_distance, doub
 
 // Add a node to the viewer's scene (the scene holds a reference; the node handle
 // can be deleted afterwards). Must be called before the first frame.
-int vkf_viewer_add_node(void* viewer, void* node)
+VKF_API int vkf_viewer_add_node(void* viewer, void* node)
 {
     auto v = static_cast<Viewer*>(viewer);
     auto n = static_cast<Node*>(node);
@@ -499,7 +510,7 @@ int vkf_viewer_add_node(void* viewer, void* node)
 
 // Render one frame (compiling the scene on the first call). Returns 1 while the
 // viewer is running, 0 once its window has been closed, -1 on failure.
-int vkf_viewer_frame(void* viewer)
+VKF_API int vkf_viewer_frame(void* viewer)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -523,7 +534,7 @@ int vkf_viewer_frame(void* viewer)
 
 // Write the last presented frame to an image file (format from the extension,
 // e.g. .png). Call after vkf_viewer_frame. Returns 0 on success.
-int vkf_viewer_capture(void* viewer, const char* filename, int filename_len)
+VKF_API int vkf_viewer_capture(void* viewer, const char* filename, int filename_len)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v || !v->compiled) return -1;
@@ -595,13 +606,13 @@ int vkf_viewer_capture(void* viewer, const char* filename, int filename_len)
 // ---------------------------------------------------------------------------
 // Nodes
 
-void vkf_node_delete(void* node)
+VKF_API void vkf_node_delete(void* node)
 {
     delete static_cast<Node*>(node);
 }
 
 // Add child to a group node (e.g. a transform). Must be called before the first frame.
-int vkf_node_add_child(void* parent, void* child)
+VKF_API int vkf_node_add_child(void* parent, void* child)
 {
     auto p = static_cast<Node*>(parent);
     auto c = static_cast<Node*>(child);
@@ -614,7 +625,7 @@ int vkf_node_add_child(void* parent, void* child)
 
 // Bounding sphere of a node in its own coordinates (center: 3 doubles).
 // Returns 0, or -1 if the node is empty.
-int vkf_node_bound(void* node, double* center, double* radius)
+VKF_API int vkf_node_bound(void* node, double* center, double* radius)
 {
     auto n = static_cast<Node*>(node);
     if (!n) return -1;
@@ -629,7 +640,7 @@ int vkf_node_bound(void* node, double* center, double* radius)
 }
 
 // A transform node (a group whose children are placed by a 4x4 matrix), initially identity.
-void* vkf_transform_create()
+VKF_API void* vkf_transform_create()
 {
     return guarded("vkf_transform_create", static_cast<void*>(nullptr), [&]() -> void* {
         auto n = std::make_unique<Node>();
@@ -638,7 +649,7 @@ void* vkf_transform_create()
     });
 }
 
-int vkf_transform_set_matrix(void* transform, const double* m)
+VKF_API int vkf_transform_set_matrix(void* transform, const double* m)
 {
     auto n = static_cast<Node*>(transform);
     if (!n) return -1;
@@ -652,7 +663,7 @@ int vkf_transform_set_matrix(void* transform, const double* m)
 // Images and models (read through vsgXchange)
 
 // Read an image file (png, jpg, ...); null on failure.
-void* vkf_image_read(const char* filename, int filename_len)
+VKF_API void* vkf_image_read(const char* filename, int filename_len)
 {
     return guarded("vkf_image_read", static_cast<void*>(nullptr), [&]() -> void* {
         const auto path = to_string(filename, filename_len);
@@ -668,13 +679,13 @@ void* vkf_image_read(const char* filename, int filename_len)
     });
 }
 
-void vkf_image_delete(void* image)
+VKF_API void vkf_image_delete(void* image)
 {
     delete static_cast<Image*>(image);
 }
 
 // Read a model file (3ds, obj, gltf, ...); null on failure.
-void* vkf_model_read(const char* filename, int filename_len)
+VKF_API void* vkf_model_read(const char* filename, int filename_len)
 {
     return guarded("vkf_model_read", static_cast<void*>(nullptr), [&]() -> void* {
         const auto path = to_string(filename, filename_len);
@@ -697,7 +708,7 @@ void* vkf_model_read(const char* filename, int filename_len)
 // A mesh of n_vertices vertices and n_indices triangle indices, with a color
 // (rgba, multiplying the texture) and an optional texture (image handle, or
 // null). Fill its arrays with vkf_mesh_array before the first frame.
-void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture)
+VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture)
 {
     if (n_vertices < 3 || n_indices < 3) return nullptr;
     return guarded("vkf_mesh_create", static_cast<void*>(nullptr), [&]() -> void* {
@@ -745,7 +756,7 @@ void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* te
 // One of the mesh's arrays, to fill in place: 1 = vertices (3 floats each),
 // 2 = normals (3 floats), 3 = texture coordinates (2 floats), 4 = triangle
 // indices (uint32, 0-based). Valid while the mesh handle exists.
-void* vkf_mesh_array(void* mesh, int which)
+VKF_API void* vkf_mesh_array(void* mesh, int which)
 {
     auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
     if (!m) return nullptr;
@@ -766,7 +777,7 @@ void* vkf_mesh_array(void* mesh, int which)
 // A line strip holding up to capacity points (initially none). Fortran fills
 // its point and style buffers in place (vkf_line_points, vkf_line_style) and
 // then calls vkf_line_points_changed / vkf_line_style_changed.
-void* vkf_line_create(void* viewer, int capacity)
+VKF_API void* vkf_line_create(void* viewer, int capacity)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v || capacity < 2) return nullptr;
@@ -798,7 +809,7 @@ void* vkf_line_create(void* viewer, int capacity)
 // The strip's point buffer, 6 floats per point (x, y, z high parts, then x, y,
 // z low parts; see shaders/line.vert), and its capacity in points. Valid while
 // the line handle exists.
-float* vkf_line_points(void* line, int* capacity)
+VKF_API float* vkf_line_points(void* line, int* capacity)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l) return nullptr;
@@ -807,7 +818,7 @@ float* vkf_line_points(void* line, int* capacity)
 }
 
 // The strip's style buffer: 8 floats (r, g, b, a, width in window units, -, -, -).
-float* vkf_line_style(void* line)
+VKF_API float* vkf_line_style(void* line)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l) return nullptr;
@@ -816,7 +827,7 @@ float* vkf_line_style(void* line)
 
 // The first n points of the buffer have been written: draw n points and upload
 // the buffer. Returns 0, or -1 if n exceeds the capacity.
-int vkf_line_points_changed(void* line, int n)
+VKF_API int vkf_line_points_changed(void* line, int n)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l || n < 0 || 6 * static_cast<uint32_t>(n) > l->points->size()) return -1;
@@ -825,7 +836,7 @@ int vkf_line_points_changed(void* line, int n)
     return 0;
 }
 
-int vkf_line_style_changed(void* line)
+VKF_API int vkf_line_style_changed(void* line)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l) return -1;
@@ -834,3 +845,5 @@ int vkf_line_style_changed(void* line)
 }
 
 } // extern "C"
+
+#endif // VKF_EXTERNAL_LAYER

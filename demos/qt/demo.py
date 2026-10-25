@@ -28,8 +28,10 @@ def main(argv):
     os.chdir(HERE)
     if not os.path.exists(QT_TOOL):
         subprocess.check_call(["fpm", "update"])          # fetch qt-fortran
-    env = dict(os.environ, **fpm_vsg.fpm_settings())
-    fpm_vsg.compile_shaders()
+    settings, dll_dir = fpm_vsg.settings()
+    env = dict(os.environ, **settings)
+    if dll_dir:   # Windows: vkf.dll
+        env["PATH"] = dll_dir + os.pathsep + env.get("PATH", "")
     args = ["build"] if argv[0] == "build" else ["run", "--", *argv[1:]]
     return subprocess.call([sys.executable, QT_TOOL, *args], env=env)
 

@@ -7,12 +7,17 @@ Usage:
     python tools/fpm_vsg.py --env                         print `export ...` lines; then plain
                                                           `fpm build` works in that shell
 
-fpm compiles the C++ layer (src/vsg/*.cpp) as part of the vkframes library and
-links the libraries declared in fpm.toml. This script supplies the settings that
-depend on the environment, through fpm's standard environment variables:
+Linux and macOS: fpm compiles the C++ layer (src/vsg/*.cpp) as part of the
+vkframes library. This script supplies the settings that depend on the
+environment, through fpm's standard environment variables:
     FPM_CXX       clang++ (macOS) / g++
     FPM_CXXFLAGS  -std=c++17 -fPIC, VSG's compile definitions, the env's include dir
-    FPM_LDFLAGS   the env's library directory and rpath (and -lobjc on macOS)
+    FPM_LDFLAGS   the env's library directory and rpath, VSG, Vulkan and the C++
+                  runtime (and the Objective-C runtime on macOS)
+
+Windows: conda-forge's VSG is MSVC-built, so the layer is built separately with
+clang++ (MSVC target) into build/vkf/vkf.dll, which fpm links (see
+build_layer_dll); the DLL's directory is put on PATH for `run` and `test`.
 
 VSG ships only CMake package files (no pkg-config), so the flags its CMake
 targets carry are reproduced here: VSG_SHARED_LIBRARY, VSGXCHANGE_SHARED_LIBRARY,
@@ -56,26 +61,93 @@ def prefix():
     return os.path.join(p, "Library") if WINDOWS else p
 
 
-def fpm_settings():
-    """FPM_CXX, FPM_CXXFLAGS and FPM_LDFLAGS for building the C++ layer with fpm."""
-    if WINDOWS:
-        sys.exit("fpm_vsg: Windows (MSVC-built VSG) is not supported yet")
-    pre = prefix()
-    inc = os.path.join(pre, "include")
-    lib = os.path.join(pre, "lib")
-    cxx = os.environ.get("FPM_CXX") or (which("clang++") if MACOS else which("g++", "c++"))
-    cxxflags = ["-std=c++17", "-fPIC", "-DVSG_SHARED_LIBRARY", "-DVSGXCHANGE_SHARED_LIBRARY", f"-I{inc}"]
-    ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}"]
-    if MACOS:
-        ldflags.append("-lobjc")   # the layer's child NSView for embedding (Objective-C runtime calls)
-    else:
-        ldflags.append(f"-Wl,-rpath-link,{lib}")
-    settings = {"FPM_CXX": cxx, "FPM_CXXFLAGS": " ".join(cxxflags), "FPM_LDFLAGS": " ".join(ldflags)}
+LIBS = ["vsgXchange", "vsg"]                  # plus Vulkan: libvulkan, or vulkan-1 on Windows
+VSG_DEFINES = ["-DVSG_SHARED_LIBRARY", "-DVSGXCHANGE_SHARED_LIBRARY"]
+LAYER_SRC = os.path.join(ROOT, "src", "vsg")
+
+
+def keep_user_flags(settings):
+    """Append FPM_CXXFLAGS / FPM_LDFLAGS already set in the environment."""
     for key in ("FPM_CXXFLAGS", "FPM_LDFLAGS"):
         extra = os.environ.get(key, "").strip()
         if extra:
             settings[key] = f"{settings[key]} {extra}"
     return settings
+
+
+# ---------------------------------------------------------------------------
+# Linux and macOS: fpm builds the layer
+
+def unix_settings():
+    """FPM_CXX, FPM_CXXFLAGS and FPM_LDFLAGS for building the C++ layer with fpm."""
+    pre = prefix()
+    inc = os.path.join(pre, "include")
+    lib = os.path.join(pre, "lib")
+    cxx = os.environ.get("FPM_CXX") or (which("clang++") if MACOS else which("g++", "c++"))
+    cxxflags = ["-std=c++17", "-fPIC", *VSG_DEFINES, f"-I{inc}"]
+    libs = [f"-l{n}" for n in LIBS] + ["-lvulkan"]
+    if MACOS:
+        # C++ runtime, and the Objective-C runtime (the layer's child NSView for embedding)
+        ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}", *libs, "-lc++", "-lobjc"]
+    else:
+        # --no-as-needed: these come before the objects on fpm's link line
+        ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}", f"-Wl,-rpath-link,{lib}", "-Wl,--no-as-needed", *libs, "-lstdc++"]
+    return {"FPM_CXX": cxx, "FPM_CXXFLAGS": " ".join(cxxflags), "FPM_LDFLAGS": " ".join(ldflags)}, None
+
+
+# ---------------------------------------------------------------------------
+# Windows: conda-forge's VSG is built with MSVC, which gfortran (MinGW) cannot
+# link against, so the layer is built with clang++ (MSVC target) into
+# build/vkf/vkf.dll, which has a plain C interface (qt-fortran does the same
+# for its Qt shim). fpm compiles the layer's sources as empty files
+# (-DVKF_EXTERNAL_LAYER) and links the DLL; the DLL and VSG are found through
+# PATH at run time.
+
+def build_layer_dll(lib):
+    """Build build/vkf/vkf.dll from src/vsg/*.cpp if any source is newer."""
+    out_dir = os.path.join(os.getcwd(), "build", "vkf")
+    dll = os.path.join(out_dir, "vkf.dll")
+    sources = sorted(glob.glob(os.path.join(LAYER_SRC, "*.cpp")))
+    deps = sources + glob.glob(os.path.join(LAYER_SRC, "*.h"))
+    if os.path.exists(dll) and all(os.path.getmtime(d) <= os.path.getmtime(dll) for d in deps):
+        return dll, False
+    os.makedirs(out_dir, exist_ok=True)
+    cxx = os.environ.get("VKF_CXX") or which("clang++")
+    cmd = [cxx, "--target=x86_64-pc-windows-msvc", "-std=c++17", "-O2",
+           # VSG's DLLs use the dynamic CRT (/MD); keep the static one out of the link
+           "-fms-runtime-lib=dll", "-shared", "-o", dll,
+           *(f"-Wl,/NODEFAULTLIB:{crt}" for crt in ("libcmt", "libucrt", "libvcruntime", "libcpmt")),
+           "-DNOMINMAX", *VSG_DEFINES, f"-I{os.path.join(lib, 'include')}",
+           *sources,
+           f"-L{os.path.join(lib, 'lib')}", *(f"-l{n}" for n in LIBS), "-lvulkan-1"]
+    print("+", " ".join(cmd), flush=True)
+    if subprocess.call(cmd) != 0:
+        sys.exit("fpm_vsg: building build/vkf/vkf.dll failed")
+    return dll, True
+
+
+def windows_settings():
+    lib = prefix()
+    dll, rebuilt = build_layer_dll(lib)
+    if rebuilt:
+        # fpm does not relink executables when only the DLL changed
+        for d in glob.glob(os.path.join(os.getcwd(), "build", "gfortran_*")):
+            shutil.rmtree(d, ignore_errors=True)
+    # The DLL is passed as a linker input: ld resolves its C symbols directly.
+    settings = {
+        "FPM_CXX": os.environ.get("FPM_CXX") or which("clang++", "g++"),
+        "FPM_CXXFLAGS": "-DVKF_EXTERNAL_LAYER",
+        "FPM_LDFLAGS": dll,
+    }
+    return settings, os.path.dirname(dll)
+
+
+def settings():
+    """Compile the shaders, then return (fpm environment settings, directory to
+    put on PATH or None)."""
+    compile_shaders()
+    s, dll_dir = windows_settings() if WINDOWS else unix_settings()
+    return keep_user_flags(s), dll_dir
 
 
 def spirv(path, tmpdir):
@@ -94,6 +166,7 @@ def compile_shaders():
     """Write src/vsg/vkf_shaders.cpp with the SPIR-V of shaders/*.vert|frag."""
     shaders = sorted(glob.glob(os.path.join(SHADER_DIR, "*.vert")) + glob.glob(os.path.join(SHADER_DIR, "*.frag")))
     lines = ["// Generated by tools/fpm_vsg.py from shaders/; do not edit.", "",
+             "#ifndef VKF_EXTERNAL_LAYER  // Windows: built into vkf.dll instead (see fpm_vsg.py)", "",
              '#include "vkf_shaders.h"', "", "namespace vkf_shaders", "{"]
     with tempfile.TemporaryDirectory() as tmpdir:
         for path in shaders:
@@ -103,7 +176,7 @@ def compile_shaders():
             for i in range(0, len(words), 8):
                 lines.append("        " + ", ".join(f"0x{w:08x}" for w in words[i:i + 8]) + ",")
             lines.append("    };")
-    lines += ["} // namespace vkf_shaders", ""]
+    lines += ["} // namespace vkf_shaders", "", "#endif // VKF_EXTERNAL_LAYER", ""]
     text = "\n".join(lines)
     old = None
     if os.path.exists(SHADER_CPP):
@@ -118,14 +191,18 @@ def compile_shaders():
 def main(argv):
     if not argv:
         sys.exit(__doc__)
-    settings = fpm_settings()
-    compile_shaders()
+    env_settings, dll_dir = settings()
     if argv == ["--env"]:
-        for k, v in settings.items():
+        for k, v in env_settings.items():
             print(f"export {k}={shlex.quote(v)}")
+        if dll_dir:
+            print(f"export PATH={shlex.quote(dll_dir)}{os.pathsep}\"$PATH\"")
         return 0
-    env = dict(os.environ, **settings)
-    cmd = [which("fpm"), *argv]
+    env = dict(os.environ, **env_settings)
+    if dll_dir:
+        env["PATH"] = dll_dir + os.pathsep + env.get("PATH", "")
+    fc = os.environ.get("FPM_FC") or which("gfortran")
+    cmd = [which("fpm"), argv[0], "--compiler", fc, *argv[1:]]
     print("+", " ".join(cmd), flush=True)
     return subprocess.call(cmd, env=env)
 

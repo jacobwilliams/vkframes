@@ -23,6 +23,11 @@ pkg-config = "*"
 [target.osx.dependencies]
 moltenvk = "*"
 
+# Windows: conda-forge's VSG is MSVC-built, so the C++ layer is built with
+# clang++ (MSVC target) into a DLL (see tools/fpm_vsg.py)
+[target.win.dependencies]
+clangxx = "*"
+
 [tasks]
 build = "python tools/fpm_vsg.py build"
 test = "python tools/fpm_vsg.py test"

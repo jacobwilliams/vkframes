@@ -388,6 +388,19 @@ Decided so far:
   - libvsg exports no `type_info` for `vsg::Exception`, so on macOS a
     `vsg::Exception` thrown inside libvsg is not caught by type in our code;
     the layer's `guarded()` has a catch-all that recognizes it by name.
+- **Build per platform** (`tools/fpm_vsg.py`): the libraries to link (VSG,
+  Vulkan, the C++ runtime; the Objective-C runtime on macOS) are passed in
+  `FPM_LDFLAGS`, not `fpm.toml`. On Windows, conda-forge's VSG is MSVC-built,
+  so the layer is built with clang++ (MSVC target) into `build/vkf/vkf.dll`
+  with a plain C interface (exports via `VKF_API`), and fpm compiles the
+  layer's sources as empty files (`VKF_EXTERNAL_LAYER`); this is qt-fortran's
+  approach for its Qt shim. **The Windows route is untested.**
+- **CI** (`.github/workflows/ci.yml`): Ubuntu, macOS and Windows runners.
+  Build everywhere; the geometry test everywhere; the Vulkan test and
+  captured example renders on Linux (Mesa lavapipe, Xvfb) and macOS (Metal
+  in the runner VM permitting); the Qt demo built everywhere and run on
+  Linux and macOS (allowed to fail while those paths are unproven). Captures
+  are uploaded as artifacts.
 - **Efficiency follow-ups** (trajectories can be very large):
   - VSG re-uploads a whole dynamic array when it is marked dirty. Growing
     trajectories should upload only the appended range, or use fixed-size

@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: prefix-dev/setup-pixi@v0.11.2
+        with:
+          cache: true
+          environments: default qt
+
+      # Linux runners have no GPU: Mesa's CPU Vulkan driver (lavapipe), and Xvfb
+      # for windows. The conda Vulkan loader is pointed at lavapipe explicitly.
+      - name: Vulkan driver and X server (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mesa-vulkan-drivers xvfb
+          echo "VK_DRIVER_FILES=$(ls /usr/share/vulkan/icd.d/lvp_icd*.json | head -1)" >> "$GITHUB_ENV"
+
+      - name: Build library and examples
+        run: pixi run build
+
+      - name: Test geometry (headless)
+        run: pixi run test test_geometry
+
+      # Windows runners have no Vulkan driver.
+      - name: Test Vulkan device
+        if: runner.os != 'Windows'
+        continue-on-error: ${{ runner.os == 'macOS' }}   # MoltenVK needs Metal in the runner VM
+        run: pixi run test test_vulkan
+
+      - name: Render examples (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p captures
+          xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example orbit -- 30 "$PWD/captures/orbit.png"
+          xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example precision -- 10 "$PWD/captures/precision.png"
+
+      - name: Render examples (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: |
+          mkdir -p captures
+          pixi run example orbit -- 30 "$PWD/captures/orbit.png"
+          pixi run example precision -- 10 "$PWD/captures/precision.png"
+
+      # The Qt demo (separate fpm project; vkframes embedded in a qt-fortran window).
+      - name: Build the Qt demo
+        continue-on-error: ${{ runner.os == 'Windows' }}
+        run: pixi run -e qt qt-build
+
+      - name: Run the Qt demo (Linux)
+        if: runner.os == 'Linux'
+        continue-on-error: true   # VSG's xcb embedding with Qt is untested
+        env:
+          QT_QPA_PLATFORM: xcb
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" pixi run -e qt qt-demo --capture "$PWD/captures/qt_demo.png" --capture-frame 30 --quit-after 10
+
+      - name: Run the Qt demo (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: pixi run -e qt qt-demo --capture "$PWD/captures/qt_demo.png" --capture-frame 30 --quit-after 10
+
+      - name: Upload captures
+        if: always() && runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: captures-${{ matrix.os }}
+          path: captures/
+          if-no-files-found: ignore
