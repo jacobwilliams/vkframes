@@ -21,9 +21,12 @@ module vkf_window
     use vkf_frames, only: ReferenceFrame
     use vkf_clock, only: SimulationClock
     use vkf_view, only: View, PERSPECTIVE
+    use vkf_hud, only: HUDText
+    use vkf_text, only: label_create
     use vkf_layer, only: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_add_node, vkf_viewer_frame, &
                          vkf_viewer_capture, vkf_viewer_look_at, vkf_viewer_perspective, vkf_viewer_set_background, &
                          vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic, &
+                         vkf_viewer_hud_add, vkf_label_set_text, vkf_label_set_color, &
                          vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
 
     implicit none
@@ -51,6 +54,13 @@ module vkf_window
         type(View), pointer :: p => null()
     end type ViewPointer
 
+    !> A HUD text shown in a window, with the window's node for it.
+    type :: HUDEntry
+        type(HUDText), pointer :: p => null()
+        type(c_ptr) :: node = c_null_ptr
+        integer :: revision = -1                    !! the text's revision last shown
+    end type HUDEntry
+
     !> A window showing a scene (see the module documentation).
     type, public :: WindowProxy
         private
@@ -66,6 +76,9 @@ module vkf_window
         integer :: n_views = 0, current = 0
         type(View) :: default_view                          !! used when there are no views
         type(View), pointer :: shown => null()              !! the view whose camera is in the renderer
+        ! HUD text
+        type(HUDEntry), allocatable :: huds(:)
+        integer :: n_huds = 0
     contains
         procedure :: open, close, is_open
         procedure :: set_scene
@@ -76,6 +89,8 @@ module vkf_window
         procedure :: add_view, remove_view, remove_all_views
         procedure :: select_view, next_view, previous_view
         procedure :: current_view, num_views
+        ! HUD text (OpenFrames' RenderRectangle HUD)
+        procedure :: add_hud_text
         procedure :: view => window_view
         ! simulation time (OpenFrames' WindowProxy time control)
         procedure :: set_time, time, pause_time, is_time_paused, set_time_scale, time_scale
@@ -176,11 +191,15 @@ contains
         if (.not. self%is_open()) return
         root => null()
         if (associated(self%scene)) root => self%scene%frame()
-        if (associated(root) .and. .not. self%scene_added) then
-            call root%realize(self%viewer_)
-            if (vkf_viewer_add_node(self%viewer_, root%node()) /= 0) write(*, '(a)') 'vkframes: could not add the scene'
+        if (.not. self%scene_added) then
+            if (associated(root)) then
+                call root%realize(self%viewer_)
+                if (vkf_viewer_add_node(self%viewer_, root%node()) /= 0) write(*, '(a)') 'vkframes: could not add the scene'
+            end if
+            call create_huds(self)
             self%scene_added = .true.
         end if
+        call update_huds(self)
         t = self%clock_%update()
         if (associated(root)) then
             call root%update(t)
@@ -232,6 +251,59 @@ contains
         real(wp) :: rgb(3)
         rgb = self%background
     end function background_color
+
+    ! ==================================================================
+    ! HUD text
+
+    !> Show `h` in the window, on top of the scene (it must stay alive while
+    !> shown). For now, add it before the window's first frame.
+    subroutine add_hud_text(self, h)
+        class(WindowProxy), intent(inout) :: self
+        type(HUDText), intent(in), target :: h
+        type(HUDEntry), allocatable :: tmp(:)
+        if (.not. allocated(self%huds)) allocate(self%huds(4))
+        if (self%n_huds == size(self%huds)) then
+            allocate(tmp(2 * self%n_huds))
+            tmp(1:self%n_huds) = self%huds(1:self%n_huds)
+            call move_alloc(tmp, self%huds)
+        end if
+        self%n_huds = self%n_huds + 1
+        self%huds(self%n_huds)%p => h
+        self%huds(self%n_huds)%node = c_null_ptr
+        self%huds(self%n_huds)%revision = -1
+    end subroutine add_hud_text
+
+    !> Create the window's nodes for its HUD texts (before its first frame).
+    subroutine create_huds(self)
+        type(WindowProxy), intent(inout) :: self
+        type(HUDText), pointer :: h
+        integer :: k
+        do k = 1, self%n_huds
+            h => self%huds(k)%p
+            self%huds(k)%node = label_create(h%text(), [h%position(), 0.0_wp], h%color(), h%size(), 0.0_wp, &
+                                             h%alignment(), h%font())
+            if (.not. c_associated(self%huds(k)%node)) cycle
+            if (vkf_viewer_hud_add(self%viewer_, self%huds(k)%node) /= 0) write(*, '(a)') 'vkframes: could not add HUD text'
+            self%huds(k)%revision = h%revision()
+        end do
+    end subroutine create_huds
+
+    !> Show the HUD texts' new text and color, if they changed.
+    subroutine update_huds(self)
+        type(WindowProxy), intent(inout) :: self
+        type(HUDText), pointer :: h
+        character(len=:), allocatable :: t
+        integer :: k
+        do k = 1, self%n_huds
+            h => self%huds(k)%p
+            if (.not. c_associated(self%huds(k)%node) .or. h%revision() == self%huds(k)%revision) cycle
+            t = h%text()
+            if (vkf_label_set_text(self%huds(k)%node, t, len(t, kind=c_int)) /= 0 .or. &
+                vkf_label_set_color(self%huds(k)%node, real(h%color(), c_float)) /= 0) &
+                write(*, '(a)') 'vkframes: could not update HUD text'
+            self%huds(k)%revision = h%revision()
+        end do
+    end subroutine update_huds
 
     ! ==================================================================
     ! views

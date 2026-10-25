@@ -5,7 +5,7 @@
 !>
 !> The scene uses vkframes' API: the Earth is a Sphere (the WGS84 ellipsoid,
 !> textured; its axes and labels, and the spacecraft's, can be hidden from the
-!> dock), the spacecraft a Model (or a small Sphere without the data) that
+!> dock; HUD text shows each window's view and the time), the spacecraft a Model (or a small Sphere without the data) that
 !> follows a Trajectory (positions and attitudes over one period; LOOP or LIMIT
 !> from the dock). The Earth rotates: it follows an attitude-only Trajectory
 !> over one sidereal day, at a speed set with a slider. Both are children of an inertial root frame, so the
@@ -71,6 +71,7 @@ module vkdemo
         type(QComboBox) :: view_choice
         type(WindowProxy) :: proxy
         type(View) :: views(3)                                 !! Earth, spacecraft, spacecraft -> Earth
+        type(HUDText) :: hud_view                              !! the view's name, top left
         integer :: frame = 0
     end type view_window_t
 
@@ -81,7 +82,8 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
-        type(QCheckBox) :: show_axes, show_labels
+        type(QCheckBox) :: show_axes, show_labels, show_hud
+        type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
         type(QLabel) :: time_label
@@ -251,6 +253,9 @@ contains
         w%views(2) = View(app%inertial, app%spacecraft)
         w%views(3) = View(app%inertial, app%spacecraft, lookat=app%earth, frame_type=ABSOLUTE_FRAME)
         call w%views(3)%set_default_view_distance(1.5_wp * model_size)
+        w%hud_view = HUDText(trim(view_names(modulo(start_view - 1, 3) + 1)), position=[0.01_wp, 0.99_wp], &
+                             alignment=ALIGN_LEFT_TOP, size=16.0_wp, color=[0.8_wp, 0.8_wp, 0.8_wp])
+        call w%hud_view%show(app%show_hud%isChecked())
 
         ! default surface type, as vsgQt uses: VSG gives the native view its own
         ! CAMetalLayer on macOS (with QSurface_VulkanSurface, Qt manages the
@@ -305,6 +310,8 @@ contains
         end do
         call w%proxy%select_view(w%view_choice%currentIndex() + 1)
         if (vkf_viewer_add_node(w%proxy%viewer(), app%orbit_line) /= 0) write(*, '(a)') 'vkframes: could not add the orbit line'
+        call w%proxy%add_hud_text(w%hud_view)
+        call w%proxy%add_hud_text(app%hud_time)
         if (w%index == 1) then
             call w%proxy%set_time_scale(app%time_scale%value())
             call w%proxy%pause_time(app%pause_time%isChecked())
@@ -355,6 +362,8 @@ contains
             if (w%index == 1) then
                 write(text, '(a,f10.1,a)') 'Simulation time: ', w%proxy%time(), ' s'
                 call app%time_label%setText(trim(text))
+                write(text, '(a,f0.1,a)') 't = ', w%proxy%time(), ' s'
+                call app%hud_time%set_text(trim(text))
                 call advance_rotation(w%proxy%time())
             end if
             if (allocated(app%capture) .and. w%frame == app%capture_frame) then
@@ -540,6 +549,7 @@ contains
         select type (w => data)
         type is (view_window_t)
             call w%proxy%select_view(index + 1)
+            call w%hud_view%set_text(trim(view_names(index + 1)))
         end select
     end subroutine on_view
 
@@ -619,6 +629,17 @@ contains
         call app%rotation_label%setText(trim(text))
     end subroutine on_rotation_speed
 
+    !> Show or hide the HUD text in all windows.
+    subroutine on_show_hud(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        integer :: k
+        call app%hud_time%show(checked)
+        do k = 1, max_windows
+            if (app%windows(k)%used) call app%windows(k)%hud_view%show(checked)
+        end do
+    end subroutine on_show_hud
+
     !> Line width: a style change only (no point data is re-uploaded).
     subroutine on_line_width(value, data)
         real(c_double), intent(in) :: value
@@ -690,6 +711,10 @@ contains
 
         panel = QWidget()
         form = QFormLayout(panel)
+        app%show_hud = QCheckBox('Show HUD')
+        call app%show_hud%setChecked(.true.)
+        app%hud_time = HUDText('t = 0 s', position=[0.01_wp, 0.01_wp], alignment=ALIGN_LEFT_BOTTOM, size=18.0_wp, &
+                               color=[1.0_wp, 0.85_wp, 0.2_wp])
         call build_window(1, app%start_view)
         call app%main%setCentralWidget(app%windows(1)%container)
         call form%addRow('View', app%windows(1)%view_choice)
@@ -726,6 +751,8 @@ contains
         call app%show_axes%setChecked(.true.)
         call app%show_axes%toggled%connect(on_show_axes)
         call form%addRow('', app%show_axes)
+        call app%show_hud%toggled%connect(on_show_hud)
+        call form%addRow('', app%show_hud)
         app%show_labels = QCheckBox('Show labels')
         call app%show_labels%setChecked(.true.)
         call app%show_labels%toggled%connect(on_show_labels)

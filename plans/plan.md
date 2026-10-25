@@ -485,18 +485,23 @@ Decided so far:
       its pixel ratio, stored on the vsg::View) with the eye position, and
       the line pipeline is shared. `example/two_windows.f90` (standalone) and
       the Qt demo's "New window" (`--windows n`) show it.
-- [ ] Text labels and HUD text. Labels done (`src/vkf_text.f90`,
-      `shaders/label.vert`): vsg::Text with VSG's text shader set, whose
-      billboard CPU-layout variant is replaced by our shaders (compiled at
-      build time), sizing glyphs per view from the viewport pushed at record
-      time, so labels are right in every window: name labels at a fixed
-      screen size, axis labels in object size capped on screen (OpenFrames'
-      SCREEN_COORDS and OBJECT_COORDS_WITH_MAXIMUM_SCREEN_SIZE). Fonts by
-      name on a search path (VKFRAMES_FONT_PATH, the environment's `fonts`,
-      system font directories); DejaVu Sans from conda-forge
-      (`font-ttf-dejavu`) is the default. Still to do: HUD text (screen
-      overlay text, OpenFrames' RenderRectangle HUD), and changing a label's
-      text or color after it is shown.
+- [x] Text labels and HUD text (`src/vkf_text.f90`, `src/vkf_hud.f90`,
+      `shaders/label.vert`). Labels are vsg::Text with VSG's GPU layout (so
+      text and color can change after they are shown; VSG's CPU layout
+      cannot update) and VSG's text shader set, whose billboard GPU-layout
+      variant is replaced by our shaders (compiled at build time). They size
+      glyphs per view from the viewport pushed at record time, so labels are
+      right in every window: name labels and HUD text at a fixed screen size,
+      axis labels in object size capped on screen (OpenFrames' SCREEN_COORDS
+      and OBJECT_COORDS_WITH_MAXIMUM_SCREEN_SIZE). Fonts by name on a search
+      path (VKFRAMES_FONT_PATH, the environment's `fonts`, system font
+      directories); DejaVu Sans from conda-forge (`font-ttf-dejavu`) is the
+      default. HUD text (`HUDText`, `WindowProxy%add_hud_text`): OpenFrames'
+      RenderRectangle HUD text (position in [0, 1], alignment, pixel size,
+      color, font), any number per window and shown in several windows,
+      drawn by a second VSG view with a fixed 0..1 projection, on top of the
+      scene. Still to do: changing a frame's label text or color, or a HUD
+      text's position/size/font, after it is shown.
 - [ ] Headless tests for interpolation, following, time and the frame
       transform chain (done: `test/test_trajectory.f90`, `test_follower`,
       `test_clock`, `test_frames`); render tests by screen capture.

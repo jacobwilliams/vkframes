@@ -206,9 +206,10 @@ namespace
         if (view->getValue(pixel_ratio_key, ratio)) viewport[2] = ratio;
     }
 
-    // Labels: vsg::Text with VSG's text shader set, except for its
-    // billboard CPU-layout variant, which uses shaders/label.vert and
-    // label.frag (pixel-sized glyphs; the viewport pushed at offset 128).
+    // Labels: vsg::Text (GPU layout, so the text can change after it is shown)
+    // with VSG's text shader set, except for its billboard GPU-layout variant,
+    // which uses shaders/label.vert and label.frag (pixel-sized glyphs; the
+    // viewport pushed at offset 128).
     struct LabelShaders
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
@@ -237,7 +238,7 @@ namespace
             shaderSet = vsg::createTextShaderSet();
             for (auto& [hints, stages] : shaderSet->variants)
             {
-                if (hints && hints->defines.count("BILLBOARD") && hints->defines.count("CPU_LAYOUT"))
+                if (hints && hints->defines.count("BILLBOARD") && hints->defines.count("GPU_LAYOUT"))
                 {
                     auto vert = vsg::ShaderModule::create(vkf_shaders::label_vert);
                     auto frag = vsg::ShaderModule::create(vkf_shaders::label_frag);
@@ -260,14 +261,19 @@ namespace
         return *shaders;
     }
 
-    // Pushes the recorded view's viewport (offset 128) for its label children.
+    // Pushes the recorded view's viewport (offset 128) for its label children;
+    // viewport[3] = 1 for HUD labels (drawn on top: label.vert puts them at the
+    // near plane).
     class LabelGroup : public vsg::Inherit<vsg::Group, LabelGroup>
     {
     public:
+        bool hud = false;
+
         void traverse(vsg::RecordTraversal& visitor) const override
         {
             float viewport[4];
             recorded_viewport(visitor, viewport);
+            if (hud) viewport[3] = 1.0f;
             auto& commandBuffer = *visitor.getState()->_commandBuffer;
             auto& shaders = label_shaders();
             if (auto layout = shaders.pushLayout(commandBuffer.getDevice()))
@@ -279,6 +285,15 @@ namespace
     struct Font
     {
         vsg::ref_ptr<vsg::Font> font;
+    };
+
+    // The HUD's projection: x and y from 0 to 1 across the viewport (OpenFrames'
+    // ortho2D(0, 1, 0, 1)), unchanged when the window is resized.
+    class HudProjection : public vsg::Inherit<vsg::ProjectionMatrix, HudProjection>
+    {
+    public:
+        vsg::dmat4 transform() const override { return vsg::orthographic(0.0, 1.0, 0.0, 1.0, -1.0, 1.0); }
+        void changeExtent(const VkExtent2D&, const VkExtent2D&) override {}
     };
 
     // Splits x into a float pair (high, low) with high + low == x to about 48 bits.
@@ -357,6 +372,7 @@ namespace
         vsg::ref_ptr<vsg::Group> scene;
         vsg::ref_ptr<vsg::Camera> camera;
         vsg::ref_ptr<vsg::CommandGraph> commandGraph;
+        vsg::ref_ptr<vsg::Group> hudScene;     // HUD text, drawn by a second view on top (created when needed)
         void* childView = nullptr;             // macOS: the view VSG renders into, in the host's view
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
         bool compiled = false;
@@ -374,6 +390,14 @@ namespace
     {
         vsg::ref_ptr<vsg::Node> node;
         virtual ~Node() = default;
+    };
+
+    // A label (vkf_label_create): its text and layout, to change them later.
+    struct Label : Node
+    {
+        vsg::ref_ptr<vsg::Text> text;
+        vsg::ref_ptr<vsg::StandardLayout> layout;
+        uint32_t capacity = 0; // glyphs allocated (texts up to this long are updated in place)
     };
 
     struct LineStrip : Node
@@ -705,6 +729,15 @@ VKF_API int vkf_viewer_frame(void* viewer)
         if (!v->compiled)
         {
             v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene);
+            if (v->hudScene)
+            {
+                // the HUD: a second view in the same render pass, after the scene
+                auto hudCamera = vsg::Camera::create(HudProjection::create(),
+                                                     vsg::LookAt::create(vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, -1.0), vsg::dvec3(0.0, 1.0, 0.0)),
+                                                     vsg::ViewportState::create(v->window->extent2D()));
+                for (auto& child : v->commandGraph->children)
+                    if (auto renderGraph = child.cast<vsg::RenderGraph>()) renderGraph->addChild(vsg::View::create(hudCamera, v->hudScene));
+            }
             set_pixel_ratio(*v->commandGraph, v->pixelRatio);
             v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
             v->viewer->compile();
@@ -1034,18 +1067,61 @@ VKF_API void* vkf_label_create(void* font, const char* text, int text_len, const
         layout->verticalAlignment = static_cast<vsg::StandardLayout::Alignment>(valign);
 
         auto label = vsg::Text::create();
+        label->technique = vsg::GpuLayoutTechnique::create();
         label->font = f->font;
         label->layout = layout;
         label->text = vsg::stringValue::create(to_string(text, text_len));
         label->shaderSet = label_shaders().shaderSet;
-        label->setup(0, read_options());
+        // glyphs allocated: room to change the text in place (a multiple of 4: glyph indices are uvec4s)
+        const uint32_t capacity = 4 * ((std::max<uint32_t>(64, 2 * static_cast<uint32_t>(std::max(text_len, 0))) + 3) / 4);
+        label->setup(capacity, read_options());   // room to change the text in place
 
         auto group = LabelGroup::create();
         group->addChild(label);
-        auto n = std::make_unique<Node>();
+        auto n = std::make_unique<Label>();
         n->node = group;
+        n->text = label;
+        n->layout = layout;
+        n->capacity = capacity;
         return n.release();
     });
+}
+
+// Change a label's text (texts up to its capacity are updated in place).
+VKF_API int vkf_label_set_text(void* label, const char* text, int text_len)
+{
+    auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
+    if (!l) return -1;
+    return guarded("vkf_label_set_text", -1, [&]() {
+        l->text->text = vsg::stringValue::create(to_string(text, text_len));
+        l->text->setup(l->capacity, read_options());
+        return 0;
+    });
+}
+
+// Change a label's color (rgba).
+VKF_API int vkf_label_set_color(void* label, const float* rgba)
+{
+    auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
+    if (!l) return -1;
+    return guarded("vkf_label_set_color", -1, [&]() {
+        l->layout->color = vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]);
+        l->text->setup(l->capacity, read_options());
+        return 0;
+    });
+}
+
+// Show a label in the viewer's HUD (at x, y from 0 to 1 across the viewport,
+// bottom to top: the label's position), on top of the scene. Before the first frame.
+VKF_API int vkf_viewer_hud_add(void* viewer, void* label)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
+    if (!v || !l || v->compiled) return -1;
+    if (auto group = l->node.cast<LabelGroup>()) group->hud = true;
+    if (!v->hudScene) v->hudScene = vsg::Group::create();
+    v->hudScene->addChild(l->node);
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

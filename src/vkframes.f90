@@ -18,6 +18,7 @@ module vkframes
     use vkf_sphere, only: Sphere
     use vkf_model, only: Model
     use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE
+    use vkf_hud, only: HUDText
     use vkf_view, only: View, ABSOLUTE_FRAME, RELATIVE_FRAME, VIEW_DIRECT, VIEW_AZEL, ORTHOGRAPHIC, PERSPECTIVE
 
     implicit none

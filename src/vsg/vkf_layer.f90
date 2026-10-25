@@ -21,7 +21,8 @@ module vkf_layer
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
     public :: vkf_mesh_create, vkf_mesh_array
-    public :: vkf_font_read, vkf_font_delete, vkf_label_create
+    public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
+    public :: vkf_viewer_hud_add
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, mesh_arrays
 
@@ -254,6 +255,27 @@ module vkf_layer
             real(c_float), value :: size, max_size
             integer(c_int), value :: halign, valign
         end function vkf_label_create
+
+        integer(c_int) function vkf_label_set_text(label, text, text_len) bind(C, name="vkf_label_set_text")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: label
+            character(kind=c_char), dimension(*), intent(in) :: text
+            integer(c_int), value :: text_len
+        end function vkf_label_set_text
+
+        integer(c_int) function vkf_label_set_color(label, rgba) bind(C, name="vkf_label_set_color")
+            import :: c_ptr, c_int, c_float
+            implicit none
+            type(c_ptr), value :: label
+            real(c_float), dimension(4), intent(in) :: rgba
+        end function vkf_label_set_color
+
+        integer(c_int) function vkf_viewer_hud_add(viewer, label) bind(C, name="vkf_viewer_hud_add")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer, label
+        end function vkf_viewer_hud_add
 
         type(c_ptr) function vkf_line_create(capacity) bind(C, name="vkf_line_create")
             import :: c_ptr, c_int
