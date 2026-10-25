@@ -12,15 +12,29 @@ of that date, and experience embedding OpenFrames in a Fortran Qt GUI.
 
 ## Goal
 
-- **Features:** OpenFrames' feature set, listed under *Feature map* below.
+- **Features:** vkframes is a complete replacement for OpenFrames: **all**
+  of its features, listed under *Feature map* below, improved where
+  necessary. For each class, work from the full API in OpenFrames' header
+  (`include/OpenFrames/*.hpp`), reuse its validated approach, and record any
+  item not yet ported. Where vkframes deviates (better math, or what VSG and
+  Vulkan allow), say so and why.
 - **Language and backend:** written mainly in Modern Fortran, rendering with
   VSG (Vulkan).
 - **Platforms:** macOS (Vulkan through MoltenVK), Linux and Windows.
 - **Windows:** usable in its own window, or embedded in a Fortran GUI built
   with [qt-fortran](https://github.com/jacobwilliams/qt-fortran).
-- **API:** a Fortran-native API: derived types such as `ReferenceFrame` and
-  `Trajectory`, not a flat C-style interface. An OpenFrames-like
-  convenience layer can come later.
+- **API:** a modern Fortran interface for trajectory simulations, designed
+  for Fortran from the start.
+  - OpenFrames is the reference for features and algorithms, not for its
+    interface: its Fortran access (the `OF_Interface` C API plus
+    openframes-fortran) was added on top of a C++ library, with flat
+    functions and global state. Don't mirror it.
+  - Derived types with type-bound procedures (`ReferenceFrame`,
+    `Trajectory`, ...), Fortran arrays in double precision, optional and
+    keyword arguments, object lifetimes through finalizers or explicit
+    destroy calls, and no hidden global state.
+  - The `bind(C)` handles in `src/vsg/vkf_layer.f90` are internal plumbing
+    to the C++ layer, not the user API.
 
 ## Background
 
