@@ -504,12 +504,29 @@ Decided so far:
       text's position/size/font, after it is shown.
 - [ ] Headless tests for interpolation, following, time and the frame
       transform chain (done: `test/test_trajectory.f90`, `test_follower`,
-      `test_clock`, `test_frames`); render tests by screen capture.
+      `test_clock`, `test_frames`); render tests by screen capture
+      (deferred: captures are used by hand for now).
 
 ### 3. Artists and backgrounds
 
-- [ ] `CurveArtist` (data sources, width, color, dash pattern),
-      `SegmentArtist`.
+- [x] `DrawableTrajectory` (a frame holding artists; artists added after
+      the frame is shown are built and compiled at the next update) and
+      `TrajectoryArtist` (trajectory, trace mode) in `src/vkf_artists.f90`.
+- [x] `CurveArtist`: data sources (x/y/z from time, position, optionals or
+      attitude, scaled), width, color, trace mode (the points passed, a
+      draw-range change, plus a two-point tail to the point interpolated at
+      the current time; increasing or decreasing times). Drawn as a chain of
+      line chunks: appended points are written in place into the last chunk
+      (only that one is uploaded again), a full chain gets a new chunk (as
+      large as the chain so far, up to 65536 points), so nothing is copied
+      or reallocated; a cleared trajectory reuses the chunks; the last point
+      is rewritten (`set_optional` changes it). The usual position sources
+      are copied straight from the trajectory's storage (vectorized). Tested
+      headless by reading the buffers back (`test/test_artists.f90`); the
+      Qt demo draws its orbit with it (width, "Trace orbit").
+- [ ] `CurveArtist` dash pattern (`set_pattern` is kept; drawn solid for
+      now: needs the distance along the line in the fragment shader).
+- [ ] `SegmentArtist`.
 - [ ] `MarkerArtist` (start/intermediate/end markers, spacing by time,
       distance or data; shapes from the ported marker shaders; size;
       auto-attenuation).

@@ -14,8 +14,8 @@
 !> spacecraft body-fixed, and from the spacecraft toward the Earth; chosen per
 !> window). The main window's simulation time (time scale, pause and reset from
 !> the dock) drives the others, whose clocks are synchronized to it. The orbit
-!> line is still a low-level line node (drawn from the trajectory's positions,
-!> shared by all windows) until trajectory artists come.
+!> is drawn by a CurveArtist in a DrawableTrajectory (a child of the inertial
+!> frame), whole or traced up to the spacecraft (trace mode, from the dock).
 !>
 !> How the pieces fit:
 !>
@@ -39,12 +39,12 @@
 !> resizes the main window after 2 s; `--view n` starts the main window in view
 !> n (1 Earth, 2 spacecraft, 3 spacecraft -> Earth); `--windows n` opens n
 !> windows at startup (the others start in the next views); `--rotation-speed n`
-!> sets the Earth's rotation speed slider (0 to 50 x the real rate).
+!> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
+!> starts with the orbit traced.
 module vkdemo
 
     use qt
     use vkframes
-    use vkf_layer, only: vkf_line_create, line_set_points, line_set_style, vkf_viewer_add_node, vkf_node_delete
     use iso_c_binding
     implicit none
 
@@ -56,7 +56,7 @@ module vkdemo
     real(wp), parameter :: model_size = 800.0_wp                 !! spacecraft bounding radius (km, enlarged to be seen)
     integer, parameter :: n_orbit = 721
     integer, parameter :: max_windows = 4
-    real(c_float), parameter :: orbit_color(4) = [1.0_c_float, 0.85_c_float, 0.2_c_float, 1.0_c_float]
+    real(wp), parameter :: orbit_color(3) = [1.0_wp, 0.85_wp, 0.2_wp]
     character(len=19), parameter :: view_names(3) = [character(len=19) :: 'Earth', 'Spacecraft', 'Spacecraft -> Earth']
 
     !> One window showing the scene: a QWindow (in the main window, or in a
@@ -82,7 +82,7 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
-        type(QCheckBox) :: show_axes, show_labels, show_hud
+        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
@@ -97,7 +97,8 @@ module vkdemo
         real(wp) :: last_time = 0.0_wp                         !! the simulation time at the last frame
         class(ReferenceFrame), allocatable :: spacecraft      !! a Model, or a Sphere without the data
         type(FrameManager) :: scene
-        type(c_ptr) :: orbit_line = c_null_ptr                 !! low-level line node (until artists), in every window
+        type(DrawableTrajectory) :: orbit_frame                !! draws the orbit (in inertial coordinates)
+        type(CurveArtist) :: orbit_curve
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -106,6 +107,7 @@ module vkdemo
         integer :: start_rotation_speed = 1
         real(wp) :: quit_after = -1.0_wp
         logical :: test_resize = .false.
+        logical :: start_trace = .false.
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -146,10 +148,9 @@ contains
     end function orbit_attitude
 
     !> The scene: the orbit trajectory (one period), the Earth, the spacecraft
-    !> following the orbit, and the orbit line.
+    !> following the orbit, and the orbit's curve.
     subroutine build_model()
         real(wp) :: period, t, r(3), center(3), radius
-        real(wp), pointer :: xyz(:,:)
         logical :: ok
         integer :: k
 
@@ -195,22 +196,25 @@ contains
         call app%earth%follow(app%earth_rotation, data=FOLLOW_ATTITUDE)
         call set_rotation_time(0.0_wp)            ! the rotation's own time (see advance_rotation)
 
+        ! the orbit's curve, in a frame of its own (no decorations)
+        app%orbit_curve = CurveArtist(app%orbit, color=orbit_color, width=2.0_wp)
+        app%orbit_frame = DrawableTrajectory('Orbit')
+        call app%orbit_frame%show_axes(NO_AXES)
+        call app%orbit_frame%show_axes_labels(NO_AXES)
+        call app%orbit_frame%show_name_label(.false.)
+        call app%orbit_frame%add_artist(app%orbit_curve)
+
         ! the tree: an inertial root (no decorations of its own) with the
-        ! rotating Earth and the spacecraft (whose orbit is inertial)
+        ! rotating Earth, the spacecraft and its orbit (both inertial)
         app%inertial = ReferenceFrame('Inertial')
         call app%inertial%show_axes(NO_AXES)
         call app%inertial%show_axes_labels(NO_AXES)
         call app%inertial%show_name_label(.false.)
-        if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft))) &
+        if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft) .and. &
+                   app%inertial%add_child(app%orbit_frame))) &
             write(*, '(a)') 'vkframes: add_child failed'
         call app%scene%set_frame(app%inertial)
         write(*, '(a)', advance='no') app%inertial%frame_string()
-
-        ! the orbit line from the trajectory's positions (not copied); shown in every window
-        call app%orbit%positions(xyz)
-        app%orbit_line = vkf_line_create(int(app%orbit%num_positions(), c_int))
-        if (line_set_style(app%orbit_line, orbit_color, 2.0_c_float) /= 0 .or. line_set_points(app%orbit_line, xyz) /= 0) &
-            write(*, '(a)') 'vkframes: could not make the orbit line'
     end subroutine build_model
 
     !> The Earth follows its rotation trajectory at a fixed time, which the demo
@@ -309,7 +313,6 @@ contains
             call w%proxy%add_view(w%views(k))
         end do
         call w%proxy%select_view(w%view_choice%currentIndex() + 1)
-        if (vkf_viewer_add_node(w%proxy%viewer(), app%orbit_line) /= 0) write(*, '(a)') 'vkframes: could not add the orbit line'
         call w%proxy%add_hud_text(w%hud_view)
         call w%proxy%add_hud_text(app%hud_time)
         if (w%index == 1) then
@@ -644,10 +647,17 @@ contains
     subroutine on_line_width(value, data)
         real(c_double), intent(in) :: value
         class(*), intent(inout), optional :: data
-        if (.not. c_associated(app%orbit_line)) return
-        if (line_set_style(app%orbit_line, orbit_color, real(value, c_float)) /= 0) &
-            write(*, '(a)') 'vkframes: line style failed'
+        call app%orbit_curve%set_width(real(value, wp))
     end subroutine on_line_width
+
+    !> Trace mode: the orbit drawn up to the spacecraft only (with a loop
+    !> follow mode, whole again after the first period: the trace follows the
+    !> trajectory's own times).
+    subroutine on_trace_orbit(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%orbit_curve%set_trace_mode(checked)
+    end subroutine on_trace_orbit
 
     !> Open another window on the scene (up to max_windows).
     subroutine on_new_window(data)
@@ -691,8 +701,6 @@ contains
             if (app%windows(k)%used) call app%windows(k)%top%close()
         end do
         call close_view(app%windows(1))
-        if (c_associated(app%orbit_line)) call vkf_node_delete(app%orbit_line)
-        app%orbit_line = c_null_ptr
     end subroutine on_close
 
     ! ==================================================================
@@ -763,6 +771,9 @@ contains
         call app%line_width%setSuffix(' pt')
         call app%line_width%valueChanged%connect(on_line_width)
         call form%addRow('Orbit width', app%line_width)
+        app%trace_orbit = QCheckBox('Trace orbit')
+        call app%trace_orbit%toggled%connect(on_trace_orbit)
+        call form%addRow('', app%trace_orbit)
         app%time_label = QLabel('Simulation time:')
         call form%addRow(app%time_label)
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
@@ -820,6 +831,8 @@ program vkframes_qt_demo
             i = i + 1
         case ('--test-resize')
             app%test_resize = .true.
+        case ('--trace')
+            app%start_trace = .true.
         case ('--quit-after')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%quit_after
@@ -831,6 +844,7 @@ program vkframes_qt_demo
     call build_model()
     call build_ui()
     call app%rotation_speed%setValue(app%start_rotation_speed)
+    call app%trace_orbit%setChecked(app%start_trace)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
     call app%main%resize(1100, 700)

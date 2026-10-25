@@ -851,6 +851,48 @@ VKF_API int vkf_node_add_child(void* parent, void* child)
     return -1;
 }
 
+// Remove child from a group node (a transform or a switch). Returns -1 if it is not a child.
+VKF_API int vkf_node_remove_child(void* parent, void* child)
+{
+    auto p = static_cast<Node*>(parent);
+    auto c = static_cast<Node*>(child);
+    if (!p || !c) return -1;
+    if (auto group = p->node.cast<vsg::Group>())
+    {
+        auto& children = group->children;
+        auto itr = std::find(children.begin(), children.end(), c->node);
+        if (itr == children.end()) return -1;
+        children.erase(itr);
+        return 0;
+    }
+    if (auto sw = p->node.cast<vsg::Switch>())
+    {
+        auto& children = sw->children;
+        auto itr = std::find_if(children.begin(), children.end(), [&](const vsg::Switch::Child& ch) { return ch.node == c->node; });
+        if (itr == children.end()) return -1;
+        children.erase(itr);
+        return 0;
+    }
+    return -1;
+}
+
+// Compile a node (and its subgraph) for a viewer that is already running, so
+// it can be added to the scene between frames. Windows share their device, so
+// one viewer compiles it for all of them. Returns 0 on success.
+VKF_API int vkf_viewer_compile_node(void* viewer, void* node)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    auto n = static_cast<Node*>(node);
+    if (!v || !n) return -1;
+    if (!v->compiled) return 0; // compiled with the scene at the first frame
+    return guarded("vkf_viewer_compile_node", -1, [&]() {
+        auto result = v->viewer->compileManager->compile(n->node);
+        if (!result) return -1;
+        vsg::updateViewer(*v->viewer, result);
+        return 0;
+    });
+}
+
 // A switch node: a group whose children can be hidden and shown together.
 VKF_API void* vkf_switch_create()
 {
@@ -1185,6 +1227,18 @@ VKF_API int vkf_line_points_changed(void* line, int n)
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l || n < 0 || 6 * static_cast<uint32_t>(n) > l->points->size()) return -1;
     l->points->dirty();
+    l->draw->firstVertex = 0;
+    l->draw->vertexCount = (n >= 2) ? 6 * static_cast<uint32_t>(n - 1) : 0;
+    return 0;
+}
+
+// Draw points first .. first+n-1 only (1-based; no data is uploaded): e.g.
+// for trace mode.
+VKF_API int vkf_line_set_range(void* line, int first, int n)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l || first < 1 || n < 0 || 6 * static_cast<uint32_t>(first - 1 + n) > l->points->size()) return -1;
+    l->draw->firstVertex = 6 * static_cast<uint32_t>(first - 1);
     l->draw->vertexCount = (n >= 2) ? 6 * static_cast<uint32_t>(n - 1) : 0;
     return 0;
 }

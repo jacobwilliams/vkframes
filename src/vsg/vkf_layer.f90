@@ -16,7 +16,7 @@ module vkf_layer
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
-    public :: vkf_node_delete, vkf_node_add_child, vkf_node_bound
+    public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_viewer_compile_node
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
@@ -24,6 +24,7 @@ module vkf_layer
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
     public :: vkf_viewer_hud_add
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
+    public :: vkf_line_set_range
     public :: vulkan_device_name, line_set_points, line_set_style, mesh_arrays
 
     interface
@@ -156,6 +157,25 @@ module vkf_layer
             implicit none
             type(c_ptr), value :: parent, child
         end function vkf_node_add_child
+
+        integer(c_int) function vkf_node_remove_child(parent, child) bind(C, name="vkf_node_remove_child")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: parent, child
+        end function vkf_node_remove_child
+
+        integer(c_int) function vkf_viewer_compile_node(viewer, node) bind(C, name="vkf_viewer_compile_node")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer, node
+        end function vkf_viewer_compile_node
+
+        integer(c_int) function vkf_line_set_range(line, first, n) bind(C, name="vkf_line_set_range")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: line
+            integer(c_int), value :: first, n
+        end function vkf_line_set_range
 
         integer(c_int) function vkf_node_bound(node, center, radius) bind(C, name="vkf_node_bound")
             import :: c_ptr, c_int, c_double
