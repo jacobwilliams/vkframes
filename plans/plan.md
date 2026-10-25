@@ -211,7 +211,7 @@ plain VSG window.
 | Star background (`SkySphere`, HYG catalog, magnitude → size and color) | Fortran reads the catalog; point pipeline drawn at infinity | Moderate |
 | `DepthPartitioner` | Replaced by camera-relative double precision + reverse-Z | Moderate (design) |
 | `View`: trackball, follow a frame, view between frames, ortho/perspective, default distance, reset | `vsg::Trackball` or Fortran camera logic setting `LookAt` per frame | Moderate |
-| `RenderRectangle` / `WindowProxy` grid of viewports with separate views, backgrounds, HUD | A `vsg::View` + `RenderGraph` per viewport | Moderate |
+| `RenderRectangle` / `WindowProxy` grid of viewports with separate views, backgrounds, HUD | Not planned as a grid: several windows (each with its views, background, HUD) instead | — |
 | Input: mouse rotate/zoom/pan, keys | VSG events or forwarded Qt events → trackball | Easy–moderate |
 | Window capture to image | Copy the swapchain image (VSG screenshot example) | Moderate |
 | Shadows (`FocalPointShadowMap`), `SensorVisibilityCallback` | VSG 1.1 shadow support plus custom shaders | Hard (defer) |
@@ -470,16 +470,18 @@ Decided so far:
       `LookAt * worldToView` (`ViewLookAt`), with worldToView computed in
       Fortran each frame; near/far follow the camera distance. The Qt demo
       has a view menu (Earth, spacecraft, spacecraft -> Earth) and a reset.
-- [ ] A window with a grid of viewports (OpenFrames' RenderRectangles), each
-      with its own views, scene and background.
-- [ ] Several windows at once, showing the same scene (several views of it)
-      or different scenes. Design notes: each WindowProxy keeps its own
-      viewer, clock (synchronizable) and views; windows showing the same
-      scene must share the Vulkan device so the scene's nodes (and their GPU
-      data) are shared — create later windows with the first one's device
-      (`WindowTraits::device` / `Window::share`). Frames' render nodes are
-      already independent of any one window. Test with the Qt demo (two
-      QWindows) and a standalone example.
+- Not planned: OpenFrames' grid of viewports in one window (nRow x nCol
+  RenderRectangles). Several views at once are several windows instead
+  (e.g. several Qt windows in a GUI), next item.
+- [x] Several windows at once, showing the same scene (several views of it)
+      or different scenes. Each WindowProxy keeps its own viewer, clock
+      (synchronizable: `clock%synchronize(master)`) and views. All windows
+      share the first one's Vulkan device (`WindowTraits::device`), so a
+      scene's GPU data exist once. Line strips no longer depend on a window:
+      the eye-relative node pushes the size of the view being recorded (and
+      its pixel ratio, stored on the vsg::View) with the eye position, and
+      the line pipeline is shared. `example/two_windows.f90` (standalone) and
+      the Qt demo's "New window" (`--windows n`) show it.
 - [ ] Text labels and HUD text.
 - [ ] Headless tests for interpolation, following, time and the frame
       transform chain (done: `test/test_trajectory.f90`, `test_follower`,

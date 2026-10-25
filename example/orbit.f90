@@ -50,7 +50,7 @@ program orbit
     do i = 1, n_orbit
         orbit_xyz(:, i) = orbit_position(2.0_wp * pi * real(i - 1, wp) / real(n_orbit - 1, wp))
     end do
-    orbit_line = vkf_line_create(viewer, int(n_orbit, c_int))
+    orbit_line = vkf_line_create(int(n_orbit, c_int))
     if (.not. c_associated(orbit_line)) error stop 'could not create the orbit line'
     call check(line_set_style(orbit_line, [1.0_c_float, 0.85_c_float, 0.2_c_float, 1.0_c_float], 4.0_c_float))
     call check(line_set_points(orbit_line, orbit_xyz))
@@ -62,7 +62,7 @@ program orbit
             equator_xyz(:, i) = 1.6_wp * [cos(t), sin(t), 0.0_wp]
         end associate
     end do
-    equator_line = vkf_line_create(viewer, int(n_equator, c_int))
+    equator_line = vkf_line_create(int(n_equator, c_int))
     if (.not. c_associated(equator_line)) error stop 'could not create the equator line'
     call check(line_set_style(equator_line, [0.3_c_float, 1.0_c_float, 0.4_c_float, 1.0_c_float], 1.5_c_float))
     call check(line_set_points(equator_line, equator_xyz))

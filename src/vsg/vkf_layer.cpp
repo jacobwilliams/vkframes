@@ -138,7 +138,7 @@ namespace
         return fallback;
     }
 
-    // The pipeline shared by all line strips of a viewer (shaders/line.vert, line.frag).
+    // The pipeline shared by all line strips, in all windows (shaders/line.vert, line.frag).
     struct LinePipeline
     {
         vsg::ref_ptr<vsg::DescriptorSetLayout> descriptorSetLayout;
@@ -150,12 +150,11 @@ namespace
             descriptorSetLayout = vsg::DescriptorSetLayout::create(vsg::DescriptorSetLayoutBindings{
                 {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // points
                 {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // style
-                {2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // viewport
             });
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
-            // EyeRelative pushes the eye position (2 x vec4, offset 128)
+            // EyeRelative pushes the eye position and the viewport (3 x vec4, offset 128)
             pipelineLayout = vsg::PipelineLayout::create(vsg::DescriptorSetLayouts{descriptorSetLayout},
-                                                         vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 160}});
+                                                         vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 176}});
             vsg::ShaderStages stages{
                 vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vsg::ShaderModule::create(vkf_shaders::line_vert)),
                 vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", vsg::ShaderModule::create(vkf_shaders::line_frag)),
@@ -176,6 +175,18 @@ namespace
         }
     };
 
+    // The line pipeline, created on first use and kept for the whole run (VSG
+    // compiles it once per device; not destroyed at exit, to avoid depending
+    // on the order of static destruction).
+    LinePipeline& line_pipeline()
+    {
+        static LinePipeline* pipeline = new LinePipeline;
+        return *pipeline;
+    }
+
+    // Framebuffer pixels per window unit, stored on each vsg::View (2 on Retina).
+    constexpr const char* pixel_ratio_key = "vkf_pixel_ratio";
+
     // Splits x into a float pair (high, low) with high + low == x to about 48 bits.
     void split(double x, float& high, float& low)
     {
@@ -190,7 +201,9 @@ namespace
     // matrix, inverts it to find the eye position in the local frame, pushes that
     // as a (high, low) pair (push constants at offset 128), and replaces the
     // model-view matrix with a copy whose translation is zeroed. The shader then
-    // subtracts the eye from each point in double-single arithmetic.
+    // subtracts the eye from each point in double-single arithmetic. It also
+    // pushes the size of the view being recorded (and its pixel ratio), for
+    // pixel widths: a line can be shown in several windows.
     //
     // This is OpenFrames' method (DrawableTrajectory's UniformCallback and
     // TrajectoryArtist's vertex shader; Cozzi & Ring, "3D Engine Design for
@@ -209,11 +222,24 @@ namespace
             const vsg::dmat4 modelView = state->modelviewMatrixStack.top();
             const vsg::dvec3 eye = vsg::inverse(modelView) * vsg::dvec3(0.0, 0.0, 0.0);
 
-            float eyeHighLow[8] = {};
-            for (int i = 0; i < 3; ++i) split(eye[i], eyeHighLow[i], eyeHighLow[4 + i]);
+            float constants[12] = {};       // eye high, eye low, viewport (width, height, pixel ratio)
+            for (int i = 0; i < 3; ++i) split(eye[i], constants[i], constants[4 + i]);
+            constants[8] = constants[9] = constants[10] = 1.0f;
+            if (visitor.viewDependentState && visitor.viewDependentState->view)
+            {
+                const auto* view = visitor.viewDependentState->view;
+                if (view->camera)
+                {
+                    const auto area = view->camera->getRenderArea();
+                    constants[8] = static_cast<float>(area.extent.width);
+                    constants[9] = static_cast<float>(area.extent.height);
+                }
+                float ratio = 1.0f;
+                if (view->getValue(pixel_ratio_key, ratio)) constants[10] = ratio;
+            }
             auto& commandBuffer = *state->_commandBuffer;
             vkCmdPushConstants(commandBuffer, pipelineLayout->vk(commandBuffer.deviceID), VK_SHADER_STAGE_VERTEX_BIT,
-                               128, sizeof(eyeHighLow), eyeHighLow);
+                               128, sizeof(constants), constants);
 
             vsg::dmat4 rotationOnly = modelView;
             rotationOnly[3][0] = rotationOnly[3][1] = rotationOnly[3][2] = 0.0;
@@ -250,17 +276,17 @@ namespace
         vsg::ref_ptr<vsg::Camera> camera;
         vsg::ref_ptr<vsg::CommandGraph> commandGraph;
         void* childView = nullptr;             // macOS: the view VSG renders into, in the host's view
-        vsg::ref_ptr<vsg::vec4Array> viewport; // (width, height, pixel ratio, -), for the line shader
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
-        std::unique_ptr<LinePipeline> linePipeline;
         bool compiled = false;
-
-        LinePipeline& lines()
-        {
-            if (!linePipeline) linePipeline = std::make_unique<LinePipeline>();
-            return *linePipeline;
-        }
     };
+
+    // The Vulkan device of the windows: all windows share the first one's, so a
+    // scene shown in several windows has its GPU data once.
+    vsg::observer_ptr<vsg::Device>& shared_device()
+    {
+        static vsg::observer_ptr<vsg::Device> device;
+        return device;
+    }
 
     struct Node
     {
@@ -312,15 +338,13 @@ namespace
         return mat;
     }
 
-    void update_viewport(Viewer& v)
+    // Store the pixel ratio on the views of a command graph (read by EyeRelative).
+    void set_pixel_ratio(vsg::CommandGraph& commandGraph, float ratio)
     {
-        const auto extent = v.window->extent2D();
-        const vsg::vec4 size(static_cast<float>(extent.width), static_cast<float>(extent.height), v.pixelRatio, 0.0f);
-        if (v.viewport->at(0) != size)
-        {
-            v.viewport->set(0, size);
-            v.viewport->dirty();
-        }
+        for (auto& child : commandGraph.children)
+            if (auto renderGraph = child.cast<vsg::RenderGraph>())
+                for (auto& grandchild : renderGraph->children)
+                    if (auto view = grandchild.cast<vsg::View>()) view->setValue(pixel_ratio_key, ratio);
     }
 } // namespace
 
@@ -379,17 +403,20 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
 #endif
         }
 
+        // share the device of the windows already open (created with the first window)
+        auto& device = shared_device();
+        if (auto existing = device.ref_ptr()) traits->device = existing;
+
         auto v = std::make_unique<Viewer>();
         v->childView = childView;
         v->window = vsg::Window::create(traits);
+        if (!device.valid()) device = v->window->getOrCreateDevice();
         v->viewer = vsg::Viewer::create();
         v->viewer->addWindow(v->window);
         v->scene = vsg::Group::create();
         const auto extent = v->window->extent2D();
         v->pixelRatio = (native_window != 0) ? static_cast<float>(pixel_ratio)
                                              : static_cast<float>(extent.width) / static_cast<float>(width);
-        v->viewport = dynamic_vec4_array(1);
-        update_viewport(*v);
 
         const double aspect = static_cast<double>(extent.width) / static_cast<double>(extent.height);
         auto lookAt = ViewLookAt::create(vsg::dvec3(0.0, -4.0, 0.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 1.0));
@@ -596,13 +623,13 @@ VKF_API int vkf_viewer_frame(void* viewer)
         if (!v->compiled)
         {
             v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene);
+            set_pixel_ratio(*v->commandGraph, v->pixelRatio);
             v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
             v->viewer->compile();
             v->compiled = true;
         }
         if (!v->viewer->advanceToNextFrame()) return 0;
         v->viewer->handleEvents();
-        update_viewport(*v);
         v->viewer->update();
         v->viewer->recordAndSubmit();
         v->viewer->present();
@@ -883,13 +910,13 @@ VKF_API void* vkf_mesh_array(void* mesh, int which)
 
 // A line strip holding up to capacity points (initially none). Fortran fills
 // its point and style buffers in place (vkf_line_points, vkf_line_style) and
-// then calls vkf_line_points_changed / vkf_line_style_changed.
-VKF_API void* vkf_line_create(void* viewer, int capacity)
+// then calls vkf_line_points_changed / vkf_line_style_changed. It can be shown
+// in any number of windows.
+VKF_API void* vkf_line_create(int capacity)
 {
-    auto v = static_cast<Viewer*>(viewer);
-    if (!v || capacity < 2) return nullptr;
+    if (capacity < 2) return nullptr;
     return guarded("vkf_line_create", static_cast<void*>(nullptr), [&]() -> void* {
-        auto& pipeline = v->lines();
+        auto& pipeline = line_pipeline();
         auto line = std::make_unique<LineStrip>();
         line->points = vsg::floatArray::create(6 * static_cast<uint32_t>(capacity), 0.0f);
         line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
@@ -898,7 +925,6 @@ VKF_API void* vkf_line_create(void* viewer, int capacity)
         auto descriptorSet = vsg::DescriptorSet::create(pipeline.descriptorSetLayout, vsg::Descriptors{
             vsg::DescriptorBuffer::create(line->points, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
             vsg::DescriptorBuffer::create(line->style, 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER),
-            vsg::DescriptorBuffer::create(v->viewport, 2, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER),
         });
 
         auto stateGroup = vsg::StateGroup::create();

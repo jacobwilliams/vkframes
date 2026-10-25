@@ -19,6 +19,8 @@ layout(push_constant) uniform PushConstants {
     mat4 modelView;         // with its translation zeroed
     vec4 eyeHigh;           // eye position in the points' frame, (high, low) pair
     vec4 eyeLow;
+    vec4 viewport;          // xy = size of the view in framebuffer pixels,
+                            // z = framebuffer pixels per window unit (2 on Retina)
 } pc;
 
 layout(std430, set = 0, binding = 0) readonly buffer Points {
@@ -29,11 +31,6 @@ layout(set = 0, binding = 1) uniform Style {
     vec4 color;
     vec4 params;            // x = width in window units (logical pixels)
 } style;
-
-layout(set = 0, binding = 2) uniform Viewport {
-    vec4 size;              // xy = viewport size in framebuffer pixels,
-                            // z = framebuffer pixels per window unit (2 on Retina)
-} viewport;
 
 layout(location = 0) out vec4 fragColor;
 
@@ -88,7 +85,7 @@ void main()
     if (b.w < W_MIN) b = mix(b, a, (W_MIN - b.w) / (a.w - b.w));
 
     // direction and normal of the segment in pixels
-    vec2 halfSize = 0.5 * viewport.size.xy;
+    vec2 halfSize = 0.5 * pc.viewport.xy;
     vec2 sa = (a.xy / a.w) * halfSize;
     vec2 sb = (b.xy / b.w) * halfSize;
     vec2 d = sb - sa;
@@ -96,7 +93,7 @@ void main()
     vec2 dir = (len > 1.0e-6) ? d / len : vec2(1.0, 0.0);
     vec2 normal = vec2(-dir.y, dir.x);
 
-    float halfWidth = 0.5 * style.params.x * viewport.size.z;
+    float halfWidth = 0.5 * style.params.x * pc.viewport.z;
     vec4 pos = (corner.x == 0.0) ? a : b;
     vec2 offset = halfWidth * (corner.y * normal + (2.0 * corner.x - 1.0) * dir);
     pos.xy += (offset / halfSize) * pos.w;

@@ -54,7 +54,7 @@ program precision
     call check(vkf_viewer_add_node(viewer, earth))
     call vkf_node_delete(earth)
 
-    orbit_line = vkf_line_create(viewer, int(n_orbit, c_int))
+    orbit_line = vkf_line_create(int(n_orbit, c_int))
     if (.not. c_associated(orbit_line)) error stop 'could not create the orbit line'
     call check(line_set_style(orbit_line, [1.0_c_float, 0.85_c_float, 0.2_c_float, 1.0_c_float], 2.0_c_float))
     call check(line_set_points(orbit_line, orbit_xyz))

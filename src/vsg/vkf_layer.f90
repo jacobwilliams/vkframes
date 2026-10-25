@@ -228,10 +228,9 @@ module vkf_layer
             integer(c_int), value :: which
         end function vkf_mesh_array
 
-        type(c_ptr) function vkf_line_create(viewer, capacity) bind(C, name="vkf_line_create")
+        type(c_ptr) function vkf_line_create(capacity) bind(C, name="vkf_line_create")
             import :: c_ptr, c_int
             implicit none
-            type(c_ptr), value :: viewer
             integer(c_int), value :: capacity
         end function vkf_line_create
 
