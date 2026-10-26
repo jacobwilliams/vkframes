@@ -964,7 +964,8 @@ namespace
         const auto dir = cache_dir();
         std::error_code ec;
         const auto size = fs::file_size(font, ec);
-        const auto time = fs::last_write_time(font, ec).time_since_epoch().count();
+        // (a 64-bit count: libc++'s file clock counts in __int128, which std::to_string has not)
+        const auto time = static_cast<long long>(fs::last_write_time(font, ec).time_since_epoch().count());
         if (dir.empty() || ec) return {};
         const auto key = std::hash<std::string>{}(fs::absolute(font, ec).string() + "|" + std::to_string(size) + "|" +
                                                   std::to_string(time) + "|" + VSG_VERSION_STRING);
@@ -1329,6 +1330,7 @@ VKF_API int vkf_viewer_frame(void* viewer)
             v->viewer->compile();
             v->compiled = true;
             if (v->resizePending) v->window->resize();
+            v->resizePending = false;
         }
         if (!v->viewer->advanceToNextFrame()) return 0;
         v->viewer->handleEvents();
