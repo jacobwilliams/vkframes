@@ -125,6 +125,30 @@ namespace
         return view;
     }
 
+    // VSG's own macOS windows: let their view take the click that activates
+    // the window (acceptsFirstMouse:). A program started from a terminal may
+    // not be the active application; a click on its window then only activates
+    // it and the view never gets that mouse-down, so the trackball, which
+    // starts a drag on the button press, ignores the drag (a Cmd-click, which
+    // macOS passes to inactive windows, works). VSG's view class does not
+    // implement the method, so it is added (once).
+    BOOL accepts_first_mouse(id, SEL, id) { return YES; }
+
+    void accept_first_mouse_in_vsg_windows()
+    {
+        static const bool added = [] {
+            Class c = objc_getClass("vsg_MacOS_NSView");
+#    if defined(__arm64__) || defined(__aarch64__)
+            const char* types = "B@:@";   // BOOL is bool
+#    else
+            const char* types = "c@:@";   // BOOL is signed char
+#    endif
+            return c && class_addMethod(c, sel_registerName("acceptsFirstMouse:"),
+                                        reinterpret_cast<IMP>(accepts_first_mouse), types);
+        }();
+        (void)added;
+    }
+
     void delete_child_view(void* view)
     {
         if (!view) return;
@@ -790,6 +814,9 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         auto v = std::make_unique<Viewer>();
         v->childView = childView;
         v->window = vsg::Window::create(traits);
+#if defined(__APPLE__)
+        if (native_window == 0) accept_first_mouse_in_vsg_windows(); // (VSG's view class is registered by now)
+#endif
         if (!device.valid()) device = v->window->getOrCreateDevice();
         v->viewer = vsg::Viewer::create();
         v->viewer->addWindow(v->window);
