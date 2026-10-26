@@ -42,7 +42,11 @@ module vkf_shapes
     !> Coordinate axes with tick marks (OpenFrames' CoordinateAxes): lines from
     !> the origin along x, y and z, major and minor tick marks at their
     !> spacings, in the frame's color. Tick marks shrink beyond the axis length
-    !> from the camera (OpenFrames' tick attenuation).
+    !> from the camera (OpenFrames' tick attenuation). The frame's own axes
+    !> (arrows) are moved to the lines' ends when the length is set (as
+    !> OpenFrames'); move them after that with move_x_axis, ..., or, for axes
+    !> on a body, hide them (show_axes(NO_AXES)) and show the body's, which
+    !> start at its surface.
     type, extends(ReferenceFrame), public :: CoordinateAxes
         private
         real(wp) :: length_ = 1.0_wp
@@ -327,7 +331,7 @@ contains
         call place_axes(a, a%length_)
     end function new_coordinate_axes
 
-    !> The frame's own axes (arrows) beyond the coordinate axes' ends.
+    !> The frame's own axes (arrows) at `length` along x, y and z, half as long.
     subroutine place_axes(self, length)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: length

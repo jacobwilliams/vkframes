@@ -1,8 +1,12 @@
 !> Reference shapes around the Earth (OpenFrames' CoordinateAxes, LatLonGrid,
 !> RadialPlane, EllipticCone and RectangularCone): a latitude/longitude grid
-!> just above the surface, coordinate axes with tick marks every 1000 km, an
-!> equatorial radial plane, and a spacecraft's sensor cones pointed at the
-!> Earth (make_cone_look_at), lit by the Sun.
+!> just above the surface, an equatorial radial plane, and a spacecraft's
+!> sensor cones pointed at the Earth (make_cone_look_at), lit by the Sun.
+!>
+!> As usual with OpenFrames: the coordinate axes with tick marks (every 1000
+!> km) are the inertial frame's, fixed at its center (their arrows hidden);
+!> the arrows are the Earth's body-fixed axes, which start at its surface and
+!> turn with it (the Earth rotates, with its grid).
 !>
 !> Arguments (optional): the number of frames to run, and a file to capture
 !> the last frame to:
@@ -46,12 +50,11 @@ program shapes
     call root%show_axes_labels(NO_AXES)
     call root%show_name_label(.false.)
 
-    earth = Sphere('Earth', radius=re)
+    earth = Sphere('Earth', radius=re, color=[0.6_wp, 0.8_wp, 1.0_wp])     ! (the color of its axes)
     call earth%set_sphere_scale([1.0_wp, 1.0_wp, 1.0_wp - flattening])
     call earth%set_texture_map('2k_earth_daymap.jpg')
     call earth%set_night_texture_map('2k_earth_nightmap.jpg')
-    call earth%show_axes(NO_AXES)
-    call earth%show_axes_labels(NO_AXES)
+    call earth%show_name_label(.false.)
 
     ! a grid just above the surface (every 15 degrees), in the Earth's frame
     grid = LatLonGrid('Grid', color=[0.6_wp, 0.8_wp, 1.0_wp, 0.5_wp])
@@ -61,9 +64,13 @@ program shapes
     call grid%show_name_label(.false.)
     if (.not. earth%add_child(grid)) error stop 'add_child failed'
 
-    ! axes 2 Earth radii long, ticks every 1000 km (major) and 250 km (minor)
+    ! the inertial frame's axes: from its center out 2 Earth radii, ticks every
+    ! 1000 km (major) and 250 km (minor); their own arrows hidden (the arrows
+    ! shown are the Earth's body-fixed axes)
     axes = CoordinateAxes('Axes', color=[1.0_wp, 1.0_wp, 0.6_wp])
     call axes%set_axis_length(2.0_wp * re)
+    call axes%show_axes(NO_AXES)
+    call axes%show_axes_labels(NO_AXES)
     call axes%set_tick_spacing(1000.0_wp, 250.0_wp)
     call axes%set_axis_width(2.0_wp)
     call axes%show_name_label(.false.)
@@ -119,6 +126,8 @@ program shapes
     frame = 0
     running = .true.
     do while (running .and. frame < max_frames)
+        ! the Earth turns (a turn every 600 frames), its axes and grid with it
+        call earth%set_attitude(quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], 2.0_wp * pi * frame / 600.0_wp))
         running = window%frame()
         frame = frame + 1
     end do

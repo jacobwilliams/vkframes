@@ -30,8 +30,10 @@
 !> (city lights) on the night side (data/2k_earth_daymap.jpg and
 !> 2k_earth_nightmap.jpg); without it, the window's headlight. Reference shapes
 !> can be shown from the dock: a latitude/longitude grid on the Earth (a
-!> LatLonGrid), the equatorial plane (a RadialPlane) and spacecraft 1's nadir
-!> sensor (an EllipticCone).
+!> LatLonGrid), the inertial frame's coordinate axes with tick marks every
+!> 1000 km (a CoordinateAxes at its center, fixed while the Earth's body-fixed
+!> axes, from its surface, turn with it; its arrows hidden), the equatorial
+!> plane (a RadialPlane) and spacecraft 1's nadir sensor (an EllipticCone).
 !>
 !> How the pieces fit:
 !>
@@ -59,7 +61,7 @@
 !> starts with the orbit traced; `--radius` with the radius vectors shown;
 !> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral); `--sky n`
 !> with sky n (0 none, 1 stars, 2 texture, 3 both); `--shapes` with the grid,
-!> plane and sensor cone shown.
+!> coordinate axes, plane and sensor cone shown.
 module vkdemo
 
     use qt
@@ -109,7 +111,7 @@ module vkdemo
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
-        type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor
+        type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: sky_choice                          !! none, stars, texture, both
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
@@ -122,6 +124,7 @@ module vkdemo
         type(ReferenceFrame) :: inertial                       !! the root: inertial axes at the Earth's center
         type(Sphere) :: earth                                  !! rotating (follows earth_rotation)
         type(LatLonGrid) :: grid                               !! on the Earth (rotates with it)
+        type(CoordinateAxes) :: ticks                          !! the inertial frame's axes, with tick marks
         type(RadialPlane) :: equator                           !! the equatorial plane (inertial)
         type(EllipticCone) :: sensor                           !! spacecraft 1's nadir sensor
         type(ReferenceFrame) :: sun                            !! the light source
@@ -229,6 +232,16 @@ contains
         call app%grid%show_contents(.false.)
         if (.not. app%earth%add_child(app%grid)) write(*, '(a)') 'vkframes: add_child failed'
 
+        ! the inertial frame's coordinate axes: from its center (the Earth's), 2
+        ! Earth radii, ticks every 1000 km; fixed while the Earth turns; their
+        ! arrows hidden (the Earth's body-fixed ones, from its surface, show)
+        app%ticks = CoordinateAxes('Ticks', color=[0.85_wp, 0.85_wp, 0.85_wp])
+        call app%ticks%set_axis_length(2.0_wp * re)
+        call app%ticks%set_tick_spacing(1000.0_wp, 250.0_wp)
+        call hide_decorations(app%ticks)
+        call app%ticks%show_contents(.false.)
+
+
         ! the spacecraft: OpenFrames' Hubble model, or a small sphere without the data
         ok = .false.
         if (len(app%data_dir) > 0) then
@@ -329,7 +342,7 @@ contains
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft) .and. &
                    app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%spacecraft2) .and. &
                    app%inertial%add_child(app%orbit2_frame) .and. app%inertial%add_child(app%equator) .and. &
-                   app%inertial%add_child(app%sun))) &
+                   app%inertial%add_child(app%sun) .and. app%inertial%add_child(app%ticks))) &
             write(*, '(a)') 'vkframes: add_child failed'
         call app%scene%set_frame(app%inertial)
         write(*, '(a)', advance='no') app%inertial%frame_string()
@@ -860,6 +873,12 @@ contains
         call app%grid%show_contents(checked)
     end subroutine on_show_grid
 
+    subroutine on_show_ticks(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%ticks%show_contents(checked)
+    end subroutine on_show_ticks
+
     subroutine on_show_plane(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -1007,6 +1026,9 @@ contains
         app%show_grid = QCheckBox('Lat/lon grid')
         call app%show_grid%toggled%connect(on_show_grid)
         call form%addRow('', app%show_grid)
+        app%show_ticks = QCheckBox('Coordinate axes (ticks)')
+        call app%show_ticks%toggled%connect(on_show_ticks)
+        call form%addRow('', app%show_ticks)
         app%show_plane = QCheckBox('Equatorial plane')
         call app%show_plane%toggled%connect(on_show_plane)
         call form%addRow('', app%show_plane)
@@ -1114,6 +1136,7 @@ program vkframes_qt_demo
     call app%sky_choice%setCurrentIndex(app%start_sky)
     call app%show_grid%setChecked(app%start_shapes)
     call app%show_plane%setChecked(app%start_shapes)
+    call app%show_ticks%setChecked(app%start_shapes)
     call app%show_sensor%setChecked(app%start_shapes)
     call on_sky(app%start_sky)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)

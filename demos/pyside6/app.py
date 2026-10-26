@@ -67,6 +67,7 @@ def load_library():
         "vkdemo_show_axes": (None, [c_int]),
         "vkdemo_sun_light": (None, [c_int]),
         "vkdemo_show_grid": (None, [c_int]),
+        "vkdemo_show_ticks": (None, [c_int]),
     }
     for name, (restype, argtypes) in signatures.items():
         f = getattr(lib, name)
@@ -282,6 +283,9 @@ class MainWindow(QMainWindow):
         grid = QCheckBox("Lat/lon grid")
         grid.toggled.connect(lambda checked: lib.vkdemo_show_grid(int(checked)))
         form.addRow("", grid)
+        ticks = QCheckBox("Coordinate axes (ticks)")
+        ticks.toggled.connect(lambda checked: lib.vkdemo_show_ticks(int(checked)))
+        form.addRow("", ticks)
         axes = QCheckBox("Show axes and labels")
         axes.setChecked(True)
         axes.toggled.connect(lambda checked: lib.vkdemo_show_axes(int(checked)))

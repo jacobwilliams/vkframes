@@ -5,7 +5,8 @@
 !>
 !> The scene (vkframes' API): the Earth (a WGS84 Sphere with day and night
 !> textures, data/2k_earth_daymap.jpg and 2k_earth_nightmap.jpg, lit by a Sun
-!> frame's light source; a LatLonGrid on it), a spacecraft following an orbit (positions and
+!> frame's light source; a LatLonGrid on it), the inertial frame's
+!> CoordinateAxes (tick marks; the Earth's own axes start at its surface), a spacecraft following an orbit (positions and
 !> attitudes over one period, looped), the orbit drawn by a CurveArtist with
 !> markers (start, end, every 10 minutes) in a DrawableTrajectory, all
 !> children of an inertial root frame, and a SkySphere (the HYG star catalog,
@@ -31,6 +32,7 @@ module vkdemo
     real(wp), parameter :: flattening = 1.0_wp / 298.257223563_wp
     real(wp), parameter :: sma = 9000.0_wp, ecc = 0.2_wp, inc = 35.0_wp * pi / 180.0_wp
     real(wp), parameter :: craft_size = 800.0_wp                !! km (enlarged to be seen)
+    real(wp), parameter :: sidereal_day = 86164.0905_wp          !! s
     real(wp), parameter :: orbit_color(3) = [1.0_wp, 0.85_wp, 0.2_wp]
     integer, parameter :: n_orbit = 721
     integer, parameter :: max_windows = 4
@@ -50,6 +52,7 @@ module vkdemo
         type(ReferenceFrame) :: inertial
         type(Sphere) :: earth, craft
         type(LatLonGrid) :: grid
+        type(CoordinateAxes) :: ticks
         type(ReferenceFrame) :: sun
         type(Trajectory) :: orbit
         type(DrawableTrajectory) :: orbit_frame
@@ -105,6 +108,14 @@ contains
         call app%grid%show_name_label(.false.)
         call app%grid%show_contents(.false.)
         if (.not. app%earth%add_child(app%grid)) status = -1
+        app%ticks = CoordinateAxes('Ticks', color=[0.85_wp, 0.85_wp, 0.85_wp])
+        call app%ticks%set_axis_length(2.0_wp * re)
+        call app%ticks%set_tick_spacing(1000.0_wp, 250.0_wp)
+        call app%ticks%show_axes(NO_AXES)
+        call app%ticks%show_axes_labels(NO_AXES)
+        call app%ticks%show_name_label(.false.)
+        call app%ticks%show_contents(.false.)
+
         app%sun = ReferenceFrame('Sun')
         call app%sun%set_position(1.495978707e8_wp * [cos(0.4_wp), -sin(0.4_wp), 0.2_wp])
         call app%sun%show_axes(NO_AXES)
@@ -135,7 +146,8 @@ contains
         call app%inertial%show_axes_labels(NO_AXES)
         call app%inertial%show_name_label(.false.)
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%craft) .and. &
-                   app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%sun))) status = -1
+                   app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%sun) .and. &
+                   app%inertial%add_child(app%ticks))) status = -1
         call app%scene%set_frame(app%inertial)
 
         ok = app%sky%set_star_data('Stars_HYGv3.txt', min_mag=-2.0_wp, max_mag=6.0_wp, max_stars=40000)
@@ -238,6 +250,9 @@ contains
         if (id == 1) then
             write(text, '(a,f0.1,a)') 't = ', app%windows(1)%proxy%time(), ' s'
             call app%hud_time%set_text(trim(text))
+            ! the Earth turns (its body-fixed axes and grid with it) in the inertial frame
+            call app%earth%set_attitude(quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], &
+                                                             2.0_wp * pi * app%windows(1)%proxy%time() / sidereal_day))
         end if
         if (app%windows(id)%proxy%frame()) running = 1
     end function vkdemo_window_frame
@@ -401,6 +416,13 @@ contains
         integer(c_int), value :: shown
         call app%grid%show_contents(shown /= 0)
     end subroutine vkdemo_show_grid
+
+    !> Show (1) or hide (0) the inertial frame's coordinate axes with tick marks
+    !> (the Earth's own axes start at its surface).
+    subroutine vkdemo_show_ticks(shown) bind(C, name="vkdemo_show_ticks")
+        integer(c_int), value :: shown
+        call app%ticks%show_contents(shown /= 0)
+    end subroutine vkdemo_show_ticks
 
     !> Show (1) or hide (0) the Earth's and the spacecraft's axes and labels.
     subroutine vkdemo_show_axes(shown) bind(C, name="vkdemo_show_axes")
