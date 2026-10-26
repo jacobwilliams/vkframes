@@ -24,7 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import fpm_vsg  # noqa: E402
 
-LIBRARY = {"win32": "vkdemo.dll", "darwin": "libvkdemo.dylib"}.get(sys.platform, "libvkdemo.so")
+LIBRARY = {"win32": "libvkdemo.dll", "darwin": "libvkdemo.dylib"}.get(sys.platform, "libvkdemo.so")
 
 
 def build(env):

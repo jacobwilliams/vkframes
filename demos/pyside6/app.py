@@ -41,7 +41,8 @@ def load_library():
     path = os.environ.get("VKDEMO_LIB")
     if not path:
         sys.exit("app.py: VKDEMO_LIB is not set (run through demo.py)")
-    lib = ctypes.CDLL(path)
+    # Windows: winmode=0 also searches PATH for its DLLs (vkframes', vkf.dll, gfortran's), which demo.py sets
+    lib = ctypes.CDLL(path, winmode=0) if sys.platform == "win32" else ctypes.CDLL(path)
     c_int, c_double, c_char_p = ctypes.c_int, ctypes.c_double, ctypes.c_char_p
     signatures = {
         "vkdemo_init": (c_int, [c_char_p, c_int]),
