@@ -6,8 +6,9 @@ Usage:
     python demo.py run [app options...]     (see app.py)
 
 fpm builds the demo's Fortran (src/vkdemo.f90) and vkframes as shared
-libraries (fpm.toml: [library] type = "shared"), with vkframes' C++ layer
-settings from ../../tools/fpm_vsg.py. The app loads the library with ctypes:
+libraries (fpm.toml: [library] type = "shared"; Fortran compiled with -fPIC
+on Linux and macOS), with vkframes' C++ layer settings from
+../../tools/fpm_vsg.py. The app loads the library with ctypes:
 VKDEMO_LIB names it, and the build directory goes on the library search path
 (for vkframes' library, which it needs). VKFRAMES_DATA_PATH gets vkframes'
 data/ (the star catalog).
@@ -27,7 +28,11 @@ LIBRARY = {"win32": "vkdemo.dll", "darwin": "libvkdemo.dylib"}.get(sys.platform,
 
 
 def build(env):
-    return subprocess.call(["fpm", "build", "--compiler", "gfortran"], cwd=HERE, env=env)
+    # Position-independent Fortran for the shared library (vkframes' sources
+    # too): gfortran's default on Linux is not (macOS's is); fpm's own debug
+    # profile flags are kept (--flag alone would replace them).
+    pic = [] if sys.platform == "win32" else ["--profile", "debug", "--flag", "-fPIC"]
+    return subprocess.call(["fpm", "build", "--compiler", "gfortran", *pic], cwd=HERE, env=env)
 
 
 def library_path():
