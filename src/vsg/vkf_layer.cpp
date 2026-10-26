@@ -81,12 +81,31 @@ namespace
     }
 
 #if defined(__APPLE__)
-    // A plain NSView filling `parent` (and resizing with it), for VSG to render
-    // into. A host's view may keep its own layer tree (Qt 6's QNSView has a
-    // container layer), where MoltenVK finds no CAMetalLayer; a plain NSView
-    // takes VSG's CAMetalLayer as its layer. It handles no events, so mouse and
-    // keys go on to `parent` (the host). Objective-C runtime calls, so this
-    // stays plain C++.
+    // The view VSG renders into: an NSView that is invisible to hit-testing
+    // (hitTest: returns nil), so the window gives every mouse event straight to
+    // the host's view under it. As a plain NSView, the host's view would only
+    // get them through the responder chain, where a left mouse-down is caught
+    // up in window activation and first-responder handling (Qt then sees no
+    // left drags).
+    id render_view_hit_test(id, SEL, CGPoint) { return nil; }
+
+    Class render_view_class()
+    {
+        static Class cls = [] {
+            Class c = objc_allocateClassPair(objc_getClass("NSView"), "VkfRenderView", 0);
+            if (!c) return objc_getClass("VkfRenderView");     // already registered
+            class_addMethod(c, sel_registerName("hitTest:"), reinterpret_cast<IMP>(render_view_hit_test), "@@:{CGPoint=dd}");
+            objc_registerClassPair(c);
+            return c;
+        }();
+        return cls;
+    }
+
+    // A view filling `parent` (and resizing with it), for VSG to render into
+    // (render_view_class). A host's view may keep its own layer tree (Qt 6's
+    // QNSView has a container layer), where MoltenVK finds no CAMetalLayer; a
+    // plain NSView takes VSG's CAMetalLayer as its layer. Mouse and keys go to
+    // `parent` (the host). Objective-C runtime calls, so this stays plain C++.
     void* create_child_view(void* parent)
     {
         auto send = [](auto f, auto... args) { return reinterpret_cast<decltype(f)>(objc_msgSend)(args...); };
@@ -98,7 +117,7 @@ namespace
 #    else
         CGRect bounds = send(static_cast<CGRect (*)(id, SEL)>(nullptr), p, sel_registerName("bounds"));
 #    endif
-        id view = send(static_cast<IdSel>(nullptr), reinterpret_cast<id>(objc_getClass("NSView")), sel_registerName("alloc"));
+        id view = send(static_cast<IdSel>(nullptr), reinterpret_cast<id>(render_view_class()), sel_registerName("alloc"));
         view = send(static_cast<id (*)(id, SEL, CGRect)>(nullptr), view, sel_registerName("initWithFrame:"), bounds);
         // NSViewWidthSizable | NSViewHeightSizable
         send(static_cast<void (*)(id, SEL, unsigned long)>(nullptr), view, sel_registerName("setAutoresizingMask:"), 2ul | 16ul);
