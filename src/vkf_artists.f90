@@ -160,8 +160,8 @@ module vkf_artists
     !> or data points, counted from the start or from the end. Markers keep
     !> their size on screen (window units), or with auto-attenuation shrink
     !> when the camera is farther than the trajectory's size. In trace mode
-    !> (an addition), the markers passed are drawn, and the end marker is at
-    !> the point at the current time.
+    !> (an addition), the markers passed are drawn: the end marker (at the
+    !> trajectory's end) only once the time reaches the end.
     type, extends(TrajectoryArtist), public :: MarkerArtist
         private
         type(DataSource) :: sources_(3)
@@ -185,7 +185,6 @@ module vkf_artists
         integer :: n_seen = 0                       !! points seen (for the bounds)
         real(wp) :: lo(3) = 0.0_wp, hi(3) = 0.0_wp  !! bounds of the points seen
         real(wp) :: radius = 0.0_wp                 !! attenuation radius applied
-        real(wp) :: end_time = huge(1.0_wp)         !! trace mode: the time the end marker was drawn for
         ! intermediate markers: in trajectory order, and where to continue
         real(wp), allocatable :: inter_xyz(:,:), inter_t(:)
         integer :: n_inter = 0, n_inter_written = 0, n_inter_drawn = 0
@@ -1201,7 +1200,6 @@ contains
             call write_marker(self%start_node, marker_point(self, 1, zero))
             if (n > 1) call write_marker(self%end_node, marker_point(self, n, zero))
             if (iand(self%markers_, MARKER_INTERMEDIATE) /= 0 .and. .not. zero .and. n > 2) call add_intermediates(self, n)
-            self%end_time = huge(1.0_wp)
         end if
 
         ! what is drawn: everything, or in trace mode what was passed
@@ -1209,14 +1207,7 @@ contains
         if (self%trace .and. .not. zero) k = points_passed(self%traj, t, n)
         self%start_shown = iand(self%markers_, MARKER_START) /= 0 .and. n >= 1 .and. k >= 1
         call self%start_node%draw(merge(1, 0, self%start_shown))
-        self%end_shown = iand(self%markers_, MARKER_END) /= 0 .and. n > 1 .and. k >= 1
-        if (self%end_shown .and. self%trace .and. k < n .and. t /= self%end_time) then
-            call write_marker(self%end_node, point_at_time(self%traj, self%sources_, t, k))   ! the trace's head
-            self%end_time = t
-        else if (self%end_shown .and. self%trace .and. k == n .and. self%end_time /= huge(1.0_wp)) then
-            call write_marker(self%end_node, marker_point(self, n, zero))
-            self%end_time = huge(1.0_wp)
-        end if
+        self%end_shown = iand(self%markers_, MARKER_END) /= 0 .and. n > 1 .and. k >= n   ! (trace: once reached)
         call self%end_node%draw(merge(1, 0, self%end_shown))
         self%n_inter_drawn = self%n_inter_written
         if (self%trace .and. self%n_inter_written > 0) self%n_inter_drawn = markers_passed(self, t)

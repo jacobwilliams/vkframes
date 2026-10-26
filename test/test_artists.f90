@@ -311,11 +311,14 @@ contains
         call check(markers_at(a, [(7.5_wp * k, k = 1, 19)]), 'markers: appended (by time)')
         call check(marker_at(a, MARKER_END, 1.5e5_wp), 'markers: end after appends')
 
-        ! trace mode: markers passed, the end marker at the current time
+        ! trace mode: markers passed; the end marker only once the end is reached
         call a%set_trace_mode(.true.)
         call a%update(45.5_wp)
         call check(markers_at(a, [(7.5_wp * k, k = 1, 6)]), 'markers: trace')
-        call check(marker_at(a, MARKER_END, 45500.0_wp), 'markers: trace end at t')
+        call check(marker_at(a, MARKER_START, 0.0_wp) .and. .not. a%drawn_marker(MARKER_END, v), &
+                   'markers: trace, end not reached')
+        call a%update(150.0_wp)
+        call check(marker_at(a, MARKER_END, 1.5e5_wp), 'markers: trace, at the end')
         call a%update(-1.0_wp)
         call check(.not. a%drawn_marker(MARKER_START, v) .and. .not. a%drawn_marker(MARKER_END, v) .and. &
                    a%num_intermediate() == 0, 'markers: trace before the start')

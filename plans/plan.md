@@ -547,7 +547,7 @@ Decided so far:
       (`set_marker_image`, tinted, transparent parts left out). Markers are
       screen-space quads (shaders/marker.vert), not point sprites: no
       device point-size limits, the same on all platforms. Trace mode (an
-      addition): markers passed, the end marker at the current point.
+      addition): markers passed (the end marker once the end is reached).
 - [ ] `MarkerArtist%set_marker_shader` (a user GLSL file): needs runtime
       GLSL → SPIR-V (VSG's ShaderCompiler / glslang); the shapes of
       OpenFrames' shader files are built in instead.
