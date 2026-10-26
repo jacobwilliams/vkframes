@@ -49,7 +49,27 @@ qt6-main = ">=6.11,<7"
 
 [environments]
 qt = ["qt"]
+rocky = ["rocky"]
 
 [feature.qt.tasks]
 qt-build = { cmd = "python demo.py build", cwd = "demos/qt" }
 qt-demo = { cmd = "python demo.py run", cwd = "demos/qt" }
+
+# Rocky (maps and terrain, optional): `pixi run -e rocky rocky-build` builds
+# Rocky from source (tools/build_rocky.py) into this environment
+[feature.rocky.dependencies]
+entt = "*"
+proj = "*"
+libgdal-core = "*"
+spdlog = "*"
+glm = "*"
+nlohmann_json = "*"
+cpp-httplib = "*"
+openssl = "*"
+libsqlite = "*"
+zlib = "*"
+imgui = "*"
+git = "*"
+
+[feature.rocky.tasks]
+rocky-build = "python tools/build_rocky.py"

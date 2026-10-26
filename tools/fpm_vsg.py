@@ -23,6 +23,12 @@ VSG ships only CMake package files (no pkg-config), so the flags its CMake
 targets carry are reproduced here: VSG_SHARED_LIBRARY, VSGXCHANGE_SHARED_LIBRARY,
 C++17 and <prefix>/include.
 
+Rocky (maps and terrain, optional): when Rocky is installed in the
+environment (the `rocky` pixi environment, `pixi run -e rocky rocky-build`),
+the layer is built with it (VKF_ROCKY, C++20 as Rocky's headers need, Rocky's
+spdlog/fmt definitions, -lrocky), and ROCKY_FILE_PATH points Rocky at its
+shaders; otherwise src/vsg/vkf_rocky.cpp only reports Rocky as unavailable.
+
 Before running fpm, the shaders in shaders/ are compiled to SPIR-V with
 glslangValidator and written into src/vsg/vkf_shaders.cpp (generated, not
 committed; declared in src/vsg/vkf_shaders.h). The file is rewritten only when
@@ -66,6 +72,17 @@ VSG_DEFINES = ["-DVSG_SHARED_LIBRARY", "-DVSGXCHANGE_SHARED_LIBRARY"]
 LAYER_SRC = os.path.join(ROOT, "src", "vsg")
 
 
+def rocky_installed(pre):
+    """Whether Rocky is installed in the environment prefix pre."""
+    names = ["rocky.lib"] if WINDOWS else ["librocky.dylib", "librocky.so"]
+    return (os.path.exists(os.path.join(pre, "include", "rocky", "rocky.h"))
+            and any(os.path.exists(os.path.join(pre, "lib", n)) for n in names))
+
+
+# Rocky's compile definitions (its CMake target's: spdlog and fmt as shared libraries)
+ROCKY_DEFINES = ["-DVKF_ROCKY", "-DFMT_SHARED", "-DSPDLOG_COMPILED_LIB", "-DSPDLOG_FMT_EXTERNAL", "-DSPDLOG_SHARED_LIB"]
+
+
 def keep_user_flags(settings):
     """Append FPM_CXXFLAGS / FPM_LDFLAGS already set in the environment."""
     for key in ("FPM_CXXFLAGS", "FPM_LDFLAGS"):
@@ -86,6 +103,12 @@ def unix_settings():
     cxx = os.environ.get("FPM_CXX") or (which("clang++") if MACOS else which("g++", "c++"))
     cxxflags = ["-std=c++17", "-fPIC", *VSG_DEFINES, f"-I{inc}"]
     libs = [f"-l{n}" for n in LIBS] + ["-lvulkan"]
+    if rocky_installed(pre):
+        cxxflags[0] = "-std=c++20"
+        cxxflags += ROCKY_DEFINES
+        if MACOS:
+            cxxflags.append("-D_LIBCPP_DISABLE_AVAILABILITY")   # (as Rocky is built: tools/build_rocky.py)
+        libs.insert(0, "-lrocky")
     if MACOS:
         # C++ runtime, and the Objective-C runtime (the layer's child NSView for embedding)
         ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}", *libs, "-lc++", "-lobjc"]
@@ -113,13 +136,14 @@ def build_layer_dll(lib):
         return dll, False
     os.makedirs(out_dir, exist_ok=True)
     cxx = os.environ.get("VKF_CXX") or which("clang++")
-    cmd = [cxx, "--target=x86_64-pc-windows-msvc", "-std=c++17", "-O2",
+    rocky = rocky_installed(lib)
+    cmd = [cxx, "--target=x86_64-pc-windows-msvc", "-std=c++20" if rocky else "-std=c++17", "-O2",
            # VSG's DLLs use the dynamic CRT (/MD); keep the static one out of the link
            "-fms-runtime-lib=dll", "-shared", "-o", dll,
            *(f"-Wl,/NODEFAULTLIB:{crt}" for crt in ("libcmt", "libucrt", "libvcruntime", "libcpmt")),
-           "-DNOMINMAX", *VSG_DEFINES, f"-I{os.path.join(lib, 'include')}",
+           "-DNOMINMAX", *VSG_DEFINES, *(ROCKY_DEFINES if rocky else []), f"-I{os.path.join(lib, 'include')}",
            *sources,
-           f"-L{os.path.join(lib, 'lib')}", *(f"-l{n}" for n in LIBS), "-lvulkan-1"]
+           f"-L{os.path.join(lib, 'lib')}", *(["-lrocky"] if rocky else []), *(f"-l{n}" for n in LIBS), "-lvulkan-1"]
     print("+", " ".join(cmd), flush=True)
     if subprocess.call(cmd) != 0:
         sys.exit("fpm_vsg: building build/vkf/vkf.dll failed")
@@ -150,6 +174,10 @@ def settings():
     # vkframes' data files (star catalog, Earth textures) found by name at run time
     s["VKFRAMES_DATA_PATH"] = os.pathsep.join(
         d for d in (os.path.join(ROOT, "data"), os.environ.get("VKFRAMES_DATA_PATH")) if d)
+    if rocky_installed(prefix()):
+        # Rocky's shaders and data (installed in <prefix>/share/rocky)
+        s["ROCKY_FILE_PATH"] = os.pathsep.join(
+            d for d in (os.path.join(prefix(), "share", "rocky"), os.environ.get("ROCKY_FILE_PATH")) if d)
     return keep_user_flags(s), dll_dir
 
 

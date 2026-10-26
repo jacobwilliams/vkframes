@@ -30,6 +30,7 @@ module vkf_layer
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
     public :: mesh_arrays
+    public :: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_add_image, vkf_rocky_add_elevation
     public :: mesh_set_material
 
     interface
@@ -142,6 +143,39 @@ module vkf_layer
             implicit none
             type(c_ptr), value :: viewer, node
         end function vkf_viewer_add_node
+
+        ! Rocky maps (src/vsg/vkf_rocky.cpp; optional: vkf_rocky_available() is 0 without it)
+
+        integer(c_int) function vkf_rocky_available() bind(C, name="vkf_rocky_available")
+            import :: c_int
+            implicit none
+        end function vkf_rocky_available
+
+        type(c_ptr) function vkf_rocky_map_create(viewer, profile, profile_len, scale) bind(C, name="vkf_rocky_map_create")
+            import :: c_ptr, c_int, c_char, c_double
+            implicit none
+            type(c_ptr), value :: viewer
+            character(kind=c_char), dimension(*), intent(in) :: profile
+            integer(c_int), value :: profile_len
+            real(c_double), value :: scale
+        end function vkf_rocky_map_create
+
+        integer(c_int) function vkf_rocky_add_image(map, kind, uri, uri_len) bind(C, name="vkf_rocky_add_image")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: map
+            integer(c_int), value :: kind, uri_len
+            character(kind=c_char), dimension(*), intent(in) :: uri
+        end function vkf_rocky_add_image
+
+        integer(c_int) function vkf_rocky_add_elevation(map, kind, uri, uri_len, encoding) &
+                bind(C, name="vkf_rocky_add_elevation")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: map
+            integer(c_int), value :: kind, uri_len, encoding
+            character(kind=c_char), dimension(*), intent(in) :: uri
+        end function vkf_rocky_add_elevation
 
         integer(c_int) function vkf_viewer_frame(viewer) bind(C, name="vkf_viewer_frame")
             import :: c_ptr, c_int

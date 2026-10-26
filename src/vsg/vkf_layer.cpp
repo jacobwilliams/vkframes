@@ -43,6 +43,13 @@
 #    include <objc/runtime.h>
 #endif
 
+namespace vkf
+{
+    // optional parts of the layer (vkf_rocky.cpp): release their state for a
+    // viewer being deleted (after vkframes dropped its own references to it)
+    void release_viewer(vsg::Viewer* viewer);
+} // namespace vkf
+
 namespace
 {
     std::string to_string(const char* s, int len)
@@ -879,12 +886,15 @@ VKF_API void vkf_viewer_delete(void* viewer)
     guarded("vkf_viewer_delete", 0, [&]() {
         if (v && v->compiled) v->viewer->deviceWaitIdle();
         if (v) delete static_cast<Node*>(v->headlightHandle);
+        auto vsgViewer = v ? v->viewer : vsg::ref_ptr<vsg::Viewer>();
 #if defined(__APPLE__)
         void* childView = v ? v->childView : nullptr;
+#endif
         delete v;
+        if (vsgViewer) vkf::release_viewer(vsgViewer.get());   // the optional parts' state for it (Rocky)
+        vsgViewer = nullptr;                                   // (the window goes with it)
+#if defined(__APPLE__)
         delete_child_view(childView);
-#else
-        delete v;
 #endif
         return 0;
     });
@@ -1876,5 +1886,29 @@ VKF_API int vkf_line_style_changed(void* line)
 }
 
 } // extern "C"
+
+// For the optional parts of the layer in other files (vkf_rocky.cpp): the VSG
+// viewer of a viewer handle, and node handles.
+namespace vkf
+{
+    vsg::ref_ptr<vsg::Viewer> vsg_viewer(void* viewer)
+    {
+        auto v = static_cast<Viewer*>(viewer);
+        return v ? v->viewer : vsg::ref_ptr<vsg::Viewer>();
+    }
+
+    void* wrap_node(vsg::ref_ptr<vsg::Node> node)
+    {
+        auto n = std::make_unique<Node>();
+        n->node = node;
+        return n.release();
+    }
+
+    vsg::ref_ptr<vsg::Node> unwrap_node(void* node)
+    {
+        auto n = static_cast<Node*>(node);
+        return n ? n->node : vsg::ref_ptr<vsg::Node>();
+    }
+} // namespace vkf
 
 #endif // VKF_EXTERNAL_LAYER
