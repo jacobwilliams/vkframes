@@ -31,8 +31,10 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <cstring>
 #include <deque>
+#include <filesystem>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -570,6 +572,7 @@ namespace
         void* metalLayer = nullptr;            // macOS: the CAMetalLayer of its surface
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
         bool compiled = false;
+        bool resizePending = false;            // resized before the first frame (no swapchain yet)
     };
 
     // Compile a node for a viewer that is already running (before adding it to
@@ -892,6 +895,54 @@ namespace
                 for (auto& grandchild : renderGraph->children)
                     if (auto view = grandchild.cast<vsg::View>()) view->setValue(pixel_ratio_key, ratio);
     }
+
+    // An environment variable's value ('' if unset).
+    std::string env_var(const char* name)
+    {
+#if defined(_WIN32)
+        char* value = nullptr;
+        size_t len = 0;
+        if (_dupenv_s(&value, &len, name) != 0 || !value) return {};
+        std::string result(value);
+        std::free(value);
+        return result;
+#else
+        const char* value = std::getenv(name);
+        return value ? std::string(value) : std::string();
+#endif
+    }
+
+    // The directory for converted fonts: VKFRAMES_CACHE_DIR, or the user's
+    // cache directory; empty if none.
+    std::filesystem::path cache_dir()
+    {
+        namespace fs = std::filesystem;
+        if (auto d = env_var("VKFRAMES_CACHE_DIR"); !d.empty()) return fs::path(d);
+#if defined(_WIN32)
+        if (auto d = env_var("LOCALAPPDATA"); !d.empty()) return fs::path(d) / "vkframes" / "cache";
+#elif defined(__APPLE__)
+        if (auto h = env_var("HOME"); !h.empty()) return fs::path(h) / "Library" / "Caches" / "vkframes";
+#else
+        if (auto d = env_var("XDG_CACHE_HOME"); !d.empty()) return fs::path(d) / "vkframes";
+        if (auto h = env_var("HOME"); !h.empty()) return fs::path(h) / ".cache" / "vkframes";
+#endif
+        return {};
+    }
+
+    // The cache file of a font file: named for its path, size and time, so
+    // that a changed file is converted again.
+    std::filesystem::path font_cache_file(const std::filesystem::path& font)
+    {
+        namespace fs = std::filesystem;
+        const auto dir = cache_dir();
+        std::error_code ec;
+        const auto size = fs::file_size(font, ec);
+        const auto time = fs::last_write_time(font, ec).time_since_epoch().count();
+        if (dir.empty() || ec) return {};
+        const auto key = std::hash<std::string>{}(fs::absolute(font, ec).string() + "|" + std::to_string(size) + "|" +
+                                                  std::to_string(time) + "|" + VSG_VERSION_STRING);
+        return dir / (font.stem().string() + "-" + std::to_string(key) + ".vsgb");
+    }
 } // namespace
 
 extern "C" {
@@ -1088,7 +1139,10 @@ VKF_API int vkf_viewer_resize(void* viewer, int width, int height)
     return guarded("vkf_viewer_resize", -1, [&]() {
         v->window->bufferedEvents.push_back(vsg::ConfigureWindowEvent::create(
             v->window, vsg::clock::now(), 0, 0, static_cast<uint32_t>(width), static_cast<uint32_t>(height)));
-        v->window->resize();
+        if (v->compiled)
+            v->window->resize();
+        else
+            v->resizePending = true;
         return 0;
     });
 }
@@ -1242,6 +1296,7 @@ VKF_API int vkf_viewer_frame(void* viewer)
             v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
             v->viewer->compile();
             v->compiled = true;
+            if (v->resizePending) v->window->resize();
         }
         if (!v->viewer->advanceToNextFrame()) return 0;
         v->viewer->handleEvents();
@@ -1613,16 +1668,36 @@ VKF_API void* vkf_mesh_array(void* mesh, int which)
 // ---------------------------------------------------------------------------
 // Labels: text that always faces the screen (shaders/label.vert)
 
-// Read a font file (TrueType, ... through vsgXchange's freetype); null on failure.
+// Read a font file (TrueType, ... through vsgXchange's freetype); null on
+// failure. Converting a font (its glyphs' signed distance fields) takes
+// seconds, so the result is cached (cache_dir) and read from there next time.
 VKF_API void* vkf_font_read(const char* filename, int filename_len)
 {
     return guarded("vkf_font_read", static_cast<void*>(nullptr), [&]() -> void* {
         const auto path = to_string(filename, filename_len);
-        auto font = vsg::read_cast<vsg::Font>(path, read_options());
+        const auto cached = font_cache_file(std::filesystem::path(path));
+        vsg::ref_ptr<vsg::Font> font;
+        if (!cached.empty() && std::filesystem::exists(cached))
+            font = vsg::read_cast<vsg::Font>(cached.string(), read_options());
         if (!font)
         {
-            std::cerr << "vkf_font_read: could not read " << path << std::endl;
-            return nullptr;
+            font = vsg::read_cast<vsg::Font>(path, read_options());
+            if (!font)
+            {
+                std::cerr << "vkf_font_read: could not read " << path << std::endl;
+                return nullptr;
+            }
+            if (!cached.empty())
+            {
+                // (written to a temporary file first: another program may read the cache)
+                std::error_code ec;
+                std::filesystem::create_directories(cached.parent_path(), ec);
+                auto tmp = cached;
+                tmp.replace_extension(".tmp" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".vsgb");
+                if (vsg::write(font, tmp.string(), read_options()))
+                    std::filesystem::rename(tmp, cached, ec);
+                if (ec) std::filesystem::remove(tmp, ec);
+            }
         }
         auto f = std::make_unique<Font>();
         f->font = font;

@@ -64,6 +64,21 @@ namespace
         return *all;
     }
 
+    // Removes vsgXchange's OpenSceneGraph reader (in conda-forge's Windows
+    // build): it claims streamed TIFF before Rocky's GDAL reader, reloading
+    // all OSG plugins per tile from Rocky's threads, and crashes.
+    void remove_osg_reader(vsg::ReaderWriters& readerWriters)
+    {
+        for (auto it = readerWriters.begin(); it != readerWriters.end();)
+        {
+            if (auto crw = it->cast<vsg::CompositeReaderWriter>()) remove_osg_reader(crw->readerWriters);
+            if (std::string((*it)->className()) == "osg2vsg::OSG")
+                it = readerWriters.erase(it);
+            else
+                ++it;
+        }
+    }
+
     rocky::VSGContext context_for(const vsg::ref_ptr<vsg::Viewer>& viewer)
     {
         auto& contexts = ::contexts();
@@ -75,6 +90,7 @@ namespace
             // terrain encodes its (linear) color to sRGB itself (a patch to
             // Rocky's terrain shader, tools/build_rocky.py)
             it->second.get()->shaderCompileSettings->defines.insert("VKF_UNORM_FRAMEBUFFER");
+            remove_osg_reader(it->second.get()->readerWriterOptions->readerWriters);
         }
         return it->second.get();
     }

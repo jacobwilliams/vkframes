@@ -70,6 +70,7 @@ module vkdemo
 
     use qt
     use vkframes
+    use vkf_text, only: get_font
     use iso_c_binding
     implicit none
 
@@ -110,6 +111,8 @@ module vkdemo
     !> The GUI and the scene.
     type :: app_t
         type(QMainWindow) :: main
+        type(QStackedWidget) :: stack                          !! the main window's center: a startup message, then the view
+        type(QLabel) :: startup_message
         type(QDoubleSpinBox) :: time_scale
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
@@ -532,7 +535,11 @@ contains
         class(*), intent(inout), optional :: data
         select type (w => data)
         type is (view_window_t)
-            if (w%proxy%is_open() .or. .not. w%window%isExposed()) return
+            if (.not. w%window%isExposed()) return
+            if (w%proxy%is_open()) then                    ! (the main window's view opens before it is shown: on_startup)
+                if (w%frame == 0) call w%window%requestUpdate()
+                return
+            end if
             if (w%index > 1 .and. .not. app%windows(1)%proxy%is_open()) return   ! the main window opens first
             call open_view(app%windows(w%index))
             if (w%proxy%is_open()) call w%window%requestUpdate()
@@ -970,6 +977,30 @@ contains
         call new_window()
     end subroutine on_new_window
 
+    !> After the main window is first painted: the slow parts of the startup
+    !> (reading the label font, creating the Vulkan device) while it shows a
+    !> message, then the view in its place, and the other windows (--windows).
+    subroutine on_startup(data)
+        class(*), intent(inout), optional :: data
+        type(c_ptr) :: font
+        integer :: k
+        call show_startup_message('Loading fonts...')
+        font = get_font('')                                  ! (read once, for all labels)
+        call show_startup_message('Starting Vulkan...')
+        call open_view(app%windows(1))
+        call app%stack%setCurrentIndex(1)
+        do k = 2, min(app%start_windows, max_windows)
+            call new_window()
+        end do
+    end subroutine on_startup
+
+    !> The main window's startup message, painted now (the GUI thread is busy until the view opens).
+    subroutine show_startup_message(text)
+        character(len=*), intent(in) :: text
+        call app%startup_message%setText(text)
+        call QApplication_processEvents()
+    end subroutine show_startup_message
+
     subroutine new_window()
         integer :: k
         do k = 2, max_windows
@@ -1029,7 +1060,13 @@ contains
         app%hud_time = HUDText('t = 0 s', position=[0.01_wp, 0.01_wp], alignment=ALIGN_LEFT_BOTTOM, size=18.0_wp, &
                                color=[1.0_wp, 0.85_wp, 0.2_wp])
         call build_window(1, app%start_view)
-        call app%main%setCentralWidget(app%windows(1)%container)
+        app%stack = QStackedWidget()
+        app%startup_message = QLabel('Starting...')
+        call app%startup_message%setAlignment(Qt_AlignCenter)
+        call app%startup_message%setStyleSheet('background-color: black; color: #cccccc; font-size: 16pt;')
+        call app%stack%addWidget(app%startup_message)
+        call app%stack%addWidget(app%windows(1)%container)
+        call app%main%setCentralWidget(app%stack)
         call form%addRow('View', app%windows(1)%view_choice)
         reset_view = QPushButton('Reset view')
         call reset_view%clicked%connect(on_reset_view)
@@ -1143,7 +1180,7 @@ program vkframes_qt_demo
 
     type(QApplication) :: qapp
     character(len=1024) :: arg
-    integer :: i, k, ierr, status
+    integer :: i, ierr, status
 
     qapp = QApplication()
 
@@ -1223,9 +1260,7 @@ program vkframes_qt_demo
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
     call app%main%resize(1100, 700)
     call app%main%show()
-    do k = 2, min(app%start_windows, max_windows)
-        call new_window()
-    end do
+    call QTimer_singleShot(0, on_startup)
     ierr = qapp%exec()
 
 end program vkframes_qt_demo
