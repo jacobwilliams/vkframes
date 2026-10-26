@@ -260,6 +260,7 @@ contains
         if (.not. ok) allocate(app%spacecraft, source=Sphere('Spacecraft 1', radius=model_size, &
                                                              color=[1.0_wp, 0.3_wp, 0.2_wp]))
         call app%spacecraft%follow(app%orbit)                 ! position and attitude, FOLLOW_LOOP
+        call axes_from_center(app%spacecraft, 2.0_wp * model_size)
 
         ! the Earth's rotation: attitudes about z over one sidereal day, every 15
         ! degrees (slerp in between), looped; attitude only
@@ -296,6 +297,7 @@ contains
             call app%orbit2%add(t, pos=orbit_position(t, sma2, ecc2, inc2, raan2))
         end do
         app%spacecraft2 = Sphere('Spacecraft 2', radius=0.6_wp * model_size, color=orbit2_color)
+        call axes_from_center(app%spacecraft2, 1.2_wp * model_size)
         call app%spacecraft2%follow(app%orbit2, data=FOLLOW_POSITION, mode=FOLLOW_LIMIT)
         app%orbit2_curve = CurveArtist(app%orbit2, color=orbit2_color, width=2.0_wp)
         app%orbit2_markers = MarkerArtist(app%orbit2, size=16.0_wp)            ! start and end (default)
@@ -356,6 +358,18 @@ contains
         end if
         write(*, '(a,i0,a)') 'sky: ', app%sky%num_stars(), ' stars'
     end subroutine build_model
+
+    !> A spacecraft's body axes from its center, `length` long (beyond its
+    !> body; a Sphere or Model starts them at its surface by default).
+    subroutine axes_from_center(frame, length)
+        class(ReferenceFrame), intent(inout) :: frame
+        real(wp), intent(in) :: length
+        real(wp), parameter :: o(3) = 0.0_wp
+        ! (thinner than the default, 5% and 10% of the length, for long axes)
+        call frame%move_x_axis(o, length, body_radius=0.015_wp * length, head_radius=0.04_wp * length)
+        call frame%move_y_axis(o, length, body_radius=0.015_wp * length, head_radius=0.04_wp * length)
+        call frame%move_z_axis(o, length, body_radius=0.015_wp * length, head_radius=0.04_wp * length)
+    end subroutine axes_from_center
 
     !> No axes or labels (for the reference shapes and the Sun).
     subroutine hide_decorations(frame)

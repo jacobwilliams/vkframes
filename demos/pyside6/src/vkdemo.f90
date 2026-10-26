@@ -126,6 +126,14 @@ contains
         call app%sun%set_light_ambient([0.08_wp, 0.08_wp, 0.08_wp])
         app%craft = Sphere('Spacecraft', radius=craft_size, color=[1.0_wp, 0.3_wp, 0.2_wp])
         call app%craft%follow(app%orbit)
+        ! the spacecraft's body axes from its center, out beyond its body (a
+        ! Sphere starts them at its surface by default)
+        call app%craft%move_x_axis([0.0_wp, 0.0_wp, 0.0_wp], 2.0_wp * craft_size, &
+                                   body_radius=0.03_wp * craft_size, head_radius=0.08_wp * craft_size)
+        call app%craft%move_y_axis([0.0_wp, 0.0_wp, 0.0_wp], 2.0_wp * craft_size, &
+                                   body_radius=0.03_wp * craft_size, head_radius=0.08_wp * craft_size)
+        call app%craft%move_z_axis([0.0_wp, 0.0_wp, 0.0_wp], 2.0_wp * craft_size, &
+                                   body_radius=0.03_wp * craft_size, head_radius=0.08_wp * craft_size)
 
         app%orbit_curve = CurveArtist(app%orbit, color=orbit_color, width=2.0_wp)
         app%orbit_markers = MarkerArtist(app%orbit, markers=ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END), &
