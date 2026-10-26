@@ -52,6 +52,9 @@ namespace vkf
     // optional parts of the layer (vkf_rocky.cpp): release their state for a
     // viewer being deleted (after vkframes dropped its own references to it)
     void release_viewer(vsg::Viewer* viewer);
+    // ... and the device features they need, and their state for a view (before the first compile)
+    void device_features(vsg::WindowTraits& traits);
+    void prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device);
 } // namespace vkf
 
 namespace
@@ -958,6 +961,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
 #if !defined(__APPLE__)
         if (existing) traits->device = existing;
 #endif
+        vkf::device_features(*traits);
 
         auto v = std::make_unique<Viewer>();
         v->childView = childView;
@@ -1221,6 +1225,10 @@ VKF_API int vkf_viewer_frame(void* viewer)
         {
             // (no VSG headlight: the window's light is vkframes', v->headlight)
             v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene, VK_SUBPASS_CONTENTS_INLINE, false);
+            for (auto& child : v->commandGraph->children)
+                if (auto renderGraph = child.cast<vsg::RenderGraph>())
+                    for (auto& node : renderGraph->children)
+                        if (auto view = node.cast<vsg::View>()) vkf::prepare_view(v->viewer.get(), *view, v->window->getOrCreateDevice());
             if (v->hudScene)
             {
                 // the HUD: a second view in the same render pass, after the scene

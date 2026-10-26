@@ -29,8 +29,11 @@
 #    include <rocky/TMSElevationLayer.h>
 #    include <rocky/TMSImageLayer.h>
 #    include <rocky/vsg/MapNode.h>
+#    include <rocky/vsg/SharedRenderData.h>
+#    include <rocky/vsg/ViewDependentState.h>
 #    include <rocky/vsg/VSGContext.h>
 #    include <gdal.h>
+#    include <algorithm>
 #    include <map>
 #endif
 
@@ -43,6 +46,10 @@ namespace vkf
 
     // called by vkf_viewer_delete (defined below)
     void release_viewer(vsg::Viewer* viewer);
+
+    // called by vkf_viewer_create and vkf_viewer_frame (defined below)
+    void device_features(vsg::WindowTraits& traits);
+    void prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device);
 } // namespace vkf
 
 #ifdef VKF_ROCKY
@@ -120,6 +127,41 @@ void vkf::release_viewer(vsg::Viewer* viewer)
     contexts().erase(it);
 #else
     (void)viewer;
+#endif
+}
+
+// The device features Rocky's shaders need (as Rocky's DisplayManager enables
+// them): non-uniform indexing of the terrain's texture arrays.
+void vkf::device_features(vsg::WindowTraits& traits)
+{
+#ifdef VKF_ROCKY
+    traits.vulkanVersion = std::max(traits.vulkanVersion, static_cast<uint32_t>(VK_API_VERSION_1_2));
+    auto& features = traits.deviceFeatures->get<VkPhysicalDeviceVulkan12Features, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES>();
+    features.descriptorIndexing = VK_TRUE;
+    features.runtimeDescriptorArray = VK_TRUE;
+    features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+#else
+    (void)traits;
+#endif
+}
+
+// Before the viewer's first compile: a view showing a map gets Rocky's
+// view-dependent state (its shaders' view data, descriptor set 1), as Rocky's
+// DisplayManager installs it.
+void vkf::prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device)
+{
+#ifdef VKF_ROCKY
+    auto it = contexts().find(viewer);
+    if (it == contexts().end()) return;
+    auto context = it->second.get();
+    if (!context->trackView(&view)) return;
+    auto vds = rocky::ViewDependentStateEx::create(vsg::ref_ptr<vsg::View>(&view), device);
+    view.viewDependentState = vds;
+    context->sharedRenderData->viewDependentState[view.viewID] = vds;
+    auto& ids = context->activeViewIDs;
+    if (std::find(ids.begin(), ids.end(), view.viewID) == ids.end()) ids.push_back(view.viewID);
+#else
+    (void)viewer; (void)view; (void)device;
 #endif
 }
 

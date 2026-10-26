@@ -21,6 +21,8 @@ root = Path(__file__).resolve().parent.parent
 src = root / "build" / "rocky-src"
 build = root / "build" / "rocky-build"
 prefix = Path(os.environ["CONDA_PREFIX"])
+if sys.platform == "win32":
+    prefix = prefix / "Library"   # conda's Windows layout (where VSG is, and where tools/fpm_vsg.py looks)
 
 
 def run(*cmd, cwd=None):
