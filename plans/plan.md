@@ -191,6 +191,18 @@ Try option 1 first, and keep option 2 as the fallback while vsgQt is
 pre-1.0. The engine itself should not depend on Qt: it must also run in a
 plain VSG window.
 
+### Python GUIs (PySide6)
+
+The same native-handle route works from Python (`demos/pyside6`, done): the
+application's Fortran (scene, windows, controls) is built by fpm as a shared
+library (`[library] type = "shared"`, with vkframes as a shared library too)
+exposing a small `bind(C)` interface; the PySide6 GUI loads it with ctypes,
+owns the `QWindow`s (passing `winId()`, size and pixel ratio), forwards
+events in VSG's conventions and renders a frame on each `UpdateRequest`.
+vkframes needs nothing Python-specific: the C interface is the
+application's own, not a generic binding of vkframes. Tested on macOS (one
+and several windows); Linux and Windows are in CI.
+
 ## Feature map
 
 | OpenFrames feature | Plan in VSG / Fortran | Difficulty |

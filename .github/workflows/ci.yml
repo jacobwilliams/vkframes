@@ -74,6 +74,24 @@ jobs:
         continue-on-error: true
         run: pixi run -e qt qt-demo --capture "$PWD/captures/qt_demo.png" --capture-frame 30 --quit-after 10
 
+      # The PySide6 demo (separate fpm project, a shared library driven by a
+      # Python GUI through ctypes).
+      - name: Build the PySide6 demo
+        continue-on-error: ${{ runner.os == 'Windows' }}   # fpm shared libraries + vkf.dll are untested
+        run: pixi run pyside6-build
+
+      - name: Run the PySide6 demo (Linux)
+        if: runner.os == 'Linux'
+        continue-on-error: true   # VSG's xcb embedding with Qt is untested
+        env:
+          QT_QPA_PLATFORM: xcb
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" pixi run pyside6-demo --capture "$PWD/captures/pyside6_demo.png" --capture-frame 30 --quit-after 10
+
+      - name: Run the PySide6 demo (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: pixi run pyside6-demo --capture "$PWD/captures/pyside6_demo.png" --capture-frame 30 --quit-after 10
+
       - name: Upload captures
         if: always() && runner.os != 'Windows'
         uses: actions/upload-artifact@v4
