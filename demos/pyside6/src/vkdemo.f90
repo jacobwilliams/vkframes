@@ -3,8 +3,9 @@
 !> (app.py) calls with ctypes. The library is built as a shared library by fpm
 !> (fpm.toml: [library] type = "shared"; see demo.py).
 !>
-!> The scene (vkframes' API): the Earth (a WGS84 Sphere, textured with
-!> OpenFrames' data), a spacecraft following an orbit (positions and
+!> The scene (vkframes' API): the Earth (a WGS84 Sphere with day and night
+!> textures, data/2k_earth_daymap.jpg and 2k_earth_nightmap.jpg, lit by a Sun
+!> frame's light source; a LatLonGrid on it), a spacecraft following an orbit (positions and
 !> attitudes over one period, looped), the orbit drawn by a CurveArtist with
 !> markers (start, end, every 10 minutes) in a DrawableTrajectory, all
 !> children of an inertial root frame, and a SkySphere (the HYG star catalog,
@@ -48,6 +49,8 @@ module vkdemo
         logical :: ready = .false.
         type(ReferenceFrame) :: inertial
         type(Sphere) :: earth, craft
+        type(LatLonGrid) :: grid
+        type(ReferenceFrame) :: sun
         type(Trajectory) :: orbit
         type(DrawableTrajectory) :: orbit_frame
         type(CurveArtist) :: orbit_curve
@@ -92,7 +95,24 @@ contains
 
         app%earth = Sphere('Earth', radius=re, color=[0.3_wp, 0.5_wp, 1.0_wp])
         call app%earth%set_sphere_scale([1.0_wp, 1.0_wp, 1.0_wp - flattening])
-        if (len(data) > 0) call app%earth%set_texture_map(data//'/Images/land_shallow_topo_2048.jpg')
+        call app%earth%set_texture_map('2k_earth_daymap.jpg')          ! found on VKFRAMES_DATA_PATH (data/)
+        call app%earth%set_night_texture_map('2k_earth_nightmap.jpg')
+        app%grid = LatLonGrid('Grid', color=[0.6_wp, 0.8_wp, 1.0_wp, 0.4_wp])
+        call app%grid%set_parameters(1.002_wp * re, 1.002_wp * re, 1.002_wp * (1.0_wp - flattening) * re, &
+                                     15.0_wp * pi / 180.0_wp, 15.0_wp * pi / 180.0_wp)
+        call app%grid%show_axes(NO_AXES)
+        call app%grid%show_axes_labels(NO_AXES)
+        call app%grid%show_name_label(.false.)
+        call app%grid%show_contents(.false.)
+        if (.not. app%earth%add_child(app%grid)) status = -1
+        app%sun = ReferenceFrame('Sun')
+        call app%sun%set_position(1.495978707e8_wp * [cos(0.4_wp), -sin(0.4_wp), 0.2_wp])
+        call app%sun%show_axes(NO_AXES)
+        call app%sun%show_axes_labels(NO_AXES)
+        call app%sun%show_name_label(.false.)
+        call app%sun%set_light_source_enabled(.true.)
+        call app%sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
+        call app%sun%set_light_ambient([0.08_wp, 0.08_wp, 0.08_wp])
         app%craft = Sphere('Spacecraft', radius=craft_size, color=[1.0_wp, 0.3_wp, 0.2_wp])
         call app%craft%follow(app%orbit)
 
@@ -115,7 +135,7 @@ contains
         call app%inertial%show_axes_labels(NO_AXES)
         call app%inertial%show_name_label(.false.)
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%craft) .and. &
-                   app%inertial%add_child(app%orbit_frame))) status = -1
+                   app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%sun))) status = -1
         call app%scene%set_frame(app%inertial)
 
         ok = app%sky%set_star_data('Stars_HYGv3.txt', min_mag=-2.0_wp, max_mag=6.0_wp, max_stars=40000)
@@ -369,6 +389,18 @@ contains
         integer, parameter :: modes(0:3) = [SKY_NONE, SKY_STARS, SKY_TEXTURE, SKY_TEXTURE + SKY_STARS]
         call app%sky%set_draw_mode(modes(max(0, min(3, int(mode)))))
     end subroutine vkdemo_set_sky
+
+    !> The Sun's light (1; day and night) or the windows' headlight (0).
+    subroutine vkdemo_sun_light(enabled) bind(C, name="vkdemo_sun_light")
+        integer(c_int), value :: enabled
+        call app%sun%set_light_source_enabled(enabled /= 0)
+    end subroutine vkdemo_sun_light
+
+    !> Show (1) or hide (0) the latitude/longitude grid.
+    subroutine vkdemo_show_grid(shown) bind(C, name="vkdemo_show_grid")
+        integer(c_int), value :: shown
+        call app%grid%show_contents(shown /= 0)
+    end subroutine vkdemo_show_grid
 
     !> Show (1) or hide (0) the Earth's and the spacecraft's axes and labels.
     subroutine vkdemo_show_axes(shown) bind(C, name="vkdemo_show_axes")

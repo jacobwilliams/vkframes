@@ -18,7 +18,7 @@ module vkf_math
     real(wp), parameter, public :: quat_identity(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
 
     public :: quat_from_axis_angle, quat_multiply, quat_conjugate, quat_normalize
-    public :: quat_rotate, quat_to_matrix, quat_slerp, quat_from_vectors
+    public :: quat_rotate, quat_to_matrix, quat_from_matrix, quat_slerp, quat_from_vectors
     public :: identity_matrix, translation_matrix, frame_matrix, rigid_inverse
 
 contains
@@ -92,6 +92,30 @@ contains
         m(2,3) = 2.0_wp * (y*z - x*w)
         m(3,3) = 1.0_wp - 2.0_wp * (x*x + y*y)
     end function quat_to_matrix
+
+    !> The unit quaternion of a 3x3 rotation matrix (columns: the rotated
+    !> axes; the inverse of quat_to_matrix), by Shepperd's method (from the
+    !> largest of w and the vector components, for accuracy).
+    pure function quat_from_matrix(m) result(q)
+        real(wp), intent(in) :: m(3,3)
+        real(wp) :: q(4)
+        real(wp) :: t, s
+        t = m(1,1) + m(2,2) + m(3,3)
+        if (t >= max(m(1,1), m(2,2), m(3,3))) then
+            s = 2.0_wp * sqrt(1.0_wp + t)
+            q = [(m(3,2) - m(2,3)) / s, (m(1,3) - m(3,1)) / s, (m(2,1) - m(1,2)) / s, 0.25_wp * s]
+        else if (m(1,1) >= m(2,2) .and. m(1,1) >= m(3,3)) then
+            s = 2.0_wp * sqrt(1.0_wp + m(1,1) - m(2,2) - m(3,3))
+            q = [0.25_wp * s, (m(1,2) + m(2,1)) / s, (m(1,3) + m(3,1)) / s, (m(3,2) - m(2,3)) / s]
+        else if (m(2,2) >= m(3,3)) then
+            s = 2.0_wp * sqrt(1.0_wp - m(1,1) + m(2,2) - m(3,3))
+            q = [(m(1,2) + m(2,1)) / s, 0.25_wp * s, (m(2,3) + m(3,2)) / s, (m(1,3) - m(3,1)) / s]
+        else
+            s = 2.0_wp * sqrt(1.0_wp - m(1,1) - m(2,2) + m(3,3))
+            q = [(m(1,3) + m(3,1)) / s, (m(2,3) + m(3,2)) / s, 0.25_wp * s, (m(2,1) - m(1,2)) / s]
+        end if
+        q = q / norm2(q)
+    end function quat_from_matrix
 
     !> Spherical linear interpolation from `a` (t = 0) to `b` (t = 1), along the
     !> shorter arc; linear when the two are nearly equal. Same as OpenSceneGraph's

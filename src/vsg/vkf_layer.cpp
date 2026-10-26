@@ -444,6 +444,8 @@ namespace
         vsg::ref_ptr<vsg::Camera> camera;
         vsg::ref_ptr<vsg::CommandGraph> commandGraph;
         vsg::ref_ptr<vsg::Group> hudScene;     // HUD text, drawn by a second view on top (created when needed)
+        vsg::ref_ptr<vsg::Switch> headlight;   // the window's default light, in eye coordinates
+        void* headlightHandle = nullptr;       // its LightNode (vkf_viewer_light)
         void* childView = nullptr;             // macOS: the view VSG renders into, in the host's view
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
         bool compiled = false;
@@ -504,12 +506,151 @@ namespace
 
     void retire(vsg::ref_ptr<vsg::Node> node) { retired.emplace_back(frames_drawn + retire_frames, std::move(node)); }
 
-    // Options for reading files: vsgXchange's readers (images, models, fonts).
+    // ---------------------------------------------------------------------
+    // Lighting: VSG's Phong and PBR shader sets, patched for vkframes' lights
+    // (OpenFrames' lighting model), and used for spheres and loaded models:
+    // * a light has separate diffuse and specular colors: vkframes makes a
+    //   light's specular part a VSG light of negative color (VSG drops lights
+    //   whose intensity is not positive), which the patched Phong shader reads
+    //   as specular only, and its other lights as diffuse only (PBR ignores
+    //   the specular parts);
+    // * point lights do not fall off with distance (as OpenGL's default,
+    //   which OpenFrames uses: a Sun light at any distance);
+    // * Phong: an optional night texture ("nightMap", define VKF_NIGHT_MAP,
+    //   binding 9), shown where the diffuse light is weak (OpenFrames'
+    //   setNightTextureMap).
+    // The patches are text replacements in VSG's shader sources (VSG 1.1); if
+    // one does not apply, VSG's shader is used unchanged, with a warning.
+
+    // Replace every `from` in `text` by `to`; false if there is none.
+    bool patch(std::string& text, const std::string& from, const std::string& to)
+    {
+        size_t at = text.find(from);
+        if (at == std::string::npos) return false;
+        while (at != std::string::npos)
+        {
+            text.replace(at, from.size(), to);
+            at = text.find(from, at + to.size());
+        }
+        return true;
+    }
+
+    // The fragment stage of a shader set, patched by `edit` (true if all
+    // patches applied); unchanged otherwise.
+    template<typename F>
+    void patch_fragment(vsg::ShaderSet& shaderSet, const char* name, F edit)
+    {
+        for (auto& stage : shaderSet.stages)
+        {
+            if (stage->stage != VK_SHADER_STAGE_FRAGMENT_BIT || !stage->module) continue;
+            std::string source = stage->module->source;
+            if (edit(source))
+            {
+                stage->module = vsg::ShaderModule::create(source, stage->module->hints);
+                // VSG's precompiled variants (SPIR-V of the original source for common
+                // defines) would be used instead: compile from the patched source
+                shaderSet.variants.clear();
+            }
+            else
+                std::cerr << "vkframes: VSG's " << name << " shader is not as expected; lighting uses it unchanged" << std::endl;
+        }
+    }
+
+    vsg::ref_ptr<vsg::ShaderSet> phong_shader_set()
+    {
+        auto shaderSet = vsg::createPhongShaderSet();
+        patch_fragment(*shaderSet, "Phong", [](std::string& s) {
+            return patch(s, "VSG_ALPHA_TEST)", "VSG_ALPHA_TEST, VKF_NIGHT_MAP)") &&
+                   patch(s, "layout(location = 0) out vec4 outColor;",
+                         "layout(location = 0) out vec4 outColor;\n"
+                         "#ifdef VKF_NIGHT_MAP\n"
+                         "layout(set = MATERIAL_DESCRIPTOR_SET, binding = 9) uniform sampler2D nightMap;\n"
+                         "#endif\n"
+                         "float vkf_lit = 0.0; // diffuse light received (for the night map)\n") &&
+                   patch(s, "vec4 lightColor = lightData.values[lightDataIndex++];",
+                         "vec4 lightColor = lightData.values[lightDataIndex++];"
+                         " bool vkf_specular = any(lessThan(lightColor.rgb, vec3(0.0)));"
+                         " if (vkf_specular) lightColor.rgb = -lightColor.rgb;") &&
+                   patch(s, "color.rgb += (diffuseColor.rgb * lightColor.rgb) * (intensity);",
+                         "if (!vkf_specular) { color.rgb += (diffuseColor.rgb * lightColor.rgb) * (intensity); vkf_lit += intensity; }") &&
+                   patch(s, "color.rgb += (diffuseColor.rgb * lightColor.rgb) * diff;",
+                         "if (!vkf_specular) { color.rgb += (diffuseColor.rgb * lightColor.rgb) * diff; vkf_lit += diff; }") &&
+                   patch(s, "if (shininess > 0.0 && diff > 0.0)", "if (vkf_specular && shininess > 0.0 && diff > 0.0)") &&
+                   patch(s, "color.rgb += specularColor.rgb * (", "color.rgb += lightColor.rgb * specularColor.rgb * (") &&
+                   patch(s, "float scale = intensity / distance2;", "float scale = intensity;") &&
+                   patch(s, "outColor.rgb = (color * ambientOcclusion) + emissiveColor.rgb;",
+                         "outColor.rgb = (color * ambientOcclusion) + emissiveColor.rgb;\n"
+                         "#ifdef VKF_NIGHT_MAP\n"
+                         "    outColor.rgb += texture(nightMap, texCoordDiffuse).rgb * (1.0 - clamp(vkf_lit, 0.0, 1.0));\n"
+                         "#endif\n");
+        });
+        shaderSet->addDescriptorBinding("nightMap", "VKF_NIGHT_MAP", 1, 9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
+                                        VK_SHADER_STAGE_FRAGMENT_BIT,
+                                        vsg::ubvec4Array2D::create(1, 1, vsg::Data::Properties{VK_FORMAT_R8G8B8A8_UNORM}));
+        return shaderSet;
+    }
+
+    vsg::ref_ptr<vsg::ShaderSet> pbr_shader_set()
+    {
+        auto shaderSet = vsg::createPhysicsBasedRenderingShaderSet();
+        patch_fragment(*shaderSet, "PBR", [](std::string& s) {
+            return patch(s, "vec4 lightColor = lightData.values[lightDataIndex++];",
+                         "vec4 lightColor = lightData.values[lightDataIndex++];"
+                         " if (any(lessThan(lightColor.rgb, vec3(0.0)))) lightColor = vec4(0.0);") &&
+                   patch(s, "float scale = lightColor.a / distance2;", "float scale = max(lightColor.a, 0.0);");
+        });
+        return shaderSet;
+    }
+
+    // Color: as in OpenGL (and so OpenFrames), everything is in display
+    // (sRGB-encoded) values: windows have UNORM framebuffers (VSG's default is
+    // sRGB, which would brighten colors and blend in linear light) and images
+    // are read as UNORM (their bytes as they are, not decoded to linear). So a
+    // color given to vkframes appears as given, textures as in their files, and
+    // transparency and lighting look as in OpenFrames.
+    vsg::vec4 to_vec4(const float* rgba) { return vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]); }
+
+    // The UNORM format for an sRGB one (else the format).
+    VkFormat unorm_format(VkFormat format)
+    {
+        switch (format)
+        {
+        case VK_FORMAT_R8_SRGB: return VK_FORMAT_R8_UNORM;
+        case VK_FORMAT_R8G8_SRGB: return VK_FORMAT_R8G8_UNORM;
+        case VK_FORMAT_R8G8B8_SRGB: return VK_FORMAT_R8G8B8_UNORM;
+        case VK_FORMAT_B8G8R8_SRGB: return VK_FORMAT_B8G8R8_UNORM;
+        case VK_FORMAT_R8G8B8A8_SRGB: return VK_FORMAT_R8G8B8A8_UNORM;
+        case VK_FORMAT_B8G8R8A8_SRGB: return VK_FORMAT_B8G8R8A8_UNORM;
+        case VK_FORMAT_BC1_RGB_SRGB_BLOCK: return VK_FORMAT_BC1_RGB_UNORM_BLOCK;
+        case VK_FORMAT_BC1_RGBA_SRGB_BLOCK: return VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+        case VK_FORMAT_BC2_SRGB_BLOCK: return VK_FORMAT_BC2_UNORM_BLOCK;
+        case VK_FORMAT_BC3_SRGB_BLOCK: return VK_FORMAT_BC3_UNORM_BLOCK;
+        case VK_FORMAT_BC7_SRGB_BLOCK: return VK_FORMAT_BC7_UNORM_BLOCK;
+        default: return format;
+        }
+    }
+
+    // Options for reading files: vsgXchange's readers (images, models, fonts),
+    // with vkframes' shader sets (used by models and meshes).
     vsg::ref_ptr<vsg::Options> read_options()
     {
-        static auto options = vsg::Options::create(vsgXchange::all::create());
+        static auto options = [] {
+            auto o = vsg::Options::create(vsgXchange::all::create());
+            o->shaderSets["phong"] = phong_shader_set();
+            o->shaderSets["pbr"] = pbr_shader_set();
+            return o;
+        }();
         return options;
     }
+
+    // A light (vkf_light_create): ambient, diffuse and specular parts, as a
+    // directional light or a point light (the other's intensities are 0).
+    struct LightNode : Node
+    {
+        vsg::ref_ptr<vsg::AmbientLight> ambient;
+        vsg::ref_ptr<vsg::DirectionalLight> directional, directionalSpecular;
+        vsg::ref_ptr<vsg::PointLight> point, pointSpecular;
+    };
 
     struct Image
     {
@@ -524,6 +665,18 @@ namespace
         vsg::ref_ptr<vsg::vec3Array> normals;
         vsg::ref_ptr<vsg::vec2Array> texcoords;
         vsg::ref_ptr<vsg::uintArray> indices;
+        vsg::ref_ptr<vsg::PhongMaterialValue> material;   // lit meshes: changeable (vkf_mesh_material)
+    };
+
+    // Pipeline states of unlit transparent surfaces (planes, cone sides):
+    // blended, seen from both sides, not writing depth (OpenFrames'
+    // RadialPlane and PolyhedralCone state sets).
+    struct TransparentStates : public vsg::Visitor
+    {
+        void apply(vsg::Object& object) override { object.traverse(*this); }
+        void apply(vsg::RasterizationState& state) override { state.cullMode = VK_CULL_MODE_NONE; }
+        void apply(vsg::DepthStencilState& state) override { state.depthWriteEnable = VK_FALSE; }
+        void apply(vsg::ColorBlendState& state) override { state.configureAttachments(true); }
     };
 
     vsg::ref_ptr<vsg::vec4Array> dynamic_vec4_array(uint32_t n)
@@ -571,6 +724,11 @@ namespace
 
 extern "C" {
 
+// (defined with the lights, below; used by vkf_viewer_create)
+VKF_API void* vkf_light_create();
+VKF_API int vkf_light_set(void* light, const float* ambient, const float* diffuse, const float* specular,
+                          const double* position);
+
 // Name of the first Vulkan physical device; returns its length, or -1 on failure.
 // Needs no window, so it checks that the Vulkan loader finds a driver (MoltenVK on macOS).
 VKF_API int vkf_vulkan_device_name(char* buf, int buflen)
@@ -606,6 +764,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         traits->width = static_cast<uint32_t>(width);
         traits->height = static_cast<uint32_t>(height);
         traits->swapchainPreferences.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT; // for capture
+        traits->swapchainPreferences.surfaceFormat = {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR}; // see "Color"
         void* childView = nullptr;
         if (native_window != 0)
         {
@@ -635,6 +794,14 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         v->viewer = vsg::Viewer::create();
         v->viewer->addWindow(v->window);
         v->scene = vsg::Group::create();
+        // the default light: in eye coordinates (OpenFrames' headlight)
+        auto light = static_cast<LightNode*>(vkf_light_create());
+        auto eye = vsg::AbsoluteTransform::create();
+        eye->addChild(light->node);
+        v->headlight = vsg::Switch::create();
+        v->headlight->addChild(true, eye);
+        v->headlightHandle = light;
+        v->scene->addChild(v->headlight);
         const auto extent = v->window->extent2D();
         v->pixelRatio = (native_window != 0) ? static_cast<float>(pixel_ratio)
                                              : static_cast<float>(extent.width) / static_cast<float>(width);
@@ -655,6 +822,7 @@ VKF_API void vkf_viewer_delete(void* viewer)
     auto v = static_cast<Viewer*>(viewer);
     guarded("vkf_viewer_delete", 0, [&]() {
         if (v && v->compiled) v->viewer->deviceWaitIdle();
+        if (v) delete static_cast<Node*>(v->headlightHandle);
 #if defined(__APPLE__)
         void* childView = v ? v->childView : nullptr;
         delete v;
@@ -794,7 +962,7 @@ VKF_API int vkf_viewer_set_background(void* viewer, const float* rgba)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
-    const vsg::vec4 color(rgba[0], rgba[1], rgba[2], rgba[3]);
+    const vsg::vec4 color = to_vec4(rgba);
     v->window->clearColor() = color;          // used when the scene is compiled
     if (v->commandGraph)                      // already compiled: the render graph has its own copy
     {
@@ -845,7 +1013,8 @@ VKF_API int vkf_viewer_frame(void* viewer)
     return guarded("vkf_viewer_frame", -1, [&]() {
         if (!v->compiled)
         {
-            v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene);
+            // (no VSG headlight: the window's light is vkframes', v->headlight)
+            v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene, VK_SUBPASS_CONTENTS_INLINE, false);
             if (v->hudScene)
             {
                 // the HUD: a second view in the same render pass, after the scene
@@ -1085,6 +1254,7 @@ VKF_API void* vkf_image_read(const char* filename, int filename_len)
             std::cerr << "vkf_image_read: could not read " << path << std::endl;
             return nullptr;
         }
+        data->properties.format = unorm_format(data->properties.format); // its bytes as they are (see "Color")
         auto image = std::make_unique<Image>();
         image->data = data;
         return image.release();
@@ -1120,7 +1290,13 @@ VKF_API void* vkf_model_read(const char* filename, int filename_len)
 // A mesh of n_vertices vertices and n_indices triangle indices, with a color
 // (rgba, multiplying the texture) and an optional texture (image handle, or
 // null). Fill its arrays with vkf_mesh_array before the first frame.
-VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture)
+// A triangle mesh of n_vertices vertices and n_indices indices, filled from
+// Fortran (vkf_mesh_array), of color rgba, with an optional texture and night
+// texture (vkf_image_read handles, or null). flags: 1 for an unlit transparent
+// surface (TransparentStates; no textures), else lit by the scene's lights
+// with a material (vkf_mesh_material).
+VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture, void* night_texture,
+                              int flags)
 {
     if (n_vertices < 3 || n_indices < 3) return nullptr;
     return guarded("vkf_mesh_create", static_cast<void*>(nullptr), [&]() -> void* {
@@ -1129,26 +1305,39 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         mesh->normals = vsg::vec3Array::create(static_cast<uint32_t>(n_vertices));
         mesh->texcoords = vsg::vec2Array::create(static_cast<uint32_t>(n_vertices));
         mesh->indices = vsg::uintArray::create(static_cast<uint32_t>(n_indices));
-        auto colors = vsg::vec4Array::create(1, vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]));
+        auto colors = vsg::vec4Array::create(1, to_vec4(rgba));
 
-        auto config = vsg::GraphicsPipelineConfigurator::create(vsg::createPhongShaderSet(read_options()));
+        const bool unlit = (flags & 1) != 0;
+        auto config = vsg::GraphicsPipelineConfigurator::create(
+            unlit ? vsg::createFlatShadedShaderSet(read_options()) : vsg::createPhongShaderSet(read_options()));
+        // OpenFrames' default material (OpenGL's): no specular reflection
+        mesh->material = vsg::PhongMaterialValue::create();
+        mesh->material->properties.dataVariance = vsg::DYNAMIC_DATA;
+        mesh->material->value().ambient = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        mesh->material->value().diffuse = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        mesh->material->value().specular = vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        mesh->material->value().shininess = 0.0f;
         vsg::DataList arrays;
         bool ok = config->assignArray(arrays, "vsg_Vertex", VK_VERTEX_INPUT_RATE_VERTEX, mesh->vertices) &&
                   config->assignArray(arrays, "vsg_Normal", VK_VERTEX_INPUT_RATE_VERTEX, mesh->normals) &&
                   config->assignArray(arrays, "vsg_TexCoord0", VK_VERTEX_INPUT_RATE_VERTEX, mesh->texcoords) &&
                   config->assignArray(arrays, "vsg_Color", VK_VERTEX_INPUT_RATE_INSTANCE, colors) &&
-                  config->assignDescriptor("material", vsg::PhongMaterialValue::create());
-        if (ok && texture)
-        {
-            auto sampler = vsg::Sampler::create();
-            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-            sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            ok = config->assignTexture("diffuseMap", static_cast<Image*>(texture)->data, sampler);
-        }
+                  config->assignDescriptor("material", mesh->material);
+        auto sampler = vsg::Sampler::create();
+        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        if (ok && texture && !unlit) ok = config->assignTexture("diffuseMap", static_cast<Image*>(texture)->data, sampler);
+        if (ok && night_texture && !unlit)
+            ok = config->assignTexture("nightMap", static_cast<Image*>(night_texture)->data, sampler);
         if (!ok)
         {
-            std::cerr << "vkf_mesh_create: the Phong shader set lacks an expected attribute" << std::endl;
+            std::cerr << "vkf_mesh_create: the shader set lacks an expected attribute" << std::endl;
             return nullptr;
+        }
+        if (unlit)
+        {
+            TransparentStates states;
+            config->accept(states);
         }
         config->init();
 
@@ -1163,6 +1352,24 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         mesh->node = stateGroup;
         return mesh.release();
     });
+}
+
+// The material of a lit mesh: 19 floats (vsg::PhongMaterial: ambient, diffuse,
+// specular, emissive rgba, shininess, alpha mask, alpha mask cutoff); call
+// vkf_mesh_material_changed after writing them.
+VKF_API float* vkf_mesh_material(void* mesh)
+{
+    auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
+    if (!m || !m->material) return nullptr;
+    return &(m->material->value().ambient.x);
+}
+
+VKF_API int vkf_mesh_material_changed(void* mesh)
+{
+    auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
+    if (!m || !m->material) return -1;
+    m->material->dirty();
+    return 0;
 }
 
 // One of the mesh's arrays, to fill in place: 1 = vertices (3 floats each),
@@ -1225,7 +1432,7 @@ VKF_API void* vkf_label_create(void* font, const char* text, int text_len, const
         layout->position = vsg::vec3(static_cast<float>(position[0]), static_cast<float>(position[1]), static_cast<float>(position[2]));
         layout->horizontal = vsg::vec3(1.0f, 0.0f, 0.0f);  // character size 1: scaled by label.vert
         layout->vertical = vsg::vec3(0.0f, 1.0f, 0.0f);
-        layout->color = vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]);
+        layout->color = to_vec4(rgba);
         layout->horizontalAlignment = static_cast<vsg::StandardLayout::Alignment>(halign);
         layout->verticalAlignment = static_cast<vsg::StandardLayout::Alignment>(valign);
 
@@ -1268,7 +1475,7 @@ VKF_API int vkf_label_set_color(void* label, const float* rgba)
     auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
     if (!l) return -1;
     return guarded("vkf_label_set_color", -1, [&]() {
-        l->layout->color = vsg::vec4(rgba[0], rgba[1], rgba[2], rgba[3]);
+        l->layout->color = to_vec4(rgba);
         l->text->setup(l->capacity, read_options());
         return 0;
     });
@@ -1360,6 +1567,76 @@ VKF_API void* vkf_marker_create(int capacity, void* image)
         marker->node = eyeRelative;
         return marker.release();
     });
+}
+
+// ---------------------------------------------------------------------------
+// Lights (see "Lighting" above)
+
+// A light, initially a directional light along -z (in its node's
+// coordinates) of white diffuse color and no ambient or specular part.
+VKF_API void* vkf_light_create()
+{
+    return guarded("vkf_light_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto l = std::make_unique<LightNode>();
+        l->ambient = vsg::AmbientLight::create();
+        l->directional = vsg::DirectionalLight::create();
+        l->directionalSpecular = vsg::DirectionalLight::create();
+        l->point = vsg::PointLight::create();
+        l->pointSpecular = vsg::PointLight::create();
+        auto group = vsg::Group::create();
+        group->addChild(l->ambient);
+        group->addChild(l->directional);
+        group->addChild(l->directionalSpecular);
+        group->addChild(l->point);
+        group->addChild(l->pointSpecular);
+        l->node = group;
+        const float none[3] = {0.0f, 0.0f, 0.0f}, white[3] = {1.0f, 1.0f, 1.0f};
+        const double down[4] = {0.0, 0.0, 1.0, 0.0};
+        vkf_light_set(l.get(), none, white, none, down);
+        return l.release();
+    });
+}
+
+// Set a light's colors (rgb, 0 to 1) and position (OpenGL's: x, y, z, w; w = 0
+// for a directional light from direction x, y, z, else a point light at
+// x/w, y/w, z/w), in its node's coordinates. Returns 0.
+VKF_API int vkf_light_set(void* light, const float* ambient, const float* diffuse, const float* specular,
+                          const double* position)
+{
+    auto l = dynamic_cast<LightNode*>(static_cast<Node*>(light));
+    if (!l) return -1;
+    const bool point = position[3] != 0.0;
+    const bool hasSpecular = specular[0] > 0.0f || specular[1] > 0.0f || specular[2] > 0.0f;
+    l->ambient->color = vsg::vec3(ambient[0], ambient[1], ambient[2]);
+    l->ambient->intensity = 1.0f;
+    for (auto* d : {l->directional.get(), l->directionalSpecular.get()})
+        d->direction = vsg::normalize(-vsg::dvec3(position[0], position[1], position[2]));
+    for (auto* p : {l->point.get(), l->pointSpecular.get()})
+        p->position = point ? vsg::dvec3(position[0], position[1], position[2]) / position[3] : vsg::dvec3();
+    l->directional->color = l->point->color = vsg::vec3(diffuse[0], diffuse[1], diffuse[2]);
+    // the specular parts: negative colors (read as specular only); unused lights have intensity 0 (dropped)
+    l->directionalSpecular->color = l->pointSpecular->color = -vsg::vec3(specular[0], specular[1], specular[2]);
+    l->directional->intensity = point ? 0.0f : 1.0f;
+    l->point->intensity = point ? 1.0f : 0.0f;
+    l->directionalSpecular->intensity = (!point && hasSpecular) ? 1.0f : 0.0f;
+    l->pointSpecular->intensity = (point && hasSpecular) ? 1.0f : 0.0f;
+    return 0;
+}
+
+// The viewer's default light (a vkf_light_create light in eye coordinates,
+// owned by the viewer), and whether it is on.
+VKF_API void* vkf_viewer_light(void* viewer)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    return v ? v->headlightHandle : nullptr;
+}
+
+VKF_API int vkf_viewer_light_enable(void* viewer, int enabled)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    v->headlight->setAllChildren(enabled != 0);
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

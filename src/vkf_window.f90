@@ -28,7 +28,8 @@ module vkf_window
                          vkf_viewer_capture, vkf_viewer_look_at, vkf_viewer_perspective, vkf_viewer_set_background, &
                          vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic, &
                          vkf_viewer_hud_add, vkf_label_set_text, vkf_label_set_color, &
-                         vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
+                         vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close, &
+                         vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set
 
     implicit none
 
@@ -81,6 +82,10 @@ module vkf_window
         type(HUDEntry), allocatable :: huds(:)
         integer :: n_huds = 0
         type(SkySphere), pointer :: sky_ => null()          !! the background sky
+        ! the window's light (OpenFrames' default: a headlight)
+        real(wp) :: light_ambient_(3) = 0.2_wp, light_diffuse_(3) = 1.0_wp, light_specular_(3) = 0.0_wp
+        real(wp) :: light_position_(4) = [0.0_wp, 0.0_wp, 1.0_wp, 0.0_wp]
+        logical :: light_on = .true.
     contains
         procedure :: open, close, is_open
         procedure :: set_scene
@@ -94,6 +99,8 @@ module vkf_window
         ! HUD text (OpenFrames' RenderRectangle HUD)
         procedure :: add_hud_text
         procedure :: set_sky, sky
+        procedure :: set_light_ambient, set_light_diffuse, set_light_specular, set_light_position
+        procedure :: light_ambient, light_diffuse, light_specular, light_position
         procedure :: view => window_view
         ! simulation time (OpenFrames' WindowProxy time control)
         procedure :: set_time, time, pause_time, is_time_paused, set_time_scale, time_scale
@@ -158,6 +165,8 @@ contains
         self%width_ = max(1, width)
         self%height_ = max(1, height)
         call self%set_background_color(self%background)
+        self%light_on = .true.
+        call apply_window_light(self)
     end function open
 
     !> Close the window (waiting for the GPU). The scene is kept, and can be
@@ -212,6 +221,7 @@ contains
             call root%update(t)
             call root%sync()
         end if
+        call update_window_light(self, root)
         call place_camera(self)
         status = vkf_viewer_frame(self%viewer_)
         self%running = status == 1
@@ -258,6 +268,94 @@ contains
         real(wp) :: rgb(3)
         rgb = self%background
     end function background_color
+
+    ! ==================================================================
+    ! the window's light
+
+    !> The ambient, diffuse and specular colors ([r, g, b], 0 to 1) of the
+    !> window's light (OpenFrames' defaults: 0.2 gray, white, none). The
+    !> window's light is used while no frame of the scene has a light source
+    !> (ReferenceFrame%set_light_source_enabled).
+    subroutine set_light_ambient(self, rgb)
+        class(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: rgb(3)
+        self%light_ambient_ = rgb
+        call apply_window_light(self)
+    end subroutine set_light_ambient
+
+    subroutine set_light_diffuse(self, rgb)
+        class(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: rgb(3)
+        self%light_diffuse_ = rgb
+        call apply_window_light(self)
+    end subroutine set_light_diffuse
+
+    subroutine set_light_specular(self, rgb)
+        class(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: rgb(3)
+        self%light_specular_ = rgb
+        call apply_window_light(self)
+    end subroutine set_light_specular
+
+    !> The light's position in eye coordinates (x right, y up, z toward the
+    !> viewer): [x, y, z, 0] for a directional light from direction (x, y, z),
+    !> [x, y, z, 1] for a point light (OpenFrames' setLightPosition; default
+    !> [0, 0, 1, 0], a headlight).
+    subroutine set_light_position(self, position)
+        class(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: position(4)
+        if (all(position(1:3) == 0.0_wp) .and. position(4) == 0.0_wp) return
+        self%light_position_ = position
+        call apply_window_light(self)
+    end subroutine set_light_position
+
+    pure function light_ambient(self) result(rgb)
+        class(WindowProxy), intent(in) :: self
+        real(wp) :: rgb(3)
+        rgb = self%light_ambient_
+    end function light_ambient
+
+    pure function light_diffuse(self) result(rgb)
+        class(WindowProxy), intent(in) :: self
+        real(wp) :: rgb(3)
+        rgb = self%light_diffuse_
+    end function light_diffuse
+
+    pure function light_specular(self) result(rgb)
+        class(WindowProxy), intent(in) :: self
+        real(wp) :: rgb(3)
+        rgb = self%light_specular_
+    end function light_specular
+
+    pure function light_position(self) result(p)
+        class(WindowProxy), intent(in) :: self
+        real(wp) :: p(4)
+        p = self%light_position_
+    end function light_position
+
+    subroutine apply_window_light(self)
+        type(WindowProxy), intent(inout) :: self
+        type(c_ptr) :: light
+        if (.not. c_associated(self%viewer_)) return
+        light = vkf_viewer_light(self%viewer_)
+        if (.not. c_associated(light)) return
+        if (vkf_light_set(light, real(self%light_ambient_, c_float), real(self%light_diffuse_, c_float), &
+                          real(self%light_specular_, c_float), real(self%light_position_, c_double)) /= 0) &
+            write(*, '(a)') 'vkframes: could not set the window light'
+    end subroutine apply_window_light
+
+    !> The window's light on while no frame of the scene has a light source.
+    subroutine update_window_light(self, root)
+        type(WindowProxy), intent(inout) :: self
+        class(ReferenceFrame), pointer, intent(in) :: root
+        logical :: on
+        on = .true.
+        if (associated(root)) on = .not. root%has_light_source()
+        if (on .eqv. self%light_on) return
+        self%light_on = on
+        if (vkf_viewer_light_enable(self%viewer_, merge(1_c_int, 0_c_int, on)) /= 0) &
+            write(*, '(a)') 'vkframes: could not switch the window light'
+    end subroutine update_window_light
 
     ! ==================================================================
     ! sky

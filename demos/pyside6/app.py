@@ -65,6 +65,8 @@ def load_library():
         "vkdemo_set_line_width": (None, [c_double]),
         "vkdemo_set_sky": (None, [c_int]),
         "vkdemo_show_axes": (None, [c_int]),
+        "vkdemo_sun_light": (None, [c_int]),
+        "vkdemo_show_grid": (None, [c_int]),
     }
     for name, (restype, argtypes) in signatures.items():
         f = getattr(lib, name)
@@ -273,6 +275,13 @@ class MainWindow(QMainWindow):
         self.sky.addItems(["None", "Stars", "Texture", "Texture and stars"])
         self.sky.currentIndexChanged.connect(lib.vkdemo_set_sky)
         form.addRow("Sky", self.sky)
+        sun = QCheckBox("Sun light (day and night)")
+        sun.setChecked(True)
+        sun.toggled.connect(lambda checked: lib.vkdemo_sun_light(int(checked)))
+        form.addRow("", sun)
+        grid = QCheckBox("Lat/lon grid")
+        grid.toggled.connect(lambda checked: lib.vkdemo_show_grid(int(checked)))
+        form.addRow("", grid)
         axes = QCheckBox("Show axes and labels")
         axes.setChecked(True)
         axes.toggled.connect(lambda checked: lib.vkdemo_show_axes(int(checked)))

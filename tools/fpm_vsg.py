@@ -147,6 +147,9 @@ def settings():
     put on PATH or None)."""
     compile_shaders()
     s, dll_dir = windows_settings() if WINDOWS else unix_settings()
+    # vkframes' data files (star catalog, Earth textures) found by name at run time
+    s["VKFRAMES_DATA_PATH"] = os.pathsep.join(
+        d for d in (os.path.join(ROOT, "data"), os.environ.get("VKFRAMES_DATA_PATH")) if d)
     return keep_user_flags(s), dll_dir
 
 

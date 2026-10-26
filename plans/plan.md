@@ -583,9 +583,39 @@ Decided so far:
 
 ### 4. Remaining features and polish
 
-- [ ] Coordinate axes with ticks, lat/lon grid, radial plane, cones.
-- [ ] Day/night sphere textures, lighting controls (ambient, diffuse,
-      specular, light position).
+- [x] Reference shapes (`src/vkf_shapes.f90`; OpenFrames' classes and
+      settings): `CoordinateAxes` (axis lines, major/minor ticks as markers
+      attenuated by the axis length, tick shape or image), `LatLonGrid`
+      (geodetic latitude/longitude lines on an ellipsoid, equator and prime
+      meridian thicker), `RadialPlane` (transparent disk, circles, radial
+      lines), `PolyhedralCone`, `EllipticCone`, `RectangularCone` (sides,
+      edges, base outline; `make_cone_look_at`; `is_visible`, which OpenFrames'
+      PolyhedralCone lacks, for every cone). Rebuilt when a setting changes,
+      also while shown. Surfaces are unlit, transparent, two-sided and write
+      no depth (OpenFrames' state). `example/shapes.f90`; tested headless
+      (`test/test_shapes.f90`); in the Qt demo.
+- [x] Lighting (OpenFrames' model): a window's default light (headlight in
+      eye coordinates; ambient 0.2, diffuse 1, no specular; `WindowProxy%
+      set_light_*`), frame light sources (`ReferenceFrame%
+      set_light_source_enabled`, ambient/diffuse/specular; a point light at
+      the frame's origin, not dimmed with distance; while any is on, the
+      window's light is off), sphere materials (`Sphere%set_material`), night
+      textures (`set_night_texture_map`, shown where the diffuse light is
+      weak). Lights are VSG light nodes read by vkframes' shader sets: VSG's
+      Phong (and PBR, for models) patched at run time (separate specular
+      colors as negative-color lights, no point-light falloff, the night map;
+      precompiled variants dropped so the patched source is used); VSG's own
+      headlight is not added. Earth day/night textures in `data/`
+      (`2k_earth_daymap.jpg`, `2k_earth_nightmap.jpg`; equirectangular from
+      -180 degrees longitude); textures are found by name on
+      `VKFRAMES_DATA_PATH` (set to `data/` by the pixi tasks).
+      `example/day_night.f90`; in both demos.
+- [x] Color as in OpenFrames: UNORM framebuffers and images read as UNORM
+      (VSG defaults to sRGB, which brightened colors and blended in linear
+      light), so colors, textures, transparency and lighting are in display
+      values as in OpenGL.
+- [ ] Specular light on PBR models (glTF): ignored for now (PBR has no
+      separate specular light color).
 - [ ] An OpenFrames-like convenience API (optional), examples (orbit,
       multiple viewports, a Qt GUI with controls), documentation (FORD).
 

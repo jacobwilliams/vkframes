@@ -20,7 +20,8 @@ module vkf_layer
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
-    public :: vkf_mesh_create, vkf_mesh_array
+    public :: vkf_mesh_create, vkf_mesh_array, vkf_mesh_material, vkf_mesh_material_changed
+    public :: vkf_light_create, vkf_light_set, vkf_viewer_light, vkf_viewer_light_enable
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
     public :: vkf_viewer_hud_add
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
@@ -28,6 +29,7 @@ module vkf_layer
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_segments, marker_set_style, mesh_arrays
+    public :: mesh_set_material
 
     interface
 
@@ -237,13 +239,52 @@ module vkf_layer
             integer(c_int), value :: filename_len
         end function vkf_model_read
 
-        type(c_ptr) function vkf_mesh_create(n_vertices, n_indices, rgba, texture) bind(C, name="vkf_mesh_create")
+        type(c_ptr) function vkf_mesh_create(n_vertices, n_indices, rgba, texture, night_texture, flags) &
+                bind(C, name="vkf_mesh_create")
             import :: c_ptr, c_int, c_float
             implicit none
-            integer(c_int), value :: n_vertices, n_indices
+            integer(c_int), value :: n_vertices, n_indices, flags
             real(c_float), dimension(4), intent(in) :: rgba
-            type(c_ptr), value :: texture
+            type(c_ptr), value :: texture, night_texture
         end function vkf_mesh_create
+
+        type(c_ptr) function vkf_mesh_material(mesh) bind(C, name="vkf_mesh_material")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: mesh
+        end function vkf_mesh_material
+
+        integer(c_int) function vkf_mesh_material_changed(mesh) bind(C, name="vkf_mesh_material_changed")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: mesh
+        end function vkf_mesh_material_changed
+
+        type(c_ptr) function vkf_light_create() bind(C, name="vkf_light_create")
+            import :: c_ptr
+            implicit none
+        end function vkf_light_create
+
+        integer(c_int) function vkf_light_set(light, ambient, diffuse, specular, position) bind(C, name="vkf_light_set")
+            import :: c_ptr, c_int, c_float, c_double
+            implicit none
+            type(c_ptr), value :: light
+            real(c_float), dimension(3), intent(in) :: ambient, diffuse, specular
+            real(c_double), dimension(4), intent(in) :: position
+        end function vkf_light_set
+
+        type(c_ptr) function vkf_viewer_light(viewer) bind(C, name="vkf_viewer_light")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: viewer
+        end function vkf_viewer_light
+
+        integer(c_int) function vkf_viewer_light_enable(viewer, enabled) bind(C, name="vkf_viewer_light_enable")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer
+            integer(c_int), value :: enabled
+        end function vkf_viewer_light_enable
 
         type(c_ptr) function vkf_mesh_array(mesh, which) bind(C, name="vkf_mesh_array")
             import :: c_ptr, c_int
@@ -471,6 +512,29 @@ contains
         style(5:7) = [size, real(shape, c_float), radius]
         status = vkf_line_style_changed(marker)
     end function marker_set_style
+
+    !> Set a lit mesh's material: ambient, diffuse, specular and emissive
+    !> colors (rgba) and shininess (VSG's Phong: the ambient color scales the
+    !> diffuse color reflected from ambient light).
+    integer(c_int) function mesh_set_material(mesh, ambient, diffuse, specular, emissive, shininess) result(status)
+        type(c_ptr), intent(in) :: mesh
+        real(c_float), dimension(4), intent(in) :: ambient, diffuse, specular, emissive
+        real(c_float), intent(in) :: shininess
+        real(c_float), dimension(:), pointer :: m
+        type(c_ptr) :: buffer
+        buffer = vkf_mesh_material(mesh)
+        if (.not. c_associated(buffer)) then
+            status = -1
+            return
+        end if
+        call c_f_pointer(buffer, m, [19])
+        m(1:4) = ambient
+        m(5:8) = diffuse
+        m(9:12) = specular
+        m(13:16) = emissive
+        m(17) = shininess
+        status = vkf_mesh_material_changed(mesh)
+    end function mesh_set_material
 
     !> Pointers to the arrays of a mesh of `n_vertices` vertices and `n_indices`
     !> indices (as created by `vkf_mesh_create`), to fill in place before the

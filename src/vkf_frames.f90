@@ -19,9 +19,9 @@
 !> a tree must be complete before its window's first frame.
 module vkf_frames
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
     use vkf_layer, only: vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
-                         vkf_node_add_child, vkf_node_delete
+                         vkf_node_add_child, vkf_node_delete, vkf_light_create, vkf_light_set
     use vkf_geometry, only: arrow_create
     use vkf_text, only: label_create
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
@@ -69,6 +69,9 @@ module vkf_frames
         integer :: label_size_ = 20
         integer :: label_alignment_ = ALIGN_LEFT_BASE_LINE
         logical :: light_source = .false.
+        ! the light source's colors (OSG's default light, as OpenFrames')
+        real(wp) :: light_ambient_(3) = 0.05_wp, light_diffuse_(3) = 0.8_wp, light_specular_(3) = 0.05_wp
+        type(c_ptr) :: light_node = c_null_ptr, light_switch = c_null_ptr
         logical :: contents = .true.
         ! rendering
         type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
@@ -76,7 +79,7 @@ module vkf_frames
         logical :: realized = .false.
         ! axes (OpenFrames' moveXAxis/...: base, length, head ratio, radii; 0 radius: auto)
         real(wp) :: axis_base(3,3) = 0.0_wp
-        real(wp) :: axis_length(3) = 1.0_wp
+        real(wp) :: axis_len(3) = 1.0_wp
         real(wp) :: axis_head_ratio(3) = 0.3_wp
         real(wp) :: axis_body_radius(3) = 0.0_wp, axis_head_radius(3) = 0.0_wp
         logical :: axes_moved = .false.                     !! set by move_*_axis (else reposition_axes places them)
@@ -96,7 +99,9 @@ module vkf_frames
         procedure :: set_label_font, label_font
         procedure :: set_label_size, label_size
         procedure :: set_label_alignment, label_alignment
-        procedure :: set_light_source_enabled, light_source_enabled
+        procedure :: set_light_source_enabled, light_source_enabled, has_light_source
+        procedure :: set_light_ambient, set_light_diffuse, set_light_specular
+        procedure :: light_ambient, light_diffuse, light_specular
         procedure :: show_contents, contents_shown
         procedure :: frame_info
         procedure :: add_child, remove_child, detach
@@ -329,17 +334,93 @@ contains
         label_alignment = self%label_alignment_
     end function label_alignment
 
-    !> Whether this frame carries a light source (at its origin; default false).
+    !> Whether this frame carries a light source: a point light at its origin
+    !> (e.g. the Sun), not dimmed with distance (default false; OpenFrames'
+    !> setLightSourceEnabled). While any frame of a window's scene has one, the
+    !> window's own light (WindowProxy%set_light_*) is off.
     subroutine set_light_source_enabled(self, enable)
         class(ReferenceFrame), intent(inout) :: self
         logical, intent(in) :: enable
         self%light_source = enable
+        if (self%realized .and. enable .and. .not. c_associated(self%light_node)) call build_light(self)
+        if (c_associated(self%light_switch)) &
+            call check(vkf_switch_set(self%light_switch, merge(1_c_int, 0_c_int, enable)))
     end subroutine set_light_source_enabled
 
     pure logical function light_source_enabled(self)
         class(ReferenceFrame), intent(in) :: self
         light_source_enabled = self%light_source
     end function light_source_enabled
+
+    !> Whether this frame or one of its descendants has a light source enabled.
+    recursive logical function has_light_source(self) result(has)
+        class(ReferenceFrame), intent(in) :: self
+        integer :: k
+        has = self%light_source
+        do k = 1, self%n_children
+            if (has) return
+            has = self%children(k)%p%has_light_source()
+        end do
+    end function has_light_source
+
+    !> The light source's ambient, diffuse and specular colors ([r, g, b], 0
+    !> to 1; defaults 0.05, 0.8 and 0.05 gray).
+    subroutine set_light_ambient(self, rgb)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: rgb(3)
+        self%light_ambient_ = rgb
+        call apply_light(self)
+    end subroutine set_light_ambient
+
+    subroutine set_light_diffuse(self, rgb)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: rgb(3)
+        self%light_diffuse_ = rgb
+        call apply_light(self)
+    end subroutine set_light_diffuse
+
+    subroutine set_light_specular(self, rgb)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: rgb(3)
+        self%light_specular_ = rgb
+        call apply_light(self)
+    end subroutine set_light_specular
+
+    pure function light_ambient(self) result(rgb)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp) :: rgb(3)
+        rgb = self%light_ambient_
+    end function light_ambient
+
+    pure function light_diffuse(self) result(rgb)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp) :: rgb(3)
+        rgb = self%light_diffuse_
+    end function light_diffuse
+
+    pure function light_specular(self) result(rgb)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp) :: rgb(3)
+        rgb = self%light_specular_
+    end function light_specular
+
+    !> The light source's node: a point light at the origin, under a switch.
+    subroutine build_light(self)
+        class(ReferenceFrame), intent(inout) :: self
+        self%light_node = vkf_light_create()
+        if (.not. c_associated(self%light_node)) return
+        self%light_switch = vkf_switch_create()
+        call check(vkf_node_add_child(self%light_switch, self%light_node))
+        call check(vkf_node_add_child(self%node_, self%light_switch))
+        call apply_light(self)
+    end subroutine build_light
+
+    subroutine apply_light(self)
+        class(ReferenceFrame), intent(inout) :: self
+        if (.not. c_associated(self%light_node)) return
+        call check(vkf_light_set(self%light_node, real(self%light_ambient_, c_float), real(self%light_diffuse_, c_float), &
+                                 real(self%light_specular_, c_float), [0.0_c_double, 0.0_c_double, 0.0_c_double, 1.0_c_double]))
+    end subroutine apply_light
 
     !> Show or hide what the frame draws (its sphere, model, ...), but not its
     !> axes, labels or children.
@@ -397,7 +478,7 @@ contains
         real(wp), intent(in) :: base(3), length
         real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
         self%axis_base(:, k) = base
-        self%axis_length(k) = length
+        self%axis_len(k) = length
         self%axis_head_ratio(k) = 0.3_wp
         self%axis_body_radius(k) = 0.0_wp
         self%axis_head_radius(k) = 0.0_wp
@@ -421,7 +502,7 @@ contains
             e = 0.0_wp
             e(k) = 1.0_wp
             self%axis_base(:, k) = c + r * e
-            self%axis_length(k) = 0.5_wp * r
+            self%axis_len(k) = 0.5_wp * r
         end do
     end subroutine reposition_axes
 
@@ -611,6 +692,7 @@ contains
         call check(vkf_node_add_child(self%node_, self%contents_node))
         call self%build_contents(viewer, self%contents_node)
         call build_decorations(self)
+        if (self%light_source) call build_light(self)
         if (.not. self%contents) call check(vkf_switch_set(self%contents_node, 0_c_int))
         call self%sync()
         do k = 1, self%n_children
@@ -662,7 +744,7 @@ contains
         do k = 1, 3
             e = 0.0_wp
             e(k) = 1.0_wp
-            len = self%axis_length(k)
+            len = self%axis_len(k)
             head = self%axis_head_ratio(k)
             if (head <= 0.0_wp .or. head >= 1.0_wp) head = 0.3_wp
             rb = self%axis_body_radius(k)

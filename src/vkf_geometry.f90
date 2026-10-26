@@ -90,18 +90,19 @@ contains
     end subroutine ellipsoid
 
     !> An ellipsoid mesh node with semi-axes `radii` (x, y, z) and color (`rgba`,
-    !> multiplying the texture), with an optional equirectangular texture (an
-    !> image handle). `n_lon` and `n_lat` default to 128 and 64 segments.
-    !> Null on failure.
-    function ellipsoid_create(radii, rgba, texture, n_lon, n_lat) result(mesh)
+    !> multiplying the texture), with an optional equirectangular texture and
+    !> night texture (image handles; the night texture shows where the light
+    !> is weak). `n_lon` and `n_lat` default to 128 and 64 segments. Null on
+    !> failure.
+    function ellipsoid_create(radii, rgba, texture, n_lon, n_lat, night_texture) result(mesh)
         real(c_double), dimension(3), intent(in) :: radii
         real(c_float), dimension(4), intent(in) :: rgba
-        type(c_ptr), intent(in), optional :: texture
+        type(c_ptr), intent(in), optional :: texture, night_texture
         integer, intent(in), optional :: n_lon, n_lat
         type(c_ptr) :: mesh
         real(c_float), dimension(:,:), pointer :: xyz, normals, uv
         integer(c_int32_t), dimension(:), pointer :: indices
-        type(c_ptr) :: tex
+        type(c_ptr) :: tex, night
         integer :: nx, ny, n_vertices, n_indices
         nx = 128
         ny = 64
@@ -109,8 +110,10 @@ contains
         if (present(n_lat)) ny = n_lat
         tex = c_null_ptr
         if (present(texture)) tex = texture
+        night = c_null_ptr
+        if (present(night_texture)) night = night_texture
         call ellipsoid_size(nx, ny, n_vertices, n_indices)
-        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, tex)
+        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, tex, night, 0_c_int)
         if (.not. c_associated(mesh)) return
         call mesh_arrays(mesh, n_vertices, n_indices, xyz, normals, uv, indices)
         call ellipsoid(radii, nx, ny, xyz, normals, uv, indices)
@@ -245,7 +248,7 @@ contains
         n = 24
         if (present(n_segments)) n = max(3, n_segments)
         call arrow_size(n, n_vertices, n_indices)
-        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, c_null_ptr)
+        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, c_null_ptr, c_null_ptr, 0_c_int)
         if (.not. c_associated(mesh)) return
         call mesh_arrays(mesh, n_vertices, n_indices, xyz, normals, uv, indices)
         call arrow(base, direction, body_length, head_length, body_radius, head_radius, n, xyz, normals, uv, indices)

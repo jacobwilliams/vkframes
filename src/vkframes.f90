@@ -2,7 +2,7 @@
 !> rendering with VulkanSceneGraph. `use vkframes` gives the whole public API.
 module vkframes
 
-    use vkf_math, only: wp, pi, quat_identity, quat_from_axis_angle, quat_multiply, quat_conjugate, &
+    use vkf_math, only: wp, pi, quat_identity, quat_from_axis_angle, quat_multiply, quat_conjugate, quat_from_matrix, &
                         quat_normalize, quat_rotate, quat_to_matrix, quat_slerp, &
                         quat_from_vectors, identity_matrix, translation_matrix, frame_matrix, rigid_inverse
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, &
@@ -20,6 +20,8 @@ module vkframes
     use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE
     use vkf_hud, only: HUDText
     use vkf_sky, only: SkySphere, SKY_NONE, SKY_TEXTURE, SKY_STARS
+    use vkf_shapes, only: CoordinateAxes, LatLonGrid, RadialPlane, PolyhedralCone, EllipticCone, RectangularCone, &
+                          CONE_NONE, CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE, CONE_ALL
     use vkf_files, only: find_data_file
     use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist, DrawableTrajectory, &
                            MARKER_START, MARKER_INTERMEDIATE, MARKER_END, &

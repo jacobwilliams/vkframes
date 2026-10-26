@@ -25,7 +25,13 @@
 !> sky (a SkySphere, behind the scene in every window) shows the HYG v3 star
 !> catalog (data/Stars_HYGv3.txt, found on VKFRAMES_DATA_PATH, which demo.py
 !> sets) and, with OpenFrames' data, its StarMap.tif texture (chosen from the
-!> dock).
+!> dock). The Sun (a frame with a light source, an astronomical unit away)
+!> lights the scene: the Earth's day texture on the day side, its night texture
+!> (city lights) on the night side (data/2k_earth_daymap.jpg and
+!> 2k_earth_nightmap.jpg); without it, the window's headlight. Reference shapes
+!> can be shown from the dock: a latitude/longitude grid on the Earth (a
+!> LatLonGrid), the equatorial plane (a RadialPlane) and spacecraft 1's nadir
+!> sensor (an EllipticCone).
 !>
 !> How the pieces fit:
 !>
@@ -52,7 +58,8 @@
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
 !> starts with the orbit traced; `--radius` with the radius vectors shown;
 !> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral); `--sky n`
-!> with sky n (0 none, 1 stars, 2 texture, 3 both).
+!> with sky n (0 none, 1 stars, 2 texture, 3 both); `--shapes` with the grid,
+!> plane and sensor cone shown.
 module vkdemo
 
     use qt
@@ -102,6 +109,7 @@ module vkdemo
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
+        type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: sky_choice                          !! none, stars, texture, both
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
@@ -113,6 +121,10 @@ module vkdemo
         type(Trajectory) :: orbit                              !! one period of positions and attitudes
         type(ReferenceFrame) :: inertial                       !! the root: inertial axes at the Earth's center
         type(Sphere) :: earth                                  !! rotating (follows earth_rotation)
+        type(LatLonGrid) :: grid                               !! on the Earth (rotates with it)
+        type(RadialPlane) :: equator                           !! the equatorial plane (inertial)
+        type(EllipticCone) :: sensor                           !! spacecraft 1's nadir sensor
+        type(ReferenceFrame) :: sun                            !! the light source
         type(Trajectory) :: earth_rotation                     !! attitudes over one sidereal day
         real(wp) :: rotation_time = 0.0_wp                     !! time along earth_rotation (advances at speed x)
         real(wp) :: last_time = 0.0_wp                         !! the simulation time at the last frame
@@ -141,6 +153,7 @@ module vkdemo
         logical :: start_radius = .false.
         integer :: start_marker = 1
         integer :: start_sky = 1
+        logical :: start_shapes = .false.
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -204,7 +217,17 @@ contains
 
         app%earth = Sphere('Earth', radius=re, color=[0.3_wp, 0.5_wp, 1.0_wp])
         call app%earth%set_sphere_scale([1.0_wp, 1.0_wp, 1.0_wp - flattening])
-        if (len(app%data_dir) > 0) call app%earth%set_texture_map(app%data_dir//'/Images/land_shallow_topo_2048.jpg')
+        call app%earth%set_texture_map('2k_earth_daymap.jpg')          ! (data/, on VKFRAMES_DATA_PATH)
+        call app%earth%set_night_texture_map('2k_earth_nightmap.jpg')
+        call app%earth%set_material(specular=[0.3_wp, 0.3_wp, 0.3_wp], shininess=30.0_wp)
+
+        ! a latitude/longitude grid just above the Earth's surface, every 15 degrees
+        app%grid = LatLonGrid('Grid', color=[0.6_wp, 0.8_wp, 1.0_wp, 0.4_wp])
+        call app%grid%set_parameters(1.002_wp * re, 1.002_wp * re, 1.002_wp * (1.0_wp - flattening) * re, &
+                                     15.0_wp * pi / 180.0_wp, 15.0_wp * pi / 180.0_wp)
+        call hide_decorations(app%grid)
+        call app%grid%show_contents(.false.)
+        if (.not. app%earth%add_child(app%grid)) write(*, '(a)') 'vkframes: add_child failed'
 
         ! the spacecraft: OpenFrames' Hubble model, or a small sphere without the data
         ok = .false.
@@ -272,6 +295,31 @@ contains
         call app%orbit2_frame%add_artist(app%orbit2_curve)
         call app%orbit2_frame%add_artist(app%orbit2_markers)
 
+        ! the equatorial plane, out to 2.5 Earth radii
+        app%equator = RadialPlane('Equator')
+        call app%equator%set_parameters(2.5_wp * re, re, 30.0_wp * pi / 180.0_wp)
+        call app%equator%set_line_color([1.0_wp, 1.0_wp, 1.0_wp, 0.4_wp])
+        call hide_decorations(app%equator)
+        call app%equator%show_contents(.false.)
+
+        ! spacecraft 1's sensor: its boresight (-z) along the body's -x (nadir)
+        app%sensor = EllipticCone('Sensor', color=[0.3_wp, 1.0_wp, 0.4_wp, 0.3_wp])
+        call app%sensor%set_primary_angles(35.0_wp * pi / 180.0_wp, 20.0_wp * pi / 180.0_wp)
+        call app%sensor%set_cone_length(0.6_wp * sma)
+        call app%sensor%set_attitude(quat_from_axis_angle([0.0_wp, 1.0_wp, 0.0_wp], 0.5_wp * pi))
+        call hide_decorations(app%sensor)
+        call app%sensor%show_contents(.false.)
+        if (.not. app%spacecraft%add_child(app%sensor)) write(*, '(a)') 'vkframes: add_child failed'
+
+        ! the Sun: a light source an astronomical unit away (inertial)
+        app%sun = ReferenceFrame('Sun')
+        call app%sun%set_position(1.495978707e8_wp * [cos(0.4_wp), -sin(0.4_wp), 0.2_wp])
+        call hide_decorations(app%sun)
+        call app%sun%set_light_source_enabled(.true.)
+        call app%sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
+        call app%sun%set_light_ambient([0.08_wp, 0.08_wp, 0.08_wp])
+        call app%sun%set_light_specular([1.0_wp, 1.0_wp, 0.9_wp])
+
         ! the tree: an inertial root (no decorations of its own) with the
         ! rotating Earth, the spacecraft and their orbits (all inertial)
         app%inertial = ReferenceFrame('Inertial')
@@ -280,7 +328,8 @@ contains
         call app%inertial%show_name_label(.false.)
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft) .and. &
                    app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%spacecraft2) .and. &
-                   app%inertial%add_child(app%orbit2_frame))) &
+                   app%inertial%add_child(app%orbit2_frame) .and. app%inertial%add_child(app%equator) .and. &
+                   app%inertial%add_child(app%sun))) &
             write(*, '(a)') 'vkframes: add_child failed'
         call app%scene%set_frame(app%inertial)
         write(*, '(a)', advance='no') app%inertial%frame_string()
@@ -294,6 +343,14 @@ contains
         end if
         write(*, '(a,i0,a)') 'sky: ', app%sky%num_stars(), ' stars'
     end subroutine build_model
+
+    !> No axes or labels (for the reference shapes and the Sun).
+    subroutine hide_decorations(frame)
+        class(ReferenceFrame), intent(inout) :: frame
+        call frame%show_axes(NO_AXES)
+        call frame%show_axes_labels(NO_AXES)
+        call frame%show_name_label(.false.)
+    end subroutine hide_decorations
 
     !> The Earth follows its rotation trajectory at a fixed time, which the demo
     !> advances itself: a speed change then changes the rotation rate without
@@ -790,6 +847,31 @@ contains
 
     !> Radius vectors: an artist added to the orbit's frame while running (built
     !> and compiled at the next frame), or removed.
+    !> The Sun's light (day and night sides), or the window's headlight.
+    subroutine on_sun_light(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%sun%set_light_source_enabled(checked)
+    end subroutine on_sun_light
+
+    subroutine on_show_grid(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%grid%show_contents(checked)
+    end subroutine on_show_grid
+
+    subroutine on_show_plane(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%equator%show_contents(checked)
+    end subroutine on_show_plane
+
+    subroutine on_show_sensor(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%sensor%show_contents(checked)
+    end subroutine on_show_sensor
+
     subroutine on_show_radius(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -918,6 +1000,19 @@ contains
         app%show_radius = QCheckBox('Radius vectors')
         call app%show_radius%toggled%connect(on_show_radius)
         call form%addRow('', app%show_radius)
+        app%sun_light = QCheckBox('Sun light (day and night)')
+        call app%sun_light%setChecked(.true.)
+        call app%sun_light%toggled%connect(on_sun_light)
+        call form%addRow('', app%sun_light)
+        app%show_grid = QCheckBox('Lat/lon grid')
+        call app%show_grid%toggled%connect(on_show_grid)
+        call form%addRow('', app%show_grid)
+        app%show_plane = QCheckBox('Equatorial plane')
+        call app%show_plane%toggled%connect(on_show_plane)
+        call form%addRow('', app%show_plane)
+        app%show_sensor = QCheckBox('Sensor cone')
+        call app%show_sensor%toggled%connect(on_show_sensor)
+        call form%addRow('', app%show_sensor)
         app%marker_shape = QComboBox()
         call app%marker_shape%addItems([character(len=15) :: 'None', 'Disk', 'Circle', 'Square', 'Plus', 'X', 'Target', &
                                         'Rose', 'Pulsing circle', 'Pulsing disk', 'Spiral'])
@@ -992,6 +1087,8 @@ program vkframes_qt_demo
             app%start_trace = .true.
         case ('--radius')
             app%start_radius = .true.
+        case ('--shapes')
+            app%start_shapes = .true.
         case ('--sky')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_sky
@@ -1015,6 +1112,9 @@ program vkframes_qt_demo
     call app%show_radius%setChecked(app%start_radius)
     call app%marker_shape%setCurrentIndex(app%start_marker)
     call app%sky_choice%setCurrentIndex(app%start_sky)
+    call app%show_grid%setChecked(app%start_shapes)
+    call app%show_plane%setChecked(app%start_shapes)
+    call app%show_sensor%setChecked(app%start_shapes)
     call on_sky(app%start_sky)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
