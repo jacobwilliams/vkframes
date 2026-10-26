@@ -36,7 +36,7 @@ module vkf_terrain
     use vkf_math, only: wp
     use vkf_frames, only: ReferenceFrame
     use vkf_layer, only: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_add_image, &
-                         vkf_rocky_add_elevation, vkf_node_add_child
+                         vkf_rocky_add_elevation, vkf_rocky_elevation, vkf_node_add_child
     use vkf_files, only: find_data_file
 
     implicit none
@@ -73,7 +73,7 @@ module vkf_terrain
     contains
         procedure :: add_image_layer, add_elevation_layer, num_layers
         procedure :: set_lighting, lighting
-        procedure :: profile, units_per_meter, body_radius
+        procedure :: profile, units_per_meter, body_radius, elevation
         procedure :: frame_info => terrain_frame_info
         procedure :: bound => terrain_bound
         procedure :: build_contents => terrain_build_contents
@@ -188,6 +188,34 @@ contains
             body_radius = earth_radius * self%units_per_meter_
         end if
     end function body_radius
+
+    !> The height of the terrain (scene units, above the body's sphere or
+    !> ellipsoid) at latitude and longitude `lat`, `lon` (degrees), from the
+    !> last elevation layer added that is a file (LAYER_GDAL), read directly
+    !> (also before the body is shown); `found` is false (and the height 0)
+    !> without such a layer or data there, or without Rocky.
+    function elevation(self, lat, lon, found) result(h)
+        class(TerrainBody), intent(in) :: self
+        real(wp), intent(in) :: lat, lon
+        logical, intent(out), optional :: found
+        real(wp) :: h
+        character(len=:), allocatable :: file
+        integer(c_int) :: ok
+        integer :: k
+        h = 0.0_wp
+        if (present(found)) found = .false.
+        if (.not. rocky_available()) return
+        do k = self%n_layers, 1, -1
+            if (.not. (self%layers(k)%elevation .and. self%layers(k)%source == LAYER_GDAL)) cycle
+            file = self%layers(k)%uri
+            if (index(file, '://') == 0) file = find_data_file(file)
+            if (len(file) == 0) return
+            h = vkf_rocky_elevation(file, len(file, kind=c_int), self%profile_, len(self%profile_, kind=c_int), &
+                                    real(lat, c_double), real(lon, c_double), ok) * self%units_per_meter_
+            if (present(found)) found = ok /= 0
+            return
+        end do
+    end function elevation
 
     subroutine terrain_bound(self, center, radius)
         class(TerrainBody), intent(in) :: self

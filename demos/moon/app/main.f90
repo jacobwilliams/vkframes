@@ -5,18 +5,24 @@
 !> `-- --resolution 64`), lit by the Sun (a frame with a light
 !> source) under a starry sky, and a spacecraft in a 100 km polar orbit that
 !> passes over Tycho, its orbit drawn by a CurveArtist. The Moon turns at its
-!> sidereal rate under the inertial orbit.
+!> sidereal rate under the inertial orbit. A lander, in Moon-fixed coordinates
+!> (a child of the Moon's frame), coasts in the same 100 km orbit, starts its
+!> descent at t = 1200 s and lands on Tycho's floor north of the central peak
+!> 12 minutes later (constant braking of its horizontal speed; altitude from
+!> 100 km to the ground on a smooth curve, level at both ends), at the
+!> terrain's height there (TerrainBody%elevation); its path is drawn too.
 !>
 !> Views (from the dock, or with the window's keys): the Moon; the spacecraft
 !> (body-fixed); from the spacecraft toward the Moon (the surface going by
-!> below); Tycho, close to the surface (Moon-fixed). The dock sets the time
+!> below); Tycho, close to the surface (Moon-fixed); the lander; the landing
+!> site, close up (Moon-fixed). The dock sets the time
 !> (scale, pause, reset, and a slider over a day that follows the animation),
 !> the Sun's longitude (the terminator: low Sun, long shadows), the terrain's
-!> lighting (off: the imagery as it is) and the orbit's curve.
+!> lighting (off: the imagery as it is) and the orbit's and descent's curves.
 !>
 !> Run with `pixi run -e rocky moon-demo` (after `pixi run -e rocky
 !> rocky-build`, and `pixi run -e rocky moon-data` for the elevation). Options:
-!> `--view n` starts in view n (1 to 4); `--sun degrees` the Sun's longitude;
+!> `--view n` starts in view n (1 to 6); `--sun degrees` the Sun's longitude;
 !> `--time seconds` the start time; `--capture file` saves the frame
 !> `--capture-frame n` (default 600) as an image; `--quit-after seconds`.
 module moondemo
@@ -42,9 +48,14 @@ module moondemo
     character(len=*), parameter :: moon_elevation(3) = [character(len=20) :: 'moon_lola_ldem64.tif', &
                                                         'moon_lola_ldem16.tif', 'moon_lola_ldem4.tif']
     real(wp), parameter :: orbit_color(3) = [1.0_wp, 0.85_wp, 0.2_wp]
-    integer, parameter :: n_views = 4
+    ! the lander: coasting, then descending from t_descent for descent_time to its site
+    real(wp), parameter :: site_lat = -43.0_wp, site_lon = tycho_lon      !! on Tycho's floor, north of the peak
+    real(wp), parameter :: t_descent = 1200.0_wp, descent_time = 720.0_wp  !! s
+    real(wp), parameter :: lander_size = 0.3_wp                            !! km (enlarged to be seen)
+    real(wp), parameter :: lander_color(3) = [0.3_wp, 0.9_wp, 1.0_wp]
+    integer, parameter :: n_views = 6
     character(len=20), parameter :: view_names(n_views) = [character(len=20) :: 'Moon', 'Spacecraft', &
-        'Spacecraft -> Moon', 'Tycho']
+        'Spacecraft -> Moon', 'Tycho', 'Lander', 'Landing site']
 
     !> The GUI and the scene.
     type :: app_t
@@ -64,7 +75,8 @@ module moondemo
         type(QLabel) :: time_label, sun_label
         logical :: slider_held = .false.                       !! the user holds the time slider's handle
         logical :: slider_setting = .false.                    !! the demo moves it (to the time)
-        type(HUDText) :: hud_view, hud_time
+        type(HUDText) :: hud_view, hud_time, hud_lander
+        type(QCheckBox) :: show_descent
         ! the scene
         type(ReferenceFrame) :: inertial                       !! the root: the Moon's center, inertial axes
         type(TerrainBody) :: moon                              !! turns at its sidereal rate
@@ -76,6 +88,12 @@ module moondemo
         type(SkySphere) :: sky
         type(FrameManager) :: scene
         real(wp) :: period = 0.0_wp
+        ! the lander (in the Moon's frame)
+        type(Sphere) :: lander
+        type(Trajectory) :: descent
+        type(DrawableTrajectory) :: descent_frame
+        type(CurveArtist) :: descent_curve
+        real(wp) :: site_height = 0.0_wp                      !! the ground's at the site (km above the sphere)
         ! options
         integer :: start_view = 1
         real(wp) :: start_sun = tycho_lon + 75.0_wp            !! low over Tycho, from the east
@@ -119,6 +137,44 @@ contains
         q = quat_from_matrix(reshape([x, y, z], [3, 3]))
     end function orbit_attitude
 
+    !> The lander's position (km, Moon-fixed) and height above the site's ground
+    !> at time t: on its meridian, northbound; coasting in the orbit until
+    !> t_descent, then braking at a constant rate to stop over the site (no
+    !> jump in speed), its altitude easing from the orbit's to the ground's.
+    subroutine lander_state(t, r, height)
+        real(wp), intent(in) :: t
+        real(wp), intent(out) :: r(3), height
+        real(wp) :: n, delta, angle, s, h
+        n = 2.0_wp * pi / app%period                             ! the orbit's angular rate
+        delta = 0.5_wp * n * descent_time                        ! the descent's arc (constant braking)
+        if (t <= t_descent) then
+            angle = site_lat * deg - delta - n * (t_descent - t)
+            h = altitude
+        else
+            s = min(1.0_wp, (t - t_descent) / descent_time)
+            angle = site_lat * deg - delta + delta * (2.0_wp * s - s**2)
+            h = app%site_height + (altitude - app%site_height) * (1.0_wp - 3.0_wp * s**2 + 2.0_wp * s**3)
+        end if
+        r = (rm + h + lander_size) * [cos(angle) * cos(site_lon * deg), cos(angle) * sin(site_lon * deg), sin(angle)]
+        height = h - app%site_height
+    end subroutine lander_state
+
+    !> The lander's attitude at time t: z up (radial), x north along its path.
+    function lander_attitude(t) result(q)
+        real(wp), intent(in) :: t
+        real(wp) :: q(4)
+        real(wp) :: r(3), h, x(3), y(3), z(3), lon
+        call lander_state(t, r, h)
+        lon = site_lon * deg
+        z = r / norm2(r)
+        x = [-z(3) * cos(lon), -z(3) * sin(lon), sqrt(z(1)**2 + z(2)**2)]   ! north (d/dlatitude of z)
+        if (r(1) * cos(lon) + r(2) * sin(lon) < 0.0_wp) x(3) = -x(3)      ! (past a pole)
+        x = x - dot_product(x, z) * z
+        x = x / norm2(x)
+        y = [z(2) * x(3) - z(3) * x(2), z(3) * x(1) - z(1) * x(3), z(1) * x(2) - z(2) * x(1)]
+        q = quat_from_matrix(reshape([x, y, z], [3, 3]))
+    end function lander_attitude
+
     !> A point at latitude and longitude (degrees) and height (km) above the Moon's sphere.
     pure function surface(lat, lon, h) result(p)
         real(wp), intent(in) :: lat, lon, h
@@ -141,8 +197,9 @@ contains
 
     !> The scene: the Moon, the Sun, the spacecraft and its orbit, the sky.
     subroutine build_model()
-        real(wp) :: t
+        real(wp) :: t, r(3), h
         integer :: k
+        logical :: found
         real(wp), parameter :: o(3) = 0.0_wp
 
         app%inertial = ReferenceFrame('Inertial')
@@ -185,6 +242,35 @@ contains
         call hide_decorations(app%orbit_frame)
         call app%orbit_frame%add_artist(app%orbit_curve)
 
+        ! the lander: Moon-fixed, landing at the terrain's height at its site
+        app%site_height = app%moon%elevation(site_lat, site_lon, found)
+        if (found) then
+            write(*, '(a,f0.3,a)') 'moon demo: landing site at ', app%site_height, ' km (LOLA)'
+        else
+            write(*, '(a)') 'moon demo: no elevation at the landing site: landing on the sphere'
+        end if
+        app%descent = Trajectory()
+        t = 0.0_wp
+        do while (t < t_descent + descent_time + 1.0_wp)
+            call lander_state(t, r, h)
+            call app%descent%add(t, pos=r, att=lander_attitude(t))
+            t = t + merge(10.0_wp, 2.0_wp, t < t_descent)        ! (finer during the descent)
+        end do
+        app%lander = Sphere('Lander', radius=lander_size, color=lander_color)
+        call app%lander%follow(app%descent, mode=FOLLOW_LIMIT)  ! then stays at the site
+        call app%lander%move_x_axis(o, 4.0_wp * lander_size, body_radius=0.06_wp * lander_size, &
+                                    head_radius=0.16_wp * lander_size)
+        call app%lander%move_y_axis(o, 4.0_wp * lander_size, body_radius=0.06_wp * lander_size, &
+                                    head_radius=0.16_wp * lander_size)
+        call app%lander%move_z_axis(o, 4.0_wp * lander_size, body_radius=0.06_wp * lander_size, &
+                                    head_radius=0.16_wp * lander_size)
+        app%descent_curve = CurveArtist(app%descent, color=lander_color, width=2.0_wp)
+        app%descent_frame = DrawableTrajectory('Descent')
+        call hide_decorations(app%descent_frame)
+        call app%descent_frame%add_artist(app%descent_curve)
+        if (.not. (app%moon%add_child(app%lander) .and. app%moon%add_child(app%descent_frame))) &
+            error stop 'moon demo: could not build the scene'
+
         if (.not. (app%inertial%add_child(app%moon) .and. app%inertial%add_child(app%sun) .and. &
                    app%inertial%add_child(app%spacecraft) .and. app%inertial%add_child(app%orbit_frame))) &
             error stop 'moon demo: could not build the scene'
@@ -222,6 +308,14 @@ contains
         call app%views(4)%set_default_view_parameters(eye=surface(tycho_lat - 2.0_wp, tycho_lon - 0.8_wp, 40.0_wp), &
                                                       center=surface(tycho_lat, tycho_lon, 0.0_wp), &
                                                       up=unit(surface(tycho_lat, tycho_lon, 0.0_wp)))
+        app%views(5) = View(app%inertial, app%lander)
+        call app%views(5)%set_default_view_distance(14.0_wp * lander_size)
+        app%views(6) = View(app%inertial, app%moon)                              ! Moon-fixed
+        call app%views(6)%set_default_view_parameters(eye=surface(site_lat - 0.25_wp, site_lon - 0.12_wp, 4.0_wp), &
+                                                      center=surface(site_lat, site_lon, app%site_height), &
+                                                      up=unit(surface(site_lat, site_lon, 0.0_wp)))
+        app%hud_lander = HUDText('', position=[0.99_wp, 0.01_wp], alignment=ALIGN_RIGHT_BOTTOM, size=16.0_wp, &
+                                 color=lander_color)
         app%hud_view = HUDText(trim(view_names(app%start_view)), position=[0.01_wp, 0.99_wp], alignment=ALIGN_LEFT_TOP, &
                                size=16.0_wp, color=[0.8_wp, 0.8_wp, 0.8_wp])
         app%hud_time = HUDText('t = 0 s', position=[0.01_wp, 0.01_wp], alignment=ALIGN_LEFT_BOTTOM, size=18.0_wp, &
@@ -259,6 +353,7 @@ contains
         call app%proxy%select_view(app%start_view)
         call app%proxy%add_hud_text(app%hud_view)
         call app%proxy%add_hud_text(app%hud_time)
+        call app%proxy%add_hud_text(app%hud_lander)
         call app%proxy%set_time_range(0.0_wp, day)
         call app%proxy%set_time_scale(app%time_scale%value())
         call app%proxy%pause_time(app%pause_time%isChecked())
@@ -286,6 +381,7 @@ contains
         call app%time_label%setText(trim(text))
         write(text, '(a,f0.1,a)') 't = ', t, ' s'
         call app%hud_time%set_text(trim(text))
+        call app%hud_lander%set_text(lander_status(t))
         if (.not. app%slider_held) then
             app%slider_setting = .true.
             call app%time_slider%setValue(nint(t))
@@ -501,6 +597,33 @@ contains
         call app%moon%set_lighting(checked)
     end subroutine on_terrain_lighting
 
+    !> The lander's state for the HUD: coasting, descending (height above the
+    !> site's ground and speed) or landed.
+    function lander_status(t) result(text)
+        real(wp), intent(in) :: t
+        character(len=:), allocatable :: text
+        character(len=64) :: buf
+        real(wp) :: r1(3), r2(3), h, h2
+        if (t >= t_descent + descent_time) then
+            text = 'Lander: landed in Tycho'
+            return
+        end if
+        call lander_state(t, r1, h)
+        call lander_state(t + 1.0_wp, r2, h2)
+        if (t < t_descent) then
+            write(buf, '(a,f0.0,a)') 'Lander: coasting, descent in ', t_descent - t, ' s'
+        else
+            write(buf, '(a,f0.2,a,f0.0,a)') 'Lander: descending, ', h, ' km, ', 1000.0_wp * norm2(r2 - r1), ' m/s'
+        end if
+        text = trim(buf)
+    end function lander_status
+
+    subroutine on_show_descent(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%descent_frame%show_contents(checked)
+    end subroutine on_show_descent
+
     subroutine on_show_orbit(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -580,6 +703,10 @@ contains
         call app%show_orbit%setChecked(.true.)
         call app%show_orbit%toggled%connect(on_show_orbit)
         call form%addRow('', app%show_orbit)
+        app%show_descent = QCheckBox('Show descent')
+        call app%show_descent%setChecked(.true.)
+        call app%show_descent%toggled%connect(on_show_descent)
+        call form%addRow('', app%show_descent)
 
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
                                 'Wheel: zoom<br>Space: reset the view</small>'))

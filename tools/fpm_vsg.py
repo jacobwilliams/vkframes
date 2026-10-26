@@ -26,7 +26,7 @@ C++17 and <prefix>/include.
 Rocky (maps and terrain, optional): when Rocky is installed in the
 environment (the `rocky` pixi environment, `pixi run -e rocky rocky-build`),
 the layer is built with it (VKF_ROCKY, C++20 as Rocky's headers need, Rocky's
-spdlog/fmt definitions, -lrocky), and ROCKY_FILE_PATH points Rocky at its
+spdlog/fmt definitions, -lrocky -lgdal), and ROCKY_FILE_PATH points Rocky at its
 shaders; otherwise src/vsg/vkf_rocky.cpp only reports Rocky as unavailable.
 The two builds go to separate build directories (build/ and build/rocky/:
 fpm does not rebuild C++ sources when only FPM_CXXFLAGS change).
@@ -110,7 +110,7 @@ def unix_settings():
         cxxflags += ROCKY_DEFINES
         if MACOS:
             cxxflags.append("-D_LIBCPP_DISABLE_AVAILABILITY")   # (as Rocky is built: tools/build_rocky.py)
-        libs.insert(0, "-lrocky")
+        libs[:0] = ["-lrocky", "-lgdal"]          # (GDAL: the layer samples elevation files itself)
     if MACOS:
         # C++ runtime, and the Objective-C runtime (the layer's child NSView for embedding)
         ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}", *libs, "-lc++", "-lobjc"]
@@ -150,7 +150,7 @@ def build_layer_dll(lib):
            *(f"-Wl,/NODEFAULTLIB:{crt}" for crt in ("libcmt", "libucrt", "libvcruntime", "libcpmt")),
            "-DNOMINMAX", *VSG_DEFINES, *(ROCKY_DEFINES if rocky else []), f"-I{os.path.join(lib, 'include')}",
            *sources,
-           f"-L{os.path.join(lib, 'lib')}", *(["-lrocky"] if rocky else []), *(f"-l{n}" for n in LIBS), "-lvulkan-1"]
+           f"-L{os.path.join(lib, 'lib')}", *(["-lrocky", "-lgdal"] if rocky else []), *(f"-l{n}" for n in LIBS), "-lvulkan-1"]
     print("+", " ".join(cmd), flush=True)
     if subprocess.call(cmd) != 0:
         sys.exit("fpm_vsg: building build/vkf/vkf.dll failed")

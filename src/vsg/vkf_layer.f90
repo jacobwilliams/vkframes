@@ -31,7 +31,7 @@ module vkf_layer
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
     public :: mesh_arrays
     public :: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_map_radius
-    public :: vkf_rocky_add_image, vkf_rocky_add_elevation
+    public :: vkf_rocky_add_image, vkf_rocky_add_elevation, vkf_rocky_elevation
     public :: mesh_set_material
 
     interface
@@ -174,6 +174,16 @@ module vkf_layer
             implicit none
             type(c_ptr), value :: map
         end function vkf_rocky_map_radius
+
+        real(c_double) function vkf_rocky_elevation(uri, uri_len, profile, profile_len, lat, lon, ok) &
+                bind(C, name="vkf_rocky_elevation")
+            import :: c_int, c_char, c_double
+            implicit none
+            character(kind=c_char), dimension(*), intent(in) :: uri, profile
+            integer(c_int), value :: uri_len, profile_len
+            real(c_double), value :: lat, lon
+            integer(c_int), intent(out) :: ok
+        end function vkf_rocky_elevation
 
         integer(c_int) function vkf_rocky_add_image(map, kind, uri, uri_len) bind(C, name="vkf_rocky_add_image")
             import :: c_ptr, c_int, c_char
