@@ -15,14 +15,16 @@
 !> Views (from the dock, or with the window's keys): the Moon; the spacecraft
 !> (body-fixed); from the spacecraft toward the Moon (the surface going by
 !> below); Tycho, close to the surface (Moon-fixed); the lander; the landing
-!> site, close up (Moon-fixed). The dock sets the time
+!> site, close up (Moon-fixed); the lander seen from the landing site (an
+!> observer on the ground 3 km east of it, turning to follow the lander from
+!> the horizon to its touchdown). The dock sets the time
 !> (scale, pause, reset, and a slider over a day that follows the animation),
 !> the Sun's longitude (the terminator: low Sun, long shadows), the terrain's
 !> lighting (off: the imagery as it is) and the orbit's and descent's curves.
 !>
 !> Run with `pixi run -e rocky moon-demo` (after `pixi run -e rocky
 !> rocky-build`, and `pixi run -e rocky moon-data` for the elevation). Options:
-!> `--view n` starts in view n (1 to 6); `--sun degrees` the Sun's longitude;
+!> `--view n` starts in view n (1 to 7); `--sun degrees` the Sun's longitude;
 !> `--time seconds` the start time; `--capture file` saves the frame
 !> `--capture-frame n` (default 600) as an image; `--quit-after seconds`.
 module moondemo
@@ -53,9 +55,10 @@ module moondemo
     real(wp), parameter :: t_descent = 1200.0_wp, descent_time = 720.0_wp  !! s
     real(wp), parameter :: lander_size = 0.3_wp                            !! km (enlarged to be seen)
     real(wp), parameter :: lander_color(3) = [0.3_wp, 0.9_wp, 1.0_wp]
-    integer, parameter :: n_views = 6
+    real(wp), parameter :: observer_east = 3.0_wp, observer_height = 0.05_wp   !! km: from the site, above the ground
+    integer, parameter :: n_views = 7
     character(len=20), parameter :: view_names(n_views) = [character(len=20) :: 'Moon', 'Spacecraft', &
-        'Spacecraft -> Moon', 'Tycho', 'Lander', 'Landing site']
+        'Spacecraft -> Moon', 'Tycho', 'Lander', 'Landing site', 'Lander from the site']
 
     !> The GUI and the scene.
     type :: app_t
@@ -93,6 +96,7 @@ module moondemo
         type(Trajectory) :: descent
         type(DrawableTrajectory) :: descent_frame
         type(CurveArtist) :: descent_curve
+        type(ReferenceFrame) :: observer                      !! on the ground near the site (Moon-fixed; z up, y north)
         real(wp) :: site_height = 0.0_wp                      !! the ground's at the site (km above the sphere)
         ! options
         integer :: start_view = 1
@@ -182,6 +186,18 @@ contains
         p = (rm + h) * [cos(lat * deg) * cos(lon * deg), cos(lat * deg) * sin(lon * deg), sin(lat * deg)]
     end function surface
 
+    !> The local axes at latitude and longitude (degrees), as matrix columns: east, north, up.
+    pure function local_axes(lat, lon) result(m)
+        real(wp), intent(in) :: lat, lon
+        real(wp) :: m(3,3)
+        real(wp) :: a, b
+        a = lat * deg
+        b = lon * deg
+        m(:, 1) = [-sin(b), cos(b), 0.0_wp]
+        m(:, 2) = [-sin(a) * cos(b), -sin(a) * sin(b), cos(a)]
+        m(:, 3) = [cos(a) * cos(b), cos(a) * sin(b), sin(a)]
+    end function local_axes
+
     pure function unit(v) result(u)
         real(wp), intent(in) :: v(3)
         real(wp) :: u(3)
@@ -197,7 +213,7 @@ contains
 
     !> The scene: the Moon, the Sun, the spacecraft and its orbit, the sky.
     subroutine build_model()
-        real(wp) :: t, r(3), h
+        real(wp) :: t, r(3), h, lon
         integer :: k
         logical :: found
         real(wp), parameter :: o(3) = 0.0_wp
@@ -268,7 +284,15 @@ contains
         app%descent_frame = DrawableTrajectory('Descent')
         call hide_decorations(app%descent_frame)
         call app%descent_frame%add_artist(app%descent_curve)
-        if (.not. (app%moon%add_child(app%lander) .and. app%moon%add_child(app%descent_frame))) &
+
+        ! an observer on the ground east of the site: local axes (x east, y north, z up)
+        lon = site_lon + observer_east / ((rm + app%site_height) * cos(site_lat * deg)) / deg
+        app%observer = ReferenceFrame('Observer')
+        call hide_decorations(app%observer)
+        call app%observer%set_position(surface(site_lat, lon, app%moon%elevation(site_lat, lon) + observer_height))
+        call app%observer%set_attitude(quat_from_matrix(local_axes(site_lat, lon)))
+        if (.not. (app%moon%add_child(app%lander) .and. app%moon%add_child(app%descent_frame) .and. &
+                   app%moon%add_child(app%observer))) &
             error stop 'moon demo: could not build the scene'
 
         if (.not. (app%inertial%add_child(app%moon) .and. app%inertial%add_child(app%sun) .and. &
@@ -314,6 +338,10 @@ contains
         call app%views(6)%set_default_view_parameters(eye=surface(site_lat - 0.25_wp, site_lon - 0.12_wp, 4.0_wp), &
                                                       center=surface(site_lat, site_lon, app%site_height), &
                                                       up=unit(surface(site_lat, site_lon, 0.0_wp)))
+        ! from the observer at the lander: the view frame's +y turns toward it (z kept up); the eye on the observer
+        app%views(7) = View(app%inertial, app%observer, lookat=app%lander)
+        call app%views(7)%set_default_view_parameters(eye=[0.0_wp, 0.0_wp, 0.0_wp], center=[0.0_wp, 1.0_wp, 0.0_wp], &
+                                                      up=[0.0_wp, 0.0_wp, 1.0_wp])
         app%hud_lander = HUDText('', position=[0.99_wp, 0.01_wp], alignment=ALIGN_RIGHT_BOTTOM, size=16.0_wp, &
                                  color=lander_color)
         app%hud_view = HUDText(trim(view_names(app%start_view)), position=[0.01_wp, 0.99_wp], alignment=ALIGN_LEFT_TOP, &
