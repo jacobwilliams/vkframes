@@ -448,7 +448,7 @@ contains
 
         ! default surface type, as vsgQt uses: VSG gives the native view its own
         ! CAMetalLayer on macOS (with QSurface_VulkanSurface, Qt manages the
-        ! layer itself and MoltenVK finds no CAMetalLayer)
+        ! layer itself and Vulkan finds no CAMetalLayer)
         w%window = QWindow()
         w%container = QWidget_createWindowContainer(w%window)
         call w%container%setMinimumSize(320, 240)

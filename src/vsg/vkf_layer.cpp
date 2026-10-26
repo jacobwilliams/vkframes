@@ -19,6 +19,9 @@
 #else
 #    define VKF_API
 #endif
+#if defined(__APPLE__)
+#    define VK_USE_PLATFORM_METAL_EXT    // VK_EXT_metal_surface (see "macOS windows")
+#endif
 
 #include "vkf_shaders.h"
 
@@ -33,6 +36,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <typeinfo>
 
@@ -110,7 +114,7 @@ namespace
 
     // A view filling `parent` (and resizing with it), for VSG to render into
     // (render_view_class). A host's view may keep its own layer tree (Qt 6's
-    // QNSView has a container layer), where MoltenVK finds no CAMetalLayer; a
+    // QNSView has a container layer), where Vulkan finds no CAMetalLayer; a
     // plain NSView takes VSG's CAMetalLayer as its layer. Mouse and keys go to
     // `parent` (the host). Objective-C runtime calls, so this stays plain C++.
     void* create_child_view(void* parent)
@@ -162,6 +166,88 @@ namespace
         id v = static_cast<id>(view);
         reinterpret_cast<void (*)(id, SEL)>(objc_msgSend)(v, sel_registerName("removeFromSuperview"));
         reinterpret_cast<void (*)(id, SEL)>(objc_msgSend)(v, sel_registerName("release"));
+    }
+
+    // macOS windows: vkframes makes their Vulkan instance and surface itself,
+    // with the standard VK_EXT_metal_surface: VSG's macOS window asks for
+    // MoltenVK's own VK_MVK_macos_surface, which KosmicKrisp (Mesa's Vulkan
+    // on Metal, the driver Khronos recommends for Apple silicon) has not. The
+    // window is given the instance (setInstance) or the shared device
+    // (setDevice: not through traits->device, with which VSG's window makes its
+    // own surface at once) and a Metal surface on its view's CAMetalLayer
+    // (setSurface).
+
+    // A VkSurfaceKHR on a CAMetalLayer.
+    class MetalSurface : public vsg::Surface
+    {
+    public:
+        MetalSurface(vsg::Instance* instance, void* layer) :
+            vsg::Surface(VK_NULL_HANDLE, instance)
+        {
+            VkMetalSurfaceCreateInfoEXT info{};
+            info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+            info.pLayer = static_cast<const CAMetalLayer*>(layer);
+            auto create = reinterpret_cast<PFN_vkCreateMetalSurfaceEXT>(vkGetInstanceProcAddr(*instance, "vkCreateMetalSurfaceEXT"));
+            if (!create || create(*instance, &info, instance->getAllocationCallbacks(), &_surface) != VK_SUCCESS)
+                throw vsg::Exception{"Error: vkframes could not create a Metal surface", VK_ERROR_INITIALIZATION_FAILED};
+        }
+    };
+
+    // The instance of the first window (later ones share its device): as VSG's
+    // window makes it, with VK_EXT_metal_surface.
+    vsg::ref_ptr<vsg::Instance> metal_instance(vsg::WindowTraits& traits)
+    {
+        traits.validate();
+        vsg::Names extensions = traits.instanceExtensionNames;
+        extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+        extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
+        return vsg::Instance::create(extensions, traits.requestedLayers, traits.vulkanVersion);
+    }
+
+    // Access to a step of vsg::Window's setup that its share() does (the
+    // surface's formats), for a window given a shared device and our surface.
+    struct WindowSetup : vsg::Window
+    {
+        static void init_formats(vsg::Window& window) { (window.*&WindowSetup::_initFormats)(); }
+    };
+
+    // The CAMetalLayers given to windows so far (to tell a new window's).
+    std::set<void*>& metal_layers()
+    {
+        static std::set<void*> layers;
+        return layers;
+    }
+
+    // The CAMetalLayer of the VSG window just made: the layer of the view it
+    // renders into, `childView` (an embedded window), or of the content view of
+    // the window VSG made (the one with a VSG view whose layer is not taken yet).
+    void* new_window_layer(void* childView)
+    {
+        auto send = [](id object, const char* selector) {
+            return reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(object, sel_registerName(selector));
+        };
+        id layer = nil;
+        if (childView)
+        {
+            layer = send(static_cast<id>(childView), "layer");
+        }
+        else
+        {
+            id app = send(reinterpret_cast<id>(objc_getClass("NSApplication")), "sharedApplication");
+            id windows = send(app, "windows");
+            auto count = reinterpret_cast<unsigned long (*)(id, SEL)>(objc_msgSend)(windows, sel_registerName("count"));
+            for (unsigned long i = count; i-- > 0 && !layer;)
+            {
+                id window = reinterpret_cast<id (*)(id, SEL, unsigned long)>(objc_msgSend)(windows, sel_registerName("objectAtIndex:"), i);
+                id view = send(window, "contentView");
+                if (!view || std::strcmp(object_getClassName(view), "vsg_MacOS_NSView") != 0) continue;
+                id l = send(view, "layer");
+                if (l && !metal_layers().count(l)) layer = l;
+            }
+        }
+        if (!layer) throw vsg::Exception{"Error: vkframes found no CAMetalLayer for the window", VK_ERROR_INITIALIZATION_FAILED};
+        metal_layers().insert(layer);
+        return layer;
     }
 #endif
 
@@ -478,6 +564,7 @@ namespace
         vsg::ref_ptr<vsg::Switch> headlight;   // the window's default light, in eye coordinates
         void* headlightHandle = nullptr;       // its LightNode (vkf_viewer_light)
         void* childView = nullptr;             // macOS: the view VSG renders into, in the host's view
+        void* metalLayer = nullptr;            // macOS: the CAMetalLayer of its surface
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
         bool compiled = false;
     };
@@ -492,6 +579,29 @@ namespace
         if (!result) return false;
         vsg::updateViewer(*v.viewer, result);
         return true;
+    }
+
+    // A driver's memory budget (VK_EXT_memory_budget), which VSG trusts when
+    // allocating, ignored if it is implausible (under 1% of its heap):
+    // KosmicKrisp (Mesa 26.2) reports 64 KiB, and VSG then allocates no memory
+    // (silently) for the windows' depth images and the scene.
+    void check_memory_budget(vsg::Device& device)
+    {
+        if (!device.getExtensions()->memory_budget) return;
+        VkPhysicalDeviceMemoryBudgetPropertiesEXT budget{};
+        budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
+        VkPhysicalDeviceMemoryProperties2 properties{};
+        properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
+        properties.pNext = &budget;
+        vkGetPhysicalDeviceMemoryProperties2(*device.getPhysicalDevice(), &properties);
+        for (uint32_t i = 0; i < properties.memoryProperties.memoryHeapCount; ++i)
+        {
+            if (budget.heapBudget[i] < properties.memoryProperties.memoryHeaps[i].size / 100)
+            {
+                const_cast<vsg::DeviceExtensions*>(device.getExtensions())->memory_budget = false;   // (heap sizes instead)
+                return;
+            }
+        }
     }
 
     // The Vulkan device of the windows: all windows share the first one's, so a
@@ -844,15 +954,31 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
 
         // share the device of the windows already open (created with the first window)
         auto& device = shared_device();
-        if (auto existing = device.ref_ptr()) traits->device = existing;
+        auto existing = device.ref_ptr();
+#if !defined(__APPLE__)
+        if (existing) traits->device = existing;
+#endif
 
         auto v = std::make_unique<Viewer>();
         v->childView = childView;
         v->window = vsg::Window::create(traits);
 #if defined(__APPLE__)
         if (native_window == 0) accept_first_mouse_in_vsg_windows(); // (VSG's view class is registered by now)
+        // the instance or shared device, and a Metal surface (see "macOS windows")
+        if (existing)
+            v->window->setDevice(existing);
+        else
+            v->window->setInstance(metal_instance(*traits));
+        v->metalLayer = new_window_layer(childView);
+        v->window->setSurface(vsg::ref_ptr<vsg::Surface>(new MetalSurface(v->window->getOrCreateInstance(), v->metalLayer)));
+        if (existing) WindowSetup::init_formats(*v->window);
 #endif
-        if (!device.valid()) device = v->window->getOrCreateDevice();
+        if (!device.valid())
+        {
+            auto created = v->window->getOrCreateDevice();
+            check_memory_budget(*created);
+            device = created;
+        }
         v->viewer = vsg::Viewer::create();
         v->viewer->addWindow(v->window);
         v->scene = vsg::Group::create();
@@ -889,6 +1015,7 @@ VKF_API void vkf_viewer_delete(void* viewer)
         auto vsgViewer = v ? v->viewer : vsg::ref_ptr<vsg::Viewer>();
 #if defined(__APPLE__)
         void* childView = v ? v->childView : nullptr;
+        if (v) metal_layers().erase(v->metalLayer);
 #endif
         delete v;
         if (vsgViewer) vkf::release_viewer(vsgViewer.get());   // the optional parts' state for it (Rocky)

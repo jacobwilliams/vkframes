@@ -20,7 +20,8 @@ of that date, and experience embedding OpenFrames in a Fortran Qt GUI.
   Vulkan allow), say so and why.
 - **Language and backend:** written mainly in Modern Fortran, rendering with
   VSG (Vulkan).
-- **Platforms:** macOS (Vulkan through MoltenVK), Linux and Windows.
+- **Platforms:** macOS on Apple silicon, macOS 26 or later (Vulkan through
+  KosmicKrisp; MoltenVK earlier), Linux and Windows. No Intel Macs.
 - **Windows:** usable in its own window, or embedded in a Fortran GUI built
   with [qt-fortran](https://github.com/jacobwilliams/qt-fortran).
 - **API:** a modern Fortran interface for trajectory simulations, designed
@@ -105,7 +106,7 @@ These come from a working demo that ran OpenFrames inside a qt-fortran window.
 | `vsgxchange` | 1.1.14 | Image and model loading: assimp (`.3ds`, `.obj`, glTF), freetype fonts, GDAL, `osg2vsg` for OSG formats |
 | `vsgqt` | 0.5.0 | `QWindow`-based VSG windows for Qt (pre-1.0) |
 | `vsgimgui` | 0.8.0 | Dear ImGui overlay (optional HUD/UI) |
-| `moltenvk` | 1.4.2 | Vulkan on macOS (on Metal) |
+| `mesa-kosmickrisp` | 26.2.5 | Vulkan on macOS (on Metal 4; Apple silicon, macOS 26+), the driver Khronos recommends since deprecating MoltenVK |
 | `vulkan-loader`, `vulkan-headers` | 1.4.357 | Vulkan |
 | `glslang`, `shaderc`, `spirv-tools` | current | GLSL → SPIR-V |
 | `assimp` | 6.0.5 | Model import (pulled in by vsgxchange) |
@@ -287,10 +288,10 @@ moltenvk = "*"
 (As set up: the Qt dependencies are a pixi feature and environment, `qt`,
 used by `demos/qt`; vsgqt is not used.)
 
-- **macOS (MoltenVK) environment:** the Vulkan loader must find MoltenVK's
-  ICD JSON (`VK_ICD_FILENAMES` / `VK_DRIVER_FILES`). Check how conda-forge's
-  `moltenvk` registers itself, and set it in a pixi activation script if
-  needed.
+- **macOS environment (done):** KosmicKrisp (`mesa-kosmickrisp`) is the
+  Vulkan driver. Qt depends on MoltenVK, so it is installed too; pixi's
+  activation sets `VK_DRIVER_FILES` to KosmicKrisp's ICD alone. MoltenVK
+  (deprecated by Khronos) was the driver until the switch.
 - **Linking the C++ layer:** fpm can compile the C++ layer directly,
   supplying flags through `FPM_CXX` / `FPM_CXXFLAGS` / `FPM_LDFLAGS`, with VSG
   found via pkg-config or CMake. This is how qt-fortran works. Alternatively,
@@ -620,6 +621,21 @@ Decided so far:
       -180 degrees longitude); textures are found by name on
       `VKFRAMES_DATA_PATH` (set to `data/` by the pixi tasks).
       `example/day_night.f90`; in both demos.
+- [x] Vulkan on macOS through KosmicKrisp (Mesa's Vulkan on Metal, which
+      Khronos recommends for Apple silicon after deprecating MoltenVK; macOS
+      26 or later): `mesa-kosmickrisp` in pixi.toml, the loader pointed at it
+      (`VK_DRIVER_FILES`; Qt still pulls in MoltenVK); the macOS platform's
+      minimum is macOS 26, no Intel Macs. VSG's macOS window asks for
+      MoltenVK's VK_MVK_macos_surface, so vkframes makes the windows'
+      instance and surface itself with VK_EXT_metal_surface (on the window's
+      CAMetalLayer; shared devices given after the window is made). A
+      driver's memory budget is ignored when implausible (KosmicKrisp 26.2
+      reports 64 KiB, and VSG then allocated nothing). The validation layer
+      and vulkaninfo are in the environment (`VK_INSTANCE_LAYERS=
+      VK_LAYER_KHRONOS_validation`).
+- [ ] `WindowProxy%capture` reads the swapchain image after it is presented
+      (the validation layer: non-acquired swapchain image used); copy it in
+      the frame's own commands before presenting (with video recording).
 - [x] Color as in OpenFrames: UNORM framebuffers and images read as UNORM
       (VSG defaults to sRGB, which brightened colors and blended in linear
       light), so colors, textures, transparency and lighting are in display

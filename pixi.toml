@@ -2,8 +2,8 @@
 authors = ["Jacob Williams <jacobwilliams@users.noreply.github.com>"]
 channels = ["conda-forge"]
 name = "vkframes"
-# moltenvk needs macOS >= 14
-platforms = [{ name = "osx-arm64-macos14", platform = "osx-arm64", macos = "14.0" }, "linux-64", "win-64"]
+# macOS: Apple silicon, macOS 26 or later (KosmicKrisp, the Vulkan driver, needs Metal 4)
+platforms = [{ name = "osx-arm64-macos26", platform = "osx-arm64", macos = "26.0" }, "linux-64", "win-64"]
 version = "0.0.1"
 
 [dependencies]
@@ -16,6 +16,9 @@ ninja = "*"
 vulkanscenegraph = "1.1.*"
 vsgxchange = "1.1.*"
 glslang = "*"
+# Vulkan debugging: the validation layer (VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation) and vulkaninfo
+vulkan-validation-layers = "*"
+vulkan-tools = "*"
 # the default label font (DejaVu Sans; installed in <prefix>/fonts)
 font-ttf-dejavu = "*"
 # the PySide6 GUI demo (demos/pyside6)
@@ -24,8 +27,13 @@ pyside6 = ">=6.11,<7"
 [target.unix.dependencies]
 pkg-config = "*"
 
-[target.osx.dependencies]
-moltenvk = "*"
+# Vulkan on Metal: KosmicKrisp (Mesa; Khronos' recommendation for Apple silicon, after MoltenVK)
+[target.osx-arm64.dependencies]
+mesa-kosmickrisp = "*"
+
+# the Vulkan loader uses KosmicKrisp only (Qt depends on MoltenVK, which is installed too)
+[target.osx-arm64.activation.env]
+VK_DRIVER_FILES = "$CONDA_PREFIX/share/vulkan/icd.d/kosmickrisp_mesa_icd.aarch64.json"
 
 # Windows: conda-forge's VSG is MSVC-built, so the C++ layer is built with
 # clang++ (MSVC target) into a DLL (see tools/fpm_vsg.py)
@@ -38,10 +46,6 @@ test = "python tools/fpm_vsg.py test"
 example = "python tools/fpm_vsg.py run --example"
 pyside6-build = { cmd = "python demo.py build", cwd = "demos/pyside6" }
 pyside6-demo = { cmd = "python demo.py run", cwd = "demos/pyside6" }
-
-# MoltenVK logs every instance/device at "info"; show warnings and errors only
-[target.osx.activation.env]
-MVK_CONFIG_LOG_LEVEL = "2"
 
 # Qt embedding (qt-fortran GUIs): `pixi run -e qt ...`
 [feature.qt.dependencies]
