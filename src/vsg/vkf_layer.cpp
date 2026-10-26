@@ -542,7 +542,10 @@ namespace
     //   which OpenFrames uses: a Sun light at any distance);
     // * Phong: an optional night texture ("nightMap", define VKF_NIGHT_MAP,
     //   binding 9), shown where the diffuse light is weak (OpenFrames'
-    //   setNightTextureMap).
+    //   setNightTextureMap);
+    // * Phong: view lighting (define VKF_VIEW_LIGHTING, for frames' axes): the
+    //   scene's lights are ignored and the color is shaded by how the surface
+    //   faces the viewer only (soft, the same from any side).
     // The patches are text replacements in VSG's shader sources (VSG 1.1); if
     // one does not apply, VSG's shader is used unchanged, with a warning.
 
@@ -584,7 +587,7 @@ namespace
     {
         auto shaderSet = vsg::createPhongShaderSet();
         patch_fragment(*shaderSet, "Phong", [](std::string& s) {
-            return patch(s, "VSG_ALPHA_TEST)", "VSG_ALPHA_TEST, VKF_NIGHT_MAP)") &&
+            return patch(s, "VSG_ALPHA_TEST)", "VSG_ALPHA_TEST, VKF_NIGHT_MAP, VKF_VIEW_LIGHTING)") &&
                    patch(s, "layout(location = 0) out vec4 outColor;",
                          "layout(location = 0) out vec4 outColor;\n"
                          "#ifdef VKF_NIGHT_MAP\n"
@@ -606,6 +609,9 @@ namespace
                          "outColor.rgb = (color * ambientOcclusion) + emissiveColor.rgb;\n"
                          "#ifdef VKF_NIGHT_MAP\n"
                          "    outColor.rgb += texture(nightMap, texCoordDiffuse).rgb * (1.0 - clamp(vkf_lit, 0.0, 1.0));\n"
+                         "#endif\n"
+                         "#ifdef VKF_VIEW_LIGHTING\n"
+                         "    outColor.rgb = diffuseColor.rgb * (0.55 + 0.45 * abs(dot(nd, vd))) + emissiveColor.rgb;\n"
                          "#endif\n");
         });
         shaderSet->addDescriptorBinding("nightMap", "VKF_NIGHT_MAP", 1, 9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
@@ -1320,8 +1326,9 @@ VKF_API void* vkf_model_read(const char* filename, int filename_len)
 // A triangle mesh of n_vertices vertices and n_indices indices, filled from
 // Fortran (vkf_mesh_array), of color rgba, with an optional texture and night
 // texture (vkf_image_read handles, or null). flags: 1 for an unlit transparent
-// surface (TransparentStates; no textures), else lit by the scene's lights
-// with a material (vkf_mesh_material).
+// surface (TransparentStates; no textures), 2 for view lighting (frames' axes;
+// see "Lighting"), else lit by the scene's lights with a material
+// (vkf_mesh_material).
 VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture, void* night_texture,
                               int flags)
 {
@@ -1365,6 +1372,11 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         {
             TransparentStates states;
             config->accept(states);
+        }
+        if (!unlit && (flags & 2) != 0)
+        {
+            if (!config->shaderHints) config->shaderHints = vsg::ShaderCompileSettings::create();
+            config->shaderHints->defines.insert("VKF_VIEW_LIGHTING");
         }
         config->init();
 

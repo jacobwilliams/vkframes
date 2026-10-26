@@ -248,7 +248,8 @@ contains
         n = 24
         if (present(n_segments)) n = max(3, n_segments)
         call arrow_size(n, n_vertices, n_indices)
-        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, c_null_ptr, c_null_ptr, 0_c_int)
+        ! view lighting: the same from any side, whatever the scene's lights (axes)
+        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, c_null_ptr, c_null_ptr, 2_c_int)
         if (.not. c_associated(mesh)) return
         call mesh_arrays(mesh, n_vertices, n_indices, xyz, normals, uv, indices)
         call arrow(base, direction, body_length, head_length, body_radius, head_radius, n, xyz, normals, uv, indices)
