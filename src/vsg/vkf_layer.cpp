@@ -27,6 +27,11 @@
 
 #include <vsg/all.h>
 #include <vsgXchange/all.h>
+#if defined(_WIN32)
+#    include <ole2.h>
+#    include <vsg/platform/win32/Win32_Window.h>
+#    pragma comment(lib, "ole32.lib")   // RevokeDragDrop
+#endif
 
 #include <algorithm>
 #include <chrono>
@@ -610,6 +615,28 @@ namespace
         }
     }
 
+#if defined(_WIN32)
+    // VSG's Win32 window, for a host's window (native_window in
+    // vkf_viewer_create). VSG's own pumps all of the thread's messages each
+    // frame (the host's too, so its handlers would run inside a frame) and
+    // destroys the window when deleted; the host owns both.
+    class HostWin32Window : public vsg::Inherit<vsgWin32::Win32_Window, HostWin32Window>
+    {
+    public:
+        explicit HostWin32Window(vsg::ref_ptr<vsg::WindowTraits> traits) :
+            Inherit(traits) {}
+
+        bool pollEvents(vsg::UIEvents& events) override { return vsg::Window::pollEvents(events); }
+
+    protected:
+        ~HostWin32Window() override
+        {
+            if (_window) RevokeDragDrop(_window);   // (VSG registered it for file drops)
+            releaseWindow();
+        }
+    };
+#endif
+
     // The Vulkan device of the windows: all windows share the first one's, so a
     // scene shown in several windows has its GPU data once.
     vsg::observer_ptr<vsg::Device>& shared_device()
@@ -1016,7 +1043,12 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
 
         auto v = std::make_unique<Viewer>();
         v->childView = childView;
-        v->window = vsg::Window::create(traits);
+#if defined(_WIN32)
+        if (native_window != 0)
+            v->window = HostWin32Window::create(traits);
+        else
+#endif
+            v->window = vsg::Window::create(traits);
 #if defined(__APPLE__)
         if (native_window == 0) accept_first_mouse_in_vsg_windows(); // (VSG's view class is registered by now)
         // the instance or shared device, and a Metal surface (see "macOS windows")
