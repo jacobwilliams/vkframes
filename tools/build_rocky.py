@@ -31,7 +31,9 @@ def run(*cmd, cwd=None):
 
 
 def patch():
-    """Fixes for building with conda-forge's compilers and packages."""
+    """Fixes to Rocky's C++ for conda-forge's compilers and packages, and for
+    vkframes. (vkframes' changes to Rocky's shaders are copies of them, in
+    shaders/rocky/shaders, which Rocky finds first: see tools/fpm_vsg.py.)"""
     # libc++ has unordered_map::contains also in C++17: in SRSFactory (an
     # unordered_map) it hides SRS.cpp's own contains(string, pattern)
     srs = src / "src" / "rocky" / "SRS.cpp"
@@ -44,18 +46,6 @@ def patch():
     # style) don't build with libc++ in C++20
     replace(src / "src" / "CMakeLists.txt", "add_subdirectory(tests)", "# add_subdirectory(tests)")
     replace(src / "src" / "apps" / "CMakeLists.txt", "        add_subdirectory(rocky_demo)", "        # add_subdirectory(rocky_demo)")
-    # vkframes draws into UNORM framebuffers (colors in display values, as in
-    # OpenGL); Rocky lights in linear color for sRGB framebuffers: with
-    # VKF_UNORM_FRAMEBUFFER defined (src/vsg/vkf_rocky.cpp), the terrain
-    # encodes its color to sRGB itself
-    replace(src / "src" / "rocky" / "vsg" / "shaders" / "rocky.terrain.frag",
-            "    applyDebugTriangles(outColor, u_terrain.debugTriangles);\n}",
-            "    applyDebugTriangles(outColor, u_terrain.debugTriangles);\n"
-            "\n#ifdef VKF_UNORM_FRAMEBUFFER\n"
-            "    // (vkframes) encode to sRGB: the framebuffer does not\n"
-            "    vec3 c = clamp(outColor.rgb, 0.0, 1.0);\n"
-            "    outColor.rgb = mix(12.92 * c, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c));\n"
-            "#endif\n}")
     # an image stream is read by the first reader for its type (as vsg::read
     # does; Rocky's search kept the last, and a nested composite reader
     # without one reset it), and vsgXchange's readers come before Rocky's
@@ -102,21 +92,6 @@ def patch():
             "        r = GeoImage(out, r.value().extent());\n"
             "    }\n\n"
             "    return r;\n}")
-    # vkframes' lights (src/vsg/vkf_layer.cpp, "Lighting"): a light's diffuse
-    # part is a VSG light, its specular part another of negative color; Rocky
-    # applied both parts of every light (the negative ones darkening)
-    lighting = src / "src" / "rocky" / "vsg" / "shaders" / "rocky.lighting.glsl"
-    replace(lighting, "        vec3 radiance = light_color * intensity;\n",
-            "        vec3 radiance = abs(light_color) * intensity;\n"
-            "        bool specularOnly = any(lessThan(light_color, vec3(0.0))); // (vkframes) a specular part\n")
-    replace(lighting, "        vec3 radiance = light_color;\n",
-            "        vec3 radiance = abs(light_color);\n"
-            "        bool specularOnly = any(lessThan(light_color, vec3(0.0))); // (vkframes) a specular part\n")
-    replace(lighting, "        Lo += (diffuse + specular) * radiance * NdotL;\n",
-            "        Lo += (specularOnly ? specular : diffuse) * radiance * NdotL; // (vkframes) diffuse, or specular\n")
-    replace(src / "src" / "rocky" / "vsg" / "shaders" / "rocky.terrain.frag",
-            "#pragma import_defines(ROCKY_HAS_ATMOSPHERE, ROCKY_HAS_SLUGHORN)",
-            "#pragma import_defines(ROCKY_HAS_ATMOSPHERE, ROCKY_HAS_SLUGHORN, VKF_UNORM_FRAMEBUFFER)")
 
 
 def replace(path, old, new):

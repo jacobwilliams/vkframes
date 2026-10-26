@@ -613,10 +613,12 @@ Decided so far:
       window's light is off), sphere materials (`Sphere%set_material`), night
       textures (`set_night_texture_map`, shown where the diffuse light is
       weak). Lights are VSG light nodes read by vkframes' shader sets: VSG's
-      Phong (and PBR, for models) patched at run time (separate specular
-      colors as negative-color lights, no point-light falloff, the night map;
-      precompiled variants dropped so the patched source is used); VSG's own
-      headlight is not added. Earth day/night textures in `data/`
+      Phong (and PBR, for models) with vkframes' fragment shaders, copies of
+      VSG 1.1.16's with the changes marked (shaders/vsg/: separate specular
+      colors as negative-color lights, no point-light falloff, the night map,
+      view lighting), embedded as GLSL, which VSG compiles a variant of per
+      set of #defines (its precompiled variants, of its own source, dropped);
+      VSG's own headlight is not added. Earth day/night textures in `data/`
       (`2k_earth_daymap.jpg`, `2k_earth_nightmap.jpg`; equirectangular from
       -180 degrees longitude); textures are found by name on
       `VKFRAMES_DATA_PATH` (set to `data/` by the pixi tasks).
@@ -661,12 +663,15 @@ Decided so far:
       the `rocky` environment (with Qt); fpm_vsg.py then builds the layer
       with it into build/rocky (C++20, -lrocky, ROCKY_FILE_PATH);
       src/vsg/vkf_rocky.cpp (one Rocky context per viewer, released before
-      the viewer); without Rocky it only reports it unavailable. Patches to
-      Rocky (candidates upstream): libc++ build fixes; sRGB-encoded terrain
-      output for UNORM framebuffers; vkframes' lights (diffuse parts, and
-      specular parts as negative colors) in Rocky's PBR lighting; image
-      streams read by vsgXchange's readers first (greyscale JPEG was decoded
-      by GDAL as 0-255 floats); 8-bit greyscale imagery as RGBA. The Moon's
+      the viewer); without Rocky it only reports it unavailable. Changes to
+      Rocky (candidates upstream): in its C++ (tools/build_rocky.py) libc++
+      build fixes, image streams read by vsgXchange's readers first
+      (greyscale JPEG was decoded by GDAL as 0-255 floats), 8-bit greyscale
+      imagery as RGBA; in its shaders, copies of the two changed
+      (shaders/rocky/shaders, first on ROCKY_FILE_PATH; their includes found
+      in Rocky's shader directories) for sRGB-encoded terrain output on UNORM
+      framebuffers and vkframes' lights (diffuse parts, and specular parts as
+      negative colors) in Rocky's PBR lighting. The Moon's
       elevation: LRO LOLA's LDEM (tools/get_moon_dem.py, `pixi run -e rocky
       moon-data`, 4/16/64 pixels per degree) into data/. `example/rocky_map.f90`
       (the Earth from ReadyMap, the Moon from Moon Trek and LOLA, Sun-lit);

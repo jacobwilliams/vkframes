@@ -21,4 +21,9 @@ namespace vkf_shaders
     extern const std::vector<uint32_t> sky_frag;
     extern const std::vector<uint32_t> stars_vert;
     extern const std::vector<uint32_t> stars_frag;
+
+    // GLSL source of vkframes' copies of VSG's shaders (shaders/vsg/), which
+    // VSG compiles itself (a variant per set of #defines)
+    extern const char* const standard_phong_frag_glsl;
+    extern const char* const standard_pbr_frag_glsl;
 } // namespace vkf_shaders

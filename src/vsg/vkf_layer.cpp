@@ -703,11 +703,12 @@ namespace
     }
 
     // ---------------------------------------------------------------------
-    // Lighting: VSG's Phong and PBR shader sets, patched for vkframes' lights
-    // (OpenFrames' lighting model), and used for spheres and loaded models:
+    // Lighting: VSG's Phong and PBR shader sets with vkframes' fragment shaders,
+    // for vkframes' lights (OpenFrames' lighting model), used for spheres and
+    // loaded models:
     // * a light has separate diffuse and specular colors: vkframes makes a
     //   light's specular part a VSG light of negative color (VSG drops lights
-    //   whose intensity is not positive), which the patched Phong shader reads
+    //   whose intensity is not positive), which vkframes' Phong shader reads
     //   as specular only, and its other lights as diffuse only (PBR ignores
     //   the specular parts);
     // * point lights do not fall off with distance (as OpenGL's default,
@@ -718,74 +719,28 @@ namespace
     // * Phong: view lighting (define VKF_VIEW_LIGHTING, for frames' axes): the
     //   scene's lights are ignored and the color is shaded by how the surface
     //   faces the viewer only (soft, the same from any side).
-    // The patches are text replacements in VSG's shader sources (VSG 1.1); if
-    // one does not apply, VSG's shader is used unchanged, with a warning.
+    // The shaders are vkframes' copies of VSG's (shaders/vsg/standard_phong.frag
+    // and standard_pbr.frag, VSG 1.1.16), with these changes marked; they
+    // take the place of VSG's fragment stage in its shader sets (VSG's vertex
+    // stage, descriptor layout and variant compiling are kept).
 
-    // Replace every `from` in `text` by `to`; false if there is none.
-    bool patch(std::string& text, const std::string& from, const std::string& to)
-    {
-        size_t at = text.find(from);
-        if (at == std::string::npos) return false;
-        while (at != std::string::npos)
-        {
-            text.replace(at, from.size(), to);
-            at = text.find(from, at + to.size());
-        }
-        return true;
-    }
-
-    // The fragment stage of a shader set, patched by `edit` (true if all
-    // patches applied); unchanged otherwise.
-    template<typename F>
-    void patch_fragment(vsg::ShaderSet& shaderSet, const char* name, F edit)
+    // The shader set with `glsl` as its fragment stage. VSG's precompiled
+    // variants (SPIR-V of its own source for common #defines) are dropped:
+    // its variants are compiled from this source.
+    void use_fragment_source(vsg::ShaderSet& shaderSet, const char* glsl)
     {
         for (auto& stage : shaderSet.stages)
         {
             if (stage->stage != VK_SHADER_STAGE_FRAGMENT_BIT || !stage->module) continue;
-            std::string source = stage->module->source;
-            if (edit(source))
-            {
-                stage->module = vsg::ShaderModule::create(source, stage->module->hints);
-                // VSG's precompiled variants (SPIR-V of the original source for common
-                // defines) would be used instead: compile from the patched source
-                shaderSet.variants.clear();
-            }
-            else
-                std::cerr << "vkframes: VSG's " << name << " shader is not as expected; lighting uses it unchanged" << std::endl;
+            stage->module = vsg::ShaderModule::create(std::string(glsl), stage->module->hints);
         }
+        shaderSet.variants.clear();
     }
 
     vsg::ref_ptr<vsg::ShaderSet> phong_shader_set()
     {
         auto shaderSet = vsg::createPhongShaderSet();
-        patch_fragment(*shaderSet, "Phong", [](std::string& s) {
-            return patch(s, "VSG_ALPHA_TEST)", "VSG_ALPHA_TEST, VKF_NIGHT_MAP, VKF_VIEW_LIGHTING)") &&
-                   patch(s, "layout(location = 0) out vec4 outColor;",
-                         "layout(location = 0) out vec4 outColor;\n"
-                         "#ifdef VKF_NIGHT_MAP\n"
-                         "layout(set = MATERIAL_DESCRIPTOR_SET, binding = 9) uniform sampler2D nightMap;\n"
-                         "#endif\n"
-                         "float vkf_lit = 0.0; // diffuse light received (for the night map)\n") &&
-                   patch(s, "vec4 lightColor = lightData.values[lightDataIndex++];",
-                         "vec4 lightColor = lightData.values[lightDataIndex++];"
-                         " bool vkf_specular = any(lessThan(lightColor.rgb, vec3(0.0)));"
-                         " if (vkf_specular) lightColor.rgb = -lightColor.rgb;") &&
-                   patch(s, "color.rgb += (diffuseColor.rgb * lightColor.rgb) * (intensity);",
-                         "if (!vkf_specular) { color.rgb += (diffuseColor.rgb * lightColor.rgb) * (intensity); vkf_lit += intensity; }") &&
-                   patch(s, "color.rgb += (diffuseColor.rgb * lightColor.rgb) * diff;",
-                         "if (!vkf_specular) { color.rgb += (diffuseColor.rgb * lightColor.rgb) * diff; vkf_lit += diff; }") &&
-                   patch(s, "if (shininess > 0.0 && diff > 0.0)", "if (vkf_specular && shininess > 0.0 && diff > 0.0)") &&
-                   patch(s, "color.rgb += specularColor.rgb * (", "color.rgb += lightColor.rgb * specularColor.rgb * (") &&
-                   patch(s, "float scale = intensity / distance2;", "float scale = intensity;") &&
-                   patch(s, "outColor.rgb = (color * ambientOcclusion) + emissiveColor.rgb;",
-                         "outColor.rgb = (color * ambientOcclusion) + emissiveColor.rgb;\n"
-                         "#ifdef VKF_NIGHT_MAP\n"
-                         "    outColor.rgb += texture(nightMap, texCoordDiffuse).rgb * (1.0 - clamp(vkf_lit, 0.0, 1.0));\n"
-                         "#endif\n"
-                         "#ifdef VKF_VIEW_LIGHTING\n"
-                         "    outColor.rgb = diffuseColor.rgb * (0.55 + 0.45 * abs(dot(nd, vd))) + emissiveColor.rgb;\n"
-                         "#endif\n");
-        });
+        use_fragment_source(*shaderSet, vkf_shaders::standard_phong_frag_glsl);
         shaderSet->addDescriptorBinding("nightMap", "VKF_NIGHT_MAP", 1, 9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
                                         VK_SHADER_STAGE_FRAGMENT_BIT,
                                         vsg::ubvec4Array2D::create(1, 1, vsg::Data::Properties{VK_FORMAT_R8G8B8A8_UNORM}));
@@ -795,12 +750,7 @@ namespace
     vsg::ref_ptr<vsg::ShaderSet> pbr_shader_set()
     {
         auto shaderSet = vsg::createPhysicsBasedRenderingShaderSet();
-        patch_fragment(*shaderSet, "PBR", [](std::string& s) {
-            return patch(s, "vec4 lightColor = lightData.values[lightDataIndex++];",
-                         "vec4 lightColor = lightData.values[lightDataIndex++];"
-                         " if (any(lessThan(lightColor.rgb, vec3(0.0)))) lightColor = vec4(0.0);") &&
-                   patch(s, "float scale = lightColor.a / distance2;", "float scale = max(lightColor.a, 0.0);");
-        });
+        use_fragment_source(*shaderSet, vkf_shaders::standard_pbr_frag_glsl);
         return shaderSet;
     }
 

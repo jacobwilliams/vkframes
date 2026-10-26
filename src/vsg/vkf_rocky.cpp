@@ -91,6 +91,11 @@ namespace
             // Rocky's terrain shader, tools/build_rocky.py)
             it->second.get()->shaderCompileSettings->defines.insert("VKF_UNORM_FRAMEBUFFER");
             remove_osg_reader(it->second.get()->readerWriterOptions->readerWriters);
+            // a shader's includes are found next to it, or on the reader's
+            // paths: Rocky's shader directories, for vkframes' copies of the
+            // shaders it changes (shaders/rocky, first on ROCKY_FILE_PATH)
+            for (auto& path : it->second.get()->searchPaths)
+                if (vsg::fileExists(path / "shaders")) it->second.get()->readerWriterOptions->paths.push_back(path / "shaders");
         }
         return it->second.get();
     }
