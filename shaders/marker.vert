@@ -22,7 +22,7 @@ layout(push_constant) uniform PushConstants {
 } pc;
 
 layout(std430, set = 0, binding = 0) readonly buffer Points {
-    float p[];              // point i: p[6i .. 6i+2] = xyz high parts, p[6i+3 .. 6i+5] = xyz low parts
+    vec4 p[];               // point i: p[2i].xyz = high parts, p[2i+1].xyz = low parts (w: see line.vert)
 } points;
 
 layout(set = 0, binding = 1) uniform Style {
@@ -45,9 +45,8 @@ const vec2 corners[6] = vec2[](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(-1.0, 1.0
 // Position of point i relative to the eye, in double-single arithmetic (see line.vert).
 vec3 eyeRelative(int i)
 {
-    int k = 6 * i;
-    vec3 high = vec3(points.p[k], points.p[k + 1], points.p[k + 2]);
-    vec3 low = vec3(points.p[k + 3], points.p[k + 4], points.p[k + 5]);
+    vec3 high = points.p[2 * i].xyz;
+    vec3 low = points.p[2 * i + 1].xyz;
     precise vec3 t1 = low - pc.eyeLow.xyz;
     precise vec3 e = t1 - low;
     precise vec3 t2 = ((-pc.eyeLow.xyz - e) + (low - (t1 - e))) + high - pc.eyeHigh.xyz;

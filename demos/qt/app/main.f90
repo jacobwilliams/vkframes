@@ -20,7 +20,8 @@
 !> over three orbits, shown by a time slider, which follows the animation and
 !> can be dragged (or clicked, or moved with the keys) to set the time. The orbit
 !> is drawn by a CurveArtist in a DrawableTrajectory (a child of the inertial
-!> frame), whole or traced up to the spacecraft (trace mode, from the dock);
+!> frame), whole or traced up to the spacecraft (trace mode, from the dock),
+!> solid or in a dash pattern (dashed, dotted, dash-dot: OpenGL stipples);
 !> radius vectors (a SegmentArtist at every 12th point) are added to it and
 !> removed while running; markers (a MarkerArtist: start, end, and every 10
 !> minutes) in a shape chosen from the dock, optionally auto-attenuated. The
@@ -63,7 +64,8 @@
 !> starts with the orbit traced; `--radius` with the radius vectors shown;
 !> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral); `--sky n`
 !> with sky n (0 none, 1 stars, 2 texture, 3 both); `--shapes` with the grid,
-!> coordinate axes, plane and sensor cone shown.
+!> coordinate axes, plane and sensor cone shown; `--pattern n` with orbit
+!> pattern n (0 solid, 1 dashed, 2 dotted, 3 dash-dot).
 module vkdemo
 
     use qt
@@ -116,6 +118,7 @@ module vkdemo
         type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: sky_choice                          !! none, stars, texture, both
+        type(QComboBox) :: line_pattern                        !! the orbits' dash pattern
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
@@ -162,6 +165,7 @@ module vkdemo
         logical :: start_radius = .false.
         integer :: start_marker = 1
         integer :: start_sky = 1
+        integer :: start_pattern = 0
         logical :: start_shapes = .false.
     end type app_t
 
@@ -874,6 +878,19 @@ contains
         call app%orbit2_markers%set_trace_mode(checked)
     end subroutine on_trace_orbit
 
+    !> The orbits' and radius vectors' dash pattern: solid, dashed, dotted or
+    !> dash-dot (OpenGL stipples: 16 bits, bit 0 first, each `factor` window units).
+    subroutine on_line_pattern(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        integer, parameter :: bits(0:3) = [int(z'FFFF'), int(z'00FF'), int(z'3333'), int(z'18FF')]
+        integer :: k
+        k = max(0, min(3, index))
+        call app%orbit_curve%set_pattern(2, bits(k))
+        call app%orbit2_curve%set_pattern(2, bits(k))
+        call app%radius_vectors%set_pattern(2, bits(k))
+    end subroutine on_line_pattern
+
     !> Marker shape (0: none; 1 + a MARKER_* shape).
     subroutine on_marker_shape(index, data)
         integer, intent(in) :: index
@@ -1059,6 +1076,10 @@ contains
         call app%line_width%setSuffix(' pt')
         call app%line_width%valueChanged%connect(on_line_width)
         call form%addRow('Orbit width', app%line_width)
+        app%line_pattern = QComboBox()
+        call app%line_pattern%addItems([character(len=8) :: 'Solid', 'Dashed', 'Dotted', 'Dash-dot'])
+        call app%line_pattern%currentIndexChanged%connect(on_line_pattern)
+        call form%addRow('Orbit pattern', app%line_pattern)
         app%trace_orbit = QCheckBox('Trace orbit')
         call app%trace_orbit%toggled%connect(on_trace_orbit)
         call form%addRow('', app%trace_orbit)
@@ -1173,6 +1194,10 @@ program vkframes_qt_demo
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_marker
             i = i + 1
+        case ('--pattern')
+            call get_command_argument(i + 1, arg)
+            read(arg, *) app%start_pattern
+            i = i + 1
         case ('--quit-after')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%quit_after
@@ -1188,6 +1213,7 @@ program vkframes_qt_demo
     call app%show_radius%setChecked(app%start_radius)
     call app%marker_shape%setCurrentIndex(app%start_marker)
     call app%sky_choice%setCurrentIndex(app%start_sky)
+    call app%line_pattern%setCurrentIndex(app%start_pattern)
     call app%show_grid%setChecked(app%start_shapes)
     call app%show_plane%setChecked(app%start_shapes)
     call app%show_ticks%setChecked(app%start_shapes)

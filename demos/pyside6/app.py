@@ -63,6 +63,7 @@ def load_library():
         "vkdemo_reset_time": (None, []),
         "vkdemo_set_trace": (None, [c_int]),
         "vkdemo_set_line_width": (None, [c_double]),
+        "vkdemo_set_line_pattern": (None, [c_int]),
         "vkdemo_set_sky": (None, [c_int]),
         "vkdemo_show_axes": (None, [c_int]),
         "vkdemo_sun_light": (None, [c_int]),
@@ -272,6 +273,10 @@ class MainWindow(QMainWindow):
         width.setSuffix(" pt")
         width.valueChanged.connect(lib.vkdemo_set_line_width)
         form.addRow("Orbit width", width)
+        pattern = QComboBox()
+        pattern.addItems(["Solid", "Dashed", "Dotted", "Dash-dot"])
+        pattern.currentIndexChanged.connect(lib.vkdemo_set_line_pattern)
+        form.addRow("Orbit pattern", pattern)
         self.sky = QComboBox()
         self.sky.addItems(["None", "Stars", "Texture", "Texture and stars"])
         self.sky.currentIndexChanged.connect(lib.vkdemo_set_sky)

@@ -63,6 +63,21 @@ contains
         end do
     end function drawn_error
 
+    !> Largest relative difference between the drawn distances along the curve
+    !> and the trajectory's.
+    real(wp) function distance_error(a, traj) result(err)
+        type(CurveArtist), intent(in) :: a
+        type(Trajectory), intent(in) :: traj
+        real(wp) :: s
+        integer :: i
+        err = abs(a%drawn_distance(1))
+        s = 0.0_wp
+        do i = 2, a%num_drawn()
+            s = s + norm2(traj%position(i) - traj%position(i - 1))
+            err = max(err, abs(a%drawn_distance(i) - s) / s)
+        end do
+    end function distance_error
+
     subroutine check_bulk_and_appends()
         type(Trajectory), target :: traj
         type(CurveArtist) :: a
@@ -96,6 +111,10 @@ contains
         call check(a%num_chunks() <= 2 + ceiling(log(real(max_chunk) / n0) / log(2.0)) + (n0 + 300000) / max_chunk, &
                    'appends: few chunks')
         call check(drawn_error(a, traj) < 1.0e-6_wp, 'appends: points drawn to double precision')
+        call check(distance_error(a, traj) < 1.0e-12_wp, 'appends: distances along the curve, across chunks')
+        call a%set_pattern(3, int(z'00FF'))
+        call a%pattern(k, i)
+        call check(k == 3 .and. i == int(z'00FF'), 'dash pattern')
 
         ! cleared and refilled: the same chunks
         chunks = a%num_chunks()

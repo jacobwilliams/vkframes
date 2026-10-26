@@ -28,8 +28,9 @@ module vkf_artists
     use vkf_frames, only: ReferenceFrame
     use vkf_layer, only: vkf_line_create, vkf_line_points_changed, vkf_line_set_range, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
-                         vkf_viewer_compile_node, line_set_style, vkf_image_read, vkf_image_delete
-    use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, split_points, line_buffer, check
+                         vkf_viewer_compile_node, line_set_style, line_set_pattern, vkf_image_read, vkf_image_delete
+    use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, split_points, split_distances, &
+                              line_buffer, check
 
     implicit none
 
@@ -97,7 +98,7 @@ module vkf_artists
         procedure :: update => curve_update
         procedure :: release => curve_release
         procedure :: num_chunks => curve_num_chunks, num_drawn => curve_num_drawn
-        procedure :: drawn_point, trace_end
+        procedure :: drawn_point, drawn_distance, trace_end
     end type CurveArtist
 
     interface CurveArtist
@@ -432,13 +433,16 @@ contains
     end function curve_width
 
     !> A dash pattern, as OpenGL's line stipple (OpenFrames' setPattern): each
-    !> bit of the 16-bit `pattern` covers `factor` pixels. Kept for later; lines
-    !> are drawn solid for now.
+    !> bit of the 16-bit `pattern` (bit 0 first; z'FFFF', the default, is
+    !> solid) covers `factor` window units, along the whole curve (the dashes
+    !> run on across its points). The dashes' length on screen is kept within
+    !> 0.7 to 1.4 times the pattern's (see shaders/line.vert).
     subroutine curve_set_pattern(self, factor, pattern)
         class(CurveArtist), intent(inout) :: self
         integer, intent(in) :: factor, pattern
-        self%pattern_factor = factor
+        self%pattern_factor = max(1, factor)
         self%pattern_ = iand(pattern, int(z'FFFF'))
+        call curve_style(self)
     end subroutine curve_set_pattern
 
     pure subroutine curve_pattern(self, factor, bits)
@@ -468,6 +472,15 @@ contains
         v = self%chain%point(i)
     end function drawn_point
 
+    !> The distance along the curve at point i (1 to num_drawn), as drawn (for
+    !> the dash pattern): read back from the line buffers.
+    function drawn_distance(self, i) result(s)
+        class(CurveArtist), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp) :: s
+        s = self%chain%distance(i)
+    end function drawn_distance
+
     !> In trace mode, the end of the line (the point at the current time) as
     !> drawn; false if no tail is drawn.
     logical function trace_end(self, v)
@@ -478,7 +491,7 @@ contains
         trace_end = self%tail_shown
         if (.not. trace_end) return
         call line_buffer(self%tail, p)
-        if (associated(p)) v = real(p(:, 1, 2), wp) + real(p(:, 2, 2), wp)
+        if (associated(p)) v = real(p(1:3, 1, 2), wp) + real(p(1:3, 2, 2), wp)
     end function trace_end
 
     subroutine curve_build(self, viewer, group)
@@ -567,8 +580,8 @@ contains
                     call split_points(v, p(:, :, i-lo+1:i-lo+1))
                 end do
             end if
-            call self%chain%changed(j, hi)
         end do
+        call self%chain%written(i1, i2)
     end subroutine write_curve
 
     !> The tail: from point k to the point interpolated at time t (none if
@@ -594,6 +607,7 @@ contains
         call line_buffer(self%tail, p)
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:2))
+        call split_distances(self%chain%distance(k) + [0.0_wp, norm2(xyz(:, 2) - xyz(:, 1))], p(4, :, 1:2))
         call check(vkf_line_points_changed(self%tail, 2_c_int))
         self%tail_shown = .true.
     end subroutine update_tail
@@ -601,8 +615,11 @@ contains
     subroutine curve_style(self)
         type(CurveArtist), intent(inout) :: self
         call self%chain%set_style(self%color_, self%width_)
-        if (c_associated(self%tail)) &
+        call self%chain%set_pattern(self%pattern_factor, self%pattern_)
+        if (c_associated(self%tail)) then
             call check(line_set_style(self%tail, real(self%color_, c_float), real(self%width_, c_float)))
+            call check(line_set_pattern(self%tail, self%pattern_factor, self%pattern_))
+        end if
     end subroutine curve_style
 
     ! ==================================================================
@@ -738,12 +755,14 @@ contains
         segment_width = self%width_
     end function segment_width
 
-    !> A dash pattern (see CurveArtist%set_pattern; drawn solid for now).
+    !> A dash pattern (see CurveArtist%set_pattern), starting again at the
+    !> start of each segment.
     subroutine segment_set_pattern(self, factor, pattern)
         class(SegmentArtist), intent(inout) :: self
         integer, intent(in) :: factor, pattern
-        self%pattern_factor = factor
+        self%pattern_factor = max(1, factor)
         self%pattern_ = iand(pattern, int(z'FFFF'))
+        call self%chain%set_pattern(self%pattern_factor, self%pattern_)
     end subroutine segment_set_pattern
 
     pure subroutine segment_pattern(self, factor, bits)
@@ -780,6 +799,7 @@ contains
         type(c_ptr), intent(in) :: viewer, group
         call self%chain%init(group, CHAIN_SEGMENTS)
         call self%chain%set_style(self%color_, self%width_)
+        call self%chain%set_pattern(self%pattern_factor, self%pattern_)
         call self%chain%reserve(2 * segment_count(self))  ! compiled with the group
         call self%chain%set_viewer(viewer)
         self%seen_generation = -1
@@ -845,8 +865,8 @@ contains
                 v(:, 2) = self%traj%point(i, self%end_)
                 call split_points(v, p(:, :, 2*s-lo:2*s-lo+1))
             end do
-            call self%chain%changed(j, hi)
         end do
+        call self%chain%written(2 * s1 - 1, 2 * s2)
     end subroutine write_segments
 
     ! ==================================================================
@@ -1249,7 +1269,7 @@ contains
         call chain%slice(1, 1, 1, lo, hi, p)
         if (.not. associated(p)) return
         call split_points(reshape(v, [3, 1]), p)
-        call chain%changed(1, 1)
+        call chain%written(1, 1)
     end subroutine write_marker
 
     !> Start the intermediate markers and the bounds again.
@@ -1423,8 +1443,8 @@ contains
             call self%inter%slice(j, i1, i2, lo, hi, p)
             if (.not. associated(p)) cycle
             call split_points(self%inter_xyz(:, lo:hi), p)
-            call self%inter%changed(j, hi)
         end do
+        call self%inter%written(i1, i2)
     end subroutine write_intermediates
 
     !> Number of intermediate markers up to time t (in trajectory order: in the

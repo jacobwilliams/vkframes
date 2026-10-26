@@ -28,7 +28,8 @@ module vkf_layer
     public :: vkf_line_set_range, vkf_marker_create
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
-    public :: vulkan_device_name, line_set_points, line_set_style, line_set_segments, marker_set_style, mesh_arrays
+    public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
+    public :: mesh_arrays
     public :: mesh_set_material
 
     interface
@@ -447,14 +448,16 @@ contains
     end function vulkan_device_name
 
     !> Set the points of a line strip (`xyz(3, n)`, double precision), splitting
-    !> each coordinate into the (high, low) float pair the line shader reads, in
-    !> place in the strip's buffer. Returns 0, or -1 if `n` exceeds the capacity.
+    !> each coordinate, and the distance along the strip, into the (high, low)
+    !> float pair the line shader reads, in place in the strip's buffer.
+    !> Returns 0, or -1 if `n` exceeds the capacity.
     integer(c_int) function line_set_points(line, xyz) result(status)
         type(c_ptr), intent(in) :: line
         real(c_double), dimension(:,:), intent(in) :: xyz
-        real(c_float), dimension(:,:,:), pointer :: p  !! (xyz, high/low, point)
+        real(c_float), dimension(:,:,:), pointer :: p  !! (xyz and distance, high/low, point)
         type(c_ptr) :: buffer
         integer(c_int) :: capacity, n
+        real(c_double) :: s                            !! distance along the strip
         integer :: i
         n = int(size(xyz, 2), c_int)
         buffer = vkf_line_points(line, capacity)
@@ -462,10 +465,14 @@ contains
             status = -1
             return
         end if
-        call c_f_pointer(buffer, p, [3, 2, int(capacity)])
+        call c_f_pointer(buffer, p, [4, 2, int(capacity)])
+        s = 0.0_c_double
         do i = 1, n
-            p(:, 1, i) = real(xyz(:, i), c_float)
-            p(:, 2, i) = real(xyz(:, i) - real(p(:, 1, i), c_double), c_float)
+            if (i > 1) s = s + norm2(xyz(:, i) - xyz(:, i - 1))
+            p(1:3, 1, i) = real(xyz(:, i), c_float)
+            p(1:3, 2, i) = real(xyz(:, i) - real(p(1:3, 1, i), c_double), c_float)
+            p(4, 1, i) = real(s, c_float)
+            p(4, 2, i) = real(s - real(p(4, 1, i), c_double), c_float)
         end do
         status = vkf_line_points_changed(line, n)
     end function line_set_points
@@ -487,6 +494,25 @@ contains
         style(5) = width
         status = vkf_line_style_changed(line)
     end function line_set_style
+
+    !> Set a line's dash pattern, as OpenGL's line stipple: each bit of the
+    !> 16-bit `pattern` (bit 0 first; z'FFFF' solid) covers `factor` window
+    !> units (see shaders/line.vert).
+    integer(c_int) function line_set_pattern(line, factor, pattern) result(status)
+        type(c_ptr), intent(in) :: line
+        integer, intent(in) :: factor, pattern
+        real(c_float), dimension(:), pointer :: style
+        type(c_ptr) :: buffer
+        buffer = vkf_line_style(line)
+        if (.not. c_associated(buffer)) then
+            status = -1
+            return
+        end if
+        call c_f_pointer(buffer, style, [8])
+        style(7) = real(iand(pattern, int(z'FFFF')), c_float)
+        style(8) = real(max(factor, 1), c_float)
+        status = vkf_line_style_changed(line)
+    end function line_set_pattern
 
     !> Draw a line's points as separate segments (pairs of points: 1-2, 3-4,
     !> ...) instead of a strip. Set before its points are drawn.

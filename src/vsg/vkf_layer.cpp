@@ -511,8 +511,8 @@ namespace
 
     struct LineStrip : Node
     {
-        vsg::ref_ptr<vsg::floatArray> points; // 6 floats per point: xyz high, xyz low
-        vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, separate segments, -, -)]; markers: see marker.vert
+        vsg::ref_ptr<vsg::floatArray> points; // 8 floats per point: (xyz, distance) high, then low
+        vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, separate segments, dash pattern, its factor)]; markers: see marker.vert
         vsg::ref_ptr<vsg::Draw> draw;
         bool markers = false;                // a quad per point
 
@@ -1595,7 +1595,7 @@ VKF_API void* vkf_line_create(int capacity)
     return guarded("vkf_line_create", static_cast<void*>(nullptr), [&]() -> void* {
         auto& pipeline = line_pipeline();
         auto line = std::make_unique<LineStrip>();
-        line->points = vsg::floatArray::create(6 * static_cast<uint32_t>(capacity), 0.0f);
+        line->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
         line->style = dynamic_vec4_array(2);
 
@@ -1628,7 +1628,7 @@ VKF_API void* vkf_marker_create(int capacity, void* image)
         auto& pipeline = marker_pipeline();
         auto marker = std::make_unique<LineStrip>();
         marker->markers = true;
-        marker->points = vsg::floatArray::create(6 * static_cast<uint32_t>(capacity), 0.0f);
+        marker->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         marker->points->properties.dataVariance = vsg::DYNAMIC_DATA;
         marker->style = dynamic_vec4_array(2);
 
@@ -1823,19 +1823,21 @@ VKF_API int vkf_sky_style_changed(void* node)
     return 0;
 }
 
-// The strip's point buffer, 6 floats per point (x, y, z high parts, then x, y,
-// z low parts; see shaders/line.vert), and its capacity in points. Valid while
-// the line handle exists.
+// The strip's point buffer, 8 floats per point (x, y, z and the distance along
+// the strip from its start, high parts, then their low parts; see
+// shaders/line.vert; markers ignore the distance), and its capacity in
+// points. Valid while the line handle exists.
 VKF_API float* vkf_line_points(void* line, int* capacity)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l) return nullptr;
-    *capacity = static_cast<int>(l->points->size() / 6);
+    *capacity = static_cast<int>(l->points->size() / 8);
     return l->points->data();
 }
 
 // The strip's style buffer: 8 floats (r, g, b, a, width in window units,
-// 1 for separate segments (pairs of points) or 0 for a strip, -, -). Set the
+// 1 for separate segments (pairs of points) or 0 for a strip, the dash
+// pattern (16 bits; 65535 or 0: solid), window units per bit of it). Set the
 // segment flag before drawing points (it changes how they are counted).
 VKF_API float* vkf_line_style(void* line)
 {
@@ -1849,7 +1851,7 @@ VKF_API float* vkf_line_style(void* line)
 VKF_API int vkf_line_points_changed(void* line, int n)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
-    if (!l || n < 0 || 6 * static_cast<uint32_t>(n) > l->points->size()) return -1;
+    if (!l || n < 0 || 8 * static_cast<uint32_t>(n) > l->points->size()) return -1;
     l->points->dirty();
     l->setRange(1, static_cast<uint32_t>(n));
     return 0;
@@ -1860,7 +1862,7 @@ VKF_API int vkf_line_points_changed(void* line, int n)
 VKF_API int vkf_line_set_range(void* line, int first, int n)
 {
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
-    if (!l || first < 1 || n < 0 || 6 * static_cast<uint32_t>(first - 1 + n) > l->points->size()) return -1;
+    if (!l || first < 1 || n < 0 || 8 * static_cast<uint32_t>(first - 1 + n) > l->points->size()) return -1;
     l->setRange(static_cast<uint32_t>(first), static_cast<uint32_t>(n));
     return 0;
 }

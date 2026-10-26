@@ -1,4 +1,5 @@
-!> A planet, an inclined elliptical orbit drawn as a thick line, and a
+!> A planet, an inclined elliptical orbit drawn as a thick line, a dashed
+!> circle in the equatorial plane, and a
 !> spacecraft moved along the orbit by Fortran every frame (Kepler's equation).
 !>
 !> Arguments (optional): number of frames to run, then a file to capture the
@@ -56,7 +57,7 @@ program orbit
     call check(line_set_points(orbit_line, orbit_xyz))
     call check(vkf_viewer_add_node(viewer, orbit_line))
 
-    ! a thin circle in the equatorial plane, for comparison of widths
+    ! a thin dashed circle in the equatorial plane (dashes and gaps of 8 window units)
     do i = 1, n_equator
         associate (t => 2.0_wp * pi * real(i - 1, wp) / real(n_equator - 1, wp))
             equator_xyz(:, i) = 1.6_wp * [cos(t), sin(t), 0.0_wp]
@@ -65,6 +66,7 @@ program orbit
     equator_line = vkf_line_create(int(n_equator, c_int))
     if (.not. c_associated(equator_line)) error stop 'could not create the equator line'
     call check(line_set_style(equator_line, [0.3_c_float, 1.0_c_float, 0.4_c_float, 1.0_c_float], 1.5_c_float))
+    call check(line_set_pattern(equator_line, 1, int(z'00FF')))
     call check(line_set_points(equator_line, equator_xyz))
     call check(vkf_viewer_add_node(viewer, equator_line))
 

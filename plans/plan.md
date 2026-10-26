@@ -536,8 +536,18 @@ Decided so far:
       are copied straight from the trajectory's storage (vectorized). Tested
       headless by reading the buffers back (`test/test_artists.f90`); the
       Qt demo draws its orbit with it (width, "Trace orbit").
-- [ ] `CurveArtist` dash pattern (`set_pattern` is kept; drawn solid for
-      now: needs the distance along the line in the fragment shader).
+- [x] Dash patterns (`CurveArtist%set_pattern`, `SegmentArtist%
+      set_pattern`; low level `line_set_pattern`): OpenGL's stipple (16
+      bits, bit 0 first, `factor` window units per bit). Each point carries
+      its distance along the strip (8 floats per point: xyz and distance,
+      high and low; measured in Fortran as points are written, only those
+      written, across chunks). The shader's period is a power of two in
+      scene units near the pattern's length on screen per segment (so
+      fract(s / 2^n) is exact however long the trajectory), the two nearest
+      blended so that dashes change size smoothly (0.7 to 1.4 times the
+      pattern's length); they run on across the points (segments start
+      their own, as GL_LINES). In `example/orbit.f90` and both demos
+      ("Orbit pattern"); distances tested headless.
 - [x] `SegmentArtist`: a segment at every `stride`-th point from the start
       to the end data sources (default, unlike OpenFrames' nothing: radius
       vectors from the origin), color, width, trace mode (the segments at the
@@ -621,6 +631,16 @@ Decided so far:
       added or removed (`add_hud_text`, `remove_hud_text`), all while
       running; new nodes are compiled for the running viewer first.
       `example/live_changes.f90`; tested headless (`test/test_shapes.f90`).
+- [ ] Video recording (OpenFrames has only screenshots): `WindowProxy%
+      start_recording(file, fps)` / `stop_recording`, frames sent as raw
+      pixels to an `ffmpeg` process's stdin (`popen`, `_popen` on Windows;
+      ffmpeg from conda-forge in `pixi.toml`, path and codec/quality
+      options), no image files and no FFmpeg libraries linked. The frame is
+      copied to one persistent readback buffer in the frame's own commands
+      (no `deviceWaitIdle` per frame), the previous frame written while the
+      current one renders. While recording the simulation time advances by
+      exactly scale/fps per frame (Fortran drives the clock), so the video
+      is smooth however long a frame takes. A Record toggle in both demos.
 - [ ] Specular light on PBR models (glTF): ignored for now (PBR has no
       separate specular light color).
 - [ ] An OpenFrames-like convenience API (optional), examples (orbit,

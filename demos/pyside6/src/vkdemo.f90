@@ -7,8 +7,8 @@
 !> textures, data/2k_earth_daymap.jpg and 2k_earth_nightmap.jpg, lit by a Sun
 !> frame's light source; a LatLonGrid on it), the inertial frame's
 !> CoordinateAxes (tick marks; the Earth's own axes start at its surface), a spacecraft following an orbit (positions and
-!> attitudes over one period, looped), the orbit drawn by a CurveArtist with
-!> markers (start, end, every 10 minutes) in a DrawableTrajectory, all
+!> attitudes over one period, looped), the orbit drawn by a CurveArtist (solid
+!> or in a dash pattern) with markers (start, end, every 10 minutes) in a DrawableTrajectory, all
 !> children of an inertial root frame, and a SkySphere (the HYG star catalog,
 !> data/Stars_HYGv3.txt, and OpenFrames' StarMap.tif texture if given).
 !>
@@ -405,6 +405,14 @@ contains
         real(c_double), value :: width
         call app%orbit_curve%set_width(real(width, wp))
     end subroutine vkdemo_set_line_width
+
+    !> The orbit's dash pattern: 0 solid, 1 dashed, 2 dotted, 3 dash-dot (OpenGL
+    !> stipples: 16 bits, bit 0 first, each 2 window units).
+    subroutine vkdemo_set_line_pattern(index) bind(C, name="vkdemo_set_line_pattern")
+        integer(c_int), value :: index
+        integer, parameter :: bits(0:3) = [int(z'FFFF'), int(z'00FF'), int(z'3333'), int(z'18FF')]
+        call app%orbit_curve%set_pattern(2, bits(max(0, min(3, int(index)))))
+    end subroutine vkdemo_set_line_pattern
 
     !> The sky: 0 none, 1 stars, 2 texture, 3 both.
     subroutine vkdemo_set_sky(mode) bind(C, name="vkdemo_set_sky")
