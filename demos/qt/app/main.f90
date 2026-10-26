@@ -21,7 +21,11 @@
 !> frame), whole or traced up to the spacecraft (trace mode, from the dock);
 !> radius vectors (a SegmentArtist at every 12th point) are added to it and
 !> removed while running; markers (a MarkerArtist: start, end, and every 10
-!> minutes) in a shape chosen from the dock, optionally auto-attenuated.
+!> minutes) in a shape chosen from the dock, optionally auto-attenuated. The
+!> sky (a SkySphere, behind the scene in every window) shows the HYG v3 star
+!> catalog (data/Stars_HYGv3.txt, found on VKFRAMES_DATA_PATH, which demo.py
+!> sets) and, with OpenFrames' data, its StarMap.tif texture (chosen from the
+!> dock).
 !>
 !> How the pieces fit:
 !>
@@ -47,7 +51,8 @@
 !> windows at startup (the others start in the next views); `--rotation-speed n`
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
 !> starts with the orbit traced; `--radius` with the radius vectors shown;
-!> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral).
+!> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral); `--sky n`
+!> with sky n (0 none, 1 stars, 2 texture, 3 both).
 module vkdemo
 
     use qt
@@ -98,6 +103,7 @@ module vkdemo
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
+        type(QComboBox) :: sky_choice                          !! none, stars, texture, both
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
@@ -122,6 +128,7 @@ module vkdemo
         type(DrawableTrajectory) :: orbit2_frame
         type(CurveArtist) :: orbit2_curve
         type(MarkerArtist) :: orbit2_markers                   !! start and end
+        type(SkySphere) :: sky                                 !! stars and (with OpenFrames' data) a texture
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -133,6 +140,7 @@ module vkdemo
         logical :: start_trace = .false.
         logical :: start_radius = .false.
         integer :: start_marker = 1
+        integer :: start_sky = 1
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -276,6 +284,15 @@ contains
             write(*, '(a)') 'vkframes: add_child failed'
         call app%scene%set_frame(app%inertial)
         write(*, '(a)', advance='no') app%inertial%frame_string()
+
+        ! the sky: OpenFrames' star catalog (magnitudes -2 to 6, as its demos),
+        ! and its star map image if available
+        if (.not. app%sky%set_star_data('Stars_HYGv3.txt', min_mag=-2.0_wp, max_mag=6.0_wp, max_stars=40000)) &
+            write(*, '(a)') 'vkframes demo: no star catalog'
+        if (len(app%data_dir) > 0) then
+            ok = app%sky%set_texture_map(app%data_dir//'/Images/StarMap.tif')     ! (a message if missing)
+        end if
+        write(*, '(a,i0,a)') 'sky: ', app%sky%num_stars(), ' stars'
     end subroutine build_model
 
     !> The Earth follows its rotation trajectory at a fixed time, which the demo
@@ -382,6 +399,7 @@ contains
         end if
         call w%proxy%set_scene(app%scene)
         call w%proxy%set_background_color([0.0_wp, 0.0_wp, 0.0_wp])
+        call w%proxy%set_sky(app%sky)
         do k = 1, size(w%views)
             call w%proxy%add_view(w%views(k))
         end do
@@ -755,6 +773,14 @@ contains
         end if
     end subroutine on_marker_shape
 
+    !> What the sky shows: nothing, the stars, the texture, or both.
+    subroutine on_sky(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        integer, parameter :: modes(0:3) = [SKY_NONE, SKY_STARS, SKY_TEXTURE, SKY_TEXTURE + SKY_STARS]
+        call app%sky%set_draw_mode(modes(max(0, min(3, index))))
+    end subroutine on_sky
+
     subroutine on_attenuate(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -898,6 +924,10 @@ contains
         call app%marker_shape%setCurrentIndex(1)
         call app%marker_shape%currentIndexChanged%connect(on_marker_shape)
         call form%addRow('Markers', app%marker_shape)
+        app%sky_choice = QComboBox()
+        call app%sky_choice%addItems([character(len=16) :: 'None', 'Stars', 'Texture', 'Texture and stars'])
+        call app%sky_choice%currentIndexChanged%connect(on_sky)
+        call form%addRow('Sky', app%sky_choice)
         app%attenuate = QCheckBox('Shrink markers with distance')
         call app%attenuate%toggled%connect(on_attenuate)
         call form%addRow('', app%attenuate)
@@ -962,6 +992,10 @@ program vkframes_qt_demo
             app%start_trace = .true.
         case ('--radius')
             app%start_radius = .true.
+        case ('--sky')
+            call get_command_argument(i + 1, arg)
+            read(arg, *) app%start_sky
+            i = i + 1
         case ('--marker')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_marker
@@ -980,6 +1014,8 @@ program vkframes_qt_demo
     call app%trace_orbit%setChecked(app%start_trace)
     call app%show_radius%setChecked(app%start_radius)
     call app%marker_shape%setCurrentIndex(app%start_marker)
+    call app%sky_choice%setCurrentIndex(app%start_sky)
+    call on_sky(app%start_sky)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
     call app%main%resize(1100, 700)

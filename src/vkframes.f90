@@ -19,6 +19,8 @@ module vkframes
     use vkf_model, only: Model
     use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE
     use vkf_hud, only: HUDText
+    use vkf_sky, only: SkySphere, SKY_NONE, SKY_TEXTURE, SKY_STARS
+    use vkf_files, only: find_data_file
     use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist, DrawableTrajectory, &
                            MARKER_START, MARKER_INTERMEDIATE, MARKER_END, &
                            INTERMEDIATE_TIME, INTERMEDIATE_DISTANCE, INTERMEDIATE_DATA, &

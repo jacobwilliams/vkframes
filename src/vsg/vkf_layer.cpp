@@ -141,23 +141,29 @@ namespace
         return fallback;
     }
 
-    // A pipeline drawing quads from a storage buffer of points, shared by all
-    // nodes of a kind, in all windows: line strips and segments (shaders/
-    // line.vert, line.frag), markers (marker.vert, marker.frag; textured: a
-    // marker image at binding 2).
+    // A pipeline drawing from a storage buffer of points (no vertex buffers),
+    // shared by all nodes of a kind, in all windows: line strips and segments
+    // (shaders/line.vert, line.frag), markers (marker.vert, marker.frag, with a
+    // marker image), stars (stars.vert, stars.frag) and the sky texture
+    // (sky.vert, sky.frag: no points). Bindings: 0 the points, 1 the style (or
+    // the sky's attitude), 2 an image. The sky kinds are drawn at the far
+    // plane without writing depth, stars blended by the brighter color.
+    enum class PointsKind { lines, markers, stars, skyTexture };
+
     struct PointsPipeline
     {
         vsg::ref_ptr<vsg::DescriptorSetLayout> descriptorSetLayout;
         vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
         vsg::ref_ptr<vsg::BindGraphicsPipeline> bindPipeline;
 
-        PointsPipeline(const std::vector<uint32_t>& vert, const std::vector<uint32_t>& frag, bool textured)
+        PointsPipeline(const std::vector<uint32_t>& vert, const std::vector<uint32_t>& frag, PointsKind kind)
         {
-            vsg::DescriptorSetLayoutBindings bindings{
-                {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}, // points
-                {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}, // style
-            };
-            if (textured) bindings.push_back({2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
+            vsg::DescriptorSetLayoutBindings bindings;
+            if (kind != PointsKind::skyTexture)
+                bindings.push_back({0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
+            bindings.push_back({1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
+            if (kind == PointsKind::markers || kind == PointsKind::skyTexture)
+                bindings.push_back({2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
             descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
             // EyeRelative pushes the eye position and the viewport (3 x vec4, offset 128)
@@ -170,14 +176,25 @@ namespace
             auto rasterization = vsg::RasterizationState::create();
             rasterization->cullMode = VK_CULL_MODE_NONE;
             auto colorBlend = vsg::ColorBlendState::create();
-            colorBlend->configureAttachments(true);
+            colorBlend->configureAttachments(kind != PointsKind::skyTexture);
+            if (kind == PointsKind::stars)
+            {
+                for (auto& attachment : colorBlend->attachments)
+                    attachment.colorBlendOp = attachment.alphaBlendOp = VK_BLEND_OP_MAX;
+            }
+            auto depth = vsg::DepthStencilState::create();
+            if (kind == PointsKind::stars || kind == PointsKind::skyTexture)
+            {
+                depth->depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL; // at depth 0, where nothing was drawn
+                depth->depthWriteEnable = VK_FALSE;
+            }
             vsg::GraphicsPipelineStates states{
                 vsg::VertexInputState::create(), // no vertex buffers: points come from the storage buffer
                 vsg::InputAssemblyState::create(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
                 rasterization,
                 vsg::MultisampleState::create(),
                 colorBlend,
-                vsg::DepthStencilState::create(),
+                depth,
             };
             bindPipeline = vsg::BindGraphicsPipeline::create(vsg::GraphicsPipeline::create(pipelineLayout, stages, states));
         }
@@ -188,13 +205,25 @@ namespace
     // on the order of static destruction).
     PointsPipeline& line_pipeline()
     {
-        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::line_vert, vkf_shaders::line_frag, false);
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::line_vert, vkf_shaders::line_frag, PointsKind::lines);
         return *pipeline;
     }
 
     PointsPipeline& marker_pipeline()
     {
-        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::marker_vert, vkf_shaders::marker_frag, true);
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::marker_vert, vkf_shaders::marker_frag, PointsKind::markers);
+        return *pipeline;
+    }
+
+    PointsPipeline& stars_pipeline()
+    {
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::stars_vert, vkf_shaders::stars_frag, PointsKind::stars);
+        return *pipeline;
+    }
+
+    PointsPipeline& sky_pipeline()
+    {
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::sky_vert, vkf_shaders::sky_frag, PointsKind::skyTexture);
         return *pipeline;
     }
 
@@ -483,6 +512,24 @@ namespace
         auto a = vsg::vec4Array::create(n, vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         a->properties.dataVariance = vsg::DYNAMIC_DATA;
         return a;
+    }
+
+    // The sky's stars or texture (vkf_stars_create, vkf_sky_texture_create):
+    // stars hold 8 floats per star; style is the sky's attitude (a mat4) and
+    // parameters (a vec4).
+    struct SkyNode : Node
+    {
+        vsg::ref_ptr<vsg::floatArray> stars;
+        vsg::ref_ptr<vsg::vec4Array> style;
+        vsg::ref_ptr<vsg::Draw> draw;
+    };
+
+    vsg::ref_ptr<vsg::vec4Array> sky_style()
+    {
+        auto style = dynamic_vec4_array(5);
+        for (int i = 0; i < 4; ++i)
+            style->at(i) = vsg::vec4(i == 0, i == 1, i == 2, i == 3); // the identity
+        return style;
     }
 
     vsg::dmat4 to_dmat4(const double* m)
@@ -1294,6 +1341,103 @@ VKF_API void* vkf_marker_create(int capacity, void* image)
         marker->node = eyeRelative;
         return marker.release();
     });
+}
+
+// ---------------------------------------------------------------------------
+// Sky: stars and texture at infinity, drawn behind the scene
+
+// Stars (up to capacity; initially none): Fortran fills the buffer in place
+// (vkf_sky_stars: per star, direction x, y, z, size in window units, then r,
+// g, b, -) and calls vkf_sky_stars_changed.
+VKF_API void* vkf_stars_create(int capacity)
+{
+    if (capacity < 1) return nullptr;
+    return guarded("vkf_stars_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto& pipeline = stars_pipeline();
+        auto sky = std::make_unique<SkyNode>();
+        sky->stars = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
+        sky->stars->properties.dataVariance = vsg::DYNAMIC_DATA;
+        sky->style = sky_style();
+        auto descriptorSet = vsg::DescriptorSet::create(pipeline.descriptorSetLayout, vsg::Descriptors{
+            vsg::DescriptorBuffer::create(sky->stars, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
+            vsg::DescriptorBuffer::create(sky->style, 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER),
+        });
+        auto stateGroup = vsg::StateGroup::create();
+        stateGroup->add(pipeline.bindPipeline);
+        stateGroup->add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, descriptorSet));
+        sky->draw = vsg::Draw::create(0, 1, 0, 0);
+        stateGroup->addChild(sky->draw);
+        auto eyeRelative = EyeRelative::create(pipeline.pipelineLayout); // the view's rotation only
+        eyeRelative->addChild(stateGroup);
+        sky->node = eyeRelative;
+        return sky.release();
+    });
+}
+
+// The sky texture: image (a vkf_image_read handle; equirectangular, as a
+// Sphere's texture) on the sky seen from inside.
+VKF_API void* vkf_sky_texture_create(void* image)
+{
+    auto img = static_cast<Image*>(image);
+    if (!img) return nullptr;
+    return guarded("vkf_sky_texture_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto& pipeline = sky_pipeline();
+        auto sky = std::make_unique<SkyNode>();
+        sky->style = sky_style();
+        auto sampler = vsg::Sampler::create();
+        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        auto descriptorSet = vsg::DescriptorSet::create(pipeline.descriptorSetLayout, vsg::Descriptors{
+            vsg::DescriptorBuffer::create(sky->style, 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER),
+            vsg::DescriptorImage::create(sampler, img->data, 2, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER),
+        });
+        auto stateGroup = vsg::StateGroup::create();
+        stateGroup->add(pipeline.bindPipeline);
+        stateGroup->add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, descriptorSet));
+        sky->draw = vsg::Draw::create(3, 1, 0, 0); // one triangle covering the viewport
+        stateGroup->addChild(sky->draw);
+        auto eyeRelative = EyeRelative::create(pipeline.pipelineLayout);
+        eyeRelative->addChild(stateGroup);
+        sky->node = eyeRelative;
+        return sky.release();
+    });
+}
+
+// The stars' buffer (8 floats per star) and its capacity in stars; null for a
+// sky texture.
+VKF_API float* vkf_sky_stars(void* node, int* capacity)
+{
+    auto sky = dynamic_cast<SkyNode*>(static_cast<Node*>(node));
+    if (!sky || !sky->stars) return nullptr;
+    *capacity = static_cast<int>(sky->stars->size() / 8);
+    return sky->stars->data();
+}
+
+// The first n stars were written: draw them, and upload the buffer.
+VKF_API int vkf_sky_stars_changed(void* node, int n)
+{
+    auto sky = dynamic_cast<SkyNode*>(static_cast<Node*>(node));
+    if (!sky || !sky->stars || n < 0 || 8 * static_cast<uint32_t>(n) > sky->stars->size()) return -1;
+    sky->stars->dirty();
+    sky->draw->vertexCount = 6 * static_cast<uint32_t>(n);
+    return 0;
+}
+
+// The sky's style: 20 floats, the attitude (a column-major 4x4 matrix, sky
+// frame to root frame), then 4 parameters (unused); call
+// vkf_sky_style_changed after writing them.
+VKF_API float* vkf_sky_style(void* node)
+{
+    auto sky = dynamic_cast<SkyNode*>(static_cast<Node*>(node));
+    if (!sky) return nullptr;
+    return &(sky->style->at(0).x);
+}
+
+VKF_API int vkf_sky_style_changed(void* node)
+{
+    auto sky = dynamic_cast<SkyNode*>(static_cast<Node*>(node));
+    if (!sky) return -1;
+    sky->style->dirty();
+    return 0;
 }
 
 // The strip's point buffer, 6 floats per point (x, y, z high parts, then x, y,

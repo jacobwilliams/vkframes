@@ -551,8 +551,23 @@ Decided so far:
 - [ ] `MarkerArtist%set_marker_shader` (a user GLSL file): needs runtime
       GLSL → SPIR-V (VSG's ShaderCompiler / glslang); the shapes of
       OpenFrames' shader files are built in instead.
-- [ ] Star background from the HYG catalog (magnitude range → size and
-      color).
+- [x] Sky background (`SkySphere`, `src/vkf_sky.f90`; a window shows one
+      with `WindowProxy%set_sky`, several windows can share it): stars from
+      a catalog in OpenFrames' format (its HYG v3 catalog is in
+      `data/Stars_HYGv3.txt`; header `ra[_limit] dec mag ci proper`),
+      magnitude range, number limit, size range and dimming as
+      `setSkySphereStarData` (OpenFrames' size, color-index → RGB and dim
+      formulas), and/or an equirectangular texture map (e.g. OpenFrames'
+      `Images/StarMap.tif`, read by vsgXchange's GDAL); draw mode
+      (`SKY_TEXTURE`, `SKY_STARS`), attitude. Rendered at infinity behind
+      the scene (far plane, no depth writes): the texture as one
+      viewport-covering triangle sampling along the view ray (no sphere
+      mesh, no seam), stars as screen-space quads blended by the brighter
+      color (OpenFrames' RGBA_MAX). Data files are found by name on
+      `VKFRAMES_DATA_PATH` (`find_data_file`). Tested headless
+      (`test/test_sky.f90`); the Qt demo has a "Sky" choice.
+- [ ] Stars and sky texture in orthographic views (directions at infinity
+      have no orthographic projection; drawn only in perspective views).
 
 ### 4. Remaining features and polish
 

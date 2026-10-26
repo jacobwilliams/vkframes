@@ -25,6 +25,8 @@ module vkf_layer
     public :: vkf_viewer_hud_add
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_marker_create
+    public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
+    public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_segments, marker_set_style, mesh_arrays
 
     interface
@@ -302,6 +304,44 @@ module vkf_layer
             implicit none
             integer(c_int), value :: capacity
         end function vkf_line_create
+
+        type(c_ptr) function vkf_stars_create(capacity) bind(C, name="vkf_stars_create")
+            import :: c_ptr, c_int
+            implicit none
+            integer(c_int), value :: capacity
+        end function vkf_stars_create
+
+        type(c_ptr) function vkf_sky_texture_create(image) bind(C, name="vkf_sky_texture_create")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: image
+        end function vkf_sky_texture_create
+
+        type(c_ptr) function vkf_sky_stars(node, capacity) bind(C, name="vkf_sky_stars")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: node
+            integer(c_int), intent(out) :: capacity
+        end function vkf_sky_stars
+
+        integer(c_int) function vkf_sky_stars_changed(node, n) bind(C, name="vkf_sky_stars_changed")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: node
+            integer(c_int), value :: n
+        end function vkf_sky_stars_changed
+
+        type(c_ptr) function vkf_sky_style(node) bind(C, name="vkf_sky_style")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: node
+        end function vkf_sky_style
+
+        integer(c_int) function vkf_sky_style_changed(node) bind(C, name="vkf_sky_style_changed")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: node
+        end function vkf_sky_style_changed
 
         type(c_ptr) function vkf_marker_create(capacity, image) bind(C, name="vkf_marker_create")
             import :: c_ptr, c_int

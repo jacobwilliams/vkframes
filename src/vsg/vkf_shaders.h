@@ -17,4 +17,8 @@ namespace vkf_shaders
     extern const std::vector<uint32_t> label_frag;
     extern const std::vector<uint32_t> marker_vert;
     extern const std::vector<uint32_t> marker_frag;
+    extern const std::vector<uint32_t> sky_vert;
+    extern const std::vector<uint32_t> sky_frag;
+    extern const std::vector<uint32_t> stars_vert;
+    extern const std::vector<uint32_t> stars_frag;
 } // namespace vkf_shaders

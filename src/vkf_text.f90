@@ -11,6 +11,7 @@ module vkf_text
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
     use vkf_math, only: wp
     use vkf_layer, only: vkf_font_read, vkf_label_create
+    use vkf_files, only: find_in_dirs
 
     implicit none
 
@@ -44,7 +45,7 @@ contains
             '/usr/share/fonts/truetype/dejavu;/usr/share/fonts/TTF;/usr/share/fonts/dejavu;' // &  ! Linux
             '/usr/share/fonts/truetype;/usr/share/fonts;/usr/local/share/fonts;' // &
             'C:/Windows/Fonts'                                                                   ! Windows
-        integer :: status, i, j
+        integer :: status
         logical :: exists
 
         path = ''
@@ -60,22 +61,7 @@ contains
         call get_environment_variable('CONDA_PREFIX', env, status=status)
         if (status == 0) dirs = dirs//trim(env)//'/fonts;'//trim(env)//'/Library/fonts;'
         dirs = dirs//system_dirs
-        i = 1
-        do while (i <= len(dirs))
-            j = i
-            do while (j <= len(dirs))
-                if (dirs(j:j) == ';' .or. (dirs(j:j) == ':' .and. j > i + 1)) exit   ! ':' not after a drive letter
-                j = j + 1
-            end do
-            if (j > i) then
-                inquire(file=dirs(i:j-1)//'/'//name, exist=exists)
-                if (exists) then
-                    path = dirs(i:j-1)//'/'//name
-                    return
-                end if
-            end if
-            i = j + 1
-        end do
+        path = find_in_dirs(name, dirs)
     end function find_font
 
     !> The font handle for `name` (found with `find_font`, read on first use);

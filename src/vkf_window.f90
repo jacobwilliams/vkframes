@@ -22,6 +22,7 @@ module vkf_window
     use vkf_clock, only: SimulationClock
     use vkf_view, only: View, PERSPECTIVE
     use vkf_hud, only: HUDText
+    use vkf_sky, only: SkySphere
     use vkf_text, only: label_create
     use vkf_layer, only: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_add_node, vkf_viewer_frame, &
                          vkf_viewer_capture, vkf_viewer_look_at, vkf_viewer_perspective, vkf_viewer_set_background, &
@@ -79,6 +80,7 @@ module vkf_window
         ! HUD text
         type(HUDEntry), allocatable :: huds(:)
         integer :: n_huds = 0
+        type(SkySphere), pointer :: sky_ => null()          !! the background sky
     contains
         procedure :: open, close, is_open
         procedure :: set_scene
@@ -91,6 +93,7 @@ module vkf_window
         procedure :: current_view, num_views
         ! HUD text (OpenFrames' RenderRectangle HUD)
         procedure :: add_hud_text
+        procedure :: set_sky, sky
         procedure :: view => window_view
         ! simulation time (OpenFrames' WindowProxy time control)
         procedure :: set_time, time, pause_time, is_time_paused, set_time_scale, time_scale
@@ -196,6 +199,10 @@ contains
                 call root%realize(self%viewer_)
                 if (vkf_viewer_add_node(self%viewer_, root%node()) /= 0) write(*, '(a)') 'vkframes: could not add the scene'
             end if
+            if (associated(self%sky_)) then
+                if (vkf_viewer_add_node(self%viewer_, self%sky_%node(self%viewer_)) /= 0) &
+                    write(*, '(a)') 'vkframes: could not add the sky'
+            end if
             call create_huds(self)
             self%scene_added = .true.
         end if
@@ -251,6 +258,24 @@ contains
         real(wp) :: rgb(3)
         rgb = self%background
     end function background_color
+
+    ! ==================================================================
+    ! sky
+
+    !> Draw `sky` behind the scene (it must stay alive while shown; it can be
+    !> shown in several windows). For now, set it before the window's first
+    !> frame; its texture and stars can change at any time.
+    subroutine set_sky(self, sky)
+        class(WindowProxy), intent(inout) :: self
+        type(SkySphere), intent(in), target :: sky
+        self%sky_ => sky
+    end subroutine set_sky
+
+    function sky(self) result(s)
+        class(WindowProxy), intent(in) :: self
+        type(SkySphere), pointer :: s
+        s => self%sky_
+    end function sky
 
     ! ==================================================================
     ! HUD text

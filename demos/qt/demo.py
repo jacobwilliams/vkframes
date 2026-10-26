@@ -30,6 +30,8 @@ def main(argv):
         subprocess.check_call(["fpm", "update"])          # fetch qt-fortran
     settings, dll_dir = fpm_vsg.settings()
     env = dict(os.environ, **settings)
+    # vkframes' data files (the star catalog), found by name
+    env["VKFRAMES_DATA_PATH"] = os.pathsep.join(p for p in (os.path.join(ROOT, "data"), env.get("VKFRAMES_DATA_PATH")) if p)
     if dll_dir:   # Windows: vkf.dll
         env["PATH"] = dll_dir + os.pathsep + env.get("PATH", "")
     args = ["build"] if argv[0] == "build" else ["run", "--", *argv[1:]]
