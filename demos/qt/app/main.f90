@@ -9,9 +9,12 @@
 !> follows a Trajectory (positions and attitudes over one period; LOOP or LIMIT
 !> from the dock). The Earth rotates: it follows an attitude-only Trajectory
 !> over one sidereal day, at a speed set with a slider. Both are children of an inertial root frame, so the
-!> orbit stays inertial. A FrameManager holds the scene. Each
-!> window has a WindowProxy showing it, with three Views (the Earth, the
-!> spacecraft body-fixed, and from the spacecraft toward the Earth; chosen per
+!> orbit stays inertial. A second spacecraft (a small Sphere) flies only part
+!> of another orbit, from 20 to 70 minutes (it waits at its start and stops at
+!> its end: FOLLOW_LIMIT), drawn with start and end markers. A FrameManager
+!> holds the scene. Each window has a WindowProxy showing it, with six Views
+!> (the Earth; spacecraft 1 body-fixed; from spacecraft 1 toward the Earth;
+!> spacecraft 2; from spacecraft 1 toward spacecraft 2, and back; chosen per
 !> window). The main window's simulation time (time scale, pause and reset from
 !> the dock) drives the others, whose clocks are synchronized to it. The orbit
 !> is drawn by a CurveArtist in a DrawableTrajectory (a child of the inertial
@@ -40,7 +43,7 @@
 !> an image (file, then file_2, ... for the other windows; `--capture-frame n`,
 !> default 120); `--quit-after seconds` closes the demo; `--test-resize`
 !> resizes the main window after 2 s; `--view n` starts the main window in view
-!> n (1 Earth, 2 spacecraft, 3 spacecraft -> Earth); `--windows n` opens n
+!> n (1 to 6, as in the view menu); `--windows n` opens n
 !> windows at startup (the others start in the next views); `--rotation-speed n`
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
 !> starts with the orbit traced; `--radius` with the radius vectors shown;
@@ -61,7 +64,14 @@ module vkdemo
     integer, parameter :: n_orbit = 721
     integer, parameter :: max_windows = 4
     real(wp), parameter :: orbit_color(3) = [1.0_wp, 0.85_wp, 0.2_wp]
-    character(len=19), parameter :: view_names(3) = [character(len=19) :: 'Earth', 'Spacecraft', 'Spacecraft -> Earth']
+    ! the second spacecraft's orbit: part of it, from t2_start to t2_end (s)
+    real(wp), parameter :: sma2 = 7800.0_wp, ecc2 = 0.05_wp, inc2 = 70.0_wp * pi / 180.0_wp, raan2 = 60.0_wp * pi / 180.0_wp
+    real(wp), parameter :: t2_start = 1200.0_wp, t2_end = 4200.0_wp
+    integer, parameter :: n_orbit2 = 301
+    real(wp), parameter :: orbit2_color(3) = [0.3_wp, 1.0_wp, 0.8_wp]
+    integer, parameter :: n_views = 6
+    character(len=28), parameter :: view_names(n_views) = [character(len=28) :: 'Earth', 'Spacecraft 1', &
+        'Spacecraft 1 -> Earth', 'Spacecraft 2', 'Spacecraft 1 -> Spacecraft 2', 'Spacecraft 2 -> Spacecraft 1']
 
     !> One window showing the scene: a QWindow (in the main window, or in a
     !> top-level widget of its own) with its WindowProxy and views.
@@ -74,7 +84,7 @@ module vkdemo
         type(QtfEventFilter) :: events
         type(QComboBox) :: view_choice
         type(WindowProxy) :: proxy
-        type(View) :: views(3)                                 !! Earth, spacecraft, spacecraft -> Earth
+        type(View) :: views(n_views)                           !! as view_names
         type(HUDText) :: hud_view                              !! the view's name, top left
         integer :: frame = 0
     end type view_window_t
@@ -106,6 +116,12 @@ module vkdemo
         type(CurveArtist) :: orbit_curve
         type(SegmentArtist) :: radius_vectors                  !! from the Earth's center, added from the dock
         type(MarkerArtist) :: orbit_markers                    !! start, end, every 10 minutes
+        ! the second spacecraft, on part of another orbit
+        type(Trajectory) :: orbit2
+        type(Sphere) :: spacecraft2
+        type(DrawableTrajectory) :: orbit2_frame
+        type(CurveArtist) :: orbit2_curve
+        type(MarkerArtist) :: orbit2_markers                   !! start and end
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -128,20 +144,26 @@ contains
     ! ==================================================================
     ! the scene
 
-    !> Position on the orbit at time t (Kepler's equation by Newton iteration), km.
-    pure function orbit_position(t) result(r)
-        real(wp), intent(in) :: t
+    !> Position at time t (km) on the orbit of semi-major axis a, eccentricity
+    !> e, inclination i and ascending node raan (default 0), at perigee at t = 0
+    !> (Kepler's equation by Newton iteration).
+    pure function orbit_position(t, a, e, i, raan) result(r)
+        real(wp), intent(in) :: t, a, e, i
+        real(wp), intent(in), optional :: raan
         real(wp) :: r(3)
-        real(wp) :: m, ea, x, y
+        real(wp) :: m, ea, x, y, node
         integer :: k
-        m = sqrt(mu / sma**3) * t
+        m = sqrt(mu / a**3) * t
         ea = m
         do k = 1, 20
-            ea = ea - (ea - ecc * sin(ea) - m) / (1.0_wp - ecc * cos(ea))
+            ea = ea - (ea - e * sin(ea) - m) / (1.0_wp - e * cos(ea))
         end do
-        x = sma * (cos(ea) - ecc)
-        y = sma * sqrt(1.0_wp - ecc**2) * sin(ea)
-        r = [x, y * cos(inc), y * sin(inc)]
+        x = a * (cos(ea) - e)
+        y = a * sqrt(1.0_wp - e**2) * sin(ea)
+        r = [x, y * cos(i), y * sin(i)]
+        node = 0.0_wp
+        if (present(raan)) node = raan
+        r = [cos(node) * r(1) - sin(node) * r(2), sin(node) * r(1) + cos(node) * r(2), r(3)]
     end function orbit_position
 
     !> The spacecraft's attitude at orbit position r: its x axis radial (from
@@ -168,7 +190,7 @@ contains
         period = 2.0_wp * pi * sqrt(sma**3 / mu)
         do k = 1, n_orbit
             t = period * real(k - 1, wp) / real(n_orbit - 1, wp)
-            r = orbit_position(t)
+            r = orbit_position(t, sma, ecc, inc)
             call app%orbit%add(t, pos=r, att=orbit_attitude(r))
         end do
 
@@ -179,7 +201,7 @@ contains
         ! the spacecraft: OpenFrames' Hubble model, or a small sphere without the data
         ok = .false.
         if (len(app%data_dir) > 0) then
-            allocate(app%spacecraft, source=Model('Spacecraft', color=[1.0_wp, 0.85_wp, 0.2_wp]))
+            allocate(app%spacecraft, source=Model('Spacecraft 1', color=[1.0_wp, 0.85_wp, 0.2_wp]))
             select type (sc => app%spacecraft)
             type is (Model)
                 ok = sc%set_model(app%data_dir//'/Models/Hubble.3ds')
@@ -191,7 +213,7 @@ contains
             end select
             if (.not. ok) deallocate(app%spacecraft)
         end if
-        if (.not. ok) allocate(app%spacecraft, source=Sphere('Spacecraft', radius=model_size, &
+        if (.not. ok) allocate(app%spacecraft, source=Sphere('Spacecraft 1', radius=model_size, &
                                                              color=[1.0_wp, 0.3_wp, 0.2_wp]))
         call app%spacecraft%follow(app%orbit)                 ! position and attitude, FOLLOW_LOOP
 
@@ -221,14 +243,36 @@ contains
         call app%orbit_markers%set_intermediate_spacing(600.0_wp)
         call app%orbit_frame%add_artist(app%orbit_markers)
 
+        ! the second spacecraft: part of another orbit (positions only), waiting
+        ! at its start before t2_start and stopping at its end
+        app%orbit2 = Trajectory()
+        call app%orbit2%reserve(n_orbit2)
+        do k = 1, n_orbit2
+            t = t2_start + (t2_end - t2_start) * real(k - 1, wp) / real(n_orbit2 - 1, wp)
+            call app%orbit2%add(t, pos=orbit_position(t, sma2, ecc2, inc2, raan2))
+        end do
+        app%spacecraft2 = Sphere('Spacecraft 2', radius=0.6_wp * model_size, color=orbit2_color)
+        call app%spacecraft2%follow(app%orbit2, data=FOLLOW_POSITION, mode=FOLLOW_LIMIT)
+        app%orbit2_curve = CurveArtist(app%orbit2, color=orbit2_color, width=2.0_wp)
+        app%orbit2_markers = MarkerArtist(app%orbit2, size=16.0_wp)            ! start and end (default)
+        call app%orbit2_markers%set_marker_color(MARKER_START, [0.2_wp, 1.0_wp, 0.3_wp])
+        call app%orbit2_markers%set_marker_color(MARKER_END, [1.0_wp, 0.25_wp, 0.2_wp])
+        app%orbit2_frame = DrawableTrajectory('Orbit 2')
+        call app%orbit2_frame%show_axes(NO_AXES)
+        call app%orbit2_frame%show_axes_labels(NO_AXES)
+        call app%orbit2_frame%show_name_label(.false.)
+        call app%orbit2_frame%add_artist(app%orbit2_curve)
+        call app%orbit2_frame%add_artist(app%orbit2_markers)
+
         ! the tree: an inertial root (no decorations of its own) with the
-        ! rotating Earth, the spacecraft and its orbit (both inertial)
+        ! rotating Earth, the spacecraft and their orbits (all inertial)
         app%inertial = ReferenceFrame('Inertial')
         call app%inertial%show_axes(NO_AXES)
         call app%inertial%show_axes_labels(NO_AXES)
         call app%inertial%show_name_label(.false.)
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft) .and. &
-                   app%inertial%add_child(app%orbit_frame))) &
+                   app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%spacecraft2) .and. &
+                   app%inertial%add_child(app%orbit2_frame))) &
             write(*, '(a)') 'vkframes: add_child failed'
         call app%scene%set_frame(app%inertial)
         write(*, '(a)', advance='no') app%inertial%frame_string()
@@ -268,14 +312,25 @@ contains
         w%used = .true.
         w%frame = 0
 
-        ! views: the Earth, the spacecraft (body-fixed), and from the spacecraft
-        ! toward the Earth (inertial axes, a little behind the spacecraft)
+        ! views: the Earth, spacecraft 1 (body-fixed), from spacecraft 1 toward
+        ! the Earth (inertial axes, a little behind the spacecraft), spacecraft
+        ! 2, and from each spacecraft toward the other
         w%views(1) = View(app%inertial, app%earth, frame_type=ABSOLUTE_FRAME)   ! inertial axes: the Earth turns
         call w%views(1)%set_default_view_distance(2.5_wp * sma)                ! the whole orbit in view
         w%views(2) = View(app%inertial, app%spacecraft)
         w%views(3) = View(app%inertial, app%spacecraft, lookat=app%earth, frame_type=ABSOLUTE_FRAME)
         call w%views(3)%set_default_view_distance(1.5_wp * model_size)
-        w%hud_view = HUDText(trim(view_names(modulo(start_view - 1, 3) + 1)), position=[0.01_wp, 0.99_wp], &
+        w%views(4) = View(app%inertial, app%spacecraft2)
+        call w%views(4)%set_default_view_distance(8.0_wp * model_size)
+        ! (behind and above the spacecraft, looking past it: the other one is
+        ! along +y, just above the view's center, clear of this one)
+        w%views(5) = View(app%inertial, app%spacecraft, lookat=app%spacecraft2, frame_type=ABSOLUTE_FRAME)
+        call w%views(5)%set_default_view_parameters(eye=[0.0_wp, -4.0_wp, 2.0_wp] * model_size, &
+                                                    center=[0.0_wp, 10.0_wp, 0.0_wp] * model_size, up=[0.0_wp, 0.0_wp, 1.0_wp])
+        w%views(6) = View(app%inertial, app%spacecraft2, lookat=app%spacecraft, frame_type=ABSOLUTE_FRAME)
+        call w%views(6)%set_default_view_parameters(eye=[0.0_wp, -2.4_wp, 1.2_wp] * model_size, &
+                                                    center=[0.0_wp, 6.0_wp, 0.0_wp] * model_size, up=[0.0_wp, 0.0_wp, 1.0_wp])
+        w%hud_view = HUDText(trim(view_names(modulo(start_view - 1, n_views) + 1)), position=[0.01_wp, 0.99_wp], &
                              alignment=ALIGN_LEFT_TOP, size=16.0_wp, color=[0.8_wp, 0.8_wp, 0.8_wp])
         call w%hud_view%show(app%show_hud%isChecked())
 
@@ -287,7 +342,7 @@ contains
         call w%container%setMinimumSize(320, 240)
         w%view_choice = QComboBox()
         call w%view_choice%addItems(view_names)
-        call w%view_choice%setCurrentIndex(modulo(start_view - 1, 3))
+        call w%view_choice%setCurrentIndex(modulo(start_view - 1, n_views))
         call w%view_choice%currentIndexChanged%connect(on_view, w)
 
         w%events = QtfEventFilter(w%window)
@@ -629,6 +684,7 @@ contains
         class(*), intent(inout), optional :: data
         call app%earth%show_axes(merge(ALL_AXES, NO_AXES, checked))
         call app%spacecraft%show_axes(merge(ALL_AXES, NO_AXES, checked))
+        call app%spacecraft2%show_axes(merge(ALL_AXES, NO_AXES, checked))
     end subroutine on_show_axes
 
     !> Show or hide the frames' name and axis labels.
@@ -639,6 +695,8 @@ contains
         call app%earth%show_name_label(checked)
         call app%spacecraft%show_axes_labels(merge(ALL_AXES, NO_AXES, checked))
         call app%spacecraft%show_name_label(checked)
+        call app%spacecraft2%show_axes_labels(merge(ALL_AXES, NO_AXES, checked))
+        call app%spacecraft2%show_name_label(checked)
     end subroutine on_show_labels
 
     !> The Earth's rotation speed changed (the slider): show it.
@@ -666,6 +724,7 @@ contains
         real(c_double), intent(in) :: value
         class(*), intent(inout), optional :: data
         call app%orbit_curve%set_width(real(value, wp))
+        call app%orbit2_curve%set_width(real(value, wp))
     end subroutine on_line_width
 
     !> Trace mode: the orbit drawn up to the spacecraft only (with a loop
@@ -677,6 +736,8 @@ contains
         call app%orbit_curve%set_trace_mode(checked)
         call app%radius_vectors%set_trace_mode(checked)
         call app%orbit_markers%set_trace_mode(checked)
+        call app%orbit2_curve%set_trace_mode(checked)
+        call app%orbit2_markers%set_trace_mode(checked)
     end subroutine on_trace_orbit
 
     !> Marker shape (0: none; 1 + a MARKER_* shape).
@@ -685,9 +746,12 @@ contains
         class(*), intent(inout), optional :: data
         if (index == 0) then
             call app%orbit_markers%set_markers(0)
+            call app%orbit2_markers%set_markers(0)
         else
             call app%orbit_markers%set_markers(ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END))
             call app%orbit_markers%set_marker_shape(index - 1)
+            call app%orbit2_markers%set_markers(ior(MARKER_START, MARKER_END))
+            call app%orbit2_markers%set_marker_shape(index - 1)
         end if
     end subroutine on_marker_shape
 
@@ -695,6 +759,7 @@ contains
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
         call app%orbit_markers%set_auto_attenuate(checked)
+        call app%orbit2_markers%set_auto_attenuate(checked)
     end subroutine on_attenuate
 
     !> Radius vectors: an artist added to the orbit's frame while running (built
