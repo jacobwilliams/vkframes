@@ -16,7 +16,9 @@
 !> (the Earth; spacecraft 1 body-fixed; from spacecraft 1 toward the Earth;
 !> spacecraft 2; from spacecraft 1 toward spacecraft 2, and back; chosen per
 !> window). The main window's simulation time (time scale, pause and reset from
-!> the dock) drives the others, whose clocks are synchronized to it. The orbit
+!> the dock) drives the others, whose clocks are synchronized to it; it runs
+!> over three orbits, shown by a time slider, which follows the animation and
+!> can be dragged (or clicked, or moved with the keys) to set the time. The orbit
 !> is drawn by a CurveArtist in a DrawableTrajectory (a child of the inertial
 !> frame), whole or traced up to the spacecraft (trace mode, from the dock);
 !> radius vectors (a SegmentArtist at every 12th point) are added to it and
@@ -118,6 +120,10 @@ module vkdemo
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
         type(QLabel) :: time_label
+        type(QSlider) :: time_slider                           !! the simulation time (s), 0 to time_end
+        logical :: slider_held = .false.                       !! the user holds the slider's handle
+        logical :: slider_setting = .false.                    !! the demo moves the slider (to the time)
+        real(wp) :: time_end = 0.0_wp                          !! the end of the time range: three orbits
         type(view_window_t) :: windows(max_windows)
         ! the scene
         type(Trajectory) :: orbit                              !! one period of positions and attitudes
@@ -212,6 +218,7 @@ contains
         app%orbit = Trajectory()
         call app%orbit%reserve(n_orbit)
         period = 2.0_wp * pi * sqrt(sma**3 / mu)
+        app%time_end = 3.0_wp * period
         do k = 1, n_orbit
             t = period * real(k - 1, wp) / real(n_orbit - 1, wp)
             r = orbit_position(t, sma, ecc, inc)
@@ -491,6 +498,7 @@ contains
         call w%proxy%add_hud_text(w%hud_view)
         call w%proxy%add_hud_text(app%hud_time)
         if (w%index == 1) then
+            call w%proxy%set_time_range(0.0_wp, app%time_end)
             call w%proxy%set_time_scale(app%time_scale%value())
             call w%proxy%pause_time(app%pause_time%isChecked())
             call w%proxy%set_time(0.0_wp)
@@ -543,6 +551,11 @@ contains
                 write(text, '(a,f0.1,a)') 't = ', w%proxy%time(), ' s'
                 call app%hud_time%set_text(trim(text))
                 call advance_rotation(w%proxy%time())
+                if (.not. app%slider_held) then           ! the slider follows the time (unless dragged)
+                    app%slider_setting = .true.
+                    call app%time_slider%setValue(nint(w%proxy%time()))
+                    app%slider_setting = .false.
+                end if
             end if
             if (allocated(app%capture) .and. w%frame == app%capture_frame) then
                 file = app%capture
@@ -762,6 +775,25 @@ contains
         class(*), intent(inout), optional :: data
         call app%windows(1)%proxy%set_time(0.0_wp)
     end subroutine on_reset_time
+
+    !> The time slider moved (dragged, clicked or with the keys): set the time.
+    !> (Not when the demo moves it to follow the time.)
+    subroutine on_time_slider(value, data)
+        integer, intent(in) :: value
+        class(*), intent(inout), optional :: data
+        if (app%slider_setting) return
+        call app%windows(1)%proxy%set_time(real(value, wp))
+    end subroutine on_time_slider
+
+    subroutine on_slider_pressed(data)
+        class(*), intent(inout), optional :: data
+        app%slider_held = .true.
+    end subroutine on_slider_pressed
+
+    subroutine on_slider_released(data)
+        class(*), intent(inout), optional :: data
+        app%slider_held = .false.
+    end subroutine on_slider_released
 
     !> Put the main window's current view back at its default position.
     subroutine on_reset_view(data)
@@ -1064,6 +1096,14 @@ contains
         call form%addRow('', app%attenuate)
         app%time_label = QLabel('Simulation time:')
         call form%addRow(app%time_label)
+        app%time_slider = QSlider(Qt_Horizontal)
+        call app%time_slider%setRange(0, nint(app%time_end))
+        call app%time_slider%setSingleStep(60)                ! a minute (arrow keys), ten minutes (page keys)
+        call app%time_slider%setPageStep(600)
+        call app%time_slider%valueChanged%connect(on_time_slider)
+        call app%time_slider%sliderPressed%connect(on_slider_pressed)
+        call app%time_slider%sliderReleased%connect(on_slider_released)
+        call form%addRow('Time', app%time_slider)
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
                                 'Wheel: zoom</small>'))
         dock = QDockWidget('Controls', app%main)
