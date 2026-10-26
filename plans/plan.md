@@ -614,6 +614,13 @@ Decided so far:
       (VSG defaults to sRGB, which brightened colors and blended in linear
       light), so colors, textures, transparency and lighting are in display
       values as in OpenGL.
+- [x] Changing a shown scene: frames added to or removed from a shown tree
+      (`add_child` realizes and compiles the new subtree; `remove_child`
+      retires its node), axis arrows moved (`move_*_axis` rebuilds the arrow
+      and label), a window's sky set or replaced (`set_sky`) and HUD text
+      added or removed (`add_hud_text`, `remove_hud_text`), all while
+      running; new nodes are compiled for the running viewer first.
+      `example/live_changes.f90`; tested headless (`test/test_shapes.f90`).
 - [ ] Specular light on PBR models (glTF): ignored for now (PBR has no
       separate specular light color).
 - [ ] An OpenFrames-like convenience API (optional), examples (orbit,

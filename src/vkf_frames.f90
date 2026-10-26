@@ -15,13 +15,16 @@
 !> transform node, with its contents (`build_contents`, which extensions
 !> override) under a switch for `show_contents`; children's nodes go under the
 !> parent's transform, so a frame with several parents is drawn under each.
-!> Each frame, `sync` copies positions and attitudes to the transforms. For now
-!> a tree must be complete before its window's first frame.
+!> Each frame, `sync` copies positions and attitudes to the transforms. A shown
+!> tree can change: children added to a shown frame are realized and compiled
+!> (by the viewer that realized the tree) and drawn from the next frame;
+!> removed ones stop being drawn; moved axes (move_x_axis, ...) are made again.
 module vkf_frames
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
     use vkf_layer, only: vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
-                         vkf_node_add_child, vkf_node_delete, vkf_light_create, vkf_light_set
+                         vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_viewer_compile_node, &
+                         vkf_light_create, vkf_light_set
     use vkf_geometry, only: arrow_create
     use vkf_text, only: label_create
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
@@ -76,6 +79,7 @@ module vkf_frames
         ! rendering
         type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
         type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
+        type(c_ptr) :: viewer_ = c_null_ptr                 !! the viewer that realized it (compiles later nodes)
         logical :: realized = .false.
         ! axes (OpenFrames' moveXAxis/...: base, length, head ratio, radii; 0 radius: auto)
         real(wp) :: axis_base(3,3) = 0.0_wp
@@ -85,6 +89,8 @@ module vkf_frames
         logical :: axes_moved = .false.                     !! set by move_*_axis (else reposition_axes places them)
         type(c_ptr) :: axis_node(3) = c_null_ptr            !! switches: axis arrows, axis labels, name label
         type(c_ptr) :: axis_label_node(3) = c_null_ptr
+        type(c_ptr) :: axis_arrow(3) = c_null_ptr           !! their contents (made again when an axis moves)
+        type(c_ptr) :: axis_text(3) = c_null_ptr
         type(c_ptr) :: name_label_node = c_null_ptr
     contains
         procedure :: set_name, name
@@ -486,6 +492,7 @@ contains
         if (present(body_radius)) self%axis_body_radius(k) = body_radius
         if (present(head_radius)) self%axis_head_radius(k) = head_radius
         self%axes_moved = .true.
+        if (self%realized) call make_axis(self, k)              ! shown: made again
     end subroutine move_axis
 
     !> Place the axes for what the frame draws, when it is first shown (unless
@@ -531,6 +538,13 @@ contains
         call append(self%children, self%n_children, child)
         call append(child%parents, child%n_parents, self)
         ok = .true.
+        if (self%realized) then                         ! shown: draw the child from the next frame
+            if (.not. child%realized) then
+                call child%realize(self%viewer_)
+                if (c_associated(self%viewer_)) call check(vkf_viewer_compile_node(self%viewer_, child%node_))
+            end if
+            call check(vkf_node_add_child(self%node_, child%node_))
+        end if
     end function add_child
 
     !> Remove `child` from this frame's children. Returns false if it is not one.
@@ -539,6 +553,7 @@ contains
         class(ReferenceFrame), intent(inout), target :: child
         ok = remove(self%children, self%n_children, child)
         if (ok) ok = remove(child%parents, child%n_parents, self)
+        if (ok .and. self%realized .and. child%realized) call check(vkf_node_remove_child(self%node_, child%node_))
     end function remove_child
 
     !> Remove this frame from all its parents and children (before it goes out
@@ -687,6 +702,7 @@ contains
         integer :: k
         if (self%realized) return
         self%realized = .true.
+        self%viewer_ = viewer
         self%node_ = vkf_transform_create()
         self%contents_node = vkf_switch_create()
         call check(vkf_node_add_child(self%node_, self%contents_node))
@@ -737,36 +753,14 @@ contains
     !> the frame's color (OpenFrames' ReferenceFrame decorations).
     subroutine build_decorations(self)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp) :: e(3), len, head, rb, rh, tip(3)
         type(c_ptr) :: node
         integer :: k
         if (.not. self%axes_moved) call self%reposition_axes()
         do k = 1, 3
-            e = 0.0_wp
-            e(k) = 1.0_wp
-            len = self%axis_len(k)
-            head = self%axis_head_ratio(k)
-            if (head <= 0.0_wp .or. head >= 1.0_wp) head = 0.3_wp
-            rb = self%axis_body_radius(k)
-            if (rb <= 0.0_wp) rb = 0.05_wp * len
-            rh = self%axis_head_radius(k)
-            if (rh <= 0.0_wp) rh = 0.1_wp * len
             self%axis_node(k) = vkf_switch_create()
-            node = arrow_create(self%axis_base(:, k), e, (1.0_wp - head) * len, head * len, rb, rh, real(self%color_, c_float))
-            if (c_associated(node)) then
-                call check(vkf_node_add_child(self%axis_node(k), node))
-                call vkf_node_delete(node)
-            end if
-            call check(vkf_node_add_child(self%node_, self%axis_node(k)))
-            ! the label at the tip, 0.4 of the axis length tall, at most label_size pixels
-            tip = self%axis_base(:, k) + len * e
             self%axis_label_node(k) = vkf_switch_create()
-            node = label_create(self%axis_label(2**(k-1)), tip, self%color_, -0.4_wp * len, &
-                                real(self%label_size_, wp), self%label_alignment_, self%label_font())
-            if (c_associated(node)) then
-                call check(vkf_node_add_child(self%axis_label_node(k), node))
-                call vkf_node_delete(node)
-            end if
+            call make_axis(self, k)
+            call check(vkf_node_add_child(self%node_, self%axis_node(k)))
             call check(vkf_node_add_child(self%node_, self%axis_label_node(k)))
         end do
         ! the name label at the origin, label_size pixels tall
@@ -780,6 +774,46 @@ contains
         call check(vkf_node_add_child(self%node_, self%name_label_node))
         call update_switches(self)
     end subroutine build_decorations
+
+    !> Axis k's arrow and label, in their switches (in place of the old ones;
+    !> compiled first if the window already runs).
+    subroutine make_axis(self, k)
+        class(ReferenceFrame), intent(inout) :: self
+        integer, intent(in) :: k
+        real(wp) :: e(3), len, head, rb, rh, tip(3)
+        e = 0.0_wp
+        e(k) = 1.0_wp
+        len = self%axis_len(k)
+        head = self%axis_head_ratio(k)
+        if (head <= 0.0_wp .or. head >= 1.0_wp) head = 0.3_wp
+        rb = self%axis_body_radius(k)
+        if (rb <= 0.0_wp) rb = 0.05_wp * len
+        rh = self%axis_head_radius(k)
+        if (rh <= 0.0_wp) rh = 0.1_wp * len
+        call replace_child(self, self%axis_node(k), self%axis_arrow(k), &
+                           arrow_create(self%axis_base(:, k), e, (1.0_wp - head) * len, head * len, rb, rh, &
+                                        real(self%color_, c_float)))
+        ! the label at the tip, 0.4 of the axis length tall, at most label_size pixels
+        tip = self%axis_base(:, k) + len * e
+        call replace_child(self, self%axis_label_node(k), self%axis_text(k), &
+                           label_create(self%axis_label(2**(k-1)), tip, self%color_, -0.4_wp * len, &
+                                        real(self%label_size_, wp), self%label_alignment_, self%label_font()))
+    end subroutine make_axis
+
+    !> Put `new` in `switch` in place of `old` (a kept handle, deleted).
+    subroutine replace_child(self, switch, old, new)
+        class(ReferenceFrame), intent(in) :: self
+        type(c_ptr), intent(in) :: switch, new
+        type(c_ptr), intent(inout) :: old
+        if (c_associated(old)) then
+            call check(vkf_node_remove_child(switch, old))
+            call vkf_node_delete(old)
+        end if
+        old = new
+        if (.not. c_associated(new)) return
+        if (c_associated(self%viewer_)) call check(vkf_viewer_compile_node(self%viewer_, new))
+        call check(vkf_node_add_child(switch, new))
+    end subroutine replace_child
 
     !> Show or hide the decorations' switches as set.
     subroutine update_switches(self)

@@ -5,7 +5,7 @@
 !> materials.
 program test_shapes
 
-    use, intrinsic :: iso_c_binding, only: c_null_ptr
+    use, intrinsic :: iso_c_binding, only: c_null_ptr, c_associated
     use vkframes
 
     implicit none
@@ -107,6 +107,7 @@ contains
         type(RadialPlane), target :: plane
         type(EllipticCone), target :: cone
         type(ReferenceFrame), target :: root
+        type(Sphere), target :: later
         real(wp) :: c(3), r, rx, ry, rz, lat, lon, major, minor
         axes = CoordinateAxes('Axes', color=[1.0_wp, 1.0_wp, 0.0_wp])
         call axes%set_axis_length(4.0_wp)
@@ -146,6 +147,14 @@ contains
         call check(cone%is_visible(direction(15.0_wp * deg, 0.0_wp)) .and. &
                    .not. cone%is_visible(direction(15.0_wp * deg, 90.0_wp * deg)), 'cone: new angles')
         call check(grid%frame_info() == 'LatLonGrid' .and. cone%frame_info() == 'EllipticCone', 'frame_info')
+
+        ! a shown tree changing: a child added later is realized; axes moved
+        later = Sphere('Later', radius=2.0_wp)
+        call check(.not. c_associated(later%node()), 'a new frame has no node')
+        call check(root%add_child(later), 'add_child to a shown tree')
+        call check(c_associated(later%node()), 'a child added to a shown tree is realized')
+        call later%move_x_axis([0.0_wp, 0.0_wp, 0.0_wp], 5.0_wp)
+        call check(root%remove_child(later) .and. root%num_children() == 4, 'remove_child from a shown tree')
     end subroutine check_shapes
 
     subroutine check_lights()

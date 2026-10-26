@@ -467,13 +467,25 @@ namespace
         vsg::ref_ptr<vsg::Group> scene;
         vsg::ref_ptr<vsg::Camera> camera;
         vsg::ref_ptr<vsg::CommandGraph> commandGraph;
-        vsg::ref_ptr<vsg::Group> hudScene;     // HUD text, drawn by a second view on top (created when needed)
+        vsg::ref_ptr<vsg::Group> hudScene;     // HUD text, drawn by a second view on top
         vsg::ref_ptr<vsg::Switch> headlight;   // the window's default light, in eye coordinates
         void* headlightHandle = nullptr;       // its LightNode (vkf_viewer_light)
         void* childView = nullptr;             // macOS: the view VSG renders into, in the host's view
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
         bool compiled = false;
     };
+
+    // Compile a node for a viewer that is already running (before adding it to
+    // its scene); nothing to do before the first frame, which compiles the
+    // whole scene. False on failure.
+    bool compile_for(Viewer& v, const vsg::ref_ptr<vsg::Node>& node)
+    {
+        if (!v.compiled) return true;
+        auto result = v.viewer->compileManager->compile(node);
+        if (!result) return false;
+        vsg::updateViewer(*v.viewer, result);
+        return true;
+    }
 
     // The Vulkan device of the windows: all windows share the first one's, so a
     // scene shown in several windows has its GPU data once.
@@ -529,6 +541,16 @@ namespace
     std::deque<std::pair<uint64_t, vsg::ref_ptr<vsg::Node>>> retired;
 
     void retire(vsg::ref_ptr<vsg::Node> node) { retired.emplace_back(frames_drawn + retire_frames, std::move(node)); }
+
+    // Remove `node` from a group's children (retired); false if it is not one.
+    bool remove_from(vsg::Group::Children& children, const vsg::ref_ptr<vsg::Node>& node)
+    {
+        auto itr = std::find(children.begin(), children.end(), node);
+        if (itr == children.end()) return false;
+        retire(node);
+        children.erase(itr);
+        return true;
+    }
 
     // ---------------------------------------------------------------------
     // Lighting: VSG's Phong and PBR shader sets, patched for vkframes' lights
@@ -827,6 +849,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         v->viewer = vsg::Viewer::create();
         v->viewer->addWindow(v->window);
         v->scene = vsg::Group::create();
+        v->hudScene = vsg::Group::create();   // (so that HUD text can also be added while running)
         // the default light: in eye coordinates (OpenFrames' headlight)
         auto light = static_cast<LightNode*>(vkf_light_create());
         auto eye = vsg::AbsoluteTransform::create();
@@ -1025,14 +1048,27 @@ VKF_API int vkf_viewer_perspective(void* viewer, double fovy, double near_distan
 }
 
 // Add a node to the viewer's scene (the scene holds a reference; the node handle
-// can be deleted afterwards). Must be called before the first frame.
+// can be deleted afterwards), also while running (it is compiled first).
 VKF_API int vkf_viewer_add_node(void* viewer, void* node)
 {
     auto v = static_cast<Viewer*>(viewer);
     auto n = static_cast<Node*>(node);
-    if (!v || !n || v->compiled) return -1;
-    v->scene->addChild(n->node);
-    return 0;
+    if (!v || !n) return -1;
+    return guarded("vkf_viewer_add_node", -1, [&]() {
+        if (!compile_for(*v, n->node)) return -1;
+        v->scene->addChild(n->node);
+        return 0;
+    });
+}
+
+// Remove a node from the viewer's scene (its GPU data are released a few
+// frames later). Returns -1 if it is not in the scene.
+VKF_API int vkf_viewer_remove_node(void* viewer, void* node)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    auto n = static_cast<Node*>(node);
+    if (!v || !n) return -1;
+    return remove_from(v->scene->children, n->node) ? 0 : -1;
 }
 
 // Render one frame (compiling the scene on the first call). Returns 1 while the
@@ -1150,7 +1186,8 @@ VKF_API void vkf_node_delete(void* node)
     delete static_cast<Node*>(node);
 }
 
-// Add child to a group node (a transform or a switch). Must be called before the first frame.
+// Add child to a group node (a transform or a switch). While running, compile the
+// child first (vkf_viewer_compile_node).
 VKF_API int vkf_node_add_child(void* parent, void* child)
 {
     auto p = static_cast<Node*>(parent);
@@ -1521,16 +1558,27 @@ VKF_API int vkf_label_set_color(void* label, const float* rgba)
 }
 
 // Show a label in the viewer's HUD (at x, y from 0 to 1 across the viewport,
-// bottom to top: the label's position), on top of the scene. Before the first frame.
+// bottom to top: the label's position), on top of the scene. Also while running.
 VKF_API int vkf_viewer_hud_add(void* viewer, void* label)
 {
     auto v = static_cast<Viewer*>(viewer);
     auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
-    if (!v || !l || v->compiled) return -1;
+    if (!v || !l) return -1;
     if (auto group = l->node.cast<LabelGroup>()) group->hud = true;
-    if (!v->hudScene) v->hudScene = vsg::Group::create();
-    v->hudScene->addChild(l->node);
-    return 0;
+    return guarded("vkf_viewer_hud_add", -1, [&]() {
+        if (!compile_for(*v, l->node)) return -1;
+        v->hudScene->addChild(l->node);
+        return 0;
+    });
+}
+
+// Remove a label from the viewer's HUD (its GPU data are released a few frames later).
+VKF_API int vkf_viewer_hud_remove(void* viewer, void* label)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    auto n = static_cast<Node*>(label);
+    if (!v || !n) return -1;
+    return remove_from(v->hudScene->children, n->node) ? 0 : -1;
 }
 
 // ---------------------------------------------------------------------------

@@ -29,7 +29,8 @@ module vkf_window
                          vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic, &
                          vkf_viewer_hud_add, vkf_label_set_text, vkf_label_set_color, &
                          vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close, &
-                         vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set
+                         vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set, vkf_viewer_remove_node, &
+                         vkf_viewer_hud_remove, vkf_node_delete
 
     implicit none
 
@@ -97,7 +98,7 @@ module vkf_window
         procedure :: select_view, next_view, previous_view
         procedure :: current_view, num_views
         ! HUD text (OpenFrames' RenderRectangle HUD)
-        procedure :: add_hud_text
+        procedure :: add_hud_text, remove_hud_text
         procedure :: set_sky, sky
         procedure :: set_light_ambient, set_light_diffuse, set_light_specular, set_light_position
         procedure :: light_ambient, light_diffuse, light_specular, light_position
@@ -361,11 +362,17 @@ contains
     ! sky
 
     !> Draw `sky` behind the scene (it must stay alive while shown; it can be
-    !> shown in several windows). For now, set it before the window's first
-    !> frame; its texture and stars can change at any time.
+    !> shown in several windows), in place of the window's sky so far; at any
+    !> time (its texture and stars can change too).
     subroutine set_sky(self, sky)
         class(WindowProxy), intent(inout) :: self
-        type(SkySphere), intent(in), target :: sky
+        type(SkySphere), intent(inout), target :: sky
+        integer(c_int) :: status
+        if (self%scene_added) then                      ! shown: swap the sky's node
+            if (associated(self%sky_)) status = vkf_viewer_remove_node(self%viewer_, self%sky_%node(self%viewer_))
+            if (vkf_viewer_add_node(self%viewer_, sky%node(self%viewer_)) /= 0) &
+                write(*, '(a)') 'vkframes: could not add the sky'
+        end if
         self%sky_ => sky
     end subroutine set_sky
 
@@ -379,7 +386,7 @@ contains
     ! HUD text
 
     !> Show `h` in the window, on top of the scene (it must stay alive while
-    !> shown). For now, add it before the window's first frame.
+    !> shown), from the next frame.
     subroutine add_hud_text(self, h)
         class(WindowProxy), intent(inout) :: self
         type(HUDText), intent(in), target :: h
@@ -394,22 +401,48 @@ contains
         self%huds(self%n_huds)%p => h
         self%huds(self%n_huds)%node = c_null_ptr
         self%huds(self%n_huds)%revision = -1
+        if (self%scene_added) call create_hud(self, self%n_huds)    ! shown: made now
     end subroutine add_hud_text
+
+    !> Stop showing `h` in the window.
+    subroutine remove_hud_text(self, h)
+        class(WindowProxy), intent(inout) :: self
+        type(HUDText), intent(in), target :: h
+        integer(c_int) :: status
+        integer :: k
+        do k = 1, self%n_huds
+            if (.not. associated(self%huds(k)%p, h)) cycle
+            if (c_associated(self%huds(k)%node)) then
+                status = vkf_viewer_hud_remove(self%viewer_, self%huds(k)%node)    ! (not shown yet: -1)
+                call vkf_node_delete(self%huds(k)%node)
+            end if
+            self%huds(k:self%n_huds-1) = self%huds(k+1:self%n_huds)
+            self%n_huds = self%n_huds - 1
+            return
+        end do
+    end subroutine remove_hud_text
 
     !> Create the window's nodes for its HUD texts (before its first frame).
     subroutine create_huds(self)
         type(WindowProxy), intent(inout) :: self
-        type(HUDText), pointer :: h
         integer :: k
         do k = 1, self%n_huds
-            h => self%huds(k)%p
-            self%huds(k)%node = label_create(h%text(), [h%position(), 0.0_wp], h%color(), h%size(), 0.0_wp, &
-                                             h%alignment(), h%font())
-            if (.not. c_associated(self%huds(k)%node)) cycle
-            if (vkf_viewer_hud_add(self%viewer_, self%huds(k)%node) /= 0) write(*, '(a)') 'vkframes: could not add HUD text'
-            self%huds(k)%revision = h%revision()
+            call create_hud(self, k)
         end do
     end subroutine create_huds
+
+    !> The node of HUD text k, added to the window (compiled if it runs).
+    subroutine create_hud(self, k)
+        type(WindowProxy), intent(inout) :: self
+        integer, intent(in) :: k
+        type(HUDText), pointer :: h
+        h => self%huds(k)%p
+        self%huds(k)%node = label_create(h%text(), [h%position(), 0.0_wp], h%color(), h%size(), 0.0_wp, &
+                                         h%alignment(), h%font())
+        if (.not. c_associated(self%huds(k)%node)) return
+        if (vkf_viewer_hud_add(self%viewer_, self%huds(k)%node) /= 0) write(*, '(a)') 'vkframes: could not add HUD text'
+        self%huds(k)%revision = h%revision()
+    end subroutine create_hud
 
     !> Show the HUD texts' new text and color, if they changed.
     subroutine update_huds(self)
@@ -616,7 +649,7 @@ contains
     end subroutine time_range
 
     !> The window's viewer handle in the rendering layer (null until open), for
-    !> adding low-level nodes (src/vsg/vkf_layer.f90) before the first frame.
+    !> adding low-level nodes (src/vsg/vkf_layer.f90).
     function window_viewer(self) result(v)
         class(WindowProxy), intent(in) :: self
         type(c_ptr) :: v

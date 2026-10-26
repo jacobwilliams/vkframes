@@ -23,7 +23,7 @@ module vkf_layer
     public :: vkf_mesh_create, vkf_mesh_array, vkf_mesh_material, vkf_mesh_material_changed
     public :: vkf_light_create, vkf_light_set, vkf_viewer_light, vkf_viewer_light_enable
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
-    public :: vkf_viewer_hud_add
+    public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_marker_create
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
@@ -259,6 +259,18 @@ module vkf_layer
             implicit none
             type(c_ptr), value :: mesh
         end function vkf_mesh_material_changed
+
+        integer(c_int) function vkf_viewer_remove_node(viewer, node) bind(C, name="vkf_viewer_remove_node")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer, node
+        end function vkf_viewer_remove_node
+
+        integer(c_int) function vkf_viewer_hud_remove(viewer, label) bind(C, name="vkf_viewer_hud_remove")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer, label
+        end function vkf_viewer_hud_remove
 
         type(c_ptr) function vkf_light_create() bind(C, name="vkf_light_create")
             import :: c_ptr
