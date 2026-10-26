@@ -1,114 +1,135 @@
-!> A Rocky map (optional; the `rocky` pixi environment), drawn in kilometers
-!> as vkframes' scenes usually are, seen from orbit and close to the surface:
-!> the Earth's terrain from ReadyMap's tile services (imagery and elevation),
-!> or the Moon (Rocky's "moon" profile) with the LRO WAC mosaic from NASA's
-!> Moon Trek (over the network).
+!> Maps and terrain with Rocky (optional; the `rocky` pixi environment): a
+!> TerrainBody lit by the Sun (a frame with a light source), seen from orbit
+!> and close to the surface, in kilometers as vkframes' scenes usually are:
+!> the Earth from ReadyMap's tile services (imagery and elevation), or the
+!> Moon (Rocky's "moon" profile) with the LRO WAC mosaic from NASA's Moon Trek
+!> and LOLA's elevation (data/moon_lola_ldem16.tif, from
+!> `pixi run -e rocky moon-data`; without it, imagery only).
 !>
-!> Arguments (optional): earth or moon, the number of frames to run, then a
-!> file prefix to capture the last frame of each view to (prefix_orbit.png,
-!> prefix_low.png):
+!> Arguments (optional): earth or moon, the number of frames to show each view,
+!> then a file prefix to capture the last frame of each view to
+!> (prefix_orbit.png, prefix_low.png):
 !>   pixi run -e rocky example rocky_map -- moon 600 moon
 program rocky_map
 
-    use, intrinsic :: iso_c_binding
-    use vkf_layer
+    use vkframes
 
     implicit none
 
-    integer, parameter :: wp = c_double
-    real(wp), parameter :: re = 6378.137_wp                         !! km
-    character(len=*), parameter :: title = 'vkframes: Rocky map'
-    character(len=*), parameter :: imagery = 'https://readymap.org/readymap/tiles/1.0.0/7/'
-    character(len=*), parameter :: elevation = 'https://readymap.org/readymap/tiles/1.0.0/116/'
+    real(wp), parameter :: deg = pi / 180.0_wp
+    real(wp), parameter :: au = 1.495978707e8_wp                    !! km
+    character(len=*), parameter :: readymap_imagery = 'https://readymap.org/readymap/tiles/1.0.0/7/'
+    character(len=*), parameter :: readymap_elevation = 'https://readymap.org/readymap/tiles/1.0.0/116/'
     character(len=*), parameter :: moon_imagery = &
         'https://trek.nasa.gov/tiles/Moon/EQ/LRO_WAC_Mosaic_Global_303ppd_v02/1.0.0/default/default028mm/{z}/{y}/{x}.jpg'
-    real(wp), parameter :: rm = 1737.4_wp                           !! km
+    !> the Moon's elevation (`pixi run -e rocky moon-data [-- --resolution 64]`): the finest found
+    character(len=*), parameter :: moon_elevation(3) = [character(len=20) :: 'moon_lola_ldem64.tif', &
+                                                        'moon_lola_ldem16.tif', 'moon_lola_ldem4.tif']
 
-    type(c_ptr) :: viewer, map
-    integer :: max_frames, frame, status, k
-    character(len=256) :: arg, prefix, body
-    real(wp) :: radius
-    real(wp) :: eye(3, 2), center(3, 2)
-    character(len=5), parameter :: names(2) = ['orbit', 'low  ']
+    type(ReferenceFrame), target :: root, sun
+    type(TerrainBody), target :: body
+    type(FrameManager), target :: scene
+    type(WindowProxy) :: window
+    type(View), target :: views(2)
+    character(len=256) :: arg, prefix, name
+    character(len=5), parameter :: view_names(2) = ['orbit', 'low  ']
+    real(wp) :: r, lat, lon, h, sun_lon
+    integer :: frames, frame, k
+    logical :: running
 
-    if (vkf_rocky_available() == 0) then
+    if (.not. rocky_available()) then
         write(*, '(a)') 'vkframes was built without Rocky: run with `pixi run -e rocky ...` after `pixi run -e rocky rocky-build`'
         stop
     end if
-    body = 'earth'
-    max_frames = 600
+    name = 'earth'
+    frames = 600
     prefix = ''
-    if (command_argument_count() >= 1) call get_command_argument(1, body)
+    if (command_argument_count() >= 1) call get_command_argument(1, name)
     if (command_argument_count() >= 2) then
         call get_command_argument(2, arg)
-        read(arg, *) max_frames
+        read(arg, *) frames
     end if
     if (command_argument_count() >= 3) call get_command_argument(3, prefix)
 
-    viewer = vkf_viewer_create(1000_c_int, 700_c_int, title, len(title, kind=c_int), 0_c_long_long, 1.0_c_double)
-    if (.not. c_associated(viewer)) error stop 'could not create the viewer'
+    root = ReferenceFrame('Root')
+    call root%show_axes(NO_AXES)
+    call root%show_axes_labels(NO_AXES)
+    call root%show_name_label(.false.)
 
-    ! the map, in km (1e-3 scene units per meter)
-    if (body == 'moon') then
-        radius = rm
-        map = vkf_rocky_map_create(viewer, 'moon', 4_c_int, 1.0e-3_c_double)
-        if (.not. c_associated(map)) error stop 'could not create the map'
-        call check(vkf_rocky_add_image(map, 2_c_int, moon_imagery, len(moon_imagery, kind=c_int)))
-    else
-        radius = re
-        map = vkf_rocky_map_create(viewer, '', 0_c_int, 1.0e-3_c_double)
-        if (.not. c_associated(map)) error stop 'could not create the map'
-        call check(vkf_rocky_add_image(map, 0_c_int, imagery, len(imagery, kind=c_int)))
-        call check(vkf_rocky_add_elevation(map, 0_c_int, elevation, len(elevation, kind=c_int), 0_c_int))
-    end if
-    call check(vkf_viewer_add_node(viewer, map))
-
-    ! from orbit (3 radii), then low: over the Alps, or Tycho on the Moon
-    eye(:, 1) = 3.0_wp * radius * [0.6_wp, -0.6_wp, 0.5_wp]
-    center(:, 1) = 0.0_wp
-    if (body == 'moon') then
-        center(:, 2) = geodetic(-43.3_wp, -11.2_wp, 0.0_wp)
-        eye(:, 2) = geodetic(-45.5_wp, -11.8_wp, 40.0_wp)
-    else
-        center(:, 2) = geodetic(46.5_wp, 8.0_wp, 0.0_wp)
-        eye(:, 2) = geodetic(45.8_wp, 7.6_wp, 25.0_wp)
-    end if
-
-    do k = 1, 2
-        call check(vkf_viewer_look_at(viewer, eye(:, k), center(:, k), merge([0.0_wp, 0.0_wp, 1.0_wp], unit(eye(:, k)), k == 1)))
-        call check(vkf_viewer_perspective(viewer, 30.0_wp, 1.0e-3_wp * norm2(eye(:, k) - center(:, k)), 10.0_wp * radius))
-        frame = 0
-        do while (frame < max_frames)
-            status = vkf_viewer_frame(viewer)
-            if (status < 0) error stop 'frame failed'
-            if (status == 0) exit
-            frame = frame + 1
+    ! the body, and a spot to look at closely (latitude, longitude, height in km)
+    if (name == 'moon') then
+        body = TerrainBody('Moon', profile='moon', color=[0.5_wp, 0.5_wp, 0.5_wp])
+        call body%add_image_layer(moon_imagery, LAYER_GEODETIC)
+        do k = 1, size(moon_elevation)
+            if (len(find_data_file(trim(moon_elevation(k)))) == 0) cycle
+            call body%add_elevation_layer(trim(moon_elevation(k)), LAYER_GDAL)
+            exit
         end do
-        if (status == 0) exit
-        if (len_trim(prefix) > 0) then
-            arg = trim(prefix)//'_'//trim(names(k))//'.png'
-            call check(vkf_viewer_capture(viewer, trim(arg), len_trim(arg, kind=c_int)))
-            write(*, '(a)') 'captured '//trim(arg)
-        end if
+        if (k > size(moon_elevation)) write(*, '(a)') 'no Moon elevation (pixi run -e rocky moon-data): imagery only'
+        lat = -43.3_wp; lon = -11.2_wp; h = 40.0_wp                ! Tycho
+        sun_lon = lon + 75.0_wp                                     ! low over Tycho, from the east
+    else
+        body = TerrainBody('Earth', color=[0.1_wp, 0.2_wp, 0.4_wp])
+        call body%add_image_layer(readymap_imagery)
+        call body%add_elevation_layer(readymap_elevation)
+        lat = 46.5_wp; lon = 8.0_wp; h = 25.0_wp                    ! the Alps
+        sun_lon = lon + 60.0_wp
+    end if
+    call body%show_axes(NO_AXES)
+    call body%show_axes_labels(NO_AXES)
+    call body%show_name_label(.false.)
+    r = body%body_radius()
+
+    ! the Sun, in the body's equatorial plane
+    sun = ReferenceFrame('Sun')
+    call sun%set_position(au * [cos(sun_lon * deg), sin(sun_lon * deg), 0.0_wp])
+    call sun%set_light_source_enabled(.true.)
+    call sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
+    call sun%set_light_ambient([0.03_wp, 0.03_wp, 0.03_wp])
+    call sun%show_axes(NO_AXES)
+    call sun%show_axes_labels(NO_AXES)
+    call sun%show_name_label(.false.)
+
+    if (.not. (root%add_child(body) .and. root%add_child(sun))) error stop 'add_child failed'
+    scene = FrameManager(root)
+
+    if (.not. window%open(1000, 700, 'vkframes: Rocky map')) error stop 'could not open a window'
+    call window%set_scene(scene)
+    ! from orbit (3 radii), and close to the surface (looking at the spot from the south)
+    views(1) = View(root, body)
+    call views(1)%set_default_view_parameters(eye=3.0_wp * r * unit(surface(lat, lon - 25.0_wp, 0.0_wp)), &
+                                              center=[0.0_wp, 0.0_wp, 0.0_wp], up=[0.0_wp, 0.0_wp, 1.0_wp])
+    views(2) = View(root, body)
+    call views(2)%set_default_view_parameters(eye=surface(lat - 2.0_wp, lon - 0.8_wp, h), center=surface(lat, lon, 0.0_wp), &
+                                              up=unit(surface(lat, lon, 0.0_wp)))
+    do k = 1, 2
+        call window%add_view(views(k))
     end do
 
-    call vkf_node_delete(map)
-    call vkf_viewer_delete(viewer)
+    running = .true.
+    do k = 1, 2
+        call window%select_view(k)
+        frame = 0
+        do while (running .and. frame < frames)
+            running = window%frame()
+            frame = frame + 1
+        end do
+        if (.not. running) exit
+        if (len_trim(prefix) > 0) then
+            arg = trim(prefix)//'_'//trim(view_names(k))//'.png'
+            if (window%capture(trim(arg))) write(*, '(a)') 'captured '//trim(arg)
+        end if
+    end do
+    call window%close()
 
 contains
 
-    subroutine check(status)
-        integer(c_int), intent(in) :: status
-        if (status /= 0) error stop 'vkframes layer call failed'
-    end subroutine check
-
-    !> A point at latitude and longitude (degrees) and height (km) on a sphere of the body's radius.
-    function geodetic(lat, lon, h) result(r)
+    !> A point at latitude and longitude (degrees) and height (km) above the body's sphere.
+    function surface(lat, lon, h) result(p)
         real(wp), intent(in) :: lat, lon, h
-        real(wp) :: r(3)
-        real(wp), parameter :: deg = acos(-1.0_wp) / 180.0_wp
-        r = (radius + h) * [cos(lat * deg) * cos(lon * deg), cos(lat * deg) * sin(lon * deg), sin(lat * deg)]
-    end function geodetic
+        real(wp) :: p(3)
+        p = (r + h) * [cos(lat * deg) * cos(lon * deg), cos(lat * deg) * sin(lon * deg), sin(lat * deg)]
+    end function surface
 
     pure function unit(v) result(u)
         real(wp), intent(in) :: v(3)

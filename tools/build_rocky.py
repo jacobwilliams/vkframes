@@ -100,6 +100,18 @@ def patch():
             "        r = GeoImage(out, r.value().extent());\n"
             "    }\n\n"
             "    return r;\n}")
+    # vkframes' lights (src/vsg/vkf_layer.cpp, "Lighting"): a light's diffuse
+    # part is a VSG light, its specular part another of negative color; Rocky
+    # applied both parts of every light (the negative ones darkening)
+    lighting = src / "src" / "rocky" / "vsg" / "shaders" / "rocky.lighting.glsl"
+    replace(lighting, "        vec3 radiance = light_color * intensity;\n",
+            "        vec3 radiance = abs(light_color) * intensity;\n"
+            "        bool specularOnly = any(lessThan(light_color, vec3(0.0))); // (vkframes) a specular part\n")
+    replace(lighting, "        vec3 radiance = light_color;\n",
+            "        vec3 radiance = abs(light_color);\n"
+            "        bool specularOnly = any(lessThan(light_color, vec3(0.0))); // (vkframes) a specular part\n")
+    replace(lighting, "        Lo += (diffuse + specular) * radiance * NdotL;\n",
+            "        Lo += (specularOnly ? specular : diffuse) * radiance * NdotL; // (vkframes) diffuse, or specular\n")
     replace(src / "src" / "rocky" / "vsg" / "shaders" / "rocky.terrain.frag",
             "#pragma import_defines(ROCKY_HAS_ATMOSPHERE, ROCKY_HAS_SLUGHORN)",
             "#pragma import_defines(ROCKY_HAS_ATMOSPHERE, ROCKY_HAS_SLUGHORN, VKF_UNORM_FRAMEBUFFER)")

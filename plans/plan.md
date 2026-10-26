@@ -631,28 +631,33 @@ Decided so far:
       added or removed (`add_hud_text`, `remove_hud_text`), all while
       running; new nodes are compiled for the running viewer first.
       `example/live_changes.f90`; tested headless (`test/test_shapes.f90`).
-- [ ] Maps and terrain with Rocky (optional; https://github.com/pelicanmapping/rocky,
-      osgEarth's successor on VSG). Spike done: `pixi run -e rocky rocky-build`
-      builds a pinned Rocky (tools/build_rocky.py; not on conda-forge, its
-      dependencies are) into the `rocky` environment; fpm_vsg.py then builds
-      the layer with it (C++20, -lrocky, ROCKY_FILE_PATH), and
-      src/vsg/vkf_rocky.cpp makes maps (Rocky's MapNode under a scale to the
-      scene's units, one Rocky context per viewer, released before the
-      viewer) with image and elevation layers (TMS, GDAL, geodetic and web
-      Mercator tile templates); without Rocky it only reports it unavailable.
-      `example/rocky_map.f90`: the Earth (ReadyMap imagery and elevation) and
-      the Moon (Rocky's "moon" profile, NASA Moon Trek's LRO WAC mosaic) in km,
-      from orbit and near the surface, in vkframes' window and camera; two
-      windows with a map each also work (macOS). Patches to Rocky (candidates
-      upstream): libc++ build fixes, sRGB-encoded terrain output for UNORM
-      framebuffers (VKF_UNORM_FRAMEBUFFER), image streams read by vsgXchange's
-      readers first (greyscale JPEG was decoded by GDAL as 0-255 floats),
-      8-bit greyscale imagery as RGBA. Next: a Fortran frame type (a body
-      with map layers, OpenFrames-style API), frame light sources in Rocky's
-      lighting (its PBR shader reads VSG's lights; vkframes' negative-color
-      specular lights would darken it), a Moon elevation source (LOLA DEM),
-      one map shared by several windows (now one per window), the demos,
-      Linux and Windows (untested), a conda-forge recipe.
+- [x] Maps and terrain with Rocky (optional; https://github.com/pelicanmapping/rocky,
+      osgEarth's successor on VSG): `TerrainBody` (src/vkf_terrain.f90; an
+      addition to OpenFrames), a frame drawn from map layers in one of Rocky's
+      profiles (the Earth, the Moon, ...) at `units_per_meter` (default km),
+      image and elevation layers (TMS, GDAL files, geodetic and web Mercator
+      tile templates; added before or after showing), lit by the scene's
+      lights (`set_lighting`; Rocky's own default is unlit), `rocky_available`.
+      Build: `pixi run -e rocky rocky-build` builds a pinned Rocky
+      (tools/build_rocky.py; not on conda-forge, its dependencies are) into
+      the `rocky` environment (with Qt); fpm_vsg.py then builds the layer
+      with it into build/rocky (C++20, -lrocky, ROCKY_FILE_PATH);
+      src/vsg/vkf_rocky.cpp (one Rocky context per viewer, released before
+      the viewer); without Rocky it only reports it unavailable. Patches to
+      Rocky (candidates upstream): libc++ build fixes; sRGB-encoded terrain
+      output for UNORM framebuffers; vkframes' lights (diffuse parts, and
+      specular parts as negative colors) in Rocky's PBR lighting; image
+      streams read by vsgXchange's readers first (greyscale JPEG was decoded
+      by GDAL as 0-255 floats); 8-bit greyscale imagery as RGBA. The Moon's
+      elevation: LRO LOLA's LDEM (tools/get_moon_dem.py, `pixi run -e rocky
+      moon-data`, 4/16/64 pixels per degree) into data/. `example/rocky_map.f90`
+      (the Earth from ReadyMap, the Moon from Moon Trek and LOLA, Sun-lit);
+      the lunar Qt demo (demos/moon, `pixi run -e rocky moon-demo`). Tested
+      on macOS.
+- [ ] Rocky, later: one map shown in several windows (now one per window:
+      the window that first shows it), Linux and Windows (untested), a
+      conda-forge recipe, upstreaming the patches, removing layers, a
+      vertical exaggeration.
 - [ ] Video recording (OpenFrames has only screenshots): `WindowProxy%
       start_recording(file, fps)` / `stop_recording`, frames sent as raw
       pixels to an `ffmpeg` process's stdin (`popen`, `_popen` on Windows;

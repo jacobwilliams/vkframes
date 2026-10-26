@@ -168,6 +168,36 @@ VKF_API void* vkf_rocky_map_create(void* viewer, const char* profile, int profil
 #endif
 }
 
+// A map's settings: lighting (1: lit by the scene's lights, as vkframes'
+// spheres; 0: imagery as is, Rocky's default) and the color where there is no
+// imagery (rgba, 0 to 1). Returns 0, or -1.
+VKF_API int vkf_rocky_map_settings(void* map, int lighting, const float* background)
+{
+#ifdef VKF_ROCKY
+    auto mapNode = map_node(map);
+    if (!mapNode) return -1;
+    auto& settings = mapNode->terrainSettings();
+    settings.lighting = (lighting != 0);
+    settings.backgroundColor = rocky::Color(background[0], background[1], background[2], background[3]);
+    return 0;
+#else
+    (void)map; (void)lighting; (void)background;
+    return -1;
+#endif
+}
+
+// The equatorial radius of a map's body, in meters (0 without Rocky or on failure).
+VKF_API double vkf_rocky_map_radius(void* map)
+{
+#ifdef VKF_ROCKY
+    auto mapNode = map_node(map);
+    return mapNode ? mapNode->srs().ellipsoid().semiMajorAxis() : 0.0;
+#else
+    (void)map;
+    return 0.0;
+#endif
+}
+
 // Add an image layer to a map: kind 0 a TMS service (uri its root), 1 a file
 // or service GDAL reads, 2 a template ({z}, {x}, {y}) of geodetic tiles on the
 // map's body, rows from the top (WMTS-style, e.g. NASA's Moon Trek), 3 a

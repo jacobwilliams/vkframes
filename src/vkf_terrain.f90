@@ -1,0 +1,259 @@
+!> Maps and terrain: a celestial body drawn from map layers by Rocky
+!> (https://github.com/pelicanmapping/rocky; optional: `rocky_available()`),
+!> e.g. the Earth from tile services, or the Moon with NASA's imagery and
+!> LOLA's elevation. An addition to OpenFrames, which has only textured
+!> spheres.
+!>
+!> The body is centered on its frame's origin, in body-fixed axes (z through
+!> the north pole, x through longitude 0), so the frame's attitude turns it.
+!> Its shape and coordinates come from Rocky's tiling profile: '' (Rocky's
+!> default) or 'global-geodetic' for the Earth (WGS84), 'moon' for the Moon
+!> (a sphere of 1737.4 km), or another of Rocky's profiles. Rocky works in
+!> meters; the body is drawn at `units_per_meter` scene units per meter
+!> (default 1e-3: kilometers, as vkframes' examples).
+!>
+!> Layers (`add_image_layer`, `add_elevation_layer`) are tiled sources Rocky
+!> pages in as the view needs them: a TMS service (LAYER_TMS), a file or
+!> service GDAL reads (LAYER_GDAL; a file is found with find_data_file, e.g.
+!> data/'s moon_lola_ldem16.tif from `pixi run -e rocky moon-data`), or a
+!> {z}/{x}/{y} URL template of geodetic tiles on the body (LAYER_GEODETIC: 2 x
+!> 1 tiles at level 0, rows from the top, as WMTS and NASA's Moon Trek) or of
+!> web Mercator tiles (LAYER_MERCATOR: OpenStreetMap-style). Elevation is in
+!> meters (ELEVATION_HEIGHTS) or encoded in RGB (ELEVATION_MAPBOX,
+!> ELEVATION_TERRARIUM). Layers can be added before or after the body is
+!> shown.
+!>
+!> Lighting: lit by the scene's lights as a Sphere (a frame's light source, e.g.
+!> the Sun, or the window's light; `set_lighting(.false.)` shows the imagery
+!> as it is). The frame's color is the color where no imagery covers the body.
+!>
+!> The map is made for the window that first shows the body (Rocky's tiles
+!> are loaded through that window's viewer); show it in one window.
+!> Headless (no viewer), the body has no map.
+module vkf_terrain
+
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
+    use vkf_math, only: wp
+    use vkf_frames, only: ReferenceFrame
+    use vkf_layer, only: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_add_image, &
+                         vkf_rocky_add_elevation, vkf_node_add_child
+    use vkf_files, only: find_data_file
+
+    implicit none
+
+    private
+
+    public :: rocky_available
+
+    ! layer sources (see the module documentation)
+    integer, parameter, public :: LAYER_TMS = 0, LAYER_GDAL = 1, LAYER_GEODETIC = 2, LAYER_MERCATOR = 3
+    ! elevation encodings
+    integer, parameter, public :: ELEVATION_HEIGHTS = 0, ELEVATION_MAPBOX = 1, ELEVATION_TERRARIUM = 2
+
+    real(wp), parameter :: earth_radius = 6378137.0_wp      !! m (WGS84)
+    real(wp), parameter :: moon_radius = 1737400.0_wp       !! m
+
+    !> A map layer as given (applied when the map is made).
+    type :: MapLayer
+        logical :: elevation = .false.
+        integer :: source = LAYER_TMS
+        integer :: encoding = ELEVATION_HEIGHTS
+        character(len=:), allocatable :: uri
+    end type MapLayer
+
+    !> A body drawn from map layers by Rocky (see the module documentation).
+    type, extends(ReferenceFrame), public :: TerrainBody
+        private
+        character(len=:), allocatable :: profile_
+        real(wp) :: units_per_meter_ = 1.0e-3_wp
+        logical :: lighting_ = .true.
+        type(MapLayer), allocatable :: layers(:)
+        integer :: n_layers = 0
+        type(c_ptr) :: map = c_null_ptr
+    contains
+        procedure :: add_image_layer, add_elevation_layer, num_layers
+        procedure :: set_lighting, lighting
+        procedure :: profile, units_per_meter, body_radius
+        procedure :: frame_info => terrain_frame_info
+        procedure :: bound => terrain_bound
+        procedure :: build_contents => terrain_build_contents
+    end type TerrainBody
+
+    interface TerrainBody
+        module procedure new_terrain_body
+    end interface TerrainBody
+
+contains
+
+    !> Whether vkframes was built with Rocky (the `rocky` pixi environment).
+    logical function rocky_available()
+        rocky_available = vkf_rocky_available() /= 0
+    end function rocky_available
+
+    !> A body named `name` in Rocky's tiling profile `profile` (default '':
+    !> the Earth; 'moon': the Moon), drawn at `units_per_meter` scene units per
+    !> meter (default 1e-3), in color `color` where it has no imagery ([r, g, b]
+    !> or [r, g, b, a]; default the frame's).
+    function new_terrain_body(name, profile, units_per_meter, color) result(b)
+        character(len=*), intent(in) :: name
+        character(len=*), intent(in), optional :: profile
+        real(wp), intent(in), optional :: units_per_meter
+        real(wp), intent(in), optional :: color(:)
+        type(TerrainBody) :: b
+        b%ReferenceFrame = ReferenceFrame(name, color)
+        b%profile_ = ''
+        if (present(profile)) b%profile_ = profile
+        if (present(units_per_meter)) b%units_per_meter_ = units_per_meter
+        allocate(b%layers(4))
+    end function new_terrain_body
+
+    !> Add an image layer: `uri` (a URL, URL template or file) of a `source`
+    !> kind (LAYER_*; default LAYER_TMS). Layers added later are drawn on top.
+    subroutine add_image_layer(self, uri, source)
+        class(TerrainBody), intent(inout) :: self
+        character(len=*), intent(in) :: uri
+        integer, intent(in), optional :: source
+        type(MapLayer) :: layer
+        layer%uri = uri
+        if (present(source)) layer%source = source
+        call add_layer(self, layer)
+    end subroutine add_image_layer
+
+    !> Add an elevation layer: `uri` of a `source` kind (LAYER_*; default
+    !> LAYER_TMS), heights in meters or `encoding` (ELEVATION_*; default
+    !> ELEVATION_HEIGHTS).
+    subroutine add_elevation_layer(self, uri, source, encoding)
+        class(TerrainBody), intent(inout) :: self
+        character(len=*), intent(in) :: uri
+        integer, intent(in), optional :: source, encoding
+        type(MapLayer) :: layer
+        layer%elevation = .true.
+        layer%uri = uri
+        if (present(source)) layer%source = source
+        if (present(encoding)) layer%encoding = encoding
+        call add_layer(self, layer)
+    end subroutine add_elevation_layer
+
+    subroutine add_layer(self, layer)
+        type(TerrainBody), intent(inout) :: self
+        type(MapLayer), intent(in) :: layer
+        type(MapLayer), allocatable :: tmp(:)
+        if (.not. allocated(self%layers)) allocate(self%layers(4))
+        if (self%n_layers == size(self%layers)) then
+            allocate(tmp(2 * self%n_layers))
+            tmp(1:self%n_layers) = self%layers(1:self%n_layers)
+            call move_alloc(tmp, self%layers)
+        end if
+        self%n_layers = self%n_layers + 1
+        self%layers(self%n_layers) = layer
+        if (c_associated(self%map)) call apply_layer(self, layer)
+    end subroutine add_layer
+
+    pure integer function num_layers(self)
+        class(TerrainBody), intent(in) :: self
+        num_layers = self%n_layers
+    end function num_layers
+
+    !> Light the body with the scene's lights (default), or show its imagery as it is.
+    subroutine set_lighting(self, lit)
+        class(TerrainBody), intent(inout) :: self
+        logical, intent(in) :: lit
+        self%lighting_ = lit
+        call apply_settings(self)
+    end subroutine set_lighting
+
+    pure logical function lighting(self)
+        class(TerrainBody), intent(in) :: self
+        lighting = self%lighting_
+    end function lighting
+
+    function profile(self) result(p)
+        class(TerrainBody), intent(in) :: self
+        character(len=:), allocatable :: p
+        p = self%profile_
+    end function profile
+
+    pure real(wp) function units_per_meter(self)
+        class(TerrainBody), intent(in) :: self
+        units_per_meter = self%units_per_meter_
+    end function units_per_meter
+
+    !> The body's equatorial radius in scene units (from its profile: the
+    !> Moon's for 'moon', else the Earth's).
+    pure real(wp) function body_radius(self)
+        class(TerrainBody), intent(in) :: self
+        if (self%profile_ == 'moon') then
+            body_radius = moon_radius * self%units_per_meter_
+        else
+            body_radius = earth_radius * self%units_per_meter_
+        end if
+    end function body_radius
+
+    subroutine terrain_bound(self, center, radius)
+        class(TerrainBody), intent(in) :: self
+        real(wp), intent(out) :: center(3), radius
+        center = 0.0_wp
+        radius = self%body_radius()
+    end subroutine terrain_bound
+
+    function terrain_frame_info(self) result(info)
+        class(TerrainBody), intent(in) :: self
+        character(len=:), allocatable :: info
+        info = 'TerrainBody'
+    end function terrain_frame_info
+
+    !> The map, made for the viewer showing the body (none headless or without Rocky).
+    subroutine terrain_build_contents(self, viewer, group)
+        class(TerrainBody), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer, group
+        integer :: k
+        if (.not. c_associated(viewer)) return
+        if (.not. rocky_available()) then
+            write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': vkframes was built without Rocky ' // &
+                            '(pixi run -e rocky rocky-build, then run in the rocky environment)'
+            return
+        end if
+        self%map = vkf_rocky_map_create(viewer, self%profile_, len(self%profile_, kind=c_int), &
+                                        real(self%units_per_meter_, c_double))
+        if (.not. c_associated(self%map)) then
+            write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not make the map'
+            return
+        end if
+        call apply_settings(self)
+        do k = 1, self%n_layers
+            call apply_layer(self, self%layers(k))
+        end do
+        if (vkf_node_add_child(group, self%map) /= 0) &
+            write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not build the scene'
+    end subroutine terrain_build_contents
+
+    subroutine apply_settings(self)
+        type(TerrainBody), intent(inout) :: self
+        if (.not. c_associated(self%map)) return
+        if (vkf_rocky_map_settings(self%map, merge(1_c_int, 0_c_int, self%lighting_), real(self%color(), c_float)) /= 0) &
+            write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not apply the settings'
+    end subroutine apply_settings
+
+    subroutine apply_layer(self, layer)
+        type(TerrainBody), intent(inout) :: self
+        type(MapLayer), intent(in) :: layer
+        character(len=:), allocatable :: uri
+        integer(c_int) :: status
+        uri = layer%uri
+        if (layer%source == LAYER_GDAL .and. index(uri, '://') == 0) then     ! a file: by name on VKFRAMES_DATA_PATH
+            uri = find_data_file(layer%uri)
+            if (len(uri) == 0) then
+                write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not find '//layer%uri
+                return
+            end if
+        end if
+        if (layer%elevation) then
+            status = vkf_rocky_add_elevation(self%map, int(layer%source, c_int), uri, len(uri, kind=c_int), &
+                                             int(layer%encoding, c_int))
+        else
+            status = vkf_rocky_add_image(self%map, int(layer%source, c_int), uri, len(uri, kind=c_int))
+        end if
+        if (status /= 0) write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not add layer '//layer%uri
+    end subroutine apply_layer
+
+end module vkf_terrain
