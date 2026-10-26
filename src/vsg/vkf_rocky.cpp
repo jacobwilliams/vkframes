@@ -83,7 +83,9 @@ namespace
     // A tiled layer's source (see vkf_rocky_add_image): kind 0 a TMS service,
     // 2 a {z}/{x}/{y} template of geodetic tiles on the map's body (2 x 1 at
     // level 0, rows from the top: WMTS, NASA's Moon Trek), 3 one of web
-    // Mercator tiles (1 x 1, rows from the top: OpenStreetMap, XYZ).
+    // Mercator tiles (1 x 1, rows from the top: OpenStreetMap, XYZ). (With a
+    // profile given, Rocky numbers a template's rows from the top already;
+    // its invertY would number them from the bottom, as TMS does.)
     template<class Layer>
     void set_tiles(Layer& layer, int kind, const std::string& uri, const rocky::MapNode& mapNode)
     {
@@ -91,12 +93,10 @@ namespace
         if (kind == 2)
         {
             layer.profile = rocky::Profile(mapNode.profile.srs().geodeticSRS(), rocky::Box(-180.0, -90.0, 180.0, 90.0), 2, 1);
-            layer.invertY = true;
         }
         else if (kind == 3)
         {
             layer.profile = rocky::Profile("spherical-mercator");
-            layer.invertY = true;
         }
     }
 } // namespace

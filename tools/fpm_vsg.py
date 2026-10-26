@@ -28,6 +28,8 @@ environment (the `rocky` pixi environment, `pixi run -e rocky rocky-build`),
 the layer is built with it (VKF_ROCKY, C++20 as Rocky's headers need, Rocky's
 spdlog/fmt definitions, -lrocky), and ROCKY_FILE_PATH points Rocky at its
 shaders; otherwise src/vsg/vkf_rocky.cpp only reports Rocky as unavailable.
+The two builds go to separate build directories (build/ and build/rocky/:
+fpm does not rebuild C++ sources when only FPM_CXXFLAGS change).
 
 Before running fpm, the shaders in shaders/ are compiled to SPIR-V with
 glslangValidator and written into src/vsg/vkf_shaders.cpp (generated, not
@@ -126,9 +128,14 @@ def unix_settings():
 # (-DVKF_EXTERNAL_LAYER) and links the DLL; the DLL and VSG are found through
 # PATH at run time.
 
+def build_dir():
+    """fpm's build directory: build, or build/rocky for the build with Rocky."""
+    return os.path.join("build", "rocky") if rocky_installed(prefix()) else "build"
+
+
 def build_layer_dll(lib):
-    """Build build/vkf/vkf.dll from src/vsg/*.cpp if any source is newer."""
-    out_dir = os.path.join(os.getcwd(), "build", "vkf")
+    """Build <build dir>/vkf/vkf.dll from src/vsg/*.cpp if any source is newer."""
+    out_dir = os.path.join(os.getcwd(), build_dir(), "vkf")
     dll = os.path.join(out_dir, "vkf.dll")
     sources = sorted(glob.glob(os.path.join(LAYER_SRC, "*.cpp")))
     deps = sources + glob.glob(os.path.join(LAYER_SRC, "*.h"))
@@ -155,7 +162,7 @@ def windows_settings():
     dll, rebuilt = build_layer_dll(lib)
     if rebuilt:
         # fpm does not relink executables when only the DLL changed
-        for d in glob.glob(os.path.join(os.getcwd(), "build", "gfortran_*")):
+        for d in glob.glob(os.path.join(os.getcwd(), build_dir(), "gfortran_*")):
             shutil.rmtree(d, ignore_errors=True)
     # The DLL is passed as a linker input: ld resolves its C symbols directly.
     settings = {
@@ -233,7 +240,7 @@ def main(argv):
     if dll_dir:
         env["PATH"] = dll_dir + os.pathsep + env.get("PATH", "")
     fc = os.environ.get("FPM_FC") or which("gfortran")
-    cmd = [which("fpm"), argv[0], "--compiler", fc, *argv[1:]]
+    cmd = [which("fpm"), argv[0], "--compiler", fc, "--build-dir", build_dir(), *argv[1:]]
     print("+", " ".join(cmd), flush=True)
     return subprocess.call(cmd, env=env)
 
