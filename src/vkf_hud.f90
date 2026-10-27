@@ -4,8 +4,9 @@
 !> Its position is (x, y) from 0 to 1 across the window, left to right and
 !> bottom to top, and the text's alignment (an ALIGN_* constant) says which
 !> point of the text is there; its size is in window units (logical pixels).
-!> The text and color can change at any time (e.g. a clock); the other
-!> settings apply when a window first shows the text. A HUDText can be shown in
+!> The text and color can change at any time (e.g. a clock): up to 256
+!> characters, or twice the text's length when first shown if more (longer
+!> ones are cut); the other settings apply when a window first shows the text. A HUDText can be shown in
 !> several windows (`WindowProxy%add_hud_text`); it is not owned by them and
 !> must stay alive while shown.
 module vkf_hud

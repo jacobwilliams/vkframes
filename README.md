@@ -49,6 +49,10 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   frame by a callback: for example, lines of sight between spacecraft.
 - **Reference shapes**: `CoordinateAxes` with tick marks, `LatLonGrid`,
   `RadialPlane`, and polyhedral, elliptic and rectangular cones.
+- **Shadow cones** (not in OpenFrames): `ShadowCones` shows a celestial
+  body's shadow in the light of another (umbra, penumbra and antumbra) as
+  transparent cones. They follow the body and are reshaped for its
+  distance from the light as the bodies move. Turn them on or off per body.
 - **Sky**: `SkySphere`, a star catalog (HYG v3) and/or a sky texture.
 - **Lighting**: a frame can be a light source (such as the Sun), with
   ambient, diffuse and specular parts. Otherwise a headlight is used.
@@ -79,7 +83,8 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   [qt-fortran](https://github.com/jacobwilliams/qt-fortran), and in Python
   through PySide6.
 
-Not done yet: shadows, sensor visibility and video recording.
+Not done yet: shadows cast on bodies (darkening them), sensor visibility and
+video recording.
 [plans/plan.md](plans/plan.md) has the full feature map and what is still
 open.
 
@@ -173,6 +178,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `live_changes` | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |
 | `precision` | Double precision: a 10 m spacecraft on a 7000 km orbit line, seen from 30 m away; the line passes through the spacecraft's center (in plain float it would be off by about a meter). |
 | `line_of_sight` | `CustomLineSegments`: five spacecraft in different orbits (LEO, sun-synchronous, GPS, GEO, Molniya), shown as markers, with a line of sight between every pair, recomputed each frame by a callback: clear links in the spacecraft's colors, links the Earth blocks dashed. |
+| `eclipse` | `ShadowCones`: a total solar eclipse. The Earth orbits the Sun and the Moon orbits the Earth, and the Moon's umbra reaches the Earth inside its wide penumbra. The Earth's own shadow points away from the Sun. A HUD line shows the umbra's length. |
 | `rocky_map` | Terrain with Rocky (`TerrainBody`; needs the `rocky` environment): the Earth from ReadyMap's tiles, or the Moon from NASA's Moon Trek and LOLA's elevation, from orbit and close to the surface. |
 
 ```sh
@@ -185,6 +191,7 @@ pixi run example two_windows
 pixi run example live_changes
 pixi run example precision
 pixi run example line_of_sight
+pixi run example eclipse
 pixi run -e rocky example rocky_map -- moon         # or: earth (after the Rocky build, see the lunar demo)
 ```
 
@@ -220,6 +227,8 @@ library:
   green while clear of the Earth, red when it's blocked.
 - **Reference shapes:** a latitude/longitude grid, coordinate axes with tick
   marks, the equatorial plane, a sensor cone.
+- **The Earth's shadow:** its umbra and penumbra (`ShadowCones`), pointing
+  away from the Sun; the orbit passes through it.
 - **Views and time:** six views (of the Earth, of each spacecraft, and from
   each spacecraft toward the Earth or the other); a time scale, pause and a
   time slider.
@@ -229,11 +238,12 @@ library:
 
 ```sh
 pixi run -e qt qt-demo
-pixi run -e qt qt-demo -- --windows 2 --shapes --los --position-marker 6
+pixi run -e qt qt-demo -- --windows 2 --shapes --los --shadow --position-marker 6
 ```
 
 Options include `--view n`, `--windows n`, `--trace`, `--radius`,
 `--marker n`, `--position-marker n`, `--sky n`, `--shapes`, `--los`,
+`--shadow`,
 `--pattern n`, `--capture file` and `--quit-after seconds`; the comment at
 the top of [demos/qt/app/main.f90](demos/qt/app/main.f90) explains them. To
 use OpenFrames' Hubble model and star map, point `OPENFRAMES_DATA` (or

@@ -45,6 +45,9 @@
 !> 1000 km (a CoordinateAxes at its center, fixed while the Earth's body-fixed
 !> axes, from its surface, turn with it; its arrows hidden), the equatorial
 !> plane (a RadialPlane) and spacecraft 1's nadir sensor (an EllipticCone).
+!> The Earth's shadow in sunlight (ShadowCones, a child of the Earth: umbra
+!> and penumbra, out to 10 Earth radii) can be shown from the dock; it turns
+!> away from the Sun as the Earth turns, and the spacecraft pass through it.
 !>
 !> How the pieces fit:
 !>
@@ -75,7 +78,8 @@
 !> bodies; 1 disk, ... 10 spiral); `--sky n`
 !> with sky n (0 none, 1 stars, 2 texture, 3 both); `--shapes` with the grid,
 !> coordinate axes, plane and sensor cone shown; `--los` with the line of
-!> sight between the spacecraft shown; `--pattern n` with orbit
+!> sight between the spacecraft shown; `--shadow` with the Earth's shadow
+!> shown; `--pattern n` with orbit
 !> pattern n (0 solid, 1 dashed, 2 dotted, 3 dash-dot).
 module vkdemo
 
@@ -137,7 +141,7 @@ module vkdemo
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
-        type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los
+        type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los, show_shadow
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
         type(QComboBox) :: sky_choice                          !! none, stars, texture, both
@@ -160,6 +164,7 @@ module vkdemo
         type(RadialPlane) :: equator                           !! the equatorial plane (inertial)
         type(EllipticCone) :: sensor                           !! spacecraft 1's nadir sensor
         type(ReferenceFrame) :: sun                            !! the light source
+        type(ShadowCones) :: earth_shadow                      !! the Earth's shadow in the Sun's light
         type(Trajectory) :: earth_rotation                     !! attitudes over one sidereal day
         real(wp) :: rotation_time = 0.0_wp                     !! time along earth_rotation (advances at speed x)
         real(wp) :: last_time = 0.0_wp                         !! the simulation time at the last frame
@@ -201,6 +206,7 @@ module vkdemo
         integer :: start_pattern = 0
         logical :: start_shapes = .false.
         logical :: start_los = .false.
+        logical :: start_shadow = .false.
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -393,6 +399,13 @@ contains
         call app%sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
         call app%sun%set_light_ambient([0.08_wp, 0.08_wp, 0.08_wp])
         call app%sun%set_light_specular([1.0_wp, 1.0_wp, 0.9_wp])
+
+        ! the Earth's shadow: a child of the Earth, pointing away from the Sun
+        ! (a plain frame here: its radius given), out to 10 Earth radii (hidden at first)
+        app%earth_shadow = ShadowCones('Earth shadow', body=app%earth, light=app%sun, light_radius=695700.0_wp)
+        call app%earth_shadow%set_length(10.0_wp * re)
+        call app%earth_shadow%show_contents(.false.)
+        if (.not. app%earth%add_child(app%earth_shadow)) write(*, '(a)') 'vkframes: add_child failed'
 
         ! the tree: an inertial root (no decorations of its own) with the
         ! rotating Earth, the spacecraft and their orbits (all inertial)
@@ -1066,6 +1079,12 @@ contains
         call app%line_of_sight%show_contents(checked)
     end subroutine on_show_los
 
+    subroutine on_show_shadow(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%earth_shadow%show_contents(checked)
+    end subroutine on_show_shadow
+
     subroutine on_show_sensor(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -1253,6 +1272,9 @@ contains
         app%show_los = QCheckBox('Line of sight (1 - 2)')
         call app%show_los%toggled%connect(on_show_los)
         call form%addRow('', app%show_los)
+        app%show_shadow = QCheckBox("Earth's shadow")
+        call app%show_shadow%toggled%connect(on_show_shadow)
+        call form%addRow('', app%show_shadow)
         app%marker_shape = QComboBox()
         call app%marker_shape%addItems([character(len=15) :: 'None', 'Disk', 'Circle', 'Square', 'Plus', 'X', 'Target', &
                                         'Rose', 'Pulsing circle', 'Pulsing disk', 'Spiral'])
@@ -1345,6 +1367,8 @@ program vkframes_qt_demo
             app%start_shapes = .true.
         case ('--los')
             app%start_los = .true.
+        case ('--shadow')
+            app%start_shadow = .true.
         case ('--sky')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_sky
@@ -1383,6 +1407,7 @@ program vkframes_qt_demo
     call app%show_ticks%setChecked(app%start_shapes)
     call app%show_sensor%setChecked(app%start_shapes)
     call app%show_los%setChecked(app%start_los)
+    call app%show_shadow%setChecked(app%start_shadow)
     call on_sky(app%start_sky)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)

@@ -21,7 +21,7 @@ module vkf_layer
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
-    public :: vkf_mesh_create, vkf_mesh_array, vkf_mesh_material, vkf_mesh_material_changed
+    public :: vkf_mesh_create, vkf_mesh_array, vkf_mesh_material, vkf_mesh_material_changed, vkf_mesh_vertices_changed
     public :: vkf_light_create, vkf_light_set, vkf_viewer_light, vkf_viewer_light_enable
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
@@ -379,6 +379,14 @@ module vkf_layer
             implicit none
             type(c_ptr), value :: mesh
         end function vkf_mesh_material_changed
+
+        !> Upload a mesh's vertices again after rewriting them in place (a mesh
+        !> created with flag 4).
+        integer(c_int) function vkf_mesh_vertices_changed(mesh) bind(C, name="vkf_mesh_vertices_changed")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: mesh
+        end function vkf_mesh_vertices_changed
 
         integer(c_int) function vkf_viewer_remove_node(viewer, node) bind(C, name="vkf_viewer_remove_node")
             import :: c_ptr, c_int

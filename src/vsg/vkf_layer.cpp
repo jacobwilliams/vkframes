@@ -852,6 +852,7 @@ namespace
         vsg::ref_ptr<vsg::Text> text;
         vsg::ref_ptr<vsg::StandardLayout> layout;
         uint32_t capacity = 0; // glyphs allocated (texts up to this long are updated in place)
+        bool truncated = false; // a text was cut to the capacity (warned once)
     };
 
     struct LineStrip : Node
@@ -1879,7 +1880,8 @@ VKF_API void* vkf_model_read(const char* filename, int filename_len)
 // texture (vkf_image_read handles, or null). flags: 1 for an unlit transparent
 // surface (TransparentStates; no textures), 2 for view lighting (frames' axes;
 // see "Lighting"), else lit by the scene's lights with a material
-// (vkf_mesh_material).
+// (vkf_mesh_material); plus 4 for vertices that change after the mesh is
+// compiled (rewritten in place, then vkf_mesh_vertices_changed).
 VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture, void* night_texture,
                               int flags)
 {
@@ -1890,6 +1892,7 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         mesh->normals = vsg::vec3Array::create(static_cast<uint32_t>(n_vertices));
         mesh->texcoords = vsg::vec2Array::create(static_cast<uint32_t>(n_vertices));
         mesh->indices = vsg::uintArray::create(static_cast<uint32_t>(n_indices));
+        if ((flags & 4) != 0) mesh->vertices->properties.dataVariance = vsg::DYNAMIC_DATA;
         auto colors = vsg::vec4Array::create(1, to_vec4(rgba));
 
         const bool unlit = (flags & 1) != 0;
@@ -1959,6 +1962,16 @@ VKF_API int vkf_mesh_material_changed(void* mesh)
     auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
     if (!m || !m->material) return -1;
     m->material->dirty();
+    return 0;
+}
+
+// Upload a mesh's vertices again after they were rewritten in place (a mesh
+// created with flag 4).
+VKF_API int vkf_mesh_vertices_changed(void* mesh)
+{
+    auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
+    if (!m) return -1;
+    m->vertices->dirty();
     return 0;
 }
 
@@ -2043,7 +2056,7 @@ VKF_API void* vkf_label_create(void* font, const char* text, int text_len, const
         label->text = vsg::stringValue::create(to_string(text, text_len));
         label->shaderSet = label_shaders().shaderSet;
         // glyphs allocated: room to change the text in place (a multiple of 4: glyph indices are uvec4s)
-        const uint32_t capacity = 4 * ((std::max<uint32_t>(64, 2 * static_cast<uint32_t>(std::max(text_len, 0))) + 3) / 4);
+        const uint32_t capacity = 4 * ((std::max<uint32_t>(256, 2 * static_cast<uint32_t>(std::max(text_len, 0))) + 3) / 4);
         label->setup(capacity, read_options());   // room to change the text in place
 
         auto group = LabelGroup::create();
@@ -2057,13 +2070,24 @@ VKF_API void* vkf_label_create(void* font, const char* text, int text_len, const
     });
 }
 
-// Change a label's text (texts up to its capacity are updated in place).
+// Change a label's text, in place: a text longer than the label's capacity
+// (glyphs allocated when it was made) is cut to it (a longer one would not be
+// drawn), with a warning.
 VKF_API int vkf_label_set_text(void* label, const char* text, int text_len)
 {
     auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
     if (!l) return -1;
     return guarded("vkf_label_set_text", -1, [&]() {
-        l->text->text = vsg::stringValue::create(to_string(text, text_len));
+        auto str = to_string(text, text_len);
+        if (str.size() > l->capacity)                    // (bytes: at least as many as glyphs)
+        {
+            auto n = static_cast<size_t>(l->capacity);
+            while (n > 0 && (static_cast<unsigned char>(str[n]) & 0xC0) == 0x80) --n;   // (a UTF-8 character's start)
+            str.resize(n);
+            if (!l->truncated) std::cerr << "vkframes: label text cut to " << l->capacity << " characters" << std::endl;
+            l->truncated = true;
+        }
+        l->text->text = vsg::stringValue::create(str);
         l->text->setup(l->capacity, read_options());
         return 0;
     });

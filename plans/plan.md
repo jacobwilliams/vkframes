@@ -763,6 +763,29 @@ Decided so far:
         blocked links dashed) and in the Qt demo ("Line of sight").
       - Not done: OpenFrames' custom line shader (`setLineShader`), which
         would need run-time GLSL, as `MarkerArtist%set_marker_shader`.
+- [x] Shadow cones (new, not in OpenFrames; `src/vkf_shadow.f90`):
+      `ShadowCones`, a frame showing a celestial body's shadow in the light
+      of another as transparent cones: the umbra (to its apex, d R / (Rs - R)
+      behind the body), the antumbra beyond it and the penumbra, their edges
+      tangent to both spheres.
+      - A separate frame, made a child of the body. It is turned on and off
+        with `show_contents`, and a scene without one does no shadow work.
+        A hidden one does nothing.
+      - It runs in `late_update`: it moves to the body, turns its +z axis
+        away from the light, and reshapes the cones when the distance or a
+        setting changes. The cones are three meshes whose vertices are
+        rewritten in place (`vkf_mesh_create` flag 4 and
+        `vkf_mesh_vertices_changed`), so nothing is rebuilt or recompiled.
+      - The radii come from the frames (a `Sphere`, a `TerrainBody`) or are
+        set. Each region has a color and can be turned off. The length
+        defaults to twice the umbra's.
+      - Tested headless (`test/test_shadow.f90`, including the tangency).
+      - Shown in `example/eclipse.f90` (a total solar eclipse) and in the Qt
+        demo ("Earth's shadow", `--shadow`).
+      - [ ] Deferred: darkening bodies and spacecraft inside a shadow. This
+            would be an analytic sphere-occlusion test per light in the
+            lighting shaders (it's also the cheap form of OpenFrames'
+            `FocalPointShadowMap` for spherical bodies).
 - [ ] Window callbacks (OpenFrames' `setKeyPressCallback`,
       `setMouseMotionCallback`, `setButtonPressCallback`): for vkframes' own
       windows, a program's procedures called with key presses and mouse
@@ -772,7 +795,7 @@ Decided so far:
 
 ### 5. Deferred
 
-- Shadows and sensor visibility, VR (OpenXR), Qt widgets in 3D, draggers,
+- Shadows cast on bodies, sensor visibility, VR (OpenXR), Qt widgets in 3D, draggers,
   volumes, particles.
 
 ## Effort
