@@ -220,6 +220,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | Example | What it shows |
 |---|---|
 | `hello_sphere` | The smallest program: a window with a sphere, the trackball, and the frame loop driven from Fortran. |
+| `orbit_demo` | The program in [A small program](#a-small-program): a textured Earth, a spacecraft following an inclined circular orbit, and the orbit drawn as a line (`Trajectory`, `CurveArtist`). |
 | `orbit` | An inclined elliptical orbit drawn as a thick line (`CurveArtist`), a dashed equator, and a spacecraft moved along the orbit by Fortran each frame (Kepler's equation). |
 | `earth` | A textured WGS84 Earth and a 3D model following an orbit (`Model`, `Trajectory`, `TrajectoryFollower`), with three views: of the Earth, of the spacecraft, and from the spacecraft toward the Earth. Needs a texture and a model file. |
 | `day_night` | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
@@ -235,6 +236,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 
 ```sh
 pixi run example hello_sphere
+pixi run example orbit_demo
 pixi run example orbit
 pixi run example earth -- texture.jpg model.3ds     # e.g. OpenFrames' Demos/Images and Demos/Models/Hubble.3ds
 pixi run example day_night
@@ -397,36 +399,53 @@ pixi run bench
 
 ## A small program
 
+The Earth, a spacecraft following an inclined circular orbit, and the orbit
+drawn as a line ([example/orbit_demo.f90](example/orbit_demo.f90):
+`pixi run example orbit_demo`):
+
+<p align="center">
+  <img src="media/screenshots/orbit_demo.png" alt="The small program: the Earth, an inclined orbit and a spacecraft" width="600">
+</p>
+
 ```fortran
 program orbit_demo
     use vkframes
     implicit none
-    real(wp), parameter :: re = 6378.137_wp
+    real(wp), parameter :: re = 6378.137_wp, inc = 50.0_wp * pi / 180.0_wp
     type(Sphere), target :: earth, craft
     type(Trajectory), target :: orbit
+    type(DrawableTrajectory), target :: orbit_frame
+    type(CurveArtist), target :: orbit_line
     type(FrameManager), target :: scene
     type(WindowProxy), target :: window
     type(View), target :: earth_view
-    real(wp) :: t
+    real(wp) :: t, a
     integer :: k
 
-    earth = Sphere('Earth', radius=re, color=[0.2_wp, 0.4_wp, 1.0_wp])
+    earth = Sphere('Earth', radius=re)
+    call earth%set_texture_map('2k_earth_daymap.jpg')   ! (in data/, found on VKFRAMES_DATA_PATH)
     craft = Sphere('Spacecraft', radius=300.0_wp, color=[1.0_wp, 0.3_wp, 0.2_wp])
 
-    ! a circular orbit, sampled over one period (600 s here)
+    ! a circular orbit inclined 50 degrees, sampled over one period (600 s here)
     orbit = Trajectory()
     do k = 0, 360
         t = 600.0_wp * k / 360.0_wp
-        call orbit%add(t, pos=1.6_wp * re * [cos(2*pi*t/600), sin(2*pi*t/600), 0.0_wp])
+        a = 2.0_wp * pi * t / 600.0_wp
+        call orbit%add(t, pos=1.6_wp * re * [cos(a), sin(a) * cos(inc), sin(a) * sin(inc)])
     end do
     call craft%follow(orbit)
-    if (.not. earth%add_child(craft)) error stop 'add_child failed'
+
+    ! the orbit drawn as a line
+    orbit_line = CurveArtist(orbit, color=[1.0_wp, 0.8_wp, 0.2_wp], width=2.0_wp)
+    orbit_frame = DrawableTrajectory('Orbit')
+    call orbit_frame%add_artist(orbit_line)
+    if (.not. (earth%add_child(craft) .and. earth%add_child(orbit_frame))) error stop 'add_child failed'
     scene = FrameManager(earth)
 
     if (.not. window%open(800, 600, 'vkframes')) error stop 'could not open a window'
     call window%set_scene(scene)
     earth_view = View(earth, earth)
-    call earth_view%set_default_view_distance(5.0_wp * re)
+    call earth_view%set_default_view_distance(2.5_wp * re)
     call window%add_view(earth_view)
     do while (window%frame())       ! until the window is closed
     end do
