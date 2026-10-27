@@ -17,7 +17,7 @@ module vkf_layer
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
-    public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
+    public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, vkf_viewer_frame_begin, vkf_viewer_frame_draw
     public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_compile_node, vkf_viewer_any
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
@@ -243,6 +243,18 @@ module vkf_layer
             integer(c_int), value :: kind, uri_len, encoding
             character(kind=c_char), dimension(*), intent(in) :: uri
         end function vkf_rocky_add_elevation
+
+        integer(c_int) function vkf_viewer_frame_begin(viewer) bind(C, name="vkf_viewer_frame_begin")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer
+        end function vkf_viewer_frame_begin
+
+        integer(c_int) function vkf_viewer_frame_draw(viewer) bind(C, name="vkf_viewer_frame_draw")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer
+        end function vkf_viewer_frame_draw
 
         integer(c_int) function vkf_viewer_frame(viewer) bind(C, name="vkf_viewer_frame")
             import :: c_ptr, c_int

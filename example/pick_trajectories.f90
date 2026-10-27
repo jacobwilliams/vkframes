@@ -8,8 +8,10 @@
 !>     marker at its origin, and its name label, changed to the readout, in
 !>     the orbit's color, drawn on top of the scene (it follows the point as
 !>     the view turns);
-!>   - HUD text kept next to the orbit's spacecraft each frame
-!>     (WindowProxy%screen_position), with its altitude as it moves.
+!>   - HUD text kept next to the orbit's spacecraft each frame, with its
+!>     altitude as it moves: moved in the handler's `before_draw` (called
+!>     each frame once the spacecraft and the camera are where they are drawn)
+!>     to the spacecraft's place on the screen (WindowProxy%screen_position).
 !>   Clicking the Earth shows the latitude and longitude instead.
 !> * g: goes to the time selected (the spacecraft move there).
 !>
@@ -32,6 +34,8 @@ module pick_trajectories_handler
         type(ReferenceFrame), pointer :: selection => null()     !! moved to the point picked; its label: the readout
         type(DrawableTrajectory), pointer :: ring => null()      !! the ring there (a child of the selection)
         type(HUDText), pointer :: hud => null()
+        type(HUDText), pointer :: callout => null()              !! next to the selected orbit's spacecraft
+        type(DrawableTrajectory), pointer :: crafts(:) => null() !! the spacecraft (markers following the orbits)
         character(len=16) :: names(n_orbits) = ''
         real(wp) :: colors(3, n_orbits) = 1.0_wp
         integer :: selected = 0                                  !! the orbit selected (its spacecraft's callout), or 0
@@ -44,6 +48,7 @@ module pick_trajectories_handler
         procedure :: mouse_motion => picker_motion
         procedure :: button_press => picker_press
         procedure :: key_press => picker_key
+        procedure :: before_draw => picker_before_draw
         procedure :: select => picker_select
     end type Picker
 
@@ -74,6 +79,27 @@ contains
         integer, intent(in) :: button
         if (button == MOUSE_LEFT) call self%select(window, x, y)
     end subroutine picker_press
+
+    !> Each frame, before drawing: the callout next to the selected orbit's
+    !> spacecraft, where it is in this frame, with its altitude.
+    subroutine picker_before_draw(self, window, t)
+        class(Picker), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: t
+        character(len=96) :: text
+        real(wp) :: p(3), at(2)
+        integer :: k
+        k = self%selected
+        call self%callout%show(.false.)
+        if (k == 0) return
+        p = self%crafts(k)%position()                           ! (a child of the root: root coordinates)
+        if (.not. window%screen_position(p, at)) return
+        write(text, '(a,i0,a)') trim(self%names(k))//' spacecraft: ', nint(norm2(p) - self%radius), ' km'
+        call self%callout%set_text(trim(text))
+        call self%callout%set_color(self%colors(:, k))
+        call self%callout%set_position(at + [0.012_wp, 0.012_wp])
+        call self%callout%show(.true.)
+    end subroutine picker_before_draw
 
     !> g: go to the time selected.
     subroutine picker_key(self, window, key, modifiers, handled)
@@ -182,8 +208,6 @@ program pick_trajectories
     type(WindowProxy), target :: window
     type(View), target :: earth_view
     type(HUDText), target :: hud, callout
-    character(len=96) :: callout_text
-    real(wp) :: at(2), p(3)
     type(Picker), target :: picker_
     character(len=1024) :: arg, file
     real(wp) :: period, t, x, y
@@ -275,6 +299,8 @@ program pick_trajectories
     picker_%selection => selection
     picker_%ring => ring_frame
     picker_%hud => hud
+    picker_%callout => callout
+    picker_%crafts => crafts
     picker_%names = names
     picker_%colors = colors
     picker_%radius = re
@@ -283,19 +309,6 @@ program pick_trajectories
     running = .true.
     frame = 0
     do while (running .and. frame < frames_to_run)
-        ! the callout: next to the selected orbit's spacecraft, where it is now
-        k = picker_%selected
-        call callout%show(.false.)
-        if (k > 0) then
-            p = crafts(k)%position()                                ! (a child of the root: root coordinates)
-            if (window%screen_position(p, at)) then
-                write(callout_text, '(a,i0,a)') trim(names(k))//' spacecraft: ', nint(norm2(p) - re), ' km'
-                call callout%set_text(trim(callout_text))
-                call callout%set_color(colors(:, k))
-                call callout%set_position(at + [0.012_wp, 0.012_wp])
-                call callout%show(.true.)
-            end if
-        end if
         running = window%frame()
         frame = frame + 1
         if (demo_pick .and. frame == 3) then                       ! (a pick on the high orbit, for a capture)

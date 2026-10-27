@@ -37,6 +37,13 @@
 !> handler's `key_press` says it handled the key, or `set_default_keys(.false.)`).
 !> The mouse moves the camera (the trackball); the keys don't.
 !>
+!> Each frame, the handler's `before_draw(window, t)` is called once the
+!> scene is at the frame's time and the camera is placed (the trackball's
+!> moves included), just before drawing: what it changes (HUD text, labels,
+!> frames' positions) is in this frame, e.g. a callout kept next to a moving
+!> object (`screen_position`) without lagging a frame behind, whoever runs
+!> the frame loop (the program or a host GUI).
+!>
 !> The camera (OpenFrames' trackball getTransformation / setTransformation):
 !> `get_camera` and `set_camera` (eye, center, up in the shown view's frame,
 !> or in its root frame with `in_root`). Smooth transitions (not in
@@ -77,7 +84,8 @@ module vkf_window
                          vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close, &
                          vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set, vkf_viewer_remove_node, &
                          vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio, &
-                         vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
+                         vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, &
+                         vkf_viewer_frame_begin, vkf_viewer_frame_draw
 
     implicit none
 
@@ -148,6 +156,7 @@ module vkf_window
         procedure :: mouse_motion => handler_mouse_motion
         procedure :: button_press => handler_button_press
         procedure :: button_release => handler_button_release
+        procedure :: before_draw => handler_before_draw
     end type WindowEventHandler
 
     !> A window showing a scene (see the module documentation).
@@ -363,13 +372,20 @@ contains
             call create_huds(self)
             self%scene_added = .true.
         end if
-        call update_huds(self)
         t = self%clock_%update()
         if (associated(root)) call self%scene%update(t, self%scene_seen)     ! (once per time across windows)
         call update_window_light(self, root)
         call place_camera(self)
-        status = vkf_viewer_frame(self%viewer_)
+        status = vkf_viewer_frame_begin(self%viewer_)       ! (to the window's events: the camera is final)
         self%running = status == 1
+        if (self%running .and. associated(self%handler)) then
+            call self%handler%before_draw(self, t)
+            if (associated(root) .and. self%is_open()) call root%sync()      ! (frames it moved)
+        end if
+        if (self%running .and. self%is_open()) then
+            call update_huds(self)
+            self%running = vkf_viewer_frame_draw(self%viewer_) == 1
+        end if
         if (self%running) call dispatch_events(self)
         running = self%running .and. self%is_open()
     end function frame
@@ -1213,6 +1229,15 @@ contains
         real(wp), intent(in) :: x, y
         integer, intent(in) :: button
     end subroutine handler_button_release
+
+    !> Called each frame just before drawing, the scene at time `t` and the
+    !> camera placed (see the module documentation): e.g. to move HUD text
+    !> next to a moving object.
+    subroutine handler_before_draw(self, window, t)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: t
+    end subroutine handler_before_draw
 
     !> The keyboard and mouse events of the last frame, to the handler and the
     !> built-in keys (stopping if the window is closed meanwhile).

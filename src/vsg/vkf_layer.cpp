@@ -1626,9 +1626,12 @@ VKF_API int vkf_viewer_remove_node(void* viewer, void* node)
     return remove_from(v->scene->children, n->node) ? 0 : -1;
 }
 
-// Render one frame (compiling the scene on the first call). Returns 1 while the
-// viewer is running, 0 once its window has been closed, -1 on failure.
-VKF_API int vkf_viewer_frame(void* viewer)
+// The first part of a frame (compiling the scene on the first call): up to the
+// window's events handled (the trackball has moved the camera), before the
+// scene is drawn (vkf_viewer_frame_draw): a program can still change the
+// scene for this frame in between. Returns 1 while the viewer is running, 0
+// once its window has been closed, -1 on failure.
+VKF_API int vkf_viewer_frame_begin(void* viewer)
 {
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
@@ -1690,11 +1693,31 @@ VKF_API int vkf_viewer_frame(void* viewer)
         }
 #endif
         v->viewer->handleEvents();
+        return 1;
+    });
+}
+
+// The rest of a frame begun by vkf_viewer_frame_begin: the scene's updates,
+// drawn and presented. Returns 1, or -1 on failure.
+VKF_API int vkf_viewer_frame_draw(void* viewer)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    return guarded("vkf_viewer_frame_draw", -1, [&]() {
         v->viewer->update();
         v->viewer->recordAndSubmit();
         v->viewer->present();
         return 1;
     });
+}
+
+// Render one frame (vkf_viewer_frame_begin, then vkf_viewer_frame_draw).
+// Returns 1 while the viewer is running, 0 once its window has been closed,
+// -1 on failure.
+VKF_API int vkf_viewer_frame(void* viewer)
+{
+    const int status = vkf_viewer_frame_begin(viewer);
+    return status == 1 ? vkf_viewer_frame_draw(viewer) : status;
 }
 
 // Write the last presented frame to an image file (format from the extension,

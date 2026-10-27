@@ -14,6 +14,10 @@ module test_events_recorder
         real(wp) :: x = huge(1.0_wp), y = huge(1.0_wp)
         logical :: buttons(3) = .false.
         integer :: swallow = -1                             !! a key to say handled
+        integer :: draws = 0                                !! before_draw calls
+        real(wp) :: draw_time = -1.0_wp
+        logical :: on_screen = .false.                      !! the root's origin on the screen, in before_draw
+        real(wp) :: at(2) = -1.0_wp
         integer :: close_on = -1                            !! a key to close the window on
     contains
         procedure :: key_press => recorder_key_press
@@ -21,6 +25,7 @@ module test_events_recorder
         procedure :: mouse_motion => recorder_mouse_motion
         procedure :: button_press => recorder_button_press
         procedure :: button_release => recorder_button_release
+        procedure :: before_draw => recorder_before_draw
     end type Recorder
 
 contains
@@ -78,6 +83,15 @@ contains
         self%y = y
         self%button = button
     end subroutine recorder_button_release
+
+    subroutine recorder_before_draw(self, window, t)
+        class(Recorder), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: t
+        self%draws = self%draws + 1
+        self%draw_time = t
+        self%on_screen = window%screen_position([0.0_wp, 0.0_wp, 0.0_wp], self%at)
+    end subroutine recorder_before_draw
 
 end module test_events_recorder
 
@@ -166,6 +180,17 @@ program test_events
     call window%clear_event_handler()
     call press(iachar('x'), iachar('x'), 0)
     call check(rec%key /= iachar('x') .and. .not. associated(window%event_handler()), 'cleared handler')
+
+    ! before_draw: once a frame, at the frame's time, with the camera placed
+    ! (the default view looks at the root's origin: the window's center)
+    call window%set_event_handler(rec)
+    call window%select_view(1)
+    call window%pause_time(.true.)
+    call window%set_time(12.5_wp)
+    rec%draws = 0
+    call check(window%frame() .and. window%frame(), 'frames')
+    call check(rec%draws == 2 .and. rec%draw_time == 12.5_wp, 'before_draw: each frame, at its time')
+    call check(rec%on_screen .and. all(abs(rec%at - 0.5_wp) < 1.0e-6_wp), 'before_draw: screen_position, camera placed')
 
     ! the handler closes the window: the frame reports it closed
     call window%set_event_handler(rec)

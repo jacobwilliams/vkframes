@@ -969,6 +969,13 @@ Interaction:
       - `WindowProxy%screen_position(p, position)`: where a root point is on
         the screen (HUD positions), to keep HUD text next to a moving object
         each frame.
+      - `WindowEventHandler%before_draw(window, t)`: called each frame
+        once the scene is at the frame's time and the camera is placed (the
+        trackball's moves included), just before drawing: the C++ frame is
+        split (`vkf_viewer_frame_begin`: to the window's events handled;
+        `vkf_viewer_frame_draw`), and the frames it moves are synced and the
+        HUD changes applied before drawing. A callout kept next to a moving
+        object doesn't lag a frame behind, whoever runs the frame loop.
       - Fixed on the way: an axis or label made again while hidden showed (a
         node added to a switch is shown: the switches are set again).
       - Tested in `test_pick` (screen_position; HUD text and a name label

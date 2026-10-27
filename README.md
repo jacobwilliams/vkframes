@@ -144,7 +144,9 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     color, position, size, alignment, font). A frame's name label can be
     drawn on top of the scene, so a frame moved to a picked point makes a
     readout that follows it; `screen_position` gives where a point is on the
-    screen, to keep HUD text next to a moving object.
+    screen, to keep HUD text next to a moving object. The event handler's
+    `before_draw` is called each frame once the scene and camera are final,
+    so such a callout is in step with what is drawn.
   - Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
     point of the window, nearest first: a trajectory's curve (the point and
     the time there, interpolated), its markers and segments, a body (the
