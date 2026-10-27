@@ -350,11 +350,11 @@ program openframes_bench
     type(QApplication) :: qapp
     integer :: ierr
 
-    call bench_default_surface_format(24_c_int, 0_c_int)          ! depth buffer; no vsync
+    call parse_options(app%opt)
+    call bench_default_surface_format(24_c_int, merge(1_c_int, 0_c_int, app%opt%vsync))   ! depth buffer; vsync or not
     qapp = QApplication()
     gui_thread_updates = .not. QOpenGLContext_supportsThreadedOpenGL()
     if (gui_thread_updates) call QApplication_setAttribute(Qt_AA_DontCheckOpenGLContextThreadAffinity)
-    call parse_options(app%opt)
 
     ! OpenFrames: an embedded window proxy (we supply the OpenGL context)
     call of_initialize()

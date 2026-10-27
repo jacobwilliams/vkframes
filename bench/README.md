@@ -40,9 +40,14 @@ git.
 You can also run one app on its own with the same options:
 
 ```sh
-pixi run -e qt bench-vkframes -- --scenario grow --points 1000000 [--per-point] [--capture vk.png]
-pixi run -e openframes bench-openframes -- --scenario grow --points 1000000 [--capture of]
+pixi run -e qt bench-vkframes -- --scenario grow --points 1000000 [--per-point] [--vsync] [--capture vk.png]
+pixi run -e openframes bench-openframes -- --scenario grow --points 1000000 [--vsync] [--capture of]
 ```
+
+`--vsync` presents frames at the display's refresh rate instead of as fast
+as possible. Use it to watch the apps (see
+[Flicker in the vkframes app](#flicker-in-the-vkframes-app-macos)); frame
+rates then stop at the display's rate.
 
 ## What is measured
 
@@ -68,7 +73,35 @@ both apps. Neither app uses multisampling.
 | `grow` | Points are appended from a 60 Hz timer on the GUI thread, at `--rate` points per second. | The cost of new data: Fortran input, conversion and upload. |
 | `trace` | Trace mode is on: the curve is drawn only up to the current time, and time sweeps over the whole trajectory. | The per-frame cost of trace mode. |
 
-### Results
+#### Flicker in the vkframes app (macOS)
+
+**The problem.** Without `--vsync`, the vkframes window flickers, and some
+frames show all black. The OpenFrames window doesn't.
+
+**The likely cause** is in the driver, not in vkframes:
+
+- Without vsync, vkframes asks Vulkan for present mode `IMMEDIATE`.
+- On macOS that goes through KosmicKrisp's Metal presentation code (Mesa's
+  `src/vulkan/wsi/wsi_common_metal*.{c,m}`):
+  - For `IMMEDIATE` it turns off `displaySyncEnabled`.
+  - It presents with `[drawable present]` as soon as `vkQueuePresentKHR` is
+    called, instead of scheduling the present on the Metal command buffer
+    that draws the frame (`presentDrawable:`).
+- So Core Animation can show a drawable before the GPU has finished drawing
+  into it.
+- OpenFrames goes through Apple's own OpenGL, which orders this correctly.
+
+**What it means for the results.** Every frame is still fully rendered:
+vkframes waits for each frame's GPU work before reusing its resources. The
+frame times are the work done; only what appears on screen is affected. With
+`--vsync` (Vulkan present mode `FIFO`, vkframes' default) the window doesn't
+flicker.
+
+**If it is confirmed**, it is worth reporting to Mesa. vkframes could also
+avoid `IMMEDIATE` on KosmicKrisp, for example by waiting for each frame's GPU
+work before presenting.
+
+## Results
 
 Each run produces one JSON line with these fields:
 

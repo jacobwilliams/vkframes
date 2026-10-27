@@ -117,7 +117,7 @@ contains
         font = get_font('')                                  ! (as the demos: read before timing the first frame)
         if (.not. app%proxy%open(app%window%width(), app%window%height(), 'vkframes', &
                                  native_window=app%window%winId(), pixel_ratio=app%window%devicePixelRatio(), &
-                                 vsync=.false.)) error stop 'could not open the view'
+                                 vsync=app%opt%vsync)) error stop 'could not open the view'
         ! the line 2 physical pixels wide, as OpenFrames' (its widths are in pixels, ours in window units)
         call app%curve%set_width(2.0_dp / app%window%devicePixelRatio())
         call app%proxy%set_scene(app%scene)

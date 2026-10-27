@@ -46,6 +46,7 @@ module bench_common
         real(dp) :: warmup = 2.0_dp                         !! s before measuring [2]
         real(dp) :: seconds = 10.0_dp                       !! s measured [10]
         logical :: per_point = .false.                      !! vkframes: add points one at a time [bulk]
+        logical :: vsync = .false.                          !! present at the display's refresh [no: as fast as possible]
         integer :: width = 1280, height = 800               !! the view's size (logical pixels)
         character(len=:), allocatable :: out                !! results file (JSON lines) [none]
         character(len=:), allocatable :: capture            !! an image of the last frame [none]
@@ -107,6 +108,8 @@ contains
                 read(arg, *) opt%seconds
             case ('--per-point')
                 opt%per_point = .true.
+            case ('--vsync')
+                opt%vsync = .true.
             case ('--size')
                 call next_arg(i, arg)
                 read(arg, *) opt%width
