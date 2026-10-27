@@ -2,7 +2,10 @@
 !> and 2k_earth_nightmap.jpg), a light source on a Sun frame an astronomical
 !> unit away (OpenFrames' setLightSourceEnabled), and a specular glint
 !> (Sphere%set_material). The night side shows the night texture (city
-!> lights), as OpenFrames' setNightTextureMap.
+!> lights), as OpenFrames' setNightTextureMap, fading in where the Earth is
+!> lit weakly; the Earth's twilight (Sphere%set_twilight: 6 degrees, civil
+!> twilight, the atmosphere's) carries a little light past the terminator and
+!> fades the lights in more gradually.
 !>
 !> Arguments (optional): the number of frames to run, and a file to capture
 !> the last frame to:
@@ -45,6 +48,7 @@ program day_night
     call earth%set_texture_map('2k_earth_daymap.jpg')
     call earth%set_night_texture_map('2k_earth_nightmap.jpg')
     call earth%set_material(specular=[0.4_wp, 0.4_wp, 0.4_wp], shininess=30.0_wp)
+    call earth%set_twilight(6.0_wp * pi / 180.0_wp)                    ! (an atmosphere's; none for an airless body)
     call earth%set_attitude(quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], 2.6_wp))
 
     ! the Sun: 1 AU away, to the right of the view and a little toward the viewer

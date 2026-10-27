@@ -64,6 +64,10 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
 - **Sky**: `SkySphere`, a star catalog (HYG v3) and/or a sky texture.
 - **Lighting**: a frame can be a light source (such as the Sun), with
   ambient, diffuse and specular parts. Otherwise a headlight is used.
+  - A body's night texture fades in where it's lit weakly, following its
+    material and the light's intensity, as in OpenFrames but per pixel.
+  - A twilight angle per body (not in OpenFrames) carries a little light past
+    the terminator, as an atmosphere does. It's none by default.
 - **Views and time**:
   - `View`: a trackball camera that follows a frame, or looks from one frame
     toward another. Perspective or orthographic.

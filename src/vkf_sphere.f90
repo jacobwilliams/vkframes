@@ -11,8 +11,15 @@
 !> Lighting: the body is lit by the scene's lights (a frame's light source,
 !> e.g. the Sun, or the window's light), with a material (`set_material`;
 !> OpenFrames' default: no specular reflection). The night texture shows where
-!> the diffuse light is weak (the night side: city lights), as OpenFrames'
-!> setNightTextureMap.
+!> the surface is lit weakly (the night side: city lights), as OpenFrames'
+!> setNightTextureMap: weighted by 1 - the lit color (the material's ambient
+!> and diffuse colors in the lights' colors and intensities, and its
+!> emission), per channel and per pixel, so a brighter light narrows the
+!> band where the day fades into the night, and ambient light dims the night
+!> texture. The twilight (`set_twilight`; not in OpenFrames; default none:
+!> the light ends at the terminator) extends the diffuse light past the
+!> terminator, to where the light is a given angle below the horizon, fading
+!> out: e.g. sunlight scattered by an atmosphere.
 !>
 !> Texture files are found with find_data_file (a path, or a name on
 !> VKFRAMES_DATA_PATH, e.g. data/'s 2k_earth_daymap.jpg and
@@ -36,7 +43,7 @@ module vkf_sphere
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
     use vkf_frames, only: ReferenceFrame
     use vkf_layer, only: vkf_image_read, vkf_image_delete, vkf_transform_create, vkf_transform_set_matrix, &
-                         vkf_node_add_child, vkf_node_delete, mesh_set_material, vkf_compile_node, &
+                         vkf_node_add_child, vkf_node_delete, mesh_set_material, vkf_mesh_set_twilight, vkf_compile_node, &
                          vkf_sphere_lod_create, vkf_sphere_lod_add, vkf_sphere_lod_requested
     use vkf_geometry, only: ellipsoid_create
     use vkf_files, only: find_data_file
@@ -66,6 +73,7 @@ module vkf_sphere
         real(wp) :: ambient_(4) = 1.0_wp, diffuse_(4) = 1.0_wp
         real(wp) :: specular_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], emission_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
         real(wp) :: shininess_ = 0.0_wp
+        real(wp) :: twilight_ = 0.0_wp                        !! radians below the horizon (0: none)
         type(c_ptr) :: sphere_node = c_null_ptr              !! transform of the body within the frame
         type(c_ptr) :: mesh = c_null_ptr                     !! without level of detail
         ! level of detail
@@ -83,6 +91,7 @@ module vkf_sphere
         procedure :: set_night_texture_map, night_texture_map
         procedure :: set_auto_lod, auto_lod
         procedure :: set_material, material
+        procedure :: set_twilight, twilight
         procedure :: set_resolution
         procedure :: frame_info => sphere_frame_info
         procedure :: bound => sphere_bound
@@ -241,6 +250,24 @@ contains
     !> The material, with the diffuse color times the body's color (without a texture).
     !> The material, with the diffuse color times the body's color (without a
     !> texture), on every mesh built.
+    !> The twilight: the diffuse light extended past the terminator to where
+    !> the light is `angle` (radians, 0 to 1.5) below the horizon, fading out
+    !> smoothly (where it meets the light on the day side: the same brightness
+    !> and slope, so no line shows), and the night texture fading in across it.
+    !> 0 (the default): none, the light ends at the terminator (an airless
+    !> body). Not in OpenFrames. Can change at any time.
+    subroutine set_twilight(self, angle)
+        class(Sphere), intent(inout) :: self
+        real(wp), intent(in) :: angle
+        self%twilight_ = max(0.0_wp, min(1.5_wp, angle))
+        call apply_material(self)
+    end subroutine set_twilight
+
+    pure real(wp) function twilight(self)
+        class(Sphere), intent(in) :: self
+        twilight = self%twilight_
+    end function twilight
+
     subroutine apply_material(self)
         type(Sphere), intent(inout) :: self
         integer :: k
@@ -261,6 +288,8 @@ contains
                               real(self%specular_, c_float), real(self%emission_, c_float), &
                               real(self%shininess_, c_float)) /= 0) &
             write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not set the material'
+        if (vkf_mesh_set_twilight(mesh, real(self%twilight_, c_float)) /= 0) &
+            write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not set the twilight'
     end subroutine apply_material_to
 
     !> Level of detail (default on; see the module documentation): meshes of

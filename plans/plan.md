@@ -763,6 +763,20 @@ Decided so far:
         blocked links dashed) and in the Qt demo ("Line of sight").
       - Not done: OpenFrames' custom line shader (`setLineShader`), which
         would need run-time GLSL, as `MarkerArtist%set_marker_shader`.
+- [x] Day/night blending as OpenFrames', per pixel: the night texture is
+      weighted by 1 − the lit color, per channel. The lit color is the
+      material's ambient and diffuse in the lights' colors and intensities,
+      plus its emission. So a brighter light narrows the twilight band and
+      ambient light dims the night texture (OpenFrames' texture combiner does
+      this per vertex). Nothing is body-specific: it follows each body's
+      `set_material` and each light's colors.
+      - `Sphere%set_twilight(angle)` (new): the diffuse light extended past
+        the terminator, to where the light is `angle` below the horizon,
+        meeting Lambert's smoothly. It's 0 (none) by default; the
+        `day_night` example sets 6 degrees for the Earth.
+      - The Phong shader has a per-mesh uniform `vkfBody` (binding 12) for
+        it, and the C++ layer has `vkf_mesh_set_twilight`.
+      - Not for `TerrainBody` (Rocky's own shaders) or loaded models.
 - [x] `RibbonArtist` (new, not in OpenFrames): a translucent surface swept
       between two points at each trajectory point, a quad between each
       point's pair and the next. The pairs come from start and end data

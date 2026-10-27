@@ -934,6 +934,9 @@ namespace
     // * Phong: an optional night texture ("nightMap", define VKF_NIGHT_MAP,
     //   binding 9), shown where the diffuse light is weak (OpenFrames'
     //   setNightTextureMap);
+    // * Phong: a body's twilight ("vkfBody", define VKF_BODY, binding 12: the
+    //   sine of its twilight angle; meshes made by vkf_mesh_create), its
+    //   diffuse light extended past the terminator (vkf_mesh_set_twilight);
     // * Phong: view lighting (define VKF_VIEW_LIGHTING, for frames' axes): the
     //   scene's lights are ignored and the color is shaded by how the surface
     //   faces the viewer only (soft, the same from any side).
@@ -962,6 +965,8 @@ namespace
         shaderSet->addDescriptorBinding("nightMap", "VKF_NIGHT_MAP", 1, 9, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
                                         VK_SHADER_STAGE_FRAGMENT_BIT,
                                         vsg::ubvec4Array2D::create(1, 1, vsg::Data::Properties{VK_FORMAT_R8G8B8A8_UNORM}));
+        shaderSet->addDescriptorBinding("vkfBody", "VKF_BODY", 1, 12, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                                        VK_SHADER_STAGE_FRAGMENT_BIT, vsg::vec4Value::create(vsg::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
         return shaderSet;
     }
 
@@ -1036,6 +1041,7 @@ namespace
         vsg::ref_ptr<vsg::vec2Array> texcoords;
         vsg::ref_ptr<vsg::uintArray> indices;
         vsg::ref_ptr<vsg::PhongMaterialValue> material;   // lit meshes: changeable (vkf_mesh_material)
+        vsg::ref_ptr<vsg::vec4Value> body;                // lit meshes: x = the sine of the twilight angle
     };
 
     // Pipeline states of unlit transparent surfaces (planes, cone sides):
@@ -1925,6 +1931,12 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
                   config->assignArray(arrays, "vsg_TexCoord0", VK_VERTEX_INPUT_RATE_VERTEX, mesh->texcoords) &&
                   config->assignArray(arrays, "vsg_Color", VK_VERTEX_INPUT_RATE_INSTANCE, colors) &&
                   config->assignDescriptor("material", mesh->material);
+        if (ok && !unlit)                // a body's twilight (none until vkf_mesh_set_twilight)
+        {
+            mesh->body = vsg::vec4Value::create(vsg::vec4(0.0f, 0.0f, 0.0f, 0.0f));
+            mesh->body->properties.dataVariance = vsg::DYNAMIC_DATA;
+            ok = config->assignDescriptor("vkfBody", mesh->body);
+        }
         auto sampler = vsg::Sampler::create();
         sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -1976,6 +1988,17 @@ VKF_API int vkf_mesh_material_changed(void* mesh)
     auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
     if (!m || !m->material) return -1;
     m->material->dirty();
+    return 0;
+}
+
+// A lit mesh's twilight: its diffuse light extended to `angle` (radians)
+// past the terminator, fading out (0: none; shaders/vsg/standard_phong.frag).
+VKF_API int vkf_mesh_set_twilight(void* mesh, float angle)
+{
+    auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
+    if (!m || !m->body) return -1;
+    m->body->value().x = std::sin(std::clamp(angle, 0.0f, 1.5f));
+    m->body->dirty();
     return 0;
 }
 

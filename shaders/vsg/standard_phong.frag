@@ -8,7 +8,7 @@
 // run time. When VSG is upgraded, compare this file with VSG's new shader.
 
 #extension GL_ARB_separate_shader_objects : enable
-#pragma import_defines (VSG_TEXTURECOORD_0, VSG_TEXTURECOORD_1, VSG_TEXTURECOORD_2, VSG_TEXTURECOORD_3, VSG_POINT_SPRITE, VSG_DIFFUSE_MAP, VSG_GREYSCALE_DIFFUSE_MAP, VSG_DETAIL_MAP, VSG_EMISSIVE_MAP, VSG_LIGHTMAP_MAP, VSG_NORMAL_MAP, VSG_SPECULAR_MAP, VSG_TWO_SIDED_LIGHTING, VSG_SHADOWS_PCSS, VSG_SHADOWS_SOFT, VSG_SHADOWS_HARD, SHADOWMAP_DEBUG, VSG_ALPHA_TEST, VKF_NIGHT_MAP, VKF_VIEW_LIGHTING)
+#pragma import_defines (VSG_TEXTURECOORD_0, VSG_TEXTURECOORD_1, VSG_TEXTURECOORD_2, VSG_TEXTURECOORD_3, VSG_POINT_SPRITE, VSG_DIFFUSE_MAP, VSG_GREYSCALE_DIFFUSE_MAP, VSG_DETAIL_MAP, VSG_EMISSIVE_MAP, VSG_LIGHTMAP_MAP, VSG_NORMAL_MAP, VSG_SPECULAR_MAP, VSG_TWO_SIDED_LIGHTING, VSG_SHADOWS_PCSS, VSG_SHADOWS_SOFT, VSG_SHADOWS_HARD, SHADOWMAP_DEBUG, VSG_ALPHA_TEST, VKF_NIGHT_MAP, VKF_VIEW_LIGHTING, VKF_BODY)
 
 // define by default for backwards compatibility
 #define VSG_SHADOWS_HARD
@@ -89,11 +89,32 @@ layout(location = 4) in vec2 texCoord[VSG_TEXCOORD_COUNT];
 
 layout(location = 0) out vec4 outColor;
 
-// vkframes: the night texture (OpenFrames' setNightTextureMap), shown where the diffuse light is weak
+// vkframes: the night texture (OpenFrames' setNightTextureMap), shown where the surface is lit weakly
 #ifdef VKF_NIGHT_MAP
 layout(set = MATERIAL_DESCRIPTOR_SET, binding = 9) uniform sampler2D nightMap;
 #endif
-float vkf_lit = 0.0;    // vkframes: the diffuse light received (for the night texture)
+// vkframes: a body's lighting (meshes made by vkf_mesh_create): x = the sine of its twilight angle, how
+// far below the horizon (the Sun's elevation) its diffuse light reaches, fading out (0: none)
+#ifdef VKF_BODY
+layout(set = MATERIAL_DESCRIPTOR_SET, binding = 12) uniform VkfBody
+{
+    vec4 params;
+} vkfBody;
+#endif
+
+// vkframes: the diffuse factor for a surface at cos(angle to the light) LdotN: Lambert's max(LdotN, 0),
+// or with a twilight (sine s) extended past the terminator, (LdotN + s)^2 / 4s from -s to s, where it
+// meets Lambert's smoothly (the same value and slope at s; never less light)
+float vkf_diffuse(float LdotN)
+{
+#ifdef VKF_BODY
+    float s = vkfBody.params.x;
+    if (s > 0.0 && LdotN < s) return (LdotN > -s) ? (LdotN + s) * (LdotN + s) / (4.0 * s) : 0.0;
+#endif
+    return max(LdotN, 0.0);
+}
+
+vec3 vkf_lit = vec3(0.0);   // vkframes: the ambient and diffuse light received, in the lights' colors (for the night texture)
 
 // include the calculateShadowCoverageForDirectionalLight(..) implementation
 // Start of include code : shadows.glsl
@@ -885,6 +906,7 @@ void main()
         {
             vec4 lightColor = lightData.values[lightDataIndex++];
             color += (ambientColor.rgb * lightColor.rgb) * (lightColor.a);
+            vkf_lit += material.ambientColor.rgb * material.ambientColor.a * lightColor.rgb * lightColor.a;
         }
     }
 
@@ -915,7 +937,7 @@ void main()
 
             float unclamped_LdotN = dot(direction, nd);
 
-            float diff = max(unclamped_LdotN, 0.0);
+            float diff = vkf_diffuse(unclamped_LdotN);   // vkframes: with the body's twilight
             intensity *= diff;
 
             int shadowMapCount = int(lightData.values[lightDataIndex].r);
@@ -936,10 +958,10 @@ void main()
             if (!vkf_specular)   // vkframes: diffuse light only (and how much, for the night texture)
             {
                 color.rgb += (diffuseColor.rgb * lightColor.rgb) * (intensity);
-                vkf_lit += intensity;
+                vkf_lit += lightColor.rgb * intensity;
             }
 
-            if (vkf_specular && shininess > 0.0 && diff > 0.0)   // vkframes: specular light only
+            if (vkf_specular && shininess > 0.0 && unclamped_LdotN > 0.0)   // vkframes: specular light only
             {
                 vec3 halfDir = normalize(direction + vd);
                 color.rgb += lightColor.rgb * specularColor.rgb * (   // vkframes: in the light's specular color
@@ -971,14 +993,14 @@ void main()
 
             float unclamped_LdotN = dot(direction, nd);
 
-            float diff = scale * max(unclamped_LdotN, 0.0);
+            float diff = scale * vkf_diffuse(unclamped_LdotN);   // vkframes: with the body's twilight
 
             if (!vkf_specular)   // vkframes: diffuse light only (and how much, for the night texture)
             {
                 color.rgb += (diffuseColor.rgb * lightColor.rgb) * diff;
-                vkf_lit += diff;
+                vkf_lit += lightColor.rgb * diff;
             }
-            if (vkf_specular && shininess > 0.0 && diff > 0.0)   // vkframes: specular light only
+            if (vkf_specular && shininess > 0.0 && unclamped_LdotN > 0.0)   // vkframes: specular light only
             {
                 vec3 halfDir = normalize(direction + vd);
                 color.rgb += lightColor.rgb * specularColor.rgb * (   // vkframes: in the light's specular color
@@ -1037,13 +1059,13 @@ void main()
 
             float unclamped_LdotN = dot(direction, nd);
 
-            float diff = scale * max(unclamped_LdotN, 0.0);
+            float diff = scale * vkf_diffuse(unclamped_LdotN);   // vkframes: with the body's twilight
             if (!vkf_specular)   // vkframes: diffuse light only (and how much, for the night texture)
             {
                 color.rgb += (diffuseColor.rgb * lightColor.rgb) * diff;
-                vkf_lit += diff;
+                vkf_lit += lightColor.rgb * diff;
             }
-            if (vkf_specular && shininess > 0.0 && diff > 0.0)   // vkframes: specular light only
+            if (vkf_specular && shininess > 0.0 && unclamped_LdotN > 0.0)   // vkframes: specular light only
             {
                 vec3 halfDir = normalize(direction + vd);
                 color.rgb += lightColor.rgb * specularColor.rgb * (   // vkframes: in the light's specular color
@@ -1054,8 +1076,12 @@ void main()
 
     outColor.rgb = (color * ambientOcclusion) + emissiveColor.rgb;
 #ifdef VKF_NIGHT_MAP
-    // vkframes: the night texture where the diffuse light is weak
-    outColor.rgb += texture(nightMap, texCoordDiffuse).rgb * (1.0 - clamp(vkf_lit, 0.0, 1.0));
+    // vkframes: the night texture where the surface is lit weakly, as OpenFrames' (its texture combiner
+    // weighs the night texture by 1 - the lit color), per pixel: the lit color without the textures (the
+    // material's ambient and diffuse colors in the lights' colors and intensities, and its emission), per
+    // channel, so a brighter light narrows the twilight band and ambient light fades the night texture
+    vec3 vkf_lit_color = (vertexColor.rgb * material.diffuseColor.rgb) * vkf_lit * ambientOcclusion + emissiveColor.rgb;
+    outColor.rgb += texture(nightMap, texCoordDiffuse).rgb * (1.0 - clamp(vkf_lit_color, 0.0, 1.0));
 #endif
 #ifdef VKF_VIEW_LIGHTING
     // vkframes: view lighting (frames' axes): shaded by how the surface faces the viewer, not by the lights
