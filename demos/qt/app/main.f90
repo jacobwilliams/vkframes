@@ -11,7 +11,12 @@
 !> over one sidereal day, at a speed set with a slider. Both are children of an inertial root frame, so the
 !> orbit stays inertial. A second spacecraft (a small Sphere) flies only part
 !> of another orbit, from 20 to 70 minutes (it waits at its start and stops at
-!> its end: FOLLOW_LIMIT), drawn with start and end markers. A FrameManager
+!> its end: FOLLOW_LIMIT), drawn with start and end markers. Instead of their
+!> bodies, the spacecraft can be shown as markers at their current positions,
+!> in a shape chosen from the dock (OpenFrames' way: a DrawableTrajectory child
+!> of each spacecraft with a MarkerArtist and no trajectory, which draws one
+!> marker at its frame's origin; the bodies' contents are hidden, their frames
+!> still move and the views follow them). A FrameManager
 !> holds the scene. Each window has a WindowProxy showing it, with six Views
 !> (the Earth; spacecraft 1 body-fixed; from spacecraft 1 toward the Earth;
 !> spacecraft 2; from spacecraft 1 toward spacecraft 2, and back; chosen per
@@ -62,7 +67,9 @@
 !> windows at startup (the others start in the next views); `--rotation-speed n`
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
 !> starts with the orbit traced; `--radius` with the radius vectors shown;
-!> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral); `--sky n`
+!> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral);
+!> `--position-marker n` with the spacecraft shown as marker shape n (0: their
+!> bodies; 1 disk, ... 10 spiral); `--sky n`
 !> with sky n (0 none, 1 stars, 2 texture, 3 both); `--shapes` with the grid,
 !> coordinate axes, plane and sensor cone shown; `--pattern n` with orbit
 !> pattern n (0 solid, 1 dashed, 2 dotted, 3 dash-dot).
@@ -120,6 +127,7 @@ module vkdemo
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
         type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
+        type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
         type(QComboBox) :: sky_choice                          !! none, stars, texture, both
         type(QComboBox) :: line_pattern                        !! the orbits' dash pattern
         type(HUDText) :: hud_time                              !! the simulation time, bottom left of every window
@@ -155,6 +163,12 @@ module vkdemo
         type(DrawableTrajectory) :: orbit2_frame
         type(CurveArtist) :: orbit2_curve
         type(MarkerArtist) :: orbit2_markers                   !! start and end
+        ! the spacecraft's current positions as markers (instead of their bodies):
+        ! a marker artist without a trajectory draws one marker at its frame's
+        ! origin, in a frame that is a child of each spacecraft (OpenFrames'
+        ! way: its oftrajectoryfollower demo)
+        type(DrawableTrajectory) :: position_frame1, position_frame2
+        type(MarkerArtist) :: position_marker1, position_marker2
         type(SkySphere) :: sky                                 !! stars and (with OpenFrames' data) a texture
         ! options
         character(len=:), allocatable :: data_dir, capture
@@ -167,6 +181,7 @@ module vkdemo
         logical :: start_trace = .false.
         logical :: start_radius = .false.
         integer :: start_marker = 1
+        integer :: start_position_marker = 0
         integer :: start_sky = 1
         integer :: start_pattern = 0
         logical :: start_shapes = .false.
@@ -340,6 +355,14 @@ contains
         call app%sensor%show_contents(.false.)
         if (.not. app%spacecraft%add_child(app%sensor)) write(*, '(a)') 'vkframes: add_child failed'
 
+        ! the spacecraft's current positions as markers (shown instead of the
+        ! bodies from the dock): a frame at each spacecraft's origin with a marker
+        ! artist and no trajectory (a start marker at the origin)
+        call position_marker_frame(app%position_frame1, app%position_marker1, 'Spacecraft 1 marker', orbit_color)
+        call position_marker_frame(app%position_frame2, app%position_marker2, 'Spacecraft 2 marker', orbit2_color)
+        if (.not. (app%spacecraft%add_child(app%position_frame1) .and. app%spacecraft2%add_child(app%position_frame2))) &
+            write(*, '(a)') 'vkframes: add_child failed'
+
         ! the Sun: a light source an astronomical unit away (inertial)
         app%sun = ReferenceFrame('Sun')
         call app%sun%set_position(1.495978707e8_wp * [cos(0.4_wp), -sin(0.4_wp), 0.2_wp])
@@ -372,6 +395,20 @@ contains
         end if
         write(*, '(a,i0,a)') 'sky: ', app%sky%num_stars(), ' stars'
     end subroutine build_model
+
+    !> A frame (no decorations, contents hidden at first) with a marker artist
+    !> drawing one marker of `color` at its origin.
+    subroutine position_marker_frame(frame, marker, name, color)
+        type(DrawableTrajectory), intent(inout), target :: frame
+        type(MarkerArtist), intent(inout), target :: marker
+        character(len=*), intent(in) :: name
+        real(wp), intent(in) :: color(3)
+        marker = MarkerArtist(markers=MARKER_START, size=18.0_wp, color=color)
+        frame = DrawableTrajectory(name)
+        call hide_decorations(frame)
+        call frame%add_artist(marker)
+        call frame%show_contents(.false.)
+    end subroutine position_marker_frame
 
     !> A spacecraft's body axes from its center, `length` long (beyond its
     !> body; a Sphere or Model starts them at its surface by default).
@@ -913,6 +950,24 @@ contains
         end if
     end subroutine on_marker_shape
 
+    !> How the spacecraft are shown: their bodies (0), or a marker of shape
+    !> index - 1 at their current positions (the bodies hidden; their frames
+    !> still move, and the views follow them).
+    subroutine on_position_marker(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        logical :: as_marker
+        as_marker = index > 0
+        call app%spacecraft%show_contents(.not. as_marker)
+        call app%spacecraft2%show_contents(.not. as_marker)
+        call app%position_frame1%show_contents(as_marker)
+        call app%position_frame2%show_contents(as_marker)
+        if (as_marker) then
+            call app%position_marker1%set_marker_shape(index - 1)
+            call app%position_marker2%set_marker_shape(index - 1)
+        end if
+    end subroutine on_position_marker
+
     !> What the sky shows: nothing, the stars, the texture, or both.
     subroutine on_sky(index, data)
         integer, intent(in) :: index
@@ -1145,6 +1200,12 @@ contains
         call app%marker_shape%setCurrentIndex(1)
         call app%marker_shape%currentIndexChanged%connect(on_marker_shape)
         call form%addRow('Markers', app%marker_shape)
+        app%position_marker = QComboBox()
+        call app%position_marker%addItems([character(len=22) :: 'Bodies (model, sphere)', 'Marker: disk', 'Marker: circle', &
+                                           'Marker: square', 'Marker: plus', 'Marker: X', 'Marker: target', 'Marker: rose', &
+                                           'Marker: pulsing circle', 'Marker: pulsing disk', 'Marker: spiral'])
+        call app%position_marker%currentIndexChanged%connect(on_position_marker)
+        call form%addRow('Spacecraft as', app%position_marker)
         app%sky_choice = QComboBox()
         call app%sky_choice%addItems([character(len=16) :: 'None', 'Stars', 'Texture', 'Texture and stars'])
         call app%sky_choice%currentIndexChanged%connect(on_sky)
@@ -1227,6 +1288,10 @@ program vkframes_qt_demo
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_sky
             i = i + 1
+        case ('--position-marker')
+            call get_command_argument(i + 1, arg)
+            read(arg, *) app%start_position_marker
+            i = i + 1
         case ('--marker')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_marker
@@ -1249,6 +1314,7 @@ program vkframes_qt_demo
     call app%trace_orbit%setChecked(app%start_trace)
     call app%show_radius%setChecked(app%start_radius)
     call app%marker_shape%setCurrentIndex(app%start_marker)
+    call app%position_marker%setCurrentIndex(app%start_position_marker)
     call app%sky_choice%setCurrentIndex(app%start_sky)
     call app%line_pattern%setCurrentIndex(app%start_pattern)
     call app%show_grid%setChecked(app%start_shapes)

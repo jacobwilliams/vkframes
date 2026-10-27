@@ -401,7 +401,7 @@ contains
 
     subroutine check_markers()
         type(Trajectory), target :: traj
-        type(MarkerArtist) :: a, origin
+        type(MarkerArtist) :: a, origin, bare
         real(wp) :: v(3)
         integer :: i, k
         traj = Trajectory()
@@ -473,6 +473,13 @@ contains
         call origin%update(0.0_wp)
         call check(marker_at(origin, MARKER_START, 0.0_wp) .and. .not. origin%drawn_marker(MARKER_END, v), &
                    'markers: at the origin')
+        ! no trajectory and the default sources (OpenFrames' marker at a frame's
+        ! position): the same
+        bare = MarkerArtist(markers=MARKER_START, size=18.0_wp)
+        call bare%build(c_null_ptr, vkf_switch_create())
+        call bare%update(0.0_wp)
+        call check(marker_at(bare, MARKER_START, 0.0_wp) .and. .not. bare%drawn_marker(MARKER_END, v), &
+                   'markers: no trajectory, at the origin')
     end subroutine check_markers
 
     subroutine check_drawable()

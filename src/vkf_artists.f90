@@ -914,7 +914,9 @@ contains
     ! MarkerArtist
 
     !> A marker artist for `traj` (optional; without one, or with all data
-    !> sources zero, a start marker at the origin), drawing `markers` (an ior
+    !> sources zero, a start marker at the origin: in a DrawableTrajectory that
+    !> follows a trajectory, or is a child of a frame that does, it marks the
+    !> current position, as in OpenFrames), drawing `markers` (an ior
     !> of MARKER_START, MARKER_INTERMEDIATE, MARKER_END; default start and end)
     !> of `size` window units (default 10) in `color` (all markers; default red
     !> start and end, white intermediate).
@@ -1239,7 +1241,7 @@ contains
         logical :: changed, redraw, zero
         integer :: n, k
         if (.not. c_associated(self%group)) return
-        zero = all(self%sources_%src == SOURCE_ZERO)
+        zero = all(self%sources_%src == SOURCE_ZERO) .or. .not. associated(self%traj)   ! (a marker at the origin)
         if (zero) then
             n = 1                                         ! a marker at the origin
         else
