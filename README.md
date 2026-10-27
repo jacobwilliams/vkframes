@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="media/logo/vkframes-logo.svg" alt="vkframes" width="520">
+</p>
+
 # vkframes
 
 Spacecraft trajectory visualization for modern Fortran.
