@@ -37,6 +37,10 @@
 // src/vsg/vkf_layer.cpp) picks the stride per view, from the bounds Fortran
 // computes of how far the points skipped are from the segments drawn.
 //
+// Colors: the style's, or (lines made by vkf_line_create_colored) each
+// point's times the style's, blended along each segment from its first
+// point's to its second's (OpenFrames' CustomLineSegments).
+//
 // Points are drawn relative to the eye (RTE) to keep double precision far from
 // the origin (see EyeRelative in src/vsg/vkf_layer.cpp): each point is a (high,
 // low) float pair, the eye position in the same frame is pushed as a pair, and
@@ -62,8 +66,13 @@ layout(set = 0, binding = 1) uniform Style {
     vec4 color;
     vec4 params;            // x = width in window units (logical pixels), y = 1 for separate segments,
                             // z = dash pattern (16 bits; 65535 or 0: solid), w = window units per bit
-    vec4 count;             // x = points written in the buffer (set by vkf_line_points_changed)
+    vec4 count;             // x = points written in the buffer (set by vkf_line_points_changed),
+                            // y = 1 for a color per point (colors), else 0
 } style;
+
+layout(std430, set = 0, binding = 3) readonly buffer Colors {
+    vec4 c[];               // point i's color (if style.count.y = 1: else one, white), times style.color
+} colors;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) noperspective out vec3 dash;   // along the line, in periods 2^n and 2^(n+1);
@@ -193,7 +202,7 @@ void main()
     pos.xy += (offset / halfSize) * pos.w;
 
     gl_Position = pos;
-    fragColor = style.color;
+    fragColor = (style.count.y > 0.5) ? style.color * colors.c[atEnd ? second : first] : style.color;
     dash = vec3(0.0);
     uint pattern = uint(style.params.z) & 0xFFFFu;
     if (pattern != 0xFFFFu && pattern != 0u)

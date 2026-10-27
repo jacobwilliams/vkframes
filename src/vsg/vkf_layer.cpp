@@ -347,6 +347,8 @@ namespace
             bindings.push_back({1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
             if (kind == PointsKind::markers || kind == PointsKind::skyTexture)
                 bindings.push_back({2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
+            if (kind == PointsKind::lines)       // the points' colors (vkf_line_create_colored)
+                bindings.push_back({3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
             descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
             // EyeRelative pushes the eye position, the viewport and a line's level of
@@ -859,6 +861,8 @@ namespace
         vsg::ref_ptr<vsg::Draw> draw;
         bool markers = false;                // a quad per point
         std::shared_ptr<LineLod> lod;        // lines: the level of detail (EyeRelative)
+        vsg::ref_ptr<vsg::vec4Array> colors; // lines: a color per point (colored), else one, white
+        bool colored = false;
 
         bool segments() const { return style->at(1).y > 0.5f; }
         // the vertices drawing points first .. first+n-1 (1-based)
@@ -2105,11 +2109,10 @@ VKF_API int vkf_viewer_hud_remove(void* viewer, void* label)
 // Line strips: thick lines of constant pixel width (shaders/line.vert), with
 // points kept to double precision (drawn relative to the eye)
 
-// A line strip holding up to capacity points (initially none). Fortran fills
-// its point and style buffers in place (vkf_line_points, vkf_line_style) and
-// then calls vkf_line_points_changed / vkf_line_style_changed. It can be shown
-// in any number of windows.
-VKF_API void* vkf_line_create(int capacity)
+// A line of up to capacity points (see vkf_line_create), with a color per
+// point when `colored` (vkf_line_colors): blended along each segment and
+// multiplied by the style's color.
+static void* make_line(int capacity, bool colored)
 {
     if (capacity < 2) return nullptr;
     return guarded("vkf_line_create", static_cast<void*>(nullptr), [&]() -> void* {
@@ -2117,11 +2120,16 @@ VKF_API void* vkf_line_create(int capacity)
         auto line = std::make_unique<LineStrip>();
         line->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
-        line->style = dynamic_vec4_array(3);     // [color, params, (points written: shaders/line.vert's joins)]
+        line->style = dynamic_vec4_array(3);     // [color, params, (points written, colored): shaders/line.vert]
+        line->colored = colored;
+        line->colors = vsg::vec4Array::create(colored ? static_cast<uint32_t>(capacity) : 1u, vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        if (colored) line->colors->properties.dataVariance = vsg::DYNAMIC_DATA;
+        line->style->at(2).y = colored ? 1.0f : 0.0f;
 
         auto descriptorSet = vsg::DescriptorSet::create(pipeline.descriptorSetLayout, vsg::Descriptors{
             vsg::DescriptorBuffer::create(line->points, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
             vsg::DescriptorBuffer::create(line->style, 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER),
+            vsg::DescriptorBuffer::create(line->colors, 3, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
         });
 
         auto stateGroup = vsg::StateGroup::create();
@@ -2137,6 +2145,27 @@ VKF_API void* vkf_line_create(int capacity)
         line->node = eyeRelative;
         return line.release();
     });
+}
+
+// A line strip holding up to capacity points (initially none). Fortran fills
+// its point and style buffers in place (vkf_line_points, vkf_line_style) and
+// then calls vkf_line_points_changed / vkf_line_style_changed. It can be shown
+// in any number of windows.
+VKF_API void* vkf_line_create(int capacity) { return make_line(capacity, false); }
+
+// A line with a color per point (r, g, b, a, in display values), blended along
+// each segment (vkf_line_colors; uploaded with the points by
+// vkf_line_points_changed).
+VKF_API void* vkf_line_create_colored(int capacity) { return make_line(capacity, true); }
+
+// The colors of a line made by vkf_line_create_colored: 4 floats per point,
+// to fill in place (null for other lines).
+VKF_API float* vkf_line_colors(void* line, int* capacity)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l || !l->colored) return nullptr;
+    *capacity = static_cast<int>(l->colors->size());
+    return &(l->colors->at(0).x);
 }
 
 // Markers at up to capacity points (initially none): a screen-space quad per
@@ -2376,6 +2405,7 @@ VKF_API int vkf_line_points_changed(void* line, int n)
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l || n < 0 || 8 * static_cast<uint32_t>(n) > l->points->size()) return -1;
     l->points->dirty();
+    if (l->colored) l->colors->dirty();
     l->setRange(1, static_cast<uint32_t>(n));
     if (!l->markers && l->style->size() > 2)       // lines: the points written (neighbours for the joins)
     {

@@ -161,6 +161,7 @@ contains
         if (.not. associated(self%root)) return
         if (.not. (self%updates > 0 .and. t == self%updated_time .and. seen /= self%updates)) then
             call self%root%update(t)
+            call self%root%late_update(t)                   ! (all frames at their positions for t)
             call self%root%sync()
             self%updates = self%updates + 1
             self%updated_time = t

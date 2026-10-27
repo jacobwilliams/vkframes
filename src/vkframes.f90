@@ -28,6 +28,7 @@ module vkframes
                            INTERMEDIATE_TIME, INTERMEDIATE_DISTANCE, INTERMEDIATE_DATA, &
                            MARKER_DISK, MARKER_CIRCLE, MARKER_SQUARE, MARKER_PLUS, MARKER_X, MARKER_TARGET, &
                            MARKER_ROSE, MARKER_CIRCLE_PULSE, MARKER_DISK_PULSE, MARKER_SPIRAL, MARKER_IMAGE
+    use vkf_line_segments, only: CustomLineSegments, LineSegmentsCallback
     use vkf_view, only: View, ABSOLUTE_FRAME, RELATIVE_FRAME, VIEW_DIRECT, VIEW_AZEL, ORTHOGRAPHIC, PERSPECTIVE
     use vkf_terrain, only: TerrainBody, rocky_available, LAYER_TMS, LAYER_GDAL, LAYER_GEODETIC, LAYER_MERCATOR, &
                            ELEVATION_HEIGHTS, ELEVATION_MAPBOX, ELEVATION_TERRARIUM

@@ -44,6 +44,9 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - Trace mode: draw only up to the current time.
   - Level of detail: seen from far away, a curve is drawn from fewer
     points, staying within half a pixel of all of them, chosen per view.
+- **Custom line segments**: `CustomLineSegments` (as OpenFrames') draws
+  segments with a color at each end, set by the program or computed each
+  frame by a callback: for example, lines of sight between spacecraft.
 - **Reference shapes**: `CoordinateAxes` with tick marks, `LatLonGrid`,
   `RadialPlane`, and polyhedral, elliptic and rectangular cones.
 - **Sky**: `SkySphere`, a star catalog (HYG v3) and/or a sky texture.
@@ -160,6 +163,7 @@ pixi run example shapes          # axes, lat/lon grid, plane and sensor cones
 pixi run example two_windows     # one scene in two windows, clocks synchronized
 pixi run example live_changes    # adding and removing frames while shown
 pixi run example precision       # a 10 m spacecraft on a 7000 km orbit line
+pixi run example line_of_sight   # lines of sight between spacecraft in five orbits
 ```
 
 Most examples take an optional frame count and an image file to capture,

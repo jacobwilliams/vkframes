@@ -26,7 +26,7 @@ module vkf_layer
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
-    public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create
+    public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
@@ -522,6 +522,21 @@ module vkf_layer
             integer(c_int), value :: capacity
             type(c_ptr), value :: image
         end function vkf_marker_create
+
+        !> A line with a color per point (vkf_line_colors), blended along each segment.
+        type(c_ptr) function vkf_line_create_colored(capacity) bind(C, name="vkf_line_create_colored")
+            import :: c_ptr, c_int
+            implicit none
+            integer(c_int), value :: capacity
+        end function vkf_line_create_colored
+
+        !> The colors (4 floats per point) of a line made by vkf_line_create_colored (null for others).
+        type(c_ptr) function vkf_line_colors(line, capacity) bind(C, name="vkf_line_colors")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: line
+            integer(c_int), intent(out) :: capacity
+        end function vkf_line_colors
 
         type(c_ptr) function vkf_line_points(line, capacity) bind(C, name="vkf_line_points")
             import :: c_ptr, c_int

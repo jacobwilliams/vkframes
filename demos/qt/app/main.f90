@@ -16,7 +16,10 @@
 !> in a shape chosen from the dock (OpenFrames' way: a DrawableTrajectory child
 !> of each spacecraft with a MarkerArtist and no trajectory, which draws one
 !> marker at its frame's origin; the bodies' contents are hidden, their frames
-!> still move and the views follow them). A FrameManager
+!> still move and the views follow them). A line of sight between the two
+!> spacecraft can be shown from the dock: a CustomLineSegments whose callback
+!> sets its segment each frame, green while the line is clear of the Earth (and
+!> 100 km of atmosphere), red when the Earth blocks it. A FrameManager
 !> holds the scene. Each window has a WindowProxy showing it, with six Views
 !> (the Earth; spacecraft 1 body-fixed; from spacecraft 1 toward the Earth;
 !> spacecraft 2; from spacecraft 1 toward spacecraft 2, and back; chosen per
@@ -71,7 +74,8 @@
 !> `--position-marker n` with the spacecraft shown as marker shape n (0: their
 !> bodies; 1 disk, ... 10 spiral); `--sky n`
 !> with sky n (0 none, 1 stars, 2 texture, 3 both); `--shapes` with the grid,
-!> coordinate axes, plane and sensor cone shown; `--pattern n` with orbit
+!> coordinate axes, plane and sensor cone shown; `--los` with the line of
+!> sight between the spacecraft shown; `--pattern n` with orbit
 !> pattern n (0 solid, 1 dashed, 2 dotted, 3 dash-dot).
 module vkdemo
 
@@ -99,6 +103,14 @@ module vkdemo
     character(len=28), parameter :: view_names(n_views) = [character(len=28) :: 'Earth', 'Spacecraft 1', &
         'Spacecraft 1 -> Earth', 'Spacecraft 2', 'Spacecraft 1 -> Spacecraft 2', 'Spacecraft 2 -> Spacecraft 1']
 
+    !> The line of sight between the spacecraft (CustomLineSegments' callback,
+    !> called each frame after the tree's update): green if clear of the Earth,
+    !> red if blocked.
+    type, extends(LineSegmentsCallback) :: LineOfSightLink
+    contains
+        procedure :: compute => line_of_sight_compute
+    end type LineOfSightLink
+
     !> One window showing the scene: a QWindow (in the main window, or in a
     !> top-level widget of its own) with its WindowProxy and views.
     type :: view_window_t
@@ -125,7 +137,7 @@ module vkdemo
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
-        type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks
+        type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
         type(QComboBox) :: sky_choice                          !! none, stars, texture, both
@@ -169,6 +181,9 @@ module vkdemo
         ! way: its oftrajectoryfollower demo)
         type(DrawableTrajectory) :: position_frame1, position_frame2
         type(MarkerArtist) :: position_marker1, position_marker2
+        ! the line of sight between the spacecraft
+        type(CustomLineSegments) :: line_of_sight
+        type(LineOfSightLink) :: line_of_sight_link
         type(SkySphere) :: sky                                 !! stars and (with OpenFrames' data) a texture
         ! options
         character(len=:), allocatable :: data_dir, capture
@@ -185,6 +200,7 @@ module vkdemo
         integer :: start_sky = 1
         integer :: start_pattern = 0
         logical :: start_shapes = .false.
+        logical :: start_los = .false.
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -363,6 +379,12 @@ contains
         if (.not. (app%spacecraft%add_child(app%position_frame1) .and. app%spacecraft2%add_child(app%position_frame2))) &
             write(*, '(a)') 'vkframes: add_child failed'
 
+        ! the line of sight between the spacecraft (inertial; hidden at first)
+        app%line_of_sight = CustomLineSegments('Line of sight', width=2.5_wp)
+        call hide_decorations(app%line_of_sight)
+        call app%line_of_sight%set_callback(app%line_of_sight_link)
+        call app%line_of_sight%show_contents(.false.)
+
         ! the Sun: a light source an astronomical unit away (inertial)
         app%sun = ReferenceFrame('Sun')
         call app%sun%set_position(1.495978707e8_wp * [cos(0.4_wp), -sin(0.4_wp), 0.2_wp])
@@ -381,7 +403,8 @@ contains
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft) .and. &
                    app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%spacecraft2) .and. &
                    app%inertial%add_child(app%orbit2_frame) .and. app%inertial%add_child(app%equator) .and. &
-                   app%inertial%add_child(app%sun) .and. app%inertial%add_child(app%ticks))) &
+                   app%inertial%add_child(app%sun) .and. app%inertial%add_child(app%ticks) .and. &
+                   app%inertial%add_child(app%line_of_sight))) &
             write(*, '(a)') 'vkframes: add_child failed'
         call app%scene%set_frame(app%inertial)
         write(*, '(a)', advance='no') app%inertial%frame_string()
@@ -409,6 +432,27 @@ contains
         call frame%add_artist(marker)
         call frame%show_contents(.false.)
     end subroutine position_marker_frame
+
+    !> The line of sight from spacecraft 1 to spacecraft 2 at time t (both at
+    !> their positions for t), green if it stays more than 100 km above the
+    !> Earth, red if the Earth blocks it.
+    subroutine line_of_sight_compute(self, segments, t)
+        class(LineOfSightLink), intent(inout) :: self
+        class(CustomLineSegments), intent(inout) :: segments
+        real(wp), intent(in) :: t
+        real(wp) :: a(3, 1), b(3, 1), d(3), s, color(4, 1)
+        a(:, 1) = segments%position_of(app%spacecraft)
+        b(:, 1) = segments%position_of(app%spacecraft2)
+        d = b(:, 1) - a(:, 1)
+        s = 0.0_wp                                  ! the closest point to the Earth's center
+        if (dot_product(d, d) > 0.0_wp) s = max(0.0_wp, min(1.0_wp, -dot_product(a(:, 1), d) / dot_product(d, d)))
+        if (norm2(a(:, 1) + s * d) > re + 100.0_wp) then
+            color(:, 1) = [0.3_wp, 1.0_wp, 0.4_wp, 1.0_wp]
+        else
+            color(:, 1) = [1.0_wp, 0.3_wp, 0.25_wp, 0.8_wp]
+        end if
+        call segments%set_segments(a, b, color)
+    end subroutine line_of_sight_compute
 
     !> A spacecraft's body axes from its center, `length` long (beyond its
     !> body; a Sphere or Model starts them at its surface by default).
@@ -1016,6 +1060,12 @@ contains
         call app%equator%show_contents(checked)
     end subroutine on_show_plane
 
+    subroutine on_show_los(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%line_of_sight%show_contents(checked)
+    end subroutine on_show_los
+
     subroutine on_show_sensor(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -1200,6 +1250,9 @@ contains
         app%show_sensor = QCheckBox('Sensor cone')
         call app%show_sensor%toggled%connect(on_show_sensor)
         call form%addRow('', app%show_sensor)
+        app%show_los = QCheckBox('Line of sight (1 - 2)')
+        call app%show_los%toggled%connect(on_show_los)
+        call form%addRow('', app%show_los)
         app%marker_shape = QComboBox()
         call app%marker_shape%addItems([character(len=15) :: 'None', 'Disk', 'Circle', 'Square', 'Plus', 'X', 'Target', &
                                         'Rose', 'Pulsing circle', 'Pulsing disk', 'Spiral'])
@@ -1290,6 +1343,8 @@ program vkframes_qt_demo
             app%start_radius = .true.
         case ('--shapes')
             app%start_shapes = .true.
+        case ('--los')
+            app%start_los = .true.
         case ('--sky')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_sky
@@ -1327,6 +1382,7 @@ program vkframes_qt_demo
     call app%show_plane%setChecked(app%start_shapes)
     call app%show_ticks%setChecked(app%start_shapes)
     call app%show_sensor%setChecked(app%start_shapes)
+    call app%show_los%setChecked(app%start_los)
     call on_sky(app%start_sky)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)

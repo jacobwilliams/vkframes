@@ -35,7 +35,8 @@ module vkf_line_chain
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
     use vkf_math, only: wp
-    use vkf_layer, only: vkf_line_create, vkf_marker_create, vkf_line_points, vkf_line_points_changed, &
+    use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_marker_create, &
+                         vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
                          vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
                          marker_set_style, vkf_line_set_lod
@@ -77,6 +78,7 @@ module vkf_line_chain
         integer :: n_chunks = 0
         integer :: kind = CHAIN_STRIP
         type(c_ptr) :: image = c_null_ptr               !! markers: the image (shape 10)
+        logical :: colored = .false.                    !! lines: a color per point (color_slice)
         ! style
         real(c_float) :: color(4) = 1.0_c_float
         real(c_float) :: width = 1.0_c_float            !! line width, or marker size
@@ -87,8 +89,8 @@ module vkf_line_chain
         logical :: lod = .true.                         !! strips: level of detail (else every point drawn)
     contains
         procedure :: init, set_compile, is_built, release, detach
-        procedure :: reserve, slice, written, draw
-        procedure :: set_style, set_pattern, set_marker_style, point, distance, num_chunks
+        procedure :: reserve, slice, color_slice, written, draw
+        procedure :: set_style, set_pattern, set_marker_style, point, point_color, distance, num_chunks
         procedure :: set_lod, lod_error
     end type LineChain
 
@@ -97,16 +99,19 @@ contains
     !> Draw under `group` (a CHAIN_* kind; markers with `image`, a
     !> vkf_image_read handle, for the image shape). Chunks made later are
     !> compiled once set_compile says so.
-    subroutine init(self, group, kind, image)
+    subroutine init(self, group, kind, image, colored)
         class(LineChain), intent(inout) :: self
         type(c_ptr), intent(in) :: group
         integer, intent(in) :: kind
         type(c_ptr), intent(in), optional :: image
+        logical, intent(in), optional :: colored       !! lines: a color per point (color_slice)
         self%group = group
         self%kind = kind
         self%compile_new = .false.
         self%image = c_null_ptr
         if (present(image)) self%image = image
+        self%colored = .false.
+        if (present(colored)) self%colored = colored .and. kind /= CHAIN_MARKERS
     end subroutine init
 
     !> Forget the chunks (after their group was removed from the scene): init
@@ -175,7 +180,11 @@ contains
             if (self%kind == CHAIN_MARKERS) then
                 c%line = vkf_marker_create(int(c%capacity, c_int), self%image)
             else
-                c%line = vkf_line_create(int(c%capacity, c_int))
+                if (self%colored) then
+                    c%line = vkf_line_create_colored(int(c%capacity, c_int))
+                else
+                    c%line = vkf_line_create(int(c%capacity, c_int))
+                end if
             end if
             if (.not. c_associated(c%line)) return
             if (self%kind == CHAIN_SEGMENTS) call check(line_set_segments(c%line, .true.))
@@ -211,6 +220,28 @@ contains
             if (associated(all)) p => all(:, :, lo-c%first+1:hi-c%first+1)
         end associate
     end subroutine slice
+
+    !> As `slice`, for the colors of a colored chain: c(rgba, point) of points
+    !> lo .. hi of chunk j (null if not colored or nothing there).
+    subroutine color_slice(self, j, i1, i2, lo, hi, c)
+        class(LineChain), intent(in) :: self
+        integer, intent(in) :: j, i1, i2
+        integer, intent(out) :: lo, hi
+        real(c_float), dimension(:,:), pointer, intent(out) :: c
+        real(c_float), dimension(:,:), pointer :: all
+        integer(c_int) :: capacity
+        type(c_ptr) :: data
+        c => null()
+        associate (k => self%chunks(j))
+            lo = max(i1, k%first)
+            hi = min(i2, k%first + k%capacity - 1)
+            if (lo > hi .or. .not. self%colored) return
+            data = vkf_line_colors(k%line, capacity)
+            if (.not. c_associated(data)) return
+            call c_f_pointer(data, all, [4, int(capacity)])
+            c => all(:, lo-k%first+1:hi-k%first+1)
+        end associate
+    end subroutine color_slice
 
     !> Chunks moved to a new array (their level-of-detail bounds moved, not copied).
     subroutine move_chunks(from, to)
@@ -492,6 +523,23 @@ contains
             end associate
         end do
     end function point
+
+    !> The color of point i of a colored chain, as stored (rgba; white if not colored).
+    function point_color(self, i) result(rgba)
+        class(LineChain), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp) :: rgba(4)
+        real(c_float), dimension(:,:), pointer :: c
+        integer :: j, lo, hi
+        rgba = 1.0_wp
+        do j = 1, self%n_chunks
+            call self%color_slice(j, i, i, lo, hi, c)
+            if (associated(c)) then
+                rgba = real(c(:, 1), wp)
+                return
+            end if
+        end do
+    end function point_color
 
     !> A strip's distance along it at point i, as written.
     function distance(self, i) result(s)

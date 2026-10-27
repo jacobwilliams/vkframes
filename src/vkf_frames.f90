@@ -15,7 +15,10 @@
 !> transform node, with its contents (`build_contents`, which extensions
 !> override) under a switch for `show_contents`; children's nodes go under the
 !> parent's transform, so a frame with several parents is drawn under each.
-!> Each frame, `sync` copies positions and attitudes to the transforms. A shown
+!> Each frame, `update` moves followed frames to the time, then `late_update`
+!> lets contents depend on other frames' positions at that time (e.g.
+!> CustomLineSegments between spacecraft), and `sync` copies positions and
+!> attitudes to the transforms. A shown
 !> tree can change: children added to a shown frame are realized and compiled
 !> (for the windows running) and drawn from the next frame;
 !> removed ones stop being drawn; moved axes (move_x_axis, ...) are made again.
@@ -27,7 +30,7 @@ module vkf_frames
                          vkf_light_create, vkf_light_set
     use vkf_geometry, only: arrow_create
     use vkf_text, only: label_create
-    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
+    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, rigid_inverse
     use vkf_trajectory, only: Trajectory
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE
 
@@ -99,7 +102,7 @@ module vkf_frames
         procedure :: set_color, color
         procedure :: set_position, position
         procedure :: set_attitude, attitude
-        procedure :: local_matrix, world_matrix
+        procedure :: local_matrix, world_matrix, position_of
         procedure :: show_axes, axes_shown
         procedure :: show_axes_labels, axes_labels_shown
         procedure :: show_name_label, name_label_shown
@@ -117,7 +120,7 @@ module vkf_frames
         procedure :: num_parents, parent, parent_index
         procedure :: frame_string
         procedure :: follow, unfollow, follower, is_following
-        procedure :: update
+        procedure :: update, late_update
         procedure :: realize, build_contents, sync, node
         procedure :: bound
         procedure :: move_x_axis, move_y_axis, move_z_axis, reposition_axes
@@ -217,6 +220,17 @@ contains
         m = self%local_matrix()
         if (self%n_parents > 0) m = matmul(self%parents(1)%p%world_matrix(), m)
     end function world_matrix
+
+    !> The origin of `other` (a frame of the same tree) in this frame's
+    !> coordinates, from both frames' transforms to the root (through their
+    !> first parents).
+    function position_of(self, other) result(p)
+        class(ReferenceFrame), intent(in) :: self, other
+        real(wp) :: p(3)
+        real(wp) :: m(4,4)
+        m = matmul(rigid_inverse(self%world_matrix()), other%world_matrix())
+        p = m(1:3, 4)
+    end function position_of
 
     ! ==================================================================
     ! decorations
@@ -696,6 +710,18 @@ contains
             call self%children(k)%p%update(t)
         end do
     end subroutine update
+
+    !> After the whole tree's update for time t (all frames at their positions
+    !> for t): for contents that depend on other frames' positions, e.g.
+    !> CustomLineSegments between spacecraft. Here, only the descendants'.
+    recursive subroutine late_update(self, t)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: t
+        integer :: k
+        do k = 1, self%n_children
+            call self%children(k)%p%late_update(t)
+        end do
+    end subroutine late_update
 
     ! ==================================================================
     ! rendering

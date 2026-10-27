@@ -316,19 +316,22 @@ Goal: settle the platform and design risks before writing the engine.
 
 - [x] A pixi env with VSG, vsgXchange and MoltenVK. A C++ layer with a
       handful of `extern "C"` functions, called from a Fortran program.
-- [ ] A VSG window on macOS, Linux and Windows showing:
+- [x] A VSG window on macOS, Linux and Windows showing (macOS by hand;
+      Linux in CI, with Mesa's software Vulkan driver; Windows: the demos,
+      run by hand):
   - [x] a textured sphere (vsgXchange image loading);
   - [x] a loaded model (`.3ds` or glTF through vsgXchange);
   - [x] an orbit drawn with **thick lines** (screen-space quads), proven on
         MoltenVK;
-  - [ ] trackball control;
+  - [x] trackball control (VSG's trackball, driven by vkframes' View: every
+        demo and example);
   - [x] a per-frame Fortran update moving a frame along a sampled orbit.
 - [x] Camera-relative double-precision rendering with reverse-Z, checked
       with an Earth-sized body and a 10 m spacecraft in the same view
       (`example/precision.f90`).
 - [x] Embedding in a qt-fortran GUI (the native-handle route; see below),
-      including resize and mouse forwarding (`demos/qt`; resize checked by
-      capture, mouse and keys not yet tried by hand).
+      including resize and mouse forwarding (`demos/qt`; resize, mouse and
+      keys used by hand).
 - [x] Screen capture to PNG (needed for automated render tests).
 
 Exit: decide vsgQt or native handle, the shader build approach, and the
@@ -480,7 +483,7 @@ Decided so far:
 
 ### 2. Core engine
 
-- [ ] Fortran types:
+- [x] Fortran types:
   - [x] `ReferenceFrame` (tree, position, attitude, color; axes, label and
         light settings stored, drawn later) — `src/vkf_frames.f90`;
   - [x] `Sphere` (radius, `set_sphere_scale` as an exact ellipsoid, sphere
@@ -558,10 +561,11 @@ Decided so far:
       drawn by a second VSG view with a fixed 0..1 projection, on top of the
       scene. Still to do: changing a frame's label text or color, or a HUD
       text's position/size/font, after it is shown.
-- [ ] Headless tests for interpolation, following, time and the frame
-      transform chain (done: `test/test_trajectory.f90`, `test_follower`,
-      `test_clock`, `test_frames`); render tests by screen capture
-      (deferred: captures are used by hand for now).
+- [x] Headless tests for interpolation, following, time and the frame
+      transform chain (`test/test_trajectory.f90`, `test_follower`,
+      `test_clock`, `test_frames`).
+- [ ] Render tests by screen capture (deferred: captures are used by hand
+      for now).
 
 ### 3. Artists and backgrounds
 
@@ -738,6 +742,31 @@ Decided so far:
       is smooth however long a frame takes. A Record toggle in both demos.
 - [ ] Specular light on PBR models (glTF): ignored for now (PBR has no
       separate specular light color).
+- [x] `CustomLineSegments` (OpenFrames' class of that name;
+      `src/vkf_line_segments.f90`): a frame drawing line segments whose
+      endpoints and colors (one per endpoint, blended along the segment) are
+      set by the program (`set_segments`) or computed each frame by a
+      callback (`set_callback`: an extension of the abstract
+      `LineSegmentsCallback`, as OpenFrames' `CustomLineSegments::Callback`),
+      e.g. lines of sight between spacecraft.
+      - The callback runs in a new phase after the whole tree's update
+        (`ReferenceFrame%late_update`), so other frames are at their positions
+        for the same time whatever their order in the tree.
+      - `ReferenceFrame%position_of(other)` gives another frame's origin in a
+        frame's coordinates.
+      - It's drawn by a `LineChain` of separate segments (width, dash
+        patterns, double precision), with a color per point: lines made by
+        `vkf_line_create_colored`, a storage buffer that `line.vert` reads.
+      - Setting the same segments again uploads nothing.
+      - Tested headless (`test/test_line_segments.f90`).
+      - Shown in `example/line_of_sight.f90` (five orbits, every pair linked,
+        blocked links dashed) and in the Qt demo ("Line of sight").
+      - Not done: OpenFrames' custom line shader (`setLineShader`), which
+        would need run-time GLSL, as `MarkerArtist%set_marker_shader`.
+- [ ] Window callbacks (OpenFrames' `setKeyPressCallback`,
+      `setMouseMotionCallback`, `setButtonPressCallback`): for vkframes' own
+      windows, a program's procedures called with key presses and mouse
+      events (in embedded windows the host gets the events first).
 - [ ] An OpenFrames-like convenience API (optional), examples (orbit,
       multiple viewports, a Qt GUI with controls), documentation (FORD).
 
