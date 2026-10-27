@@ -75,41 +75,50 @@ both apps. Neither app uses multisampling.
 
 #### Flicker in the vkframes app (macOS)
 
-**The problem.** Without `--vsync`, the vkframes window flickers, and some
-frames show all black. The OpenFrames window doesn't. The frames are still
-rendered completely, so the measurements are unaffected; only what reaches
-the screen is.
+**The problem.** Without vsync, the vkframes window flickers, and some frames
+show all black. The OpenFrames window doesn't. With `--vsync` there is no
+flicker. The frames are still rendered completely, so the measurements are
+unaffected; only what reaches the screen is.
 
-**The cause isn't known yet.** It isn't KosmicKrisp presenting a drawable
-before the GPU has finished it, which was the first guess. Mesa's Metal code
-(`src/vulkan/wsi/wsi_common_metal*` and `src/kosmickrisp/vulkan/kk_queue.c`)
-orders the present correctly:
+**What was found** (2026-10-27):
 
-- the queue waits for the drawable;
-- it copies the frame into the drawable, then signals the drawable;
-- only then is `[drawable present]` called.
+| Window | Without vsync | With vsync |
+|---|---|---|
+| In Qt, timer loop (the default) | flickers | fine |
+| In Qt, `--paced` (one frame per display refresh) | flickers | — |
+| vkframes' own window (VSG's, no Qt) | fine | fine |
 
-This is Metal 4's intended pattern. What's left:
+- **Not the driver's present ordering.** Mesa's Metal code
+  (`src/vulkan/wsi/wsi_common_metal*` and `src/kosmickrisp/vulkan/kk_queue.c`)
+  makes the queue wait for the drawable, copies the frame into it, signals
+  it, and only then calls `[drawable present]`. This is Metal 4's intended
+  pattern.
+- **Not presenting faster than the display, and not Qt being starved of
+  events:** `--paced` flickers too, at 98 fps on a 120 Hz display.
+- **Not the Metal layer's settings.** The layer is the same in both windows
+  (opaque, 3 drawables, the same pixel format); without vsync, KosmicKrisp
+  turns its `displaySyncEnabled` off in both.
+- **It is where the layer sits.**
+  - In vkframes' own window, the Metal layer is the backing layer of VSG's
+    view.
+  - In Qt, it is nested inside two of Qt's `QContainerLayer`s, as the top
+    sublayer above another of Qt's layers.
+  - Core Animation composes an unsynchronized Metal layer (display sync
+    off) badly inside Qt's layer tree. The black frames look like moments
+    when the Metal layer shows no image and Qt's layer underneath shows
+    through.
 
-1. **Presenting much faster than the display, with display sync off.** This
-   can tear and drop frames.
-2. **Qt's own view showing through.** vkframes renders into a view of its own
-   inside Qt's window view. In the zero-interval timer loop, Qt rarely gets
-   to run, and may repaint its black view over vkframes'.
-3. **Something in vkframes' new no-vsync path**, which only the benchmark
-   uses.
+**What it means:**
 
-**To narrow it down**, run each of these and note which ones flicker:
-
-```sh
-pixi run -e qt bench-vkframes -- --points 1000000 --seconds 8            # timer loop, no vsync
-pixi run -e qt bench-vkframes -- --points 1000000 --seconds 8 --paced    # display-paced, no vsync
-pixi run -e qt bench-vkframes -- --points 1000000 --seconds 8 --vsync    # timer loop, vsync
-```
-
-`--paced` draws one frame per Qt update request, as the demos do, without
-vsync. If `--paced` doesn't flicker, the timer loop starving Qt is the cause
-(2). If it does, the cause is presenting without vsync (1 or 3).
+- Only `WindowProxy%open(..., vsync=.false.)` in a window embedded in a host
+  is affected, on macOS. Only this benchmark does that. vkframes' default is
+  vsync, which is fine everywhere.
+- The benchmark's numbers are still valid.
+- If an embedded window without vsync is ever needed, there are things to
+  try, watching the window each time:
+  - the layer's `presentsWithTransaction`;
+  - presenting into a layer outside Qt's layer tree (a separate child
+    window).
 
 ## Results
 
