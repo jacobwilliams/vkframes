@@ -1,6 +1,8 @@
 !> Checks View geometry (no window): world-to-view transforms for relative and
 !> absolute views and for views between frames (direct and azimuth-elevation),
-!> and the default camera distance (OpenFrames' resetView formula).
+!> and the default camera distance (OpenFrames' resetView formula);
+!> camera_between (the ends, the center halfway, the distance geometric, the
+!> orientation turned halfway, up kept perpendicular).
 program test_view
 
     use vkframes
@@ -65,6 +67,8 @@ program test_view
     call v%home(2.0_wp, eye, center, up)
     call check(all(eye == [1.0_wp, 2.0_wp, 3.0_wp]), 'home: default view parameters')
 
+    call check_camera_between()
+
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
         error stop 1
@@ -72,6 +76,27 @@ program test_view
     write(*, '(a)') 'PASS: View'
 
 contains
+
+    !> From a camera 10 away along -y, looking at the origin with z up, to one
+    !> 1000 away along +x, looking at [0, 50, 0]: half way, the center is
+    !> halfway, 100 away (10 x 1000, square root), and the view direction
+    !> turned halfway from +y to -x (45 degrees, about z) with z still up.
+    subroutine check_camera_between()
+        real(wp) :: a(3,3), b(3,3), c(3,3), f(3)
+        a = reshape([0.0_wp, -10.0_wp, 0.0_wp, 0.0_wp, 0.0_wp, 0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], [3, 3])
+        b = reshape([1000.0_wp, 50.0_wp, 0.0_wp, 0.0_wp, 50.0_wp, 0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], [3, 3])
+        c = camera_between(0.0_wp, a, b)
+        call check(maxval(abs(c - a)) < 1.0e-9_wp, 'camera_between: the start')
+        c = camera_between(1.0_wp, a, b)
+        call check(maxval(abs(c - b)) < 1.0e-9_wp, 'camera_between: the end')
+        c = camera_between(0.5_wp, a, b)
+        f = c(:, 2) - c(:, 1)
+        call check(maxval(abs(c(:, 2) - [0.0_wp, 25.0_wp, 0.0_wp])) < 1.0e-9_wp, 'camera_between: the center halfway')
+        call check(abs(norm2(f) - 100.0_wp) < 1.0e-9_wp, 'camera_between: the distance geometric')
+        call check(abs(dot_product(f / norm2(f), [-1.0_wp, 1.0_wp, 0.0_wp] / sqrt(2.0_wp)) - 1.0_wp) < 1.0e-9_wp, &
+                   'camera_between: the direction turned halfway')
+        call check(maxval(abs(c(:, 3) - z)) < 1.0e-9_wp, 'camera_between: up kept')
+    end subroutine check_camera_between
 
     subroutine check(ok, what)
         logical, intent(in) :: ok

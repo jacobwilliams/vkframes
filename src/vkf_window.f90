@@ -36,13 +36,27 @@
 !> next view, `V` the previous one, the space bar resets the view (unless the
 !> handler's `key_press` says it handled the key, or `set_default_keys(.false.)`).
 !> The mouse moves the camera (the trackball); the keys don't.
+!>
+!> The camera (OpenFrames' trackball getTransformation / setTransformation):
+!> `get_camera` and `set_camera` (eye, center, up in the shown view's frame,
+!> or in its root frame with `in_root`). Smooth transitions (not in
+!> OpenFrames): `set_camera` with a `duration` flies there, and with
+!> `set_view_transition(seconds)` (default 0: a cut, as OpenFrames) changing
+!> the view (select_view, next_view, previous_view, the keys v and V; or with
+!> their own `duration`) and resetting it (the space bar) fly from the camera
+!> shown to the new one. A flight moves the center along a straight line, the
+!> distance geometrically and the orientation by the shortest rotation, eased
+!> in and out, in the root frame (both views' frames as they move), over the
+!> wall-clock time given; a mouse press, `stop_transition` or another flight
+!> ends it.
 module vkf_window
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float
-    use vkf_math, only: wp
+    use, intrinsic :: iso_fortran_env, only: int64
+    use vkf_math, only: wp, rigid_inverse
     use vkf_frames, only: ReferenceFrame
     use vkf_clock, only: SimulationClock
-    use vkf_view, only: View, PERSPECTIVE
+    use vkf_view, only: View, PERSPECTIVE, camera_between, transform_camera
     use vkf_hud, only: HUDText
     use vkf_sky, only: SkySphere
     use vkf_text, only: label_create
@@ -103,6 +117,16 @@ module vkf_window
         integer :: revision = -1                    !! the text's revision last shown
     end type HUDEntry
 
+    !> A camera flight (see the module documentation): from camera `start`
+    !> (in view `from`'s frame) to camera `finish` (in view `to`'s).
+    type :: CameraFlight
+        logical :: active = .false.
+        type(View), pointer :: from => null(), to => null()
+        real(wp) :: start(3,3) = 0.0_wp, finish(3,3) = 0.0_wp   !! (columns: eye, center, up)
+        integer(int64) :: started = 0_int64                 !! system_clock count
+        real(wp) :: duration = 0.0_wp                       !! s
+    end type CameraFlight
+
     !> A program's handler of a window's keyboard and mouse events (see the
     !> module documentation): extend it and override the procedures wanted
     !> (the others do nothing).
@@ -144,6 +168,10 @@ module vkf_window
         class(WindowEventHandler), pointer :: handler => null()
         logical :: default_keys_ = .true.
         logical :: hosted = .false.                         !! in a host's window (its size from `resize`)
+        ! camera transitions
+        real(wp) :: transition_ = 0.0_wp                    !! s, for view changes and resets
+        real(wp) :: switch_duration = -1.0_wp               !! s, for the next view change (< 0: transition_)
+        type(CameraFlight) :: flight
     contains
         procedure :: open, close, is_open, pixel_ratio
         procedure :: set_scene
@@ -154,6 +182,9 @@ module vkf_window
         procedure :: add_view, remove_view, remove_all_views
         procedure :: select_view, next_view, previous_view
         procedure :: current_view, num_views
+        ! the camera (OpenFrames' trackball transformation), smooth transitions
+        procedure :: get_camera, set_camera
+        procedure :: set_view_transition, view_transition, in_transition, stop_transition
         ! HUD text (OpenFrames' RenderRectangle HUD)
         procedure :: add_hud_text, remove_hud_text
         procedure :: set_sky, sky
@@ -606,24 +637,112 @@ contains
         self%current = 0
     end subroutine remove_all_views
 
-    !> Show view i (1 to num_views).
-    subroutine select_view(self, i)
+    !> Show view i (1 to num_views), flying there over `duration` s (default:
+    !> the view transition, `set_view_transition`; 0: a cut).
+    subroutine select_view(self, i, duration)
         class(WindowProxy), intent(inout) :: self
         integer, intent(in) :: i
-        if (i >= 1 .and. i <= self%n_views) self%current = i
+        real(wp), intent(in), optional :: duration
+        if (i < 1 .or. i > self%n_views .or. i == self%current) return
+        self%current = i
+        if (present(duration)) self%switch_duration = max(0.0_wp, duration)
     end subroutine select_view
 
-    !> Show the next view (wrapping around).
-    subroutine next_view(self)
+    !> Show the next view (wrapping around); `duration` as select_view's.
+    subroutine next_view(self, duration)
         class(WindowProxy), intent(inout) :: self
-        if (self%n_views > 0) self%current = modulo(self%current, self%n_views) + 1
+        real(wp), intent(in), optional :: duration
+        if (self%n_views > 0) call self%select_view(modulo(self%current, self%n_views) + 1, duration)
     end subroutine next_view
 
-    !> Show the previous view (wrapping around).
-    subroutine previous_view(self)
+    !> Show the previous view (wrapping around); `duration` as select_view's.
+    subroutine previous_view(self, duration)
         class(WindowProxy), intent(inout) :: self
-        if (self%n_views > 0) self%current = modulo(self%current - 2, self%n_views) + 1
+        real(wp), intent(in), optional :: duration
+        if (self%n_views > 0) call self%select_view(modulo(self%current - 2, self%n_views) + 1, duration)
     end subroutine previous_view
+
+    ! ==================================================================
+    ! the camera
+
+    !> The camera of the view shown (from the last frame): eye, center and up
+    !> in the view frame's coordinates (OpenFrames' trackball
+    !> getTransformation), or in its root frame's if `in_root`. Zero before
+    !> the window's first frame.
+    subroutine get_camera(self, eye, center, up, in_root)
+        class(WindowProxy), intent(in) :: self
+        real(wp), intent(out) :: eye(3), center(3), up(3)
+        logical, intent(in), optional :: in_root
+        real(wp) :: cam(3,3)
+        eye = 0.0_wp
+        center = 0.0_wp
+        up = 0.0_wp
+        if (.not. self%is_open() .or. .not. associated(self%shown)) return
+        if (vkf_viewer_get_look_at(self%viewer_, eye, center, up) /= 0) return
+        if (.not. present(in_root)) return
+        if (.not. in_root) return
+        cam = transform_camera(rigid_inverse(self%shown%world_to_view()), reshape([eye, center, up], [3, 3]))
+        eye = cam(:, 1)
+        center = cam(:, 2)
+        up = cam(:, 3)
+    end subroutine get_camera
+
+    !> Set the camera of the current view: eye, center and up in the view
+    !> frame's coordinates (OpenFrames' trackball setTransformation), or in its
+    !> root frame's if `in_root` (as the frames are now). With `duration` (s),
+    !> fly there from the camera shown. Before the view is shown, it is its
+    !> camera when it is (View%set_camera).
+    subroutine set_camera(self, eye, center, up, duration, in_root)
+        class(WindowProxy), intent(inout), target :: self
+        real(wp), intent(in) :: eye(3), center(3), up(3)
+        real(wp), intent(in), optional :: duration
+        logical, intent(in), optional :: in_root
+        type(View), pointer :: v
+        real(wp) :: cam(3,3), now(3,3)
+        logical :: root
+        v => self%current_view()
+        cam = reshape([eye, center, up], [3, 3])
+        root = .false.
+        if (present(in_root)) root = in_root
+        if (root) cam = transform_camera(v%world_to_view(), cam)
+        if (.not. self%is_open() .or. .not. associated(self%shown, v)) then
+            call v%set_camera(cam(:, 1), cam(:, 2), cam(:, 3))
+            return
+        end if
+        if (present(duration)) then
+            if (duration > 0.0_wp .and. vkf_viewer_get_look_at(self%viewer_, now(:, 1), now(:, 2), now(:, 3)) == 0) then
+                call start_flight(self, v, now, v, cam, duration)
+                return
+            end if
+        end if
+        self%flight%active = .false.
+        call put_camera(self, cam)
+    end subroutine set_camera
+
+    !> The time (s) a change of view or a reset flies from one camera to the
+    !> other (default 0: a cut, as OpenFrames).
+    subroutine set_view_transition(self, seconds)
+        class(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: seconds
+        self%transition_ = max(0.0_wp, seconds)
+    end subroutine set_view_transition
+
+    pure real(wp) function view_transition(self)
+        class(WindowProxy), intent(in) :: self
+        view_transition = self%transition_
+    end function view_transition
+
+    !> True while the camera is flying (a transition).
+    pure logical function in_transition(self)
+        class(WindowProxy), intent(in) :: self
+        in_transition = self%flight%active
+    end function in_transition
+
+    !> End a flight where the camera is now.
+    subroutine stop_transition(self)
+        class(WindowProxy), intent(inout) :: self
+        self%flight%active = .false.
+    end subroutine stop_transition
 
     !> The view shown (the default view of the scene's root if none were added).
     function current_view(self) result(v)
@@ -654,28 +773,55 @@ contains
     !> changes, then set its world-to-view transform and projection.
     subroutine place_camera(self)
         type(WindowProxy), intent(inout), target :: self
-        type(View), pointer :: v
+        type(View), pointer :: v, from
         class(ReferenceFrame), pointer :: root
-        real(wp) :: eye(3), center(3), up(3), dist, near, far, bounds(4)
-        logical :: restored
+        real(wp) :: eye(3), center(3), up(3), dist, near, far, bounds(4), cam(3,3), from_cam(3,3), duration
+        logical :: have_target
         v => self%current_view()
         if (associated(v, self%default_view) .and. associated(self%scene)) then
             root => self%scene%frame()
             if (associated(root) .and. .not. self%default_view%is_valid()) call self%default_view%set_view_frame(root, root)
         end if
+        ! the camera shown (to fly from), and the new one: a view changed to (its
+        ! camera set, kept, or reset), a camera set, or a reset
+        from => null()
+        if (associated(self%shown)) then
+            if (vkf_viewer_get_look_at(self%viewer_, from_cam(:, 1), from_cam(:, 2), from_cam(:, 3)) == 0) &
+                from => self%shown
+        end if
+        duration = self%transition_
+        have_target = .false.
         if (.not. associated(v, self%shown)) then
-            if (associated(self%shown)) then
-                if (vkf_viewer_get_look_at(self%viewer_, eye, center, up) == 0) call self%shown%save_state(eye, center, up)
+            if (associated(from)) call from%save_state(from_cam(:, 1), from_cam(:, 2), from_cam(:, 3))
+            if (self%switch_duration >= 0.0_wp) duration = self%switch_duration
+            self%switch_duration = -1.0_wp
+            if (v%take_camera(cam)) then
+                have_target = .true.
+            else if (v%saved_state(eye, center, up)) then
+                cam = reshape([eye, center, up], [3, 3])
+                have_target = .true.
+            else
+                call v%reset_view()
             end if
-            restored = v%saved_state(eye, center, up)
-            if (.not. restored) call v%reset_view()
-            if (restored) call set_camera(self, eye, center, up)
             self%shown => v
+        else if (v%take_camera(cam)) then
+            have_target = .true.
+            duration = 0.0_wp                               ! (View%set_camera: at once)
         end if
         if (v%take_reset()) then
             call v%home(aspect_ratio(self), eye, center, up)
-            call set_camera(self, eye, center, up)
+            cam = reshape([eye, center, up], [3, 3])
+            have_target = .true.
         end if
+        if (have_target) then
+            if (associated(from) .and. duration > 0.0_wp) then
+                call start_flight(self, from, from_cam, v, cam, duration)
+            else
+                self%flight%active = .false.
+                call put_camera(self, cam)
+            end if
+        end if
+        call fly(self, v)
         if (vkf_viewer_set_view_transform(self%viewer_, v%world_to_view()) /= 0) &
             write(*, '(a)') 'vkframes: could not set the view'
         ! near and far planes from the camera's distance to its center (reverse-Z
@@ -694,11 +840,55 @@ contains
         end if
     end subroutine place_camera
 
-    subroutine set_camera(self, eye, center, up)
+    !> The renderer's camera (columns: eye, center, up; the shown view's frame).
+    subroutine put_camera(self, cam)
         type(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: eye(3), center(3), up(3)
-        if (vkf_viewer_look_at(self%viewer_, eye, center, up) /= 0) write(*, '(a)') 'vkframes: could not set the camera'
-    end subroutine set_camera
+        real(wp), intent(in) :: cam(3,3)
+        if (vkf_viewer_look_at(self%viewer_, cam(:, 1), cam(:, 2), cam(:, 3)) /= 0) &
+            write(*, '(a)') 'vkframes: could not set the camera'
+    end subroutine put_camera
+
+    !> Fly from camera `start` (in view `from`'s frame) to `finish` (in view
+    !> `to`'s) over `duration` s, from now.
+    subroutine start_flight(self, from, start, to, finish, duration)
+        type(WindowProxy), intent(inout) :: self
+        type(View), intent(in), target :: from, to
+        real(wp), intent(in) :: start(3,3), finish(3,3), duration
+        self%flight%from => from
+        self%flight%to => to
+        self%flight%start = start
+        self%flight%finish = finish
+        self%flight%duration = duration
+        call system_clock(self%flight%started)
+        self%flight%active = .true.
+    end subroutine start_flight
+
+    !> The camera of an active flight to view `v`, at this moment: both
+    !> cameras in the root frame (their views' frames as they are now), in
+    !> between by the eased fraction of the time passed, back in `v`'s frame.
+    subroutine fly(self, v)
+        type(WindowProxy), intent(inout) :: self
+        type(View), intent(in), target :: v
+        integer(int64) :: count, rate
+        real(wp) :: s, from(3,3), to(3,3), m(4,4)
+        if (.not. self%flight%active) return
+        if (.not. associated(self%flight%to, v)) then             ! (another view since)
+            self%flight%active = .false.
+            return
+        end if
+        call system_clock(count, rate)
+        s = real(count - self%flight%started, wp) / (real(rate, wp) * self%flight%duration)
+        if (s >= 1.0_wp) then
+            self%flight%active = .false.
+            call put_camera(self, self%flight%finish)
+            return
+        end if
+        s = s * s * (3.0_wp - 2.0_wp * s)                           ! (eased in and out)
+        m = v%world_to_view()
+        from = transform_camera(rigid_inverse(self%flight%from%world_to_view()), self%flight%start)
+        to = transform_camera(rigid_inverse(m), self%flight%finish)
+        call put_camera(self, transform_camera(m, camera_between(s, from, to)))
+    end subroutine fly
 
     ! ==================================================================
     ! simulation time
@@ -953,6 +1143,7 @@ contains
         case (MOVE)
             if (associated(self%handler)) call self%handler%mouse_motion(self, x, y, iand(e(6), BUTTON_MASKS) /= 0)
         case (BUTTON_PRESS)
+            self%flight%active = .false.                                     ! (the mouse takes the camera)
             if (associated(self%handler)) call self%handler%button_press(self, x, y, e(5))
         case (BUTTON_RELEASE)
             if (associated(self%handler)) call self%handler%button_release(self, x, y, e(5))

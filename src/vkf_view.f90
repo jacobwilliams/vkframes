@@ -16,10 +16,17 @@
 !> distance at which it fills the field of view (or from `default_view_distance`,
 !> or from `set_default_view_parameters`). Views are not owned by windows: a
 !> view, and the frames it refers to, must stay alive while used.
+!>
+!> The camera (OpenFrames' trackball get/setTransformation): a window's
+!> `get_camera` / `set_camera` for the view it shows (and smooth transitions,
+!> see vkf_window), or `View%set_camera` for a view's camera when it is next
+!> shown. `camera_between` interpolates between two cameras (each eye, center,
+!> up): the center along a straight line, the distance geometrically, the
+!> orientation by the shortest rotation.
 module vkf_view
 
     use vkf_math, only: wp, pi, quat_from_vectors, quat_to_matrix, translation_matrix, identity_matrix, &
-                        rigid_inverse
+                        rigid_inverse, quat_from_matrix, quat_slerp, quat_normalize, cross
     use vkf_frames, only: ReferenceFrame
 
     implicit none
@@ -55,6 +62,8 @@ module vkf_view
         real(wp) :: eye(3) = 0.0_wp, center(3) = 0.0_wp, up(3) = 0.0_wp
         logical :: has_state = .false.
         logical :: reset_pending = .true.
+        real(wp) :: pending(3,3) = 0.0_wp                  !! a camera set (eye, center, up), for when it is shown
+        logical :: camera_pending = .false.
     contains
         procedure :: set_view_frame, set_view_between_frames
         procedure :: view_root, view_frame, lookat_frame, view_frame_type, view_rotation_type, is_valid
@@ -64,7 +73,10 @@ module vkf_view
         procedure :: reset_view
         procedure :: world_to_view, home
         procedure :: save_state, saved_state, take_reset
+        procedure :: set_camera => view_set_camera, take_camera
     end type View
+
+    public :: camera_between, transform_camera
 
     interface View
         module procedure new_view
@@ -324,6 +336,81 @@ contains
         center = self%center
         up = self%up
     end function saved_state
+
+    !> The camera (view-frame coordinates) to show the next time the view is
+    !> drawn (at once if it is shown: the window's `set_camera` can also fly
+    !> there). It replaces a pending reset.
+    subroutine view_set_camera(self, eye, center, up)
+        class(View), intent(inout) :: self
+        real(wp), intent(in) :: eye(3), center(3), up(3)
+        self%pending(:, 1) = eye
+        self%pending(:, 2) = center
+        self%pending(:, 3) = up
+        self%camera_pending = .true.
+        self%reset_pending = .false.
+    end subroutine view_set_camera
+
+    !> True (once) if a camera was set (`set_camera`), and that camera.
+    logical function take_camera(self, cam)
+        class(View), intent(inout) :: self
+        real(wp), intent(out) :: cam(3,3)
+        take_camera = self%camera_pending
+        cam = self%pending
+        self%camera_pending = .false.
+    end function take_camera
+
+    !> The camera a fraction `s` (0 to 1) of the way from camera `from` to
+    !> camera `to` (columns: eye, center, up; in one frame's coordinates): the
+    !> center moved along a straight line, the distance to it changed by the
+    !> same factor at each step (so far-to-near flights don't rush the near
+    !> part), and the orientation turned by the shortest rotation.
+    pure function camera_between(s, from, to) result(cam)
+        real(wp), intent(in) :: s, from(3,3), to(3,3)
+        real(wp) :: cam(3,3)
+        real(wp) :: q0(4), q1(4), m(3,3), d0, d1, d, c(3)
+        call camera_orientation(from, q0, d0)
+        call camera_orientation(to, q1, d1)
+        c = from(:, 2) + s * (to(:, 2) - from(:, 2))
+        d = d0 * (d1 / d0)**s
+        m = quat_to_matrix(quat_normalize(quat_slerp(s, q0, q1)))      ! columns: right, up, back
+        cam(:, 1) = c + d * m(:, 3)
+        cam(:, 2) = c
+        cam(:, 3) = m(:, 2)
+    end function camera_between
+
+    !> A camera's orientation (columns: right, up, back, as a quaternion) and
+    !> its distance from eye to center (at least a tiny one).
+    pure subroutine camera_orientation(cam, q, d)
+        real(wp), intent(in) :: cam(3,3)
+        real(wp), intent(out) :: q(4), d
+        real(wp) :: f(3), r(3), m(3,3)
+        f = cam(:, 2) - cam(:, 1)
+        d = norm2(f)
+        if (d > 0.0_wp) then
+            f = f / d
+        else
+            f = [0.0_wp, 1.0_wp, 0.0_wp]
+        end if
+        d = max(d, tiny(1.0_wp) * 1.0e10_wp)
+        r = cross(f, cam(:, 3))
+        if (norm2(r) < 1.0e-12_wp) r = cross(f, [0.0_wp, 0.0_wp, 1.0_wp])     ! (up along the view: any)
+        if (norm2(r) < 1.0e-12_wp) r = cross(f, [1.0_wp, 0.0_wp, 0.0_wp])
+        r = r / norm2(r)
+        m(:, 1) = r
+        m(:, 2) = cross(r, f)
+        m(:, 3) = -f
+        q = quat_from_matrix(m)
+    end subroutine camera_orientation
+
+    !> A camera (columns: eye, center, up) in the coordinates a rigid
+    !> transform `m` (4x4) takes it to: the points moved, the up direction turned.
+    pure function transform_camera(m, cam) result(out)
+        real(wp), intent(in) :: m(4,4), cam(3,3)
+        real(wp) :: out(3,3)
+        out(:, 1) = matmul(m(1:3, 1:3), cam(:, 1)) + m(1:3, 4)
+        out(:, 2) = matmul(m(1:3, 1:3), cam(:, 2)) + m(1:3, 4)
+        out(:, 3) = matmul(m(1:3, 1:3), cam(:, 3))
+    end function transform_camera
 
     !> True (once) if a reset is pending.
     logical function take_reset(self)

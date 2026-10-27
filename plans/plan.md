@@ -932,8 +932,30 @@ Interaction:
 - [ ] Built-in time controls: an optional time slider or HUD readout in a
       window of its own, with keys to play, pause and step; calendar times
       (UTC from a Julian date or MJD epoch) formatted for HUD text.
-- [ ] Smooth camera transitions: fly from one view to the next instead of
-      cutting, and keyframed camera paths (e.g. for presentations and videos).
+- [x] Smooth camera transitions, and the camera from a program
+      (`src/vkf_window.f90`, `src/vkf_view.f90`):
+      - `WindowProxy%get_camera` / `set_camera`: eye, center, up in the shown
+        view's frame (OpenFrames' trackball getTransformation /
+        setTransformation), or in its root frame (`in_root`, as the frames are
+        now). `View%set_camera`: a view's camera for when it is next shown.
+      - Flights: `set_camera(..., duration=)`; and `set_view_transition(s)`
+        (default 0: a cut, as OpenFrames) for changes of view (`select_view`,
+        `next_view`, `previous_view`, the keys v and V, or their own
+        `duration`) and resets (the space bar). Both cameras are taken to the
+        root frame each frame (their views' frames as they move), and
+        `camera_between` (pure, in vkf_view) moves the center along a straight
+        line, the distance geometrically and the orientation by slerp, eased in
+        and out, over wall-clock time. A mouse press, `stop_transition`, or
+        another flight or view ends it.
+      - All in Fortran: the C++ layer only sets and reads the trackball's
+        LookAt, as before (VSG's own animated viewpoints blend eye, center
+        and up linearly, cutting through bodies between distant views).
+      - Tested: `test_view` (camera_between), `test_camera` (in a window: set
+        and get, the root frame, flights within and between views, a mouse
+        press ending one, View%set_camera). Shown in `example/camera_tour.f90`
+        and the Qt demo (the view change time in the dock).
+      - [ ] Later: keyframed camera paths (several cameras with times, flown
+            through; e.g. for presentations and video recording).
 
 Astrodynamics graphics:
 - [ ] **(first)** Ground tracks: a spacecraft's sub-satellite point traced on

@@ -123,6 +123,11 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
 - **Views and time**:
   - `View`: a trackball camera that follows a frame, or looks from one frame
     toward another. Perspective or orthographic.
+  - The camera from a program: `get_camera` and `set_camera` (eye, center
+    and up, in the view's frame or the root frame), as OpenFrames' trackball.
+  - Smooth camera transitions (not in OpenFrames): changing the view, a
+    reset, or `set_camera` with a duration flies the camera there instead
+    of cutting, also between views following different frames.
   - `SimulationClock`: time scale, pause and set time. Clocks can be
     synchronized between windows.
 - **Windows**:
@@ -245,6 +250,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `day_night` | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
 | `shapes` | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
 | `two_windows` | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
+| `camera_tour` | The camera from a program: a scripted tour that flies between an Earth view and one following a spacecraft (a view transition), and to cameras given in the root frame (`set_camera` with a duration), printing where the camera is (`get_camera`). |
 | `earth_moon_frames` | One trajectory in two frames at once: a free-return lunar flyby shown in inertial coordinates about the Earth in one window, and in the Moon's body-fixed frame about the Moon in the other. Each window has its own scene; the Moon-fixed copy is transformed in Fortran, each point at its own time. |
 | `live_changes` | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |
 | `precision` | Double precision: a 10 m spacecraft on a 7000 km orbit line, seen from 30 m away; the line passes through the spacecraft's center (in plain float it would be off by about a meter). |
@@ -264,6 +270,7 @@ pixi run example day_night
 pixi run example shapes
 pixi run example two_windows
 pixi run example earth_moon_frames
+pixi run example camera_tour
 pixi run example live_changes
 pixi run example precision
 pixi run example line_of_sight
@@ -314,6 +321,8 @@ library:
 - **Views and time:** six views (of the Earth, of each spacecraft, and from
   each spacecraft toward the Earth or the other); a time scale, pause and a
   time slider.
+- **Camera:** changing the view flies the camera there (the time is set in
+  the dock; 0 s cuts, as OpenFrames).
 - **Keys and mouse:** a `WindowEventHandler` per window: `v` and `V` change
   the view (the view menu follows), `p` pauses the time, the space bar resets
   the view; the pointer's position and the last click are shown in the dock.

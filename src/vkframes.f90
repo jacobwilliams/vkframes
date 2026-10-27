@@ -34,7 +34,8 @@ module vkframes
                            MARKER_ROSE, MARKER_CIRCLE_PULSE, MARKER_DISK_PULSE, MARKER_SPIRAL, MARKER_IMAGE
     use vkf_line_segments, only: CustomLineSegments, LineSegmentsCallback
     use vkf_shadow, only: ShadowCones, SHADOW_UMBRA, SHADOW_PENUMBRA, SHADOW_ANTUMBRA, SHADOW_ALL
-    use vkf_view, only: View, ABSOLUTE_FRAME, RELATIVE_FRAME, VIEW_DIRECT, VIEW_AZEL, ORTHOGRAPHIC, PERSPECTIVE
+    use vkf_view, only: View, ABSOLUTE_FRAME, RELATIVE_FRAME, VIEW_DIRECT, VIEW_AZEL, ORTHOGRAPHIC, PERSPECTIVE, &
+                        camera_between, transform_camera
     use vkf_terrain, only: TerrainBody, rocky_available, LAYER_TMS, LAYER_GDAL, LAYER_GEODETIC, LAYER_MERCATOR, &
                            ELEVATION_HEIGHTS, ELEVATION_MAPBOX, ELEVATION_TERRARIUM
 

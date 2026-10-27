@@ -53,6 +53,8 @@
 !> The Earth's shadow in sunlight (ShadowCones, a child of the Earth: umbra
 !> and penumbra, out to 10 Earth radii) can be shown from the dock; it turns
 !> away from the Sun as the Earth turns, and the spacecraft pass through it.
+!> Changing a window's view flies its camera to the new view (a view
+!> transition, set from the dock; 0 s: a cut), as does resetting it.
 !> Each window has a WindowEventHandler (OpenFrames' window callbacks): `v` and
 !> `V` show the next and previous views (the handler does it, so the window's
 !> view menu follows, and says it handled the key), `p` pauses and resumes the
@@ -160,6 +162,7 @@ module vkdemo
         type(QStackedWidget) :: stack                          !! the main window's center: a startup message, then the view
         type(QLabel) :: startup_message
         type(QDoubleSpinBox) :: time_scale
+        type(QDoubleSpinBox) :: view_transition                !! seconds to fly between views (0: a cut)
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
@@ -646,6 +649,7 @@ contains
         call w%proxy%select_view(w%view_choice%currentIndex() + 1)
         call w%proxy%add_hud_text(w%hud_view)
         call w%proxy%add_hud_text(app%hud_time)
+        call w%proxy%set_view_transition(app%view_transition%value())
         w%events_handler%window = w%index
         call w%proxy%set_event_handler(w%events_handler)
         if (w%index == 1) then
@@ -969,6 +973,16 @@ contains
     ! ==================================================================
     ! controls and lifetime (GUI thread; they act on the main window, whose
     ! clock the others follow)
+
+    !> The time to fly between views (and to a reset view), in every window.
+    subroutine on_view_transition(value, data)
+        real(c_double), intent(in) :: value
+        class(*), intent(inout), optional :: data
+        integer :: k
+        do k = 1, max_windows
+            if (app%windows(k)%used) call app%windows(k)%proxy%set_view_transition(value)
+        end do
+    end subroutine on_view_transition
 
     subroutine on_time_scale(value, data)
         real(c_double), intent(in) :: value
@@ -1331,6 +1345,13 @@ contains
         call app%time_scale%setSuffix(' x')
         call app%time_scale%valueChanged%connect(on_time_scale)
         call form%addRow('Time scale', app%time_scale)
+        app%view_transition = QDoubleSpinBox()
+        call app%view_transition%setRange(0.0_c_double, 5.0_c_double)
+        call app%view_transition%setSingleStep(0.5_c_double)
+        call app%view_transition%setValue(1.5_c_double)
+        call app%view_transition%setSuffix(' s')
+        call app%view_transition%valueChanged%connect(on_view_transition)
+        call form%addRow('View change', app%view_transition)
         app%pause_time = QCheckBox('Pause time')
         call app%pause_time%toggled%connect(on_pause_time)
         call form%addRow('', app%pause_time)

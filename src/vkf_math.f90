@@ -19,7 +19,7 @@ module vkf_math
 
     public :: quat_from_axis_angle, quat_multiply, quat_conjugate, quat_normalize
     public :: quat_rotate, quat_to_matrix, quat_from_matrix, quat_slerp, quat_from_vectors
-    public :: identity_matrix, translation_matrix, frame_matrix, rigid_inverse
+    public :: identity_matrix, translation_matrix, frame_matrix, rigid_inverse, cross
 
 contains
 
