@@ -12,6 +12,7 @@ module vkf_layer
 
     public :: vkf_vulkan_device_name
     public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
+    public :: vkf_viewer_set_pixel_ratio
     public :: vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
@@ -43,6 +44,14 @@ module vkf_layer
             character(kind=c_char), dimension(*), intent(out) :: buf
             integer(c_int), value :: buflen
         end function vkf_vulkan_device_name
+
+        !> A host's window now has `ratio` framebuffer pixels per window unit.
+        integer(c_int) function vkf_viewer_set_pixel_ratio(viewer, ratio) bind(C, name="vkf_viewer_set_pixel_ratio")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: viewer
+            real(c_double), value :: ratio
+        end function vkf_viewer_set_pixel_ratio
 
         type(c_ptr) function vkf_viewer_create(width, height, title, title_len, native_window, pixel_ratio, vsync) &
                 bind(C, name="vkf_viewer_create")

@@ -400,6 +400,15 @@ Decided so far:
     another route.
   - The demo is a separate fpm project (`demos/qt`, pixi environment `qt`:
     `pixi run -e qt qt-demo`); the vkframes library does not depend on Qt.
+  - Pixel ratio (Qt's devicePixelRatio): passed to `WindowProxy%open`, sizes
+    in framebuffer pixels (logical size times the ratio, rounded as Qt
+    rounds), and a changed ratio passed to `WindowProxy%resize(...,
+    pixel_ratio=)`. The demos check the ratio each frame, because moving a
+    window to a screen of another scale needn't send a resize.
+    - Retina (2x) is tested on macOS.
+    - **Untested:** moving a window between screens of different scales,
+      changing the display's scaling while running, and non-integer ratios
+      (Windows 125% and 150%, fractional scaling on Linux).
   - The trajectory demo (`demos/trajectory`, `pixi run -e qt trajectory-demo
     [-- file.json]`) draws trajectory segments read from a JSON file
     (data/trajectory.json by default; json-fortran's `json_file`, a

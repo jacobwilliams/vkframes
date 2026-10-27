@@ -286,10 +286,12 @@ contains
         app%windows(id)%used = .false.
     end subroutine vkdemo_window_close
 
-    !> The native window was resized (framebuffer pixels).
-    subroutine vkdemo_window_resize(id, width, height) bind(C, name="vkdemo_window_resize")
+    !> The window was resized (framebuffer pixels), with its pixel ratio (Qt's
+    !> devicePixelRatio, which changes when it moves to a screen of another scale).
+    subroutine vkdemo_window_resize(id, width, height, pixel_ratio) bind(C, name="vkdemo_window_resize")
         integer(c_int), value :: id, width, height
-        if (valid(id)) call app%windows(id)%proxy%resize(int(width), int(height))
+        real(c_double), value :: pixel_ratio
+        if (valid(id)) call app%windows(id)%proxy%resize(int(width), int(height), pixel_ratio=real(pixel_ratio, wp))
     end subroutine vkdemo_window_resize
 
     !> A mouse event: kind 1 move, 2 press, 3 release; position in framebuffer

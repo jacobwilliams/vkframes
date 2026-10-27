@@ -861,6 +861,12 @@ contains
     subroutine on_update(data)
         class(*), intent(inout), optional :: data
         real(wp) :: t
+        ! moved to a screen of another scale (or the display's scaling changed):
+        ! Qt may send no resize, the window's size in window units being the same
+        if (app%window%devicePixelRatio() /= app%proxy%pixel_ratio()) &
+            call app%proxy%resize(nint(app%window%width() * app%window%devicePixelRatio()), &
+                                  nint(app%window%height() * app%window%devicePixelRatio()), &
+                                  pixel_ratio=app%window%devicePixelRatio())
         if (.not. app%proxy%frame()) return
         app%frame = app%frame + 1
         t = app%proxy%time()
@@ -884,7 +890,7 @@ contains
         real(wp) :: dpr
         if (.not. app%proxy%is_open()) return
         dpr = app%window%devicePixelRatio()
-        call app%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr))
+        call app%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr), pixel_ratio=dpr)
         call app%window%requestUpdate()
     end subroutine on_resize
 

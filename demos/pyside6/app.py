@@ -25,6 +25,7 @@ builds the library and sets VKDEMO_LIB). Options:
 
 import argparse
 import ctypes
+import math
 import os
 import sys
 
@@ -49,7 +50,7 @@ def load_library():
         "vkdemo_window_open": (c_int, [ctypes.c_longlong, c_int, c_int, c_double, c_int]),
         "vkdemo_window_frame": (c_int, [c_int]),
         "vkdemo_window_close": (None, [c_int]),
-        "vkdemo_window_resize": (None, [c_int, c_int, c_int]),
+        "vkdemo_window_resize": (None, [c_int, c_int, c_int, c_double]),
         "vkdemo_window_mouse": (None, [c_int, c_int, c_int, c_int, c_int, c_int]),
         "vkdemo_window_scroll": (None, [c_int, c_double]),
         "vkdemo_window_key": (None, [c_int, c_int, c_int, c_int, c_int]),
@@ -95,6 +96,13 @@ VSG_KEYS = {Qt.Key_Left: 0xFF51, Qt.Key_Up: 0xFF52, Qt.Key_Right: 0xFF53, Qt.Key
 MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE = 1, 2, 3
 
 
+def pixels(x):
+    """Framebuffer pixels for a size or position in window units times the
+    pixel ratio, rounded as Qt does (halves away from zero; Python's round
+    rounds them to even, a pixel off at ratios such as 1.5)."""
+    return int(math.floor(x + 0.5))
+
+
 def vsg_mask(buttons):
     return sum(m for b, m in VSG_MASKS.items() if buttons & b)
 
@@ -129,12 +137,14 @@ class VkWindow(QWindow):
         self.on_frame = on_frame
         self.id = 0
         self.frames = 0
+        self.dpr = 1.0                     # the pixel ratio vkframes has (see resize_view)
 
     # -- life cycle
     def exposeEvent(self, event):
         if self.id == 0 and self.isExposed():
+            self.dpr = self.devicePixelRatio()
             self.id = self.lib.vkdemo_window_open(int(self.winId()), self.width(), self.height(),
-                                                  self.devicePixelRatio(), self.start_view)
+                                                  self.dpr, self.start_view)
             if self.id == 0:
                 print("app.py: could not open a vkframes window")
                 return
@@ -148,6 +158,10 @@ class VkWindow(QWindow):
 
     def event(self, event):
         if event.type() == QEvent.UpdateRequest and self.id:
+            # moved to a screen of another scale (or the display's scaling changed):
+            # Qt may send no resize, the window's size in window units being the same
+            if self.devicePixelRatio() != self.dpr:
+                self.resize_view(self.width(), self.height())
             if self.lib.vkdemo_window_frame(self.id):
                 self.frames += 1
                 if self.on_frame:
@@ -158,10 +172,14 @@ class VkWindow(QWindow):
 
     def resizeEvent(self, event):
         if self.id:
-            dpr = self.devicePixelRatio()
-            self.lib.vkdemo_window_resize(self.id, round(event.size().width() * dpr),
-                                          round(event.size().height() * dpr))
+            self.resize_view(event.size().width(), event.size().height())
             self.requestUpdate()
+
+    def resize_view(self, width, height):
+        """Tell vkframes the size in framebuffer pixels (width, height in window
+        units) and the pixel ratio."""
+        self.dpr = self.devicePixelRatio()
+        self.lib.vkdemo_window_resize(self.id, pixels(width * self.dpr), pixels(height * self.dpr), self.dpr)
 
     # -- input, in framebuffer pixels
     def forward_mouse(self, kind, event):
@@ -169,7 +187,7 @@ class VkWindow(QWindow):
             return
         dpr = self.devicePixelRatio()
         p = event.position()
-        self.lib.vkdemo_window_mouse(self.id, kind, round(p.x() * dpr), round(p.y() * dpr),
+        self.lib.vkdemo_window_mouse(self.id, kind, pixels(p.x() * dpr), pixels(p.y() * dpr),
                                      vsg_mask(event.buttons()), VSG_BUTTONS.get(event.button(), 0))
         event.accept()
 

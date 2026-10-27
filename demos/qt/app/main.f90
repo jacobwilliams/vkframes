@@ -589,8 +589,14 @@ contains
         character(len=40) :: text
         character(len=:), allocatable :: file
         integer :: dot
+        real(wp) :: dpr
         select type (w => data)
         type is (view_window_t)
+            ! moved to a screen of another scale (or the display's scaling changed):
+            ! Qt may send no resize, the window's size in window units being the same
+            dpr = w%window%devicePixelRatio()
+            if (dpr /= w%proxy%pixel_ratio()) &
+                call w%proxy%resize(nint(w%window%width() * dpr), nint(w%window%height() * dpr), pixel_ratio=dpr)
             if (.not. w%proxy%frame()) return
             w%frame = w%frame + 1
             if (w%index == 1) then
@@ -628,7 +634,7 @@ contains
         type is (view_window_t)
             if (.not. w%proxy%is_open()) return
             dpr = w%window%devicePixelRatio()
-            call w%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr))
+            call w%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr), pixel_ratio=dpr)
             call w%window%requestUpdate()
         end select
     end subroutine on_resize

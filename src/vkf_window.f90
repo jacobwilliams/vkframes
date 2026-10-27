@@ -39,7 +39,7 @@ module vkf_window
                          vkf_viewer_hud_add, vkf_label_set_text, vkf_label_set_color, &
                          vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close, &
                          vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set, vkf_viewer_remove_node, &
-                         vkf_viewer_hud_remove, vkf_node_delete
+                         vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio
 
     implicit none
 
@@ -87,6 +87,7 @@ module vkf_window
         real(wp) :: background(3) = [0.0_wp, 0.0_wp, 0.0_wp]
         logical :: running = .false.
         integer :: width_ = 1, height_ = 1                  !! logical size (for the views' aspect ratio)
+        real(wp) :: pixel_ratio_ = 1.0_wp                   !! framebuffer pixels per window unit (a host's window)
         ! views
         type(ViewPointer), allocatable :: views(:)
         integer :: n_views = 0, current = 0
@@ -101,7 +102,7 @@ module vkf_window
         real(wp) :: light_position_(4) = [0.0_wp, 0.0_wp, 1.0_wp, 0.0_wp]
         logical :: light_on = .true.
     contains
-        procedure :: open, close, is_open
+        procedure :: open, close, is_open, pixel_ratio
         procedure :: set_scene
         procedure :: frame, run
         procedure :: capture
@@ -199,6 +200,7 @@ contains
         ratio = 1.0_c_double
         if (present(native_window)) handle = native_window
         if (present(pixel_ratio)) ratio = pixel_ratio
+        self%pixel_ratio_ = ratio
         sync = 1_c_int
         if (present(vsync)) sync = merge(1_c_int, 0_c_int, vsync)
         self%viewer_ = vkf_viewer_create(int(width, c_int), int(height, c_int), t, len(t, kind=c_int), handle, ratio, sync)
@@ -222,6 +224,13 @@ contains
         self%viewer_ = c_null_ptr
         self%running = .false.
     end subroutine close
+
+    !> Framebuffer pixels per window unit of a host's window (as given to
+    !> `open` or `resize`; 1 for a window of its own).
+    pure real(wp) function pixel_ratio(self)
+        class(WindowProxy), intent(in) :: self
+        pixel_ratio = self%pixel_ratio_
+    end function pixel_ratio
 
     pure logical function is_open(self)
         class(WindowProxy), intent(in) :: self
@@ -739,14 +748,26 @@ contains
             write(*, '(a)') 'vkframes: key event failed'
     end subroutine key
 
-    !> The host window was resized (framebuffer pixels). Once the scene is
-    !> shown, a frame of the new size is rendered at once (call this from the
-    !> host's resize event), so that the window isn't shown stretched or blank
-    !> while it is resized.
-    subroutine resize(self, width, height)
+    !> The host window was resized (framebuffer pixels), and `pixel_ratio`: its
+    !> framebuffer pixels per window unit (Qt's devicePixelRatio), if it may
+    !> have changed (the window moved to a screen of another scale, or the
+    !> display's scaling changed: sizes in window units, such as line widths,
+    !> markers and labels, are scaled by it). Once the scene is shown, a frame
+    !> of the new size is rendered at once (call this from the host's resize
+    !> event), so that the window isn't shown stretched or blank while it is
+    !> resized.
+    subroutine resize(self, width, height, pixel_ratio)
         class(WindowProxy), intent(inout) :: self
         integer, intent(in) :: width, height
+        real(wp), intent(in), optional :: pixel_ratio
         if (.not. c_associated(self%viewer_)) return
+        if (present(pixel_ratio)) then
+            if (pixel_ratio > 0.0_wp .and. pixel_ratio /= self%pixel_ratio_) then
+                self%pixel_ratio_ = pixel_ratio
+                if (vkf_viewer_set_pixel_ratio(self%viewer_, real(pixel_ratio, c_double)) /= 0) &
+                    write(*, '(a)') 'vkframes: could not set the pixel ratio'
+            end if
+        end if
         self%width_ = max(1, width)
         self%height_ = max(1, height)
         if (vkf_viewer_resize(self%viewer_, int(width, c_int), int(height, c_int)) /= 0) &

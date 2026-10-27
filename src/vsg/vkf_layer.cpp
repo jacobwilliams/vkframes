@@ -1382,6 +1382,21 @@ VKF_API int vkf_viewer_resize(void* viewer, int width, int height)
     });
 }
 
+// A window embedded in a host now has `ratio` framebuffer pixels per window
+// unit (Qt's devicePixelRatio changed: moved to a screen of another scale, or
+// the display's scaling changed). Sizes in window units (line widths, markers,
+// labels) are scaled by it; the host also resizes (vkf_viewer_resize) to the
+// new framebuffer size, which rebuilds the swapchain (on macOS VSG also takes
+// the layer's scale from its window then).
+VKF_API int vkf_viewer_set_pixel_ratio(void* viewer, double ratio)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || !(ratio > 0.0)) return -1;
+    v->pixelRatio = static_cast<float>(ratio);
+    if (v->commandGraph) set_pixel_ratio(*v->commandGraph, v->pixelRatio);
+    return 0;
+}
+
 // The host is closing the window: the next vkf_viewer_frame returns 0.
 VKF_API int vkf_viewer_close(void* viewer)
 {
