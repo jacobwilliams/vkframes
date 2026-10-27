@@ -760,6 +760,7 @@ namespace
         bool compiled = false;
         bool resizePending = false;            // resized before the first frame (no swapchain yet)
         bool resizeDeferred = false;           // macOS, embedded: the swapchain to rebuild once settled
+        bool resizeOwn = false;                // macOS, VSG's own window: resized (see vkf_viewer_frame)
         vsg::clock::time_point lastResize;     // (see resize_settle)
     };
 
@@ -1587,7 +1588,26 @@ VKF_API int vkf_viewer_frame(void* viewer)
             v->resizeDeferred = false;
             if (v->commandGraph) set_display_size(*v->commandGraph, 0.0f, 0.0f);   // (the render area's again)
         }
+#if defined(__APPLE__)
+        // VSG's own windows (not embedded): VSG rebuilds the swapchain only when
+        // acquiring an image reports it out of date, which KosmicKrisp does not
+        // when the window is resized (the old size is drawn, stretched). VSG does
+        // queue the new size (ConfigureWindowEvent, in pixels): rebuilt here,
+        // before the next image is acquired.
+        if (v->resizeOwn) v->window->resize();
+        v->resizeOwn = false;
+#endif
         if (!v->viewer->advanceToNextFrame()) return 0;
+#if defined(__APPLE__)
+        if (!v->childView)
+        {
+            const auto extent = v->window->extent2D();
+            for (auto& event : v->viewer->getEvents())
+                if (auto configure = event.cast<vsg::ConfigureWindowEvent>(); configure && configure->window.ref_ptr() == v->window &&
+                    (configure->width != extent.width || configure->height != extent.height))
+                    v->resizeOwn = true;
+        }
+#endif
         v->viewer->handleEvents();
         v->viewer->update();
         v->viewer->recordAndSubmit();
