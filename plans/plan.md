@@ -423,7 +423,9 @@ Decided so far:
   in the runner VM permitting); the Qt demo built everywhere and run on
   Linux and macOS (allowed to fail while those paths are unproven). Captures
   are uploaded as artifacts.
-- **Efficiency follow-ups** (trajectories can be very large):
+- **Efficiency follow-ups** (trajectories can be very large; see also
+  [openframes-compare.md](openframes-compare.md), the comparison with
+  OpenFrames and its list of future work):
   - VSG re-uploads a whole dynamic array when it is marked dirty. Growing
     trajectories should upload only the appended range, or use fixed-size
     chunks.
