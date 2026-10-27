@@ -48,6 +48,7 @@ module bench_common
         logical :: per_point = .false.                      !! vkframes: add points one at a time [bulk]
         logical :: vsync = .false.                          !! present at the display's refresh [no: as fast as possible]
         logical :: paced = .false.                          !! vkframes: a frame per display update request [no: a zero timer]
+        logical :: lod = .true.                             !! vkframes: the curve's level of detail [on]
         integer :: width = 1280, height = 800               !! the view's size (logical pixels)
         character(len=:), allocatable :: out                !! results file (JSON lines) [none]
         character(len=:), allocatable :: capture            !! an image of the last frame [none]
@@ -113,6 +114,8 @@ contains
                 opt%vsync = .true.
             case ('--paced')
                 opt%paced = .true.
+            case ('--no-lod')
+                opt%lod = .false.
             case ('--size')
                 call next_arg(i, arg)
                 read(arg, *) opt%width
@@ -296,7 +299,8 @@ contains
         line = '{' // str('library', library) // ',' // str('renderer', renderer) // ',' // &
                str('scenario', opt%scenario) // ',' // int_field('points', opt%points) // ',' // &
                num('rate', merge(opt%rate, 0.0_dp, opt%scenario == 'grow')) // ',' // &
-               str('insert_method', insert_method) // ',' // num('insert_s', insert_s) // ',' // &
+               str('insert_method', insert_method) // ',' // str('lod', trim(merge('on ', 'off', opt%lod))) // ',' // &
+               num('insert_s', insert_s) // ',' // &
                num('first_frame_s', first_frame_s) // ',' // num('seconds', t1 - t0) // ',' // &
                int_field('frames', frames) // ',' // num('fps', fps) // ',' // &
                num('frame_ms_mean', mean) // ',' // num('frame_ms_median', median) // ',' // &

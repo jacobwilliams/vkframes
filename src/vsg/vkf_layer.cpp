@@ -35,6 +35,7 @@
 #endif
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
@@ -318,9 +319,10 @@ namespace
                 bindings.push_back({2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
             descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
-            // EyeRelative pushes the eye position and the viewport (3 x vec4, offset 128)
+            // EyeRelative pushes the eye position, the viewport and a line's level of
+            // detail (4 x vec4, offset 128)
             pipelineLayout = vsg::PipelineLayout::create(vsg::DescriptorSetLayouts{descriptorSetLayout},
-                                                         vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 176}});
+                                                         vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 192}});
             vsg::ShaderStages stages{
                 vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vsg::ShaderModule::create(vert)),
                 vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", vsg::ShaderModule::create(frag)),
@@ -526,6 +528,55 @@ namespace
     // This is OpenFrames' method (DrawableTrajectory's UniformCallback and
     // TrajectoryArtist's vertex shader; Cozzi & Ring, "3D Engine Design for
     // Virtual Globes"), with push constants in place of uniforms.
+    //
+    // Level of detail (line strips): seen from far away, a dense trajectory is
+    // mostly segments shorter than a pixel. Fortran gives each buffer of a strip
+    // its bounding sphere and, for strides 2, 4, ... 2^levels, a bound on how far
+    // the points skipped can be from the segments drawn (vkf_line_set_lod). Here,
+    // for the view being recorded, the strip is drawn at the largest stride whose
+    // bound is under lod_tolerance pixels at the sphere's nearest point: every
+    // stride-th point, and the last (shaders/line.vert; the stride and the points
+    // drawn are pushed, and the draw's vertex count set, per view).
+    constexpr double lod_tolerance = 0.5;     // framebuffer pixels
+
+    struct LineLod
+    {
+        vsg::ref_ptr<vsg::Draw> draw;         // the strip's draw: its vertex count is set per view
+        uint32_t drawnPoints = 0;             // points 1 .. drawnPoints are drawn (setRange)
+        bool strip = true;                    // (false for separate segments: no level of detail)
+        vsg::dvec3 center;                    // bounding sphere of the points written
+        double radius = 0.0;
+        std::array<float, 16> error{};        // error[k]: the bound at stride 2^(k+1) (scene units)
+        int levels = 0;
+    };
+
+    // The stride to draw a strip with in the view being recorded: the largest
+    // 2^k whose error bound projects under lod_tolerance pixels.
+    uint32_t lod_stride(const LineLod& lod, const vsg::dvec3& eye, const vsg::dmat4& projection,
+                        const vsg::dmat4& modelView, const float viewport[4])
+    {
+        const double fx = std::abs(projection[0][0]) * viewport[0], fy = std::abs(projection[1][1]) * viewport[1];
+        double pixelsPerUnit;                 // at the nearest point of the bounding sphere
+        if (projection[3][3] == 1.0)          // orthographic: the same everywhere
+        {
+            const double scale = vsg::length(vsg::dvec3(modelView[0][0], modelView[0][1], modelView[0][2]));
+            pixelsPerUnit = 0.5 * std::max(fx, fy) * scale;
+        }
+        else
+        {
+            const double d = vsg::length(lod.center - eye) - lod.radius;
+            if (!(d > 0.0)) return 1;         // the eye is among the points: all of them
+            pixelsPerUnit = 0.5 * std::max(fx, fy) / d;
+        }
+        uint32_t stride = 1;
+        for (int k = 0; k < lod.levels; ++k)
+        {
+            if (lod.error[k] * pixelsPerUnit > lod_tolerance) break;
+            stride *= 2;
+        }
+        return stride;
+    }
+
     class EyeRelative : public vsg::Inherit<vsg::Group, EyeRelative>
     {
     public:
@@ -533,6 +584,7 @@ namespace
             pipelineLayout(layout) {}
 
         vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
+        std::shared_ptr<LineLod> lod;          // line strips (null for other geometry)
 
         void traverse(vsg::RecordTraversal& visitor) const override
         {
@@ -540,10 +592,23 @@ namespace
             const vsg::dmat4 modelView = state->modelviewMatrixStack.top();
             const vsg::dvec3 eye = vsg::inverse(modelView) * vsg::dvec3(0.0, 0.0, 0.0);
 
-            float constants[12] = {};       // eye high, eye low, viewport (width, height, pixel ratio, time)
+            // eye high, eye low, viewport (width, height, pixel ratio, time), level of
+            // detail (stride, points drawn: as integers)
+            float constants[16] = {};
             for (int i = 0; i < 3; ++i) split(eye[i], constants[i], constants[4 + i]);
             recorded_viewport(visitor, constants + 8);
             constants[11] = frame_time();
+            uint32_t stride = 1, drawn = 0;
+            if (lod)
+            {
+                drawn = lod->drawnPoints;
+                if (lod->strip && lod->levels > 0 && drawn > 2)
+                    stride = lod_stride(*lod, eye, state->projectionMatrixStack.top(), modelView, constants + 8);
+                if (lod->strip && lod->draw)
+                    lod->draw->vertexCount = (drawn >= 2) ? 6 * ((drawn - 2) / stride + 1) : 0;
+            }
+            std::memcpy(constants + 12, &stride, sizeof(stride));
+            std::memcpy(constants + 13, &drawn, sizeof(drawn));
             auto& commandBuffer = *state->_commandBuffer;
             vkCmdPushConstants(commandBuffer, pipelineLayout->vk(commandBuffer.deviceID), VK_SHADER_STAGE_VERTEX_BIT,
                                128, sizeof(constants), constants);
@@ -702,6 +767,7 @@ namespace
         vsg::ref_ptr<vsg::vec4Array> style;  // [color, (width, separate segments, dash pattern, its factor)]; markers: see marker.vert
         vsg::ref_ptr<vsg::Draw> draw;
         bool markers = false;                // a quad per point
+        std::shared_ptr<LineLod> lod;        // lines: the level of detail (EyeRelative)
 
         bool segments() const { return style->at(1).y > 0.5f; }
         // the vertices drawing points first .. first+n-1 (1-based)
@@ -716,6 +782,11 @@ namespace
             } else {
                 draw->firstVertex = 6 * (first - 1);
                 draw->vertexCount = (n >= 2) ? 6 * (n - 1) : 0;
+            }
+            if (lod)
+            {
+                lod->drawnPoints = first - 1 + n;        // (strips are drawn from point 1)
+                lod->strip = !markers && !segments();
             }
         }
     };
@@ -1879,6 +1950,9 @@ VKF_API void* vkf_line_create(int capacity)
         line->draw = vsg::Draw::create(0, 1, 0, 0);
         stateGroup->addChild(line->draw);
         auto eyeRelative = EyeRelative::create(pipeline.pipelineLayout);
+        line->lod = std::make_shared<LineLod>();
+        line->lod->draw = line->draw;
+        eyeRelative->lod = line->lod;
         eyeRelative->addChild(stateGroup);
         line->node = eyeRelative;
         return line.release();
@@ -2128,6 +2202,21 @@ VKF_API int vkf_line_points_changed(void* line, int n)
         l->style->at(2).x = static_cast<float>(n);
         l->style->dirty();
     }
+    return 0;
+}
+
+// A line strip's level of detail (see EyeRelative): the bounding sphere of
+// its points written (center, radius), and error[k], k = 0 .. levels-1: how far
+// the points skipped can be from the segments drawn at stride 2^(k+1), in the
+// points' units. levels = 0: all points drawn.
+VKF_API int vkf_line_set_lod(void* line, const double* center, double radius, const float* error, int levels)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l || !l->lod || levels < 0 || levels > 16) return -1;
+    l->lod->center = vsg::dvec3(center[0], center[1], center[2]);
+    l->lod->radius = radius;
+    for (int k = 0; k < levels; ++k) l->lod->error[k] = error[k];
+    l->lod->levels = levels;
     return 0;
 }
 

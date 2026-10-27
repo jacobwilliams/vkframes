@@ -41,6 +41,8 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - `MarkerArtist`: markers at the start, the end and in between, in
     OpenFrames' marker shapes, with optional attenuation.
   - Trace mode: draw only up to the current time.
+  - Level of detail: seen from far away, a curve is drawn from fewer
+    points, staying within half a pixel of all of them, chosen per view.
 - **Reference shapes**: `CoordinateAxes` with tick marks, `LatLonGrid`,
   `RadialPlane`, and polyhedral, elliptic and rectangular cones.
 - **Sky**: `SkySphere`, a star catalog (HYG v3) and/or a sky texture.
@@ -68,9 +70,9 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   [qt-fortran](https://github.com/jacobwilliams/qt-fortran), and in Python
   through PySide6.
 
-Not done yet: shadows, sensor visibility, video recording, and level of
-detail for very long trajectories. [plans/plan.md](plans/plan.md) has the
-full feature map and what is still open.
+Not done yet: shadows, sensor visibility and video recording.
+[plans/plan.md](plans/plan.md) has the full feature map and what is still
+open.
 
 ## How it is built
 

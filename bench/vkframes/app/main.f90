@@ -69,6 +69,7 @@ contains
         app%earth = Sphere('Earth', radius=earth_radius, color=[0.2_dp, 0.4_dp, 1.0_dp])
         call hide_decorations(app%earth)
         app%curve = CurveArtist(app%traj, color=[1.0_dp, 0.75_dp, 0.2_dp], width=2.0_dp)
+        call app%curve%set_level_of_detail(app%opt%lod)
         app%drawing = DrawableTrajectory('Orbit')
         call hide_decorations(app%drawing)
         call app%drawing%add_artist(app%curve)

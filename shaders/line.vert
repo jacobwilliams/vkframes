@@ -31,6 +31,12 @@
 // trajectory. Separate segments start their pattern at their first point, as
 // GL_LINES does.
 //
+// Level of detail (strips): the strip may be drawn at a stride (pc.lod.x):
+// segment i joins points i*stride and the next multiple, or the last point
+// drawn (pc.lod.y points), so that it always ends there. EyeRelative (in
+// src/vsg/vkf_layer.cpp) picks the stride per view, from the bounds Fortran
+// computes of how far the points skipped are from the segments drawn.
+//
 // Points are drawn relative to the eye (RTE) to keep double precision far from
 // the origin (see EyeRelative in src/vsg/vkf_layer.cpp): each point is a (high,
 // low) float pair, the eye position in the same frame is pushed as a pair, and
@@ -45,6 +51,7 @@ layout(push_constant) uniform PushConstants {
     vec4 eyeLow;
     vec4 viewport;          // xy = size of the view in framebuffer pixels,
                             // z = framebuffer pixels per window unit (2 on Retina)
+    ivec4 lod;              // x = stride (strips), y = points drawn
 } pc;
 
 layout(std430, set = 0, binding = 0) readonly buffer Points {
@@ -94,17 +101,17 @@ vec3 eyeRelative(int i)
 }
 
 // The dash positions (in periods 2^n and 2^(n+1)) and the weight of the
-// second at a vertex of the segment from point `first` to the next: at its
+// second at a vertex of the segment from point `first` to `second`: at its
 // drawn start (ta) or end (tb), moved `along` pixels along the segment (a cap
 // or a mitre); screenLength is the drawn part's length in pixels.
-vec3 dashPosition(int first, float end, float ta, float tb, float screenLength, float along)
+vec3 dashPosition(int first, int second, float end, float ta, float tb, float screenLength, float along)
 {
     vec2 sa = vec2(0.0), sb;                       // distances along the strip (high, low)
     if (style.params.y > 0.5) {
-        sb = vec2(length(eyeRelative(first + 1) - eyeRelative(first)), 0.0);
+        sb = vec2(length(eyeRelative(second) - eyeRelative(first)), 0.0);
     } else {
         sa = vec2(points.p[2 * first].w, points.p[2 * first + 1].w);
-        sb = vec2(points.p[2 * first + 2].w, points.p[2 * first + 3].w);
+        sb = vec2(points.p[2 * second].w, points.p[2 * second + 1].w);
     }
     float sceneLength = (sb.x - sa.x) + (sb.y - sa.y);
     float drawn = (tb - ta) * sceneLength;
@@ -128,9 +135,13 @@ void main()
     vec2 corner = corners[gl_VertexIndex % 6];
 
     mat4 mvp = pc.projection * pc.modelView;
-    int first = (style.params.y > 0.5) ? 2 * segment : segment;
+    bool separate = style.params.y > 0.5;
+    int stride = separate ? 1 : max(pc.lod.x, 1);
+    int last = (pc.lod.y > 0) ? pc.lod.y - 1 : 0x7fffffff;  // the last point drawn
+    int first = separate ? 2 * segment : segment * stride;
+    int second = separate ? first + 1 : min(first + stride, last);
     vec4 a = mvp * vec4(eyeRelative(first), 1.0);
-    vec4 b = mvp * vec4(eyeRelative(first + 1), 1.0);
+    vec4 b = mvp * vec4(eyeRelative(second), 1.0);
 
     // clip the segment to the part in front of the eye (w > 0)
     if (a.w < W_MIN && b.w < W_MIN) {
@@ -159,9 +170,10 @@ void main()
     // the join at this end: a square cap, or (strips) a mitre with the neighbouring segment
     vec2 offset = halfWidth * (corner.y * normal + (2.0 * corner.x - 1.0) * dir);
     float along = atEnd ? halfWidth : -halfWidth;      // (pixels beyond the end point, along the segment)
-    int neighbour = atEnd ? first + 2 : first - 1;
+    // (at the last point drawn, the next one: trace mode's tail continues there)
+    int neighbour = atEnd ? ((second >= last) ? second + 1 : min(second + stride, last)) : first - stride;
     bool clipped = atEnd ? (tb < 1.0) : (ta > 0.0);
-    if (style.params.y < 0.5 && neighbour >= 0 && neighbour < int(style.count.x) && !clipped && len > 1.0e-6) {
+    if (!separate && neighbour >= 0 && neighbour < int(style.count.x) && !clipped && len > 1.0e-6) {
         vec4 c = mvp * vec4(eyeRelative(neighbour), 1.0);
         if (c.w >= W_MIN) {
             vec2 sc = (c.xy / c.w) * halfSize;
@@ -185,5 +197,5 @@ void main()
     dash = vec3(0.0);
     uint pattern = uint(style.params.z) & 0xFFFFu;
     if (pattern != 0xFFFFu && pattern != 0u)
-        dash = dashPosition(first, corner.x, ta, tb, len, along);
+        dash = dashPosition(first, second, corner.x, ta, tb, len, along);
 }

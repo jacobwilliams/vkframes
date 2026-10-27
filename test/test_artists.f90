@@ -11,7 +11,8 @@ program test_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr
     use vkframes
-    use vkf_line_chain, only: max_chunk
+    use vkf_line_chain, only: max_chunk, LineChain, CHAIN_STRIP, split_points
+    use, intrinsic :: iso_c_binding, only: c_float
     use vkf_trajectory, only: SOURCE_POSOPT, SOURCE_TIME, SOURCE_ZERO
     use vkf_layer, only: vkf_switch_create
 
@@ -23,6 +24,7 @@ program test_artists
     failures = 0
     call check_bulk_and_appends()
     call check_large_bulk()
+    call check_level_of_detail()
     call check_trace(1.0_wp)
     call check_trace(-1.0_wp)
     call check_sources()
@@ -156,6 +158,94 @@ contains
         call check(drawn_error(a, traj) < 1.0e-6_wp, 'large bulk load: points drawn to double precision')
         call check(distance_error(a, traj) < 1.0e-12_wp, 'large bulk load: distances along the curve')
     end subroutine check_large_bulk
+
+    !> Level of detail: each chunk's bound at stride 2^k holds for every point
+    !> skipped (its distance from the segment drawn over it: every stride-th
+    !> point and the last), is not much larger than the largest such distance,
+    !> and is the same whether the points came at once or in pieces.
+    subroutine check_level_of_detail()
+        type(Trajectory), target :: once
+        type(CurveArtist) :: a
+        type(LineChain) :: bulk, pieces
+        real(wp), allocatable :: e(:), eb(:), x(:,:)
+        real(wp) :: worst, ratio
+        integer :: i, k, n
+        logical :: valid, same
+        n = 10007                                    ! (not a multiple of any stride)
+        once = Trajectory()
+        allocate(x(3, n))
+        do i = 1, n
+            x(:, i) = orbit(real(i, wp)) + 30.0_wp * [sin(0.7_wp * i), cos(1.3_wp * i), sin(0.1_wp * i)]   ! with noise
+            call once%add(real(i, wp), x(:, i))
+        end do
+        a = CurveArtist(once)
+        call a%build(c_null_ptr, vkf_switch_create())
+        call a%update(0.0_wp)
+        call check(a%num_chunks() == 1, 'level of detail: one chunk')
+        e = a%lod_error(1)
+        ! the same points in one chunk, written at once and in pieces
+        call write_chain(bulk, x, n)
+        call write_chain(pieces, x, 777)
+        eb = real(pieces%lod_error(1), wp)
+        call check(all(abs(real(bulk%lod_error(1), wp) - e) <= 1.0e-6_wp * max(1.0_wp, e)), &
+                   'level of detail: a chain written at once, as the curve')
+        valid = .true.
+        ratio = 0.0_wp
+        do k = 1, size(e)
+            worst = largest_deviation(once, 2**k)
+            if (worst > e(k) * (1.0_wp + 1.0e-6_wp) + 1.0e-9_wp) valid = .false.
+            if (worst > 0.0_wp) ratio = max(ratio, e(k) / worst)
+        end do
+        same = all(abs(e - eb) <= 1.0e-6_wp * max(1.0_wp, abs(e)))
+        write(*, '(a,f6.2)') 'level of detail: bound / largest deviation at most ', ratio
+        call check(valid, 'level of detail: the bounds hold for every point skipped')
+        call check(ratio < 8.0_wp, 'level of detail: the bounds are not much larger than the deviations')
+        call check(same, 'level of detail: the same bounds from pieces as at once')
+        call check(e(1) > 0.0_wp .and. all(e(2:) >= e(:size(e)-1)), 'level of detail: bounds grow with the stride')
+        call a%set_level_of_detail(.false.)
+        call check(.not. a%level_of_detail(), 'level of detail: off')
+    end subroutine check_level_of_detail
+
+    !> A strip chain of the points x, reserved for all of them (one chunk) and
+    !> written `piece` points at a time.
+    subroutine write_chain(chain, x, piece)
+        type(LineChain), intent(inout) :: chain
+        real(wp), intent(in) :: x(:,:)
+        integer, intent(in) :: piece
+        real(c_float), dimension(:,:,:), pointer :: p
+        integer :: i1, i2, j, lo, hi
+        call chain%init(vkf_switch_create(), CHAIN_STRIP)
+        call chain%reserve(size(x, 2))
+        do i1 = 1, size(x, 2), piece
+            i2 = min(i1 + piece - 1, size(x, 2))
+            do j = 1, chain%num_chunks()
+                call chain%slice(j, i1, i2, lo, hi, p)
+                if (associated(p)) call split_points(x(:, lo:hi), p)
+            end do
+            call chain%written(i1, i2, x)
+        end do
+    end subroutine write_chain
+
+    !> The largest distance of a point from the segment drawn over it at stride s.
+    real(wp) function largest_deviation(traj, s) result(worst)
+        type(Trajectory), intent(in) :: traj
+        integer, intent(in) :: s
+        real(wp) :: a(3), b(3), v(3), ab(3), t
+        integer :: n, i, i0, i1
+        n = traj%num_positions()
+        worst = 0.0_wp
+        do i0 = 1, n - 1, s
+            i1 = min(i0 + s, n)
+            a = traj%position(i0)
+            b = traj%position(i1)
+            ab = b - a
+            do i = i0 + 1, i1 - 1
+                v = traj%position(i)
+                t = max(0.0_wp, min(1.0_wp, dot_product(v - a, ab) / dot_product(ab, ab)))
+                worst = max(worst, norm2(v - (a + t * ab)))
+            end do
+        end do
+    end function largest_deviation
 
     !> Trace mode, with times increasing (dir = 1) or decreasing (dir = -1).
     subroutine check_trace(dir)

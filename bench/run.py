@@ -71,11 +71,15 @@ def run_all(opt):
                 if lib == "vkframes" and scenario == "static":
                     for r in pixi(env, task, args + ["--per-point"], check=False):
                         print(summary_line(r), flush=True)
+                if lib == "vkframes":                      # every point drawn, as OpenFrames does
+                    for r in pixi(env, task, args + ["--no-lod"], check=False):
+                        print(summary_line(r), flush=True)
     report(opt.out)
 
 
 def summary_line(r):
-    return (f"  {r['library']:10s} {r['scenario']:6s} {r['points']:>9d} points: {r['fps']:8.1f} fps, "
+    lod = " (no lod)" if r.get("lod") == "off" else ""
+    return (f"  {r['library'] + lod:18s} {r['scenario']:6s} {r['points']:>9d} points: {r['fps']:8.1f} fps, "
             f"median {r['frame_ms_median']:6.2f} ms, p99 {r['frame_ms_p99']:6.2f} ms, insert {r['insert_s']:.3f} s")
 
 
@@ -96,7 +100,7 @@ def report(path):
             if not line:
                 continue
             r = json.loads(line)
-            key = (r["scenario"], r["points"], r["library"], r["insert_method"])
+            key = (r["scenario"], r["points"], r["library"], r["insert_method"], r.get("lod", "-"))
             rows[key] = r
     print(f"\nResults: {os.path.relpath(path, ROOT)}\n")
     for scenario in ("static", "grow"):
@@ -104,7 +108,7 @@ def report(path):
         if not sel:
             continue
         print(f"### {scenario}\n")
-        cols = ["Points", "Library", "Insert", "Insert (s)", "First frame (s)", "FPS", "Median (ms)", "p95 (ms)",
+        cols = ["Points", "Library", "Level of detail", "Insert", "Insert (s)", "First frame (s)", "FPS", "Median (ms)", "p95 (ms)",
                 "p99 (ms)", "Max (ms)"]
         if scenario == "grow":
             cols += ["Appended", "Append mean (ms)", "Append max (ms)"]
@@ -113,7 +117,8 @@ def report(path):
         print("|" + "---|" * len(cols))
         for k in sel:
             r = rows[k]
-            cells = [fmt(r["points"]), r["library"], r["insert_method"], fmt(r["insert_s"], 3), fmt(r["first_frame_s"], 3),
+            cells = [fmt(r["points"]), r["library"], r.get("lod", "-") if r["library"] == "vkframes" else "-",
+                     r["insert_method"], fmt(r["insert_s"], 3), fmt(r["first_frame_s"], 3),
                      fmt(r["fps"], 1), fmt(r["frame_ms_median"]), fmt(r["frame_ms_p95"]), fmt(r["frame_ms_p99"]),
                      fmt(r["frame_ms_max"])]
             if scenario == "grow":

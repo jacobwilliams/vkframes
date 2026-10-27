@@ -10,6 +10,17 @@
 !> point uploads at most max_chunk points again. In a strip, consecutive chunks
 !> share their end point so that the line is continuous.
 !>
+!> Level of detail (strips): seen from far away, a dense trajectory is mostly
+!> segments shorter than a pixel. For each chunk, the chain keeps the bounding
+!> sphere of its points and, for strides 2, 4, ... 2^lod_levels, a bound on how
+!> far the points skipped can be from the segments drawn (every stride-th point
+!> and the last), and gives them to the renderer (vkf_line_set_lod), which picks
+!> the stride per view (src/vsg/vkf_layer.cpp: EyeRelative). The bounds are
+!> built level by level: a segment at stride 2s is within the larger of its two
+!> halves' bounds, plus its middle point's distance from it, of the points it
+!> skips (the halves' segments lie within that distance of it). They are
+!> updated only for the segments the points written change.
+!>
 !> Writing points i1 .. i2 (indices along the whole chain):
 !>
 !>     call chain%reserve(i2)
@@ -27,7 +38,7 @@ module vkf_line_chain
     use vkf_layer, only: vkf_line_create, vkf_marker_create, vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
                          vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
-                         marker_set_style
+                         marker_set_style, vkf_line_set_lod
 
     implicit none
 
@@ -36,15 +47,26 @@ module vkf_line_chain
     integer, parameter :: min_chunk = 64                !! points in the smallest chunk
     integer, parameter, public :: max_chunk = 65536     !! points in a chunk made for appending (1.5 MB)
 
+    integer, parameter :: lod_levels = 12               !! strides up to 2^12 = 4096 (strips)
+
     ! what a chain draws
     integer, parameter, public :: CHAIN_STRIP = 0, CHAIN_SEGMENTS = 1, CHAIN_MARKERS = 2
 
     public :: split_points, split_distances, line_buffer, check
 
+    !> Error bounds of a strip's segments at one stride (level of detail).
+    type :: LodLevel
+        real(c_float), allocatable :: bound(:)          !! (0 : segments - 1)
+    end type LodLevel
+
     !> A buffer holding points first .. first+capacity-1 of the chain.
     type :: LineChunk
         type(c_ptr) :: line = c_null_ptr
         integer :: first = 1, capacity = 0
+        ! level of detail (strips)
+        type(LodLevel) :: lod(lod_levels)
+        real(wp) :: box_lo(3) = 0.0_wp, box_hi(3) = 0.0_wp   !! of the points written
+        integer :: n_written = 0                        !! points written (the bounds are for them)
     end type LineChunk
 
     type, public :: LineChain
@@ -62,10 +84,12 @@ module vkf_line_chain
         real(c_float) :: radius = 0.0_c_float           !! markers: attenuation radius
         integer :: pattern_factor = 1                   !! lines: dash pattern (see line_set_pattern)
         integer :: pattern = int(z'FFFF')
+        logical :: lod = .true.                         !! strips: level of detail (else every point drawn)
     contains
         procedure :: init, set_compile, is_built, release, detach
         procedure :: reserve, slice, written, draw
         procedure :: set_style, set_pattern, set_marker_style, point, distance, num_chunks
+        procedure :: set_lod, lod_error
     end type LineChain
 
 contains
@@ -161,7 +185,7 @@ contains
             if (.not. allocated(self%chunks)) allocate(self%chunks(4))
             if (self%n_chunks == size(self%chunks)) then
                 allocate(tmp(2 * self%n_chunks))
-                tmp(1:self%n_chunks) = self%chunks(1:self%n_chunks)
+                call move_chunks(self%chunks(1:self%n_chunks), tmp(1:self%n_chunks))
                 call move_alloc(tmp, self%chunks)
             end if
             self%n_chunks = self%n_chunks + 1
@@ -188,12 +212,30 @@ contains
         end associate
     end subroutine slice
 
+    !> Chunks moved to a new array (their level-of-detail bounds moved, not copied).
+    subroutine move_chunks(from, to)
+        type(LineChunk), intent(inout) :: from(:), to(:)
+        integer :: i, k
+        do i = 1, size(from)
+            to(i)%line = from(i)%line
+            to(i)%first = from(i)%first
+            to(i)%capacity = from(i)%capacity
+            to(i)%box_lo = from(i)%box_lo
+            to(i)%box_hi = from(i)%box_hi
+            to(i)%n_written = from(i)%n_written
+            do k = 1, lod_levels
+                if (allocated(from(i)%lod(k)%bound)) call move_alloc(from(i)%lod(k)%bound, to(i)%lod(k)%bound)
+            end do
+        end do
+    end subroutine move_chunks
+
     !> Points i1 .. i2 were written: measure a strip's distances along it (from
-    !> the distance at point i1-1), and upload the chunks holding them. `x`:
-    !> the points in double precision, x(:, i) for chain point i (at least
-    !> i1-1 .. i2), to measure from; without it, from the floats written.
+    !> the distance at point i1-1), update its level of detail, and upload the
+    !> chunks holding them. `x`: the points in double precision, x(:, i) for
+    !> chain point i (at least i1-1 .. i2), to measure from; without it, from
+    !> the floats written. (i2 is the last point written in the chain.)
     subroutine written(self, i1, i2, x)
-        class(LineChain), intent(in) :: self
+        class(LineChain), intent(inout) :: self
         integer, intent(in) :: i1, i2
         real(wp), intent(in), optional :: x(:,:)
         integer :: j, lo, hi
@@ -202,7 +244,10 @@ contains
                 lo = max(i1, c%first)
                 hi = min(i2, c%first + c%capacity - 1)
                 if (lo > hi) cycle
-                if (self%kind == CHAIN_STRIP) call measure(self, j, lo, hi, x)
+                if (self%kind == CHAIN_STRIP) then
+                    call measure(self, j, lo, hi, x)
+                    call update_lod(self, j, lo, hi, x)
+                end if
                 call check(vkf_line_points_changed(c%line, int(hi - c%first + 1, c_int)))
             end associate
         end do
@@ -248,6 +293,125 @@ contains
         end if
         call split_distances(s, p(4, :, k0:k1))
     end subroutine measure
+
+    !> Points lo .. hi of chunk j (a strip's) were written, the last being hi:
+    !> update the bounding box and the error bounds of the segments they change
+    !> at each stride, and give them to the renderer. `x` as in `written`.
+    subroutine update_lod(self, j, lo, hi, x)
+        type(LineChain), intent(inout) :: self
+        integer, intent(in) :: j, lo, hi
+        real(wp), intent(in), optional :: x(:,:)
+        real(c_float), dimension(:,:,:), pointer :: p
+        real(wp) :: b0, b1, q(3)
+        integer :: n, q0, k, s, m, seg, a, e, mid, i
+        associate (c => self%chunks(j))
+            call line_buffer(c%line, p)
+            if (.not. associated(p)) return
+            n = hi - c%first + 1                        ! points written in the chunk (local 0 .. n-1)
+            c%n_written = n
+            q0 = lo - c%first                           ! the first one written now
+            do i = q0, n - 1                            ! the bounding box
+                q = pt(i)
+                if (i == 0) then
+                    c%box_lo = q
+                    c%box_hi = q
+                else
+                    c%box_lo = min(c%box_lo, q)
+                    c%box_hi = max(c%box_hi, q)
+                end if
+            end do
+            do k = 1, lod_levels
+                s = 2**k
+                m = 0
+                if (n >= 2) m = (n - 2) / s + 1         ! segments at stride s
+                if (m == 0) exit
+                if (.not. allocated(c%lod(k)%bound)) allocate(c%lod(k)%bound(0:(c%capacity - 2) / s))
+                do seg = max(0, q0 - 1) / s, m - 1     ! the segments the points written change
+                    a = seg * s
+                    e = min(a + s, n - 1)
+                    mid = a + s / 2
+                    b0 = 0.0_wp                         ! the halves' bounds (none at stride 1)
+                    b1 = 0.0_wp
+                    if (k > 1) b0 = c%lod(k - 1)%bound(2 * seg)
+                    if (mid < e) then                   ! two halves: also the middle point's distance
+                        if (k > 1) b1 = c%lod(k - 1)%bound(2 * seg + 1)
+                        c%lod(k)%bound(seg) = real(max(b0, b1) + segment_distance(pt(mid), pt(a), pt(e)), c_float)
+                    else
+                        c%lod(k)%bound(seg) = real(b0, c_float)
+                    end if
+                end do
+            end do
+        end associate
+        call send_lod(self, j)
+
+    contains
+
+        !> Local point i of the chunk, in double precision.
+        function pt(i) result(v)
+            integer, intent(in) :: i
+            real(wp) :: v(3)
+            if (present(x)) then
+                v = x(:, self%chunks(j)%first + i)
+            else
+                v = real(p(1:3, 1, i + 1), wp) + real(p(1:3, 2, i + 1), wp)
+            end if
+        end function pt
+
+    end subroutine update_lod
+
+    !> Give chunk j's level of detail to the renderer (none if switched off).
+    subroutine send_lod(self, j)
+        type(LineChain), intent(in) :: self
+        integer, intent(in) :: j
+        associate (c => self%chunks(j))
+            call check(vkf_line_set_lod(c%line, 0.5_wp * (c%box_lo + c%box_hi), 0.5_wp * norm2(c%box_hi - c%box_lo), &
+                                        self%lod_error(j), merge(int(lod_levels, c_int), 0_c_int, self%lod)))
+        end associate
+    end subroutine send_lod
+
+    !> Level of detail on (the default: seen from far away, a strip is drawn
+    !> from fewer points, within half a pixel of all of them) or off (every
+    !> point drawn).
+    subroutine set_lod(self, enabled)
+        class(LineChain), intent(inout) :: self
+        logical, intent(in) :: enabled
+        integer :: j
+        self%lod = enabled
+        if (self%kind /= CHAIN_STRIP) return
+        do j = 1, self%n_chunks
+            call send_lod(self, j)
+        end do
+    end subroutine set_lod
+
+    !> Chunk j's error bounds: how far the points skipped can be from the
+    !> segments drawn at stride 2^k (k = 1 .. lod_levels; 0 where not known).
+    function lod_error(self, j) result(error)
+        class(LineChain), intent(in) :: self
+        integer, intent(in) :: j
+        real(c_float) :: error(lod_levels)
+        integer :: k, n, m
+        error = 0.0_c_float
+        if (j < 1 .or. j > self%n_chunks) return
+        n = 0
+        do k = 1, lod_levels
+            if (.not. allocated(self%chunks(j)%lod(k)%bound)) exit
+            if (k == 1) n = self%chunks(j)%n_written
+            m = 0
+            if (n >= 2) m = (n - 2) / 2**k + 1
+            if (m > 0) error(k) = maxval(self%chunks(j)%lod(k)%bound(0:m-1))
+        end do
+    end function lod_error
+
+    !> Distance from point v to the segment from a to b.
+    pure real(wp) function segment_distance(v, a, b) result(d)
+        real(wp), intent(in) :: v(3), a(3), b(3)
+        real(wp) :: ab(3), t, len2
+        ab = b - a
+        len2 = dot_product(ab, ab)
+        t = 0.0_wp
+        if (len2 > 0.0_wp) t = max(0.0_wp, min(1.0_wp, dot_product(v - a, ab) / len2))
+        d = norm2(v - (a + t * ab))
+    end function segment_distance
 
     !> Draw points 1 .. k (no upload).
     subroutine draw(self, k)

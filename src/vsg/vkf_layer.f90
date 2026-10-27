@@ -25,7 +25,7 @@ module vkf_layer
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
-    public :: vkf_line_set_range, vkf_marker_create
+    public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
@@ -255,6 +255,19 @@ module vkf_layer
             type(c_ptr), value :: line
             integer(c_int), value :: first, n
         end function vkf_line_set_range
+
+        !> A line strip's level of detail: the bounding sphere of its points and
+        !> error(k): how far the points skipped can be from the segments drawn at
+        !> stride 2^k (k = 1 .. levels).
+        integer(c_int) function vkf_line_set_lod(line, center, radius, error, levels) bind(C, name="vkf_line_set_lod")
+            import :: c_ptr, c_int, c_double, c_float
+            implicit none
+            type(c_ptr), value :: line
+            real(c_double), dimension(3), intent(in) :: center
+            real(c_double), value :: radius
+            real(c_float), dimension(*), intent(in) :: error
+            integer(c_int), value :: levels
+        end function vkf_line_set_lod
 
         integer(c_int) function vkf_node_bound(node, center, radius) bind(C, name="vkf_node_bound")
             import :: c_ptr, c_int, c_double

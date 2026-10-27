@@ -81,6 +81,7 @@ module vkf_artists
         real(wp) :: width_ = 1.0_wp
         integer :: pattern_factor = 1
         integer :: pattern_ = int(z'FFFF')
+        logical :: lod_ = .true.                    !! level of detail (see set_level_of_detail)
         ! rendering
         type(LineChain) :: chain
         type(c_ptr) :: tail = c_null_ptr
@@ -94,6 +95,7 @@ module vkf_artists
         procedure :: set_color => curve_set_color, color => curve_color
         procedure :: set_width => curve_set_width, width => curve_width
         procedure :: set_pattern => curve_set_pattern, pattern => curve_pattern
+        procedure :: set_level_of_detail, level_of_detail, lod_error
         procedure :: build => curve_build
         procedure :: update => curve_update
         procedure :: release => curve_release
@@ -447,6 +449,32 @@ contains
         call curve_style(self)
     end subroutine curve_set_pattern
 
+    !> Level of detail (default on): seen from far away, the curve is drawn
+    !> from every 2nd, 4th, ... point (and its last), as many as can be
+    !> skipped while staying within half a pixel of all of them, chosen per
+    !> view and per chunk of points. Off: every point is drawn.
+    subroutine set_level_of_detail(self, enabled)
+        class(CurveArtist), intent(inout) :: self
+        logical, intent(in) :: enabled
+        self%lod_ = enabled
+        call self%chain%set_lod(enabled)
+    end subroutine set_level_of_detail
+
+    pure logical function level_of_detail(self)
+        class(CurveArtist), intent(in) :: self
+        level_of_detail = self%lod_
+    end function level_of_detail
+
+    !> The error bounds of chunk j of the curve's points (for checks): how far
+    !> the points skipped can be from the segments drawn at stride 2^k, k = 1,
+    !> 2, ... (scene units).
+    function lod_error(self, j) result(error)
+        class(CurveArtist), intent(in) :: self
+        integer, intent(in) :: j
+        real(wp), allocatable :: error(:)
+        error = real(self%chain%lod_error(j), wp)
+    end function lod_error
+
     pure subroutine curve_pattern(self, factor, bits)
         class(CurveArtist), intent(in) :: self
         integer, intent(out) :: factor, bits
@@ -501,6 +529,7 @@ contains
         type(c_ptr), intent(in) :: viewer, group
         call self%chain%init(group, CHAIN_STRIP)
         call self%chain%set_style(self%color_, self%width_)
+        call self%chain%set_lod(self%lod_)
         call self%chain%reserve(curve_points(self))       ! compiled with the group
         call self%chain%set_compile(c_associated(viewer))
         self%tail = vkf_line_create(2_c_int)

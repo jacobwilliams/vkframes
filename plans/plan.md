@@ -435,7 +435,9 @@ Decided so far:
     an indexed layout isn't worth it for now. Most of the time is
     rasterizing; mitre joins (instead of square caps that overlapped) halved
     it (see openframes-compare.md).
-  - Decimation/LOD for very long trajectories seen from far away.
+  - Decimation/LOD for very long trajectories seen from far away: done for
+    curves (`CurveArtist%set_level_of_detail`; see openframes-compare.md).
+    Segment and marker artists still draw every point.
 - **Precision:** OpenFrames' method, adapted to VSG.
   - Trajectory points are (high, low) float pairs, drawn relative to the eye
     (RTE): a node in the record traversal inverts VSG's double model-view to

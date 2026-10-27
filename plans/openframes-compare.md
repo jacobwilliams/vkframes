@@ -37,8 +37,9 @@ full tables are in `bench/README.md`.
   (`grow`):** vkframes first drew 1.7 to 2.0 times as many frames, at 1
   million and 5 million points. After the improvements of 2026-10-27
   (mitre joins, growth headroom, capped chunks), it draws 3.7 to 4.5 times
-  as many at 5 million points. At 1 million it is held to the display's
-  rate inside Qt's window (see `bench/README.md`).
+  as many at 5 million points with every point drawn. With level of detail
+  (on by default), it draws 10 to 22 times as many at 1 and 5 million points
+  (see `bench/README.md`).
   - vkframes is limited by the GPU, at under 10% CPU.
   - OpenFrames is limited by the CPU. On macOS that is partly because
     Apple's OpenGL falls back to the CPU for OpenFrames' line shader. The
@@ -307,10 +308,30 @@ uploading all the points. OpenGL uploads lazily.
       19.4 to 42 at 5 million.
 - **Depth.** OpenFrames' `DepthPartitioner` renders the scene once for each
   depth slice. vkframes renders once, with reverse-Z depth.
-- **Long trajectories seen from far away.** Neither library thins out
-  points for distant views.
-  - [ ] **Future work:** decimation or level of detail for very long
-    trajectories. This is also in `plans/plan.md`.
+- **Long trajectories seen from far away.** Stock OpenFrames doesn't thin
+  out points for distant views: it draws every point. Its only level of
+  detail is for a `Sphere`'s mesh (`setAutoLOD`) and the spacing of
+  `LatLonGrid` lines.
+  - [x] **Done (2026-10-27):** level of detail for curves
+    (`CurveArtist%set_level_of_detail`, on by default).
+    - Each chunk of a strip's points keeps its bounding sphere and, for
+      strides 2, 4, ... 4096, a bound on how far the points skipped can be
+      from the segments drawn (every stride-th point and the last).
+    - The bounds are built level by level: a segment at stride 2s is within
+      the larger of its halves' bounds plus its middle point's distance from
+      it. They are updated only where points are written.
+    - Per view and per frame, the C++ node that pushes the eye position
+      (`EyeRelative`) picks the largest stride whose bound is under half a
+      pixel at the sphere's nearest point. It sets the draw's vertex count,
+      and the line shader reads every stride-th point from the same buffer,
+      so there is no extra GPU memory. Windows sharing the curve each choose
+      for their own view.
+    - Checked: the bounds hold for every point skipped and are at most 1.45
+      times the largest real deviation (test_artists). A 5-million-point
+      capture matches drawing every point except for line edges moved by
+      under half a pixel.
+    - Static drawing at 5 million points went from 42 to 211 fps, and at 1
+      million from 194 to 537.
 
 ## Future work
 
@@ -336,7 +357,7 @@ In rough order of benefit, after the benchmark.
       ([distances](#distances-along-the-line)).
 - [x] Search for the time once per follower update
       ([followers](#time-search-in-followers)).
-- [ ] Decimation or level of detail for long trajectories
+- [x] Decimation or level of detail for long trajectories
       ([GPU work](#not-about-fortran-but-relevant)).
 - [ ] Store `dof` components per point (low priority;
       [2-D storage](#storage-for-2-d-trajectories)).

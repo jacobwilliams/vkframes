@@ -31,6 +31,7 @@ module ofbench
     type(FrameLog), save :: log                         !! written by the render thread
     logical, save :: gui_thread_updates = .false.       !! macOS: context updates on the GUI thread
     logical, save :: started = .false.                  !! OpenFrames' render thread is running
+    logical, save :: stopping = .false.                 !! stopping it: no more OpenGL on its thread (see make_current)
 
     !> The GUI and the measurements.
     type :: app_t
@@ -55,10 +56,17 @@ contains
     ! ==================================================================
     ! OpenFrames' graphics callbacks (called on its render thread)
 
+    !> Make the context current on the window (creating it on first use).
+    !> Refused once OpenFrames is stopping: its render thread then closes its
+    !> graphics context, which makes the context current, and on macOS that can
+    !> make Qt update the context (NSOpenGLContext update) on that thread, which
+    !> AppKit aborts unless on the main thread. (OpenSceneGraph then doesn't
+    !> release its GL objects: the process is about to exit.)
     subroutine make_current(id, success) bind(C)
         integer(c_int), intent(in) :: id
         logical(c_bool), intent(out) :: success
         success = .false.
+        if (stopping) return
         if (context%isNull()) then
             context = QOpenGLContext()
             if (.not. context%create()) return
@@ -262,6 +270,7 @@ contains
     subroutine stop_openframes()
         integer(int32) :: running
         if (.not. started) return
+        stopping = .true.
         call ofwin_activate(winid)
         call ofwin_stop()
         do
@@ -328,6 +337,7 @@ program openframes_bench
     integer :: ierr
 
     call parse_options(app%opt)
+    app%opt%lod = .false.                           ! (OpenFrames draws every point)
     ! every OpenGL surface (set before the application): a depth buffer, and vsync or not
     fmt = QSurfaceFormat()
     call fmt%setDepthBufferSize(24)
