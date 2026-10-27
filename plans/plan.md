@@ -398,6 +398,15 @@ Decided so far:
     another route.
   - The demo is a separate fpm project (`demos/qt`, pixi environment `qt`:
     `pixi run -e qt qt-demo`); the vkframes library does not depend on Qt.
+  - The trajectory demo (`demos/trajectory`, `pixi run -e qt trajectory-demo
+    [-- file.json]`) draws trajectory segments read from a JSON file
+    (data/trajectory.json by default; json-fortran's `json_file`, a
+    dependency of the demo only): a curve, markers and a body per segment,
+    styled by an optional `style` object (documented in its main.f90). A
+    dock editor shows each segment's style and changes it live (the
+    artists' and Sphere's setters); File > Save / Save As write it back,
+    replacing only the style keys the editor sets (the data and other keys
+    as read); unsaved changes are asked about on closing.
   - libvsg exports no `type_info` for `vsg::Exception`, so on macOS a
     `vsg::Exception` thrown inside libvsg is not caught by type in our code;
     the layer's `guarded()` has a catch-all that recognizes it by name.
@@ -446,7 +455,9 @@ Decided so far:
         light settings stored, drawn later) — `src/vkf_frames.f90`;
   - [x] `Sphere` (radius, `set_sphere_scale` as an exact ellipsoid, sphere
         position/attitude, texture; night texture and auto LOD stored, drawn
-        later) — `src/vkf_sphere.f90`; `Model` (file read at once so its
+        later; radius, scale, color and material can change while shown: the
+        mesh is scaled by its transform, the color goes through the
+        material) — `src/vkf_sphere.f90`; `Model` (file read at once so its
         bound is known, `share_model`, model position/attitude/scale/pivot)
         — `src/vkf_model.f90`;
   - [x] `Trajectory` (time, position, attitude, optionals; data sources) —

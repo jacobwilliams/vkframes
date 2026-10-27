@@ -16,10 +16,13 @@
 !>
 !> Texture files are found with find_data_file (a path, or a name on
 !> VKFRAMES_DATA_PATH, e.g. data/'s 2k_earth_daymap.jpg and
-!> 2k_earth_nightmap.jpg). Shape and textures are read when a window first
-!> shows the sphere; set them
-!> before that; the material can change at any time. (Not done yet: automatic
-!> level of detail; its setting is kept.)
+!> 2k_earth_nightmap.jpg). The textures and the mesh resolution are read when
+!> a window first shows the sphere: set them before that. The radius, scale,
+!> color and material can change at any time: the mesh is built once, then
+!> scaled by its transform (radii / the built radii), and the color is applied
+!> through the material (the shaders multiply the vertex color, white here, by
+!> the diffuse color). (Not done yet: automatic level of detail; its setting
+!> is kept.)
 module vkf_sphere
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
@@ -41,6 +44,8 @@ module vkf_sphere
         real(wp) :: scale_(3) = 1.0_wp
         real(wp) :: sphere_position_(3) = 0.0_wp
         real(wp) :: sphere_attitude_(4) = quat_identity
+        real(wp) :: built_radii(3) = 1.0_wp                   !! the mesh's semi-axes
+        logical :: textured = .false.                         !! (the color is not used)
         character(len=:), allocatable :: texture, night_texture
         logical :: auto_lod_ = .false.
         integer :: n_lon = 128, n_lat = 64
@@ -52,6 +57,7 @@ module vkf_sphere
         type(c_ptr) :: mesh = c_null_ptr
     contains
         procedure :: set_radius, radius
+        procedure :: set_color => sphere_set_color
         procedure :: set_sphere_scale, sphere_scale, radii
         procedure :: set_sphere_position, sphere_position
         procedure :: set_sphere_attitude, sphere_attitude
@@ -85,8 +91,18 @@ contains
     subroutine set_radius(self, radius)
         class(Sphere), intent(inout) :: self
         real(wp), intent(in) :: radius
+        if (radius <= 0.0_wp) return
         self%radius_ = radius
+        call update_sphere_transform(self)
     end subroutine set_radius
+
+    !> The body's color (used without a texture); [r, g, b] or [r, g, b, a].
+    subroutine sphere_set_color(self, color)
+        class(Sphere), intent(inout) :: self
+        real(wp), intent(in) :: color(:)
+        call self%ReferenceFrame%set_color(color)
+        call apply_material(self)
+    end subroutine sphere_set_color
 
     pure real(wp) function radius(self)
         class(Sphere), intent(in) :: self
@@ -100,6 +116,7 @@ contains
         real(wp), intent(in) :: scale(3)
         if (any(scale <= 0.0_wp)) return
         self%scale_ = scale
+        call update_sphere_transform(self)
     end subroutine set_sphere_scale
 
     pure function sphere_scale(self) result(s)
@@ -201,10 +218,14 @@ contains
         if (present(shininess)) shininess = self%shininess_
     end subroutine material
 
+    !> The material, with the diffuse color times the body's color (without a texture).
     subroutine apply_material(self)
         type(Sphere), intent(inout) :: self
+        real(wp) :: diffuse(4)
         if (.not. c_associated(self%mesh)) return
-        if (mesh_set_material(self%mesh, real(self%ambient_, c_float), real(self%diffuse_, c_float), &
+        diffuse = self%diffuse_
+        if (.not. self%textured) diffuse = diffuse * self%color()
+        if (mesh_set_material(self%mesh, real(self%ambient_, c_float), real(diffuse, c_float), &
                               real(self%specular_, c_float), real(self%emission_, c_float), &
                               real(self%shininess_, c_float)) /= 0) &
             write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not set the material'
@@ -250,12 +271,12 @@ contains
         class(Sphere), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
         type(c_ptr) :: image, night
-        real(wp) :: c(4)
         image = read_texture(self, self%texture)
         night = read_texture(self, self%night_texture)
-        c = 1.0_wp
-        if (.not. c_associated(image)) c = self%color()
-        self%mesh = ellipsoid_create(self%radii(), real(c, c_float), image, self%n_lon, self%n_lat, night)
+        self%textured = c_associated(image)
+        self%built_radii = self%radii()
+        self%mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], image, &
+                                     self%n_lon, self%n_lat, night)
         if (c_associated(image)) call vkf_image_delete(image)
         if (c_associated(night)) call vkf_image_delete(night)
         if (.not. c_associated(self%mesh)) return
@@ -283,7 +304,8 @@ contains
     subroutine update_sphere_transform(self)
         type(Sphere), intent(inout) :: self
         if (.not. c_associated(self%sphere_node)) return
-        if (vkf_transform_set_matrix(self%sphere_node, frame_matrix(self%sphere_position_, self%sphere_attitude_)) /= 0) &
+        if (vkf_transform_set_matrix(self%sphere_node, frame_matrix(self%sphere_position_, self%sphere_attitude_, &
+                                                                    self%radii() / self%built_radii)) /= 0) &
             write(*, '(a)') 'vkframes: Sphere '//self%name()//': transform failed'
     end subroutine update_sphere_transform
 
