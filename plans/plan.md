@@ -917,6 +917,72 @@ Decided so far:
 - Shadows cast on bodies, sensor visibility, VR (OpenXR), Qt widgets in 3D, draggers,
   volumes, particles.
 
+### 6. Possible additional features
+
+Ideas beyond OpenFrames for a spacecraft trajectory graphics library, not
+yet planned in detail. Those marked **(first)** are the suggested order to
+start in: the most useful for the least new machinery.
+
+Interaction:
+- [ ] **(first)** Picking: a click on a trajectory, frame or body gives the
+      program what was hit (the frame, the trajectory point, its time and
+      position), through the WindowEventHandler (e.g. a `pick` procedure, or
+      `WindowProxy%pick(x, y)` from `button_press`). Built on the event
+      handler; e.g. click a point of an orbit to go to its time.
+- [ ] Built-in time controls: an optional time slider or HUD readout in a
+      window of its own, with keys to play, pause and step; calendar times
+      (UTC from a Julian date or MJD epoch) formatted for HUD text.
+- [ ] Smooth camera transitions: fly from one view to the next instead of
+      cutting, and keyframed camera paths (e.g. for presentations and videos).
+
+Astrodynamics graphics:
+- [ ] **(first)** Ground tracks: a spacecraft's sub-satellite point traced on
+      a rotating body (the ellipsoid geometry in vkf_geometry), as a curve on
+      the surface.
+- [ ] **(first)** Sensor footprints: where a sensor cone (EllipticCone,
+      RectangularCone, PolyhedralCone) meets a body's ellipsoid, drawn as a
+      curve on the surface, optionally sweeping out a swath along the
+      trajectory.
+- [ ] Osculating orbit: the two-body orbit through a frame's current state,
+      redrawn as it moves (e.g. while thrusting), with its apsides and nodes
+      marked.
+- [ ] **(first)** Trajectories drawn in another frame: the same data shown
+      relative to a chief spacecraft (RIC/LVLH, for rendezvous), in a rotating
+      frame (CR3BP, a body-fixed frame), transformed per point (in Fortran,
+      for the points written; a frame that moves needs them all rewritten).
+      Today a curve is drawn in its DrawableTrajectory's coordinates only.
+- [ ] Event markers and time labels: text at chosen trajectory points
+      (maneuvers, apoapsis, eclipse entry) and tick marks at regular times.
+- [ ] Covariance ellipsoids at chosen points of a trajectory (navigation,
+      orbit determination).
+- [ ] Ground stations: a site on a body, its elevation mask (a cone), and
+      access lines while a spacecraft is above it (as the line_of_sight
+      example, from a CustomLineSegments callback).
+
+Data in and out:
+- [ ] **(first)** Reading CCSDS OEM (positions, velocities) and AEM
+      (attitudes) ephemeris files, as GMAT, STK and other flight dynamics
+      tools write them, into Trajectories; and a plain CSV reader.
+- [ ] Gaps in a trajectory: multi-arc data (e.g. arcs with a coast not
+      propagated) drawn as separate pieces in one trajectory and artist.
+- [ ] Interpolation choices: Hermite (from velocities, e.g. an optional) or
+      Lagrange, for the points followed and, optionally, curves drawn smoothly
+      between sparse points (now linear in both).
+
+Running without a screen:
+- [ ] **(first)** Offscreen rendering: drawing to an image with no window
+      (VSG's offscreen framebuffer), for batch images from a simulation,
+      servers, CI and the render tests by capture (milestone 2). Pairs with
+      video recording.
+
+Looks:
+- [ ] An atmosphere's limb glow and a cloud layer (a second, slightly larger
+      textured sphere, blended) for the Earth.
+- [ ] Planetary rings (e.g. Saturn's): a textured annulus in the body's
+      equatorial plane, its shadow on the body (with the shadow work).
+- [ ] Articulated models: parts of a model (solar arrays, antennas) turned by
+      data (an attitude per part from a trajectory or the program).
+
 ## Effort
 
 - **Scope:** a rewrite of OpenFrames' rendering layer, not a port. About
