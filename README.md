@@ -60,7 +60,12 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
 - **Windows**:
   - `WindowProxy`: a VSG window of its own, or one embedded in a host GUI on
     its native handle.
-  - Several windows can share one scene and one Vulkan device.
+  - Several windows can share one scene and one Vulkan device; a scene they
+    share is updated once per simulation time.
+  - Embedded windows handle resizing smoothly, Retina displays, and moving
+    between screens of different scales.
+  - Vsync by default; `vsync=.false.` renders as fast as possible (for
+    measuring).
   - HUD text and screen capture to PNG.
 - **Precision**: double precision throughout. Lines are drawn relative to the
   eye and the depth buffer uses reverse-Z, so a 10 m spacecraft and an Earth
@@ -154,80 +159,165 @@ build again.
 
 ### Examples
 
+The examples in [example/](example/) are short programs, each in a window
+of its own (no GUI toolkit). Each shows one part of the API:
+
+| Example | What it shows |
+|---|---|
+| `hello_sphere` | The smallest program: a window with a sphere, the trackball, and the frame loop driven from Fortran. |
+| `orbit` | An inclined elliptical orbit drawn as a thick line (`CurveArtist`), a dashed equator, and a spacecraft moved along the orbit by Fortran each frame (Kepler's equation). |
+| `earth` | A textured WGS84 Earth and a 3D model following an orbit (`Model`, `Trajectory`, `TrajectoryFollower`), with three views: of the Earth, of the spacecraft, and from the spacecraft toward the Earth. Needs a texture and a model file. |
+| `day_night` | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
+| `shapes` | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
+| `two_windows` | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
+| `live_changes` | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |
+| `precision` | Double precision: a 10 m spacecraft on a 7000 km orbit line, seen from 30 m away; the line passes through the spacecraft's center (in plain float it would be off by about a meter). |
+| `line_of_sight` | `CustomLineSegments`: five spacecraft in different orbits (LEO, sun-synchronous, GPS, GEO, Molniya), shown as markers, with a line of sight between every pair, recomputed each frame by a callback: clear links in the spacecraft's colors, links the Earth blocks dashed. |
+| `rocky_map` | Terrain with Rocky (`TerrainBody`; needs the `rocky` environment): the Earth from ReadyMap's tiles, or the Moon from NASA's Moon Trek and LOLA's elevation, from orbit and close to the surface. |
+
 ```sh
-pixi run example hello_sphere    # a sphere and trackball control
-pixi run example earth -- texture.jpg model.3ds   # a textured Earth and a model following an orbit
-pixi run example orbit           # an inclined orbit as a thick line, a dashed equator
-pixi run example day_night       # day and night textures lit by the Sun
-pixi run example shapes          # axes, lat/lon grid, plane and sensor cones
-pixi run example two_windows     # one scene in two windows, clocks synchronized
-pixi run example live_changes    # adding and removing frames while shown
-pixi run example precision       # a 10 m spacecraft on a 7000 km orbit line
-pixi run example line_of_sight   # lines of sight between spacecraft in five orbits
+pixi run example hello_sphere
+pixi run example orbit
+pixi run example earth -- texture.jpg model.3ds     # e.g. OpenFrames' Demos/Images and Demos/Models/Hubble.3ds
+pixi run example day_night
+pixi run example shapes
+pixi run example two_windows
+pixi run example live_changes
+pixi run example precision
+pixi run example line_of_sight
+pixi run -e rocky example rocky_map -- moon         # or: earth (after the Rocky build, see the lunar demo)
 ```
 
 Most examples take an optional frame count and an image file to capture,
-for example `pixi run example orbit -- 300 orbit.png`. The comment at the top
-of each file in [example/](example/) lists its arguments. The `earth` example
-needs a texture and a model file, such as OpenFrames' `Demos/Images/` and
-`Demos/Models/Hubble.3ds`.
+for example `pixi run example orbit -- 300 orbit.png`; without them they
+run until the window is closed. The comment at the top of each file lists
+its arguments.
 
 ### Demos
 
-Each demo is a separate fpm project in [demos/](demos/) that depends on
-vkframes. The library itself doesn't depend on Qt or Python.
+Each demo in [demos/](demos/) is a fuller application with a GUI, and a
+separate fpm project that depends on vkframes (the library itself doesn't
+depend on Qt or Python). They run vkframes embedded in a host window: the
+GUI toolkit owns the window and forwards its events, and vkframes renders
+into it.
 
-**Qt demo** ([demos/qt](demos/qt)): an orbiting spacecraft in a qt-fortran
-main window. A dock of controls covers time, follow modes, line styles,
-markers, the sky, the Sun's light and reference shapes. More windows can be
-opened, each with its own view, and a time slider shows and sets the time.
+#### Qt demo
+
+[demos/qt](demos/qt): a spacecraft orbiting the Earth in a
+[qt-fortran](https://github.com/jacobwilliams/qt-fortran) main window, next
+to a dock of controls. It's the most complete demo, and it shows most of the
+library:
+
+- **Scene:** the WGS84 Earth with day and night textures, rotating; a
+  spacecraft (OpenFrames' Hubble model, or a sphere) and a second spacecraft
+  on part of another orbit; the Sun as a light source; a starry sky.
+- **Trajectories:** the orbits drawn whole or traced up to the spacecraft,
+  in a dash pattern; markers along them; radius vectors (a `SegmentArtist`)
+  added and removed while running.
+- **The spacecraft as markers:** shown as their bodies, or as a marker of
+  any shape at their current positions.
+- **Line of sight:** between the two spacecraft (`CustomLineSegments`),
+  green while clear of the Earth, red when it's blocked.
+- **Reference shapes:** a latitude/longitude grid, coordinate axes with tick
+  marks, the equatorial plane, a sensor cone.
+- **Views and time:** six views (of the Earth, of each spacecraft, and from
+  each spacecraft toward the Earth or the other); a time scale, pause and a
+  time slider.
+- **Windows:** up to four, each with its own view, their clocks synchronized
+  to the main window's; resizing, Retina displays and moving between screens
+  of different scales are handled.
 
 ```sh
 pixi run -e qt qt-demo
-pixi run -e qt qt-demo -- --windows 2 --shapes    # options are listed in demos/qt/app/main.f90
+pixi run -e qt qt-demo -- --windows 2 --shapes --los --position-marker 6
 ```
 
-To use OpenFrames' Hubble model and star map, point `OPENFRAMES_DATA` (or
+Options include `--view n`, `--windows n`, `--trace`, `--radius`,
+`--marker n`, `--position-marker n`, `--sky n`, `--shapes`, `--los`,
+`--pattern n`, `--capture file` and `--quit-after seconds`; the comment at
+the top of [demos/qt/app/main.f90](demos/qt/app/main.f90) explains them. To
+use OpenFrames' Hubble model and star map, point `OPENFRAMES_DATA` (or
 `--data`) at OpenFrames' `Demos` folder.
 
-**Trajectory file demo** ([demos/trajectory](demos/trajectory)): reads
-trajectory segments from a JSON file (with json-fortran) and draws each one
-as a trajectory. A dock editor shows each segment's style (line, markers,
-body). Changes appear at once, and File > Save / Save As write the file back.
+#### Trajectory file demo
+
+[demos/trajectory](demos/trajectory): trajectory data from a file, with a
+style editor. It reads segments (times and positions) from a JSON file with
+[json-fortran](https://github.com/jacobwilliams/json-fortran), and draws
+each as a trajectory: a curve, markers, and a body following it, around the
+central body named in the file.
+
+- A dock editor shows each segment's style: line color, width and dash
+  pattern; markers (start, end, at an interval or every n points, shape,
+  size, colors); the body (radius, color); visibility, trace and label.
+- Every change is drawn at once.
+- File > Save / Save As write the file back with the new styles (the data
+  and any other keys are kept).
 
 ```sh
-pixi run -e qt trajectory-demo                    # data/trajectory.json
+pixi run -e qt trajectory-demo                      # data/trajectory.json
 pixi run -e qt trajectory-demo -- my_segments.json
 ```
 
 The file format and every style option are documented at the top of
 [demos/trajectory/app/main.f90](demos/trajectory/app/main.f90).
 
-**PySide6 demo** ([demos/pyside6](demos/pyside6)): the same kind of scene in
-a Python GUI. The demo's Fortran is built as a shared library and loaded
-with ctypes.
+#### PySide6 demo
+
+[demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI
+(PySide6). It shows how to use vkframes from Python:
+
+- The scene and its windows are Fortran, built as a shared library with a
+  small C interface of the demo's own.
+- The Python GUI loads that library with ctypes, owns the Qt windows, and
+  forwards their events.
+- One or more windows can be opened, with a choice of view and sky.
 
 ```sh
 pixi run pyside6-demo
+pixi run pyside6-demo -- --windows 2 --trace
 ```
 
-**Lunar demo** ([demos/moon](demos/moon)): the Moon with Rocky terrain (LRO
-imagery and LOLA elevation), an orbiter, and a lander descending into Tycho
-crater. Several views include one from the landing site. It needs the
-`rocky` environment and a one-time Rocky build:
+Options (`--view n`, `--windows n`, `--sky n`, `--trace`, `--capture file`,
+`--quit-after seconds`) are listed at the top of
+[demos/pyside6/app.py](demos/pyside6/app.py).
+
+#### Lunar demo
+
+[demos/moon](demos/moon): terrain with Rocky, in a qt-fortran GUI:
+
+- **Terrain:** the Moon's surface from LRO imagery (NASA's Moon Trek, over
+  the network) and LOLA's elevation, lit by the Sun, under a starry sky.
+- **Spacecraft:** one in a 100 km polar orbit over Tycho crater; and a
+  lander in the same orbit that descends and lands on Tycho's floor, at the
+  terrain's height there.
+- **Views:** seven, including Tycho close to the surface, and the lander
+  seen from the landing site as it comes down.
+- **Dock:** the time, the Sun's longitude (low Sun, long shadows), the
+  terrain's lighting, and the curves.
+
+It needs the `rocky` environment and a one-time Rocky build:
 
 ```sh
-pixi run -e rocky rocky-build     # builds Rocky from source into the environment
-pixi run -e rocky moon-data       # downloads LOLA's elevation (33 MB) into data/
+pixi run -e rocky rocky-build     # once: builds Rocky from source into the environment
+pixi run -e rocky moon-data       # once: downloads LOLA's elevation (33 MB) into data/
 pixi run -e rocky moon-demo
-pixi run -e rocky example rocky_map -- moon     # or: earth
+pixi run -e rocky moon-demo -- --view 6 --sun 60
 ```
+
+Options (`--view n`, `--sun degrees`, `--time seconds`, `--capture file`,
+`--quit-after seconds`) are at the top of
+[demos/moon/app/main.f90](demos/moon/app/main.f90).
 
 ### Benchmark against OpenFrames
 
 [bench/](bench/README.md) has two qt-fortran apps that draw the same scene,
 one with vkframes and one with stock OpenFrames, in two scenarios: a large
-static trajectory, and a growing one.
+static trajectory, and a growing one. On macOS, vkframes draws 10 to 22
+times as many frames as OpenFrames at 1 and 5 million points; the results
+and how they were measured are in [bench/README.md](bench/README.md), and
+the comparison of the two libraries in
+[plans/openframes-compare.md](plans/openframes-compare.md).
 
 ```sh
 pixi run -e openframes openframes-build    # once
@@ -282,7 +372,8 @@ shown.
 [data/](data/) holds:
 - the HYG v3 star catalog in OpenFrames' format;
 - 2k Earth day and night textures;
-- the trajectory demo's example file.
+- the trajectory demo's example file;
+- the Moon's elevation, once downloaded (`pixi run -e rocky moon-data`).
 
 Data files are found by name on `VKFRAMES_DATA_PATH` (a list of
 directories), which the pixi tasks set. Converted fonts are cached in the
