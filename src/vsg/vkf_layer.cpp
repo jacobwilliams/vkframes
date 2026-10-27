@@ -177,6 +177,36 @@ namespace
         (void)done;
     }
 
+    // Resizing a window embedded in a host (macOS): rebuilding the swapchain
+    // changes the Metal layer's drawable size, which clears what it shows, and
+    // during a drag the next frame is shown too late: the window stays black
+    // (or flickers). So while the size keeps changing, the swapchain is kept
+    // (frames at the old size, with the new aspect ratio, which Core Animation
+    // scales to the layer's new size: right proportions, slightly blurred),
+    // and rebuilt once the size has stayed the same for resize_settle seconds
+    // (vkf_viewer_frame). The perspective's aspect ratio is set for the new
+    // size at once (VSG changes it only when the swapchain is rebuilt, by the
+    // change of size: it is set back to the old size's just before). The layer also gets no implicit animations (its
+    // actions are null). (presentsWithTransaction, which would present with
+    // the window's resize, shows nothing with KosmicKrisp.)
+    constexpr double resize_settle = 0.1;
+
+    void disable_layer_animations(void* layer)
+    {
+        id l = static_cast<id>(layer);
+        auto cls = [](const char* name) { return reinterpret_cast<id>(objc_getClass(name)); };
+        auto str = [&](const char* s) {
+            return reinterpret_cast<id (*)(id, SEL, const char*)>(objc_msgSend)(cls("NSString"), sel_registerName("stringWithUTF8String:"), s);
+        };
+        id null = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(cls("NSNull"), sel_registerName("null"));
+        const char* keys[] = {"bounds", "position", "frame", "contents", "anchorPoint", "transform"};
+        id objects[6], names[6];
+        for (int i = 0; i < 6; ++i) { objects[i] = null; names[i] = str(keys[i]); }
+        id actions = reinterpret_cast<id (*)(id, SEL, const id*, const id*, unsigned long)>(objc_msgSend)(
+            cls("NSDictionary"), sel_registerName("dictionaryWithObjects:forKeys:count:"), objects, names, 6ul);
+        reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(l, sel_registerName("setActions:"), actions);
+    }
+
     void delete_child_view(void* view)
     {
         if (!view) return;
@@ -392,6 +422,11 @@ namespace
 
     // Framebuffer pixels per window unit, stored on each vsg::View (2 on Retina).
     constexpr const char* pixel_ratio_key = "vkf_pixel_ratio";
+    // A view's size as displayed when it differs from its render area: while
+    // a resize is deferred (see resize_settle), the frame is drawn at the old
+    // size and scaled to the new one, so sizes in pixels are worked out for
+    // the new size (set_display_size; (0, 0): the render area's).
+    constexpr const char* display_size_key = "vkf_display_size";
 
     // The viewport of the view being recorded: (width, height, pixel ratio, 0),
     // from the record traversal (a node can be shown in several windows).
@@ -406,6 +441,12 @@ namespace
             const auto area = view->camera->getRenderArea();
             viewport[0] = static_cast<float>(area.extent.width);
             viewport[1] = static_cast<float>(area.extent.height);
+        }
+        vsg::vec2 displayed;
+        if (view->getValue(display_size_key, displayed) && displayed.x > 0.0f && displayed.y > 0.0f)
+        {
+            viewport[0] = displayed.x;
+            viewport[1] = displayed.y;
         }
         float ratio = 1.0f;
         if (view->getValue(pixel_ratio_key, ratio)) viewport[2] = ratio;
@@ -703,6 +744,8 @@ namespace
         float pixelRatio = 1.0f;               // framebuffer pixels per window unit (2 on Retina)
         bool compiled = false;
         bool resizePending = false;            // resized before the first frame (no swapchain yet)
+        bool resizeDeferred = false;           // macOS, embedded: the swapchain to rebuild once settled
+        vsg::clock::time_point lastResize;     // (see resize_settle)
     };
 
     // The viewers that exist (vkf_viewer_create to vkf_viewer_delete), oldest
@@ -1029,6 +1072,15 @@ namespace
                     if (auto view = grandchild.cast<vsg::View>()) view->setValue(pixel_ratio_key, ratio);
     }
 
+    // The size the views of a window are displayed at (see display_size_key).
+    void set_display_size(vsg::CommandGraph& commandGraph, float width, float height)
+    {
+        for (auto& child : commandGraph.children)
+            if (auto renderGraph = child.cast<vsg::RenderGraph>())
+                for (auto& grandchild : renderGraph->children)
+                    if (auto view = grandchild.cast<vsg::View>()) view->setValue(display_size_key, vsg::vec2(width, height));
+    }
+
     // An environment variable's value ('' if unset).
     std::string env_var(const char* name)
     {
@@ -1192,6 +1244,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         else
             v->window->setInstance(metal_instance(*traits));
         v->metalLayer = new_window_layer(childView);
+        if (childView) disable_layer_animations(v->metalLayer);      // (see disable_layer_animations)
         v->window->setSurface(vsg::ref_ptr<vsg::Surface>(new MetalSurface(v->window->getOrCreateInstance(), v->metalLayer)));
         if (existing) WindowSetup::init_formats(*v->window);
 #endif
@@ -1309,10 +1362,22 @@ VKF_API int vkf_viewer_resize(void* viewer, int width, int height)
     return guarded("vkf_viewer_resize", -1, [&]() {
         v->window->bufferedEvents.push_back(vsg::ConfigureWindowEvent::create(
             v->window, vsg::clock::now(), 0, 0, static_cast<uint32_t>(width), static_cast<uint32_t>(height)));
-        if (v->compiled)
-            v->window->resize();
-        else
+        if (!v->compiled)
             v->resizePending = true;
+#if defined(__APPLE__)
+        else if (v->childView)                                  // rebuilt once the size settles
+        {
+            v->resizeDeferred = true;
+            v->lastResize = vsg::clock::now();
+            // drawn with the new aspect ratio meanwhile (scaled to the new size by Core Animation)
+            if (auto perspective = v->camera->projectionMatrix.cast<vsg::Perspective>(); perspective && height > 0)
+                perspective->aspectRatio = double(width) / double(height);
+            // and sizes in pixels (labels, HUD text, markers, line widths) for the new size
+            if (v->commandGraph) set_display_size(*v->commandGraph, float(width), float(height));
+        }
+#endif
+        else
+            v->window->resize();
         return 0;
     });
 }
@@ -1467,6 +1532,18 @@ VKF_API int vkf_viewer_frame(void* viewer)
             v->resizePending = false;
         }
         prepare_views(*v);
+        if (v->resizeDeferred &&
+            std::chrono::duration<double>(vsg::clock::now() - v->lastResize).count() >= resize_settle)
+        {
+            // the size has settled (see resize_settle): VSG scales the aspect ratio
+            // by the change of size, so it is the old size's again first
+            const auto extent = v->window->extent2D();
+            if (auto perspective = v->camera->projectionMatrix.cast<vsg::Perspective>(); perspective && extent.height > 0)
+                perspective->aspectRatio = double(extent.width) / double(extent.height);
+            v->window->resize();
+            v->resizeDeferred = false;
+            if (v->commandGraph) set_display_size(*v->commandGraph, 0.0f, 0.0f);   // (the render area's again)
+        }
         if (!v->viewer->advanceToNextFrame()) return 0;
         v->viewer->handleEvents();
         v->viewer->update();

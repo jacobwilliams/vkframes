@@ -739,7 +739,10 @@ contains
             write(*, '(a)') 'vkframes: key event failed'
     end subroutine key
 
-    !> The host window was resized (framebuffer pixels).
+    !> The host window was resized (framebuffer pixels). Once the scene is
+    !> shown, a frame of the new size is rendered at once (call this from the
+    !> host's resize event), so that the window isn't shown stretched or blank
+    !> while it is resized.
     subroutine resize(self, width, height)
         class(WindowProxy), intent(inout) :: self
         integer, intent(in) :: width, height
@@ -748,6 +751,11 @@ contains
         self%height_ = max(1, height)
         if (vkf_viewer_resize(self%viewer_, int(width, c_int), int(height, c_int)) /= 0) &
             write(*, '(a)') 'vkframes: resize failed'
+        ! a frame of the new size at once (once the scene is shown), so the window
+        ! isn't shown stretched or blank while being resized
+        if (self%scene_added) then
+            if (self%frame()) continue
+        end if
     end subroutine resize
 
 end module vkf_window
