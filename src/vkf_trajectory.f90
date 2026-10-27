@@ -12,6 +12,9 @@
 !> Differences from OpenFrames:
 !> * Storage grows by doubling, positions, attitudes and colors separately, so
 !>   a trajectory without attitudes (colors) holds no attitude (color) memory.
+!>   `reserve` sets it for a known size; `compact` frees what's unused once a
+!>   trajectory is complete (one copy of each array; `storage_bytes` says
+!>   what is held).
 !> * Instead of subscriber callbacks, a trajectory counts its changes
 !>   (`revision`) and clears (`generation`): a reader such as an artist compares
 !>   them with what it last saw and updates only what changed (e.g. uploads only
@@ -20,6 +23,7 @@
 module vkf_trajectory
 
     use, intrinsic :: iso_c_binding, only: c_float
+    use, intrinsic :: iso_fortran_env, only: int64
     use vkf_math, only: wp
 
     implicit none
@@ -63,7 +67,7 @@ module vkf_trajectory
         integer :: revision_ = 0                            !! incremented on every change
         integer :: generation_ = 0                          !! incremented when the data are cleared
     contains
-        procedure :: reserve
+        procedure :: reserve, compact, storage_bytes
         procedure :: clear
         procedure :: set_dof, dof
         procedure :: set_num_optionals, num_optionals
@@ -142,26 +146,82 @@ contains
         end do
     end function optional_sources
 
-    !> Reserve memory for `n` points (times, and positions and/or attitudes
-    !> unless `positions` / `attitudes` is false, and colors if `colors`).
-    !> Optional: storage grows as needed, but reserving avoids reallocations
-    !> for a known size.
+    !> Reserve memory for `n` points: times, positions (with their optionals)
+    !> unless `positions` is false, and attitudes and colors only if
+    !> `attitudes` / `colors` is true. Optional: storage grows as needed, but
+    !> reserving avoids reallocations for a known size. It never shrinks the
+    !> storage (see `compact`).
     subroutine reserve(self, n, positions, attitudes, colors)
         class(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
         logical, intent(in), optional :: positions, attitudes, colors
-        logical :: pos, att
+        logical :: pos, att, col
         pos = .true.
-        att = .true.
+        att = .false.
+        col = .false.
         if (present(positions)) pos = positions
         if (present(attitudes)) att = attitudes
+        if (present(colors)) col = colors
         call grow_times(self, n, exact=.true.)
         if (pos) call grow_positions(self, n, exact=.true.)
         if (att) call grow_attitudes(self, n, exact=.true.)
-        if (present(colors)) then
-            if (colors) call grow_colors(self, n, exact=.true.)
-        end if
+        if (col) call grow_colors(self, n, exact=.true.)
     end subroutine reserve
+
+    !> Free the storage not used: each array is reallocated to the points it
+    !> holds (one copy, an array at a time), and arrays holding none are
+    !> deallocated. For a trajectory that is complete: growing doubles the
+    !> storage, so up to about half of it can be unused. The data and what is
+    !> drawn of them don't change; pointers from `times`, `positions`, ...
+    !> must be fetched again. Points can still be added (storage grows again).
+    subroutine compact(self)
+        class(Trajectory), intent(inout) :: self
+        real(wp), allocatable :: t(:), posopt(:,:,:), att(:,:)
+        real(c_float), allocatable :: col(:,:)
+        if (allocated(self%t)) then
+            if (size(self%t) /= self%n_times) then
+                allocate(t(self%n_times))
+                t = self%t(1:self%n_times)
+                call move_alloc(t, self%t)
+            end if
+            if (self%n_times == 0) deallocate(self%t)
+        end if
+        if (allocated(self%posopt)) then
+            if (size(self%posopt, 3) /= self%n_pos) then
+                allocate(posopt(3, 0:self%nopt_, self%n_pos))
+                posopt = self%posopt(:, :, 1:self%n_pos)
+                call move_alloc(posopt, self%posopt)
+            end if
+            if (self%n_pos == 0) deallocate(self%posopt)
+        end if
+        if (allocated(self%att)) then
+            if (size(self%att, 2) /= self%n_att) then
+                allocate(att(4, self%n_att))
+                att = self%att(:, 1:self%n_att)
+                call move_alloc(att, self%att)
+            end if
+            if (self%n_att == 0) deallocate(self%att)
+        end if
+        if (allocated(self%col)) then
+            if (size(self%col, 2) /= self%n_col) then
+                allocate(col(4, self%n_col))
+                col = self%col(:, 1:self%n_col)
+                call move_alloc(col, self%col)
+            end if
+            if (self%n_col == 0) deallocate(self%col)
+        end if
+    end subroutine compact
+
+    !> The memory the trajectory's data take (bytes), used or not: its
+    !> storage's capacity (see `reserve`, `compact`).
+    pure integer(int64) function storage_bytes(self) result(b)
+        class(Trajectory), intent(in) :: self
+        b = 0_int64
+        if (allocated(self%t)) b = b + storage_size(self%t, int64) / 8 * size(self%t, kind=int64)
+        if (allocated(self%posopt)) b = b + storage_size(self%posopt, int64) / 8 * size(self%posopt, kind=int64)
+        if (allocated(self%att)) b = b + storage_size(self%att, int64) / 8 * size(self%att, kind=int64)
+        if (allocated(self%col)) b = b + storage_size(self%col, int64) / 8 * size(self%col, kind=int64)
+    end function storage_bytes
 
     !> Remove all points (keeping the memory).
     subroutine clear(self)

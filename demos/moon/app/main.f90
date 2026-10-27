@@ -242,7 +242,7 @@ contains
         ! the orbit: one period of positions and attitudes
         app%period = 2.0_wp * pi * sqrt((rm + altitude)**3 / mu)
         app%orbit = Trajectory()
-        call app%orbit%reserve(n_orbit)
+        call app%orbit%reserve(n_orbit, attitudes=.true.)
         do k = 1, n_orbit
             t = app%period * real(k - 1, wp) / real(n_orbit - 1, wp)
             call app%orbit%add(t, pos=orbit_position(t, app%period), att=orbit_attitude(t, app%period))

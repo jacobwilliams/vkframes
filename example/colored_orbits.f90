@@ -66,7 +66,7 @@ program colored_orbits
     ! the low orbit, ten periods, colored by sunlight (added one point at a time)
     period = 2.0_wp * pi * sqrt(7000.0_wp**3 / mu)
     leo = Trajectory()
-    call leo%reserve(n_leo * leo_orbits, attitudes=.false., colors=.true.)
+    call leo%reserve(n_leo * leo_orbits, colors=.true.)
     do k = 1, n_leo * leo_orbits
         t = period * real(k - 1, wp) / real(n_leo, wp)
         p = orbit_position(t, [7000.0_wp, 0.0_wp, 30.0_wp, 60.0_wp, 0.0_wp])

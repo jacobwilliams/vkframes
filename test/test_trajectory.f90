@@ -1,14 +1,15 @@
 !> Checks Trajectory: data with fewer positions/attitudes than times, optionals,
 !> time search (increasing and decreasing times), data sources, growth, change
-!> counters, colors.
+!> counters, colors; reserving (attitudes only when asked) and compacting.
 program test_trajectory
 
     use, intrinsic :: iso_c_binding, only: c_float
+    use, intrinsic :: iso_fortran_env, only: int64
     use vkframes
 
     implicit none
 
-    type(Trajectory), target :: traj, down, big, flat, colored
+    type(Trajectory), target :: traj, down, big, flat, colored, sized
     real(c_float), pointer :: c(:,:)
     type(DataSource) :: src(3)
     real(wp), pointer :: p(:,:)
@@ -124,6 +125,38 @@ program test_trajectory
     call check(status > 0 .and. index == 77777 .and. status <= 20, 'time_index in 100000 points')
     call big%clear()
     call check(big%is_empty() .and. big%generation() == gen + 1, 'clear changes generation')
+
+    ! reserving: times and positions, attitudes and colors only when asked
+    sized = Trajectory()
+    call sized%reserve(1000)
+    call check(sized%storage_bytes() == 1000_int64 * (8 + 24), 'reserve: times and positions only')
+    call sized%reserve(2000, attitudes=.true., colors=.true.)
+    call check(sized%storage_bytes() == 2000_int64 * (8 + 24 + 32 + 16), 'reserve: with attitudes and colors')
+    call sized%reserve(10)
+    call check(sized%storage_bytes() == 2000_int64 * (8 + 24 + 32 + 16), 'reserve: never shrinks')
+
+    ! compacting: grown point by point, then only what's used, the data kept
+    sized = Trajectory(nopt=1)
+    do i = 1, 100001
+        call sized%add(t(min(i, size(t))) + merge(1.0_wp, 0.0_wp, i > size(t)), pos=pos(:, min(i, size(t))))
+        call sized%set_optional(1, 2.0_wp * pos(:, min(i, size(t))))
+    end do
+    call sized%add(200000.0_wp)                                   ! (a time without a position)
+    rev = sized%revision()
+    call check(sized%storage_bytes() > 100002_int64 * 8 + 100001_int64 * 48, 'compact: grown with room to spare')
+    call sized%compact()
+    call check(sized%storage_bytes() == 100002_int64 * 8 + 100001_int64 * 48, 'compact: only what is used')
+    call sized%positions(p)
+    call check(size(p, 2) == 100001 .and. all(p(:, 1:size(t)) == pos) .and. &
+               all(sized%optional(100000, 1) == 2.0_wp * pos(:, 100000)) .and. sized%time(100002) == 200000.0_wp, &
+               'compact: the data kept')
+    call check(sized%revision() == rev, 'compact: no change to the data (nothing redrawn)')
+    call sized%add(300000.0_wp, pos=[1.0_wp, 2.0_wp, 3.0_wp])
+    call check(sized%num_positions() == 100002 .and. all(sized%position(100002) == [1.0_wp, 2.0_wp, 3.0_wp]), &
+               'compact: points added after it')
+    call sized%clear()
+    call sized%compact()
+    call check(sized%storage_bytes() == 0_int64, 'compact: empty, no storage')
 
     ! colors: optional, for fewer points than times, one at a time and in bulk
     colored = Trajectory()

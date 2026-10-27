@@ -448,6 +448,16 @@ Decided so far:
     an indexed layout isn't worth it for now. Most of the time is
     rasterizing; mitre joins (instead of square caps that overlapped) halved
     it (see openframes-compare.md).
+  - Trajectory memory: `Trajectory%compact` frees the storage not used once
+    a trajectory is complete (growth doubles, so up to about half can be
+    unused; one copy of each array, an array at a time; nothing is redrawn),
+    and `storage_bytes` reports what is held. `reserve` reserves attitudes
+    (and colors) only when asked, so a trajectory without them holds no
+    memory for them (it used to reserve attitudes by default).
+  - Possible later: `Trajectory%adopt` (a program's allocatable arrays taken
+    over with `move_alloc`, no copy) and `changed(i1, i2)` (after editing
+    the data in place through `positions`, ..., only those points redrawn),
+    so a simulation's data can live once in Fortran.
   - Decimation/LOD for very long trajectories seen from far away: done for
     curves (`CurveArtist%set_level_of_detail`; see openframes-compare.md),
     and for spheres (`Sphere%set_auto_lod`).

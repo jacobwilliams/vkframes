@@ -88,7 +88,7 @@ contains
         data = to_string(data_dir, data_len)
 
         app%orbit = Trajectory()
-        call app%orbit%reserve(n_orbit)
+        call app%orbit%reserve(n_orbit, attitudes=.true.)
         period = 2.0_wp * pi * sqrt(sma**3 / mu)
         do k = 1, n_orbit
             t = period * real(k - 1, wp) / real(n_orbit - 1, wp)

@@ -304,7 +304,7 @@ contains
         integer :: k
 
         app%orbit = Trajectory()
-        call app%orbit%reserve(n_orbit)
+        call app%orbit%reserve(n_orbit, attitudes=.true.)
         period = 2.0_wp * pi * sqrt(sma**3 / mu)
         app%time_end = 3.0_wp * period
         do k = 1, n_orbit
