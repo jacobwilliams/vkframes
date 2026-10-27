@@ -125,6 +125,7 @@ contains
         call window%pick(x, y, hits)
         self%have_time = .false.
         self%selected = 0
+        call drop_ring(hits)                                    ! (the selection's own ring: not a pick)
         if (size(hits) == 0) then
             call self%ring%show_contents(.false.)
             call self%selection%show_name_label(.false.)
@@ -135,12 +136,20 @@ contains
             select case (h%kind)
             case (PICK_CURVE, PICK_MARKER)
                 k = orbit_of(self, h)
-                write(text, '(a,a,i0,a,i0,a)') trim(self%names(k))//trim(merge(' marker', '       ', h%kind == PICK_MARKER)), &
-                    ': t = ', nint(h%time / 60.0_wp), ' min, ', nint(norm2(h%position) - self%radius), ' km'
-                self%selected_time = h%time
-                self%have_time = .true.
-                self%selected = k
-                call self%selection%set_color(self%colors(:, k))
+                if (k > 0) then                                 ! an orbit, or one of its markers
+                    write(text, '(a,a,i0,a,i0,a)') trim(self%names(k))//trim(merge(' marker', '       ', &
+                        h%kind == PICK_MARKER)), ': t = ', nint(h%time / 60.0_wp), ' min, ', &
+                        nint(norm2(h%position) - self%radius), ' km'
+                    self%selected_time = h%time
+                    self%have_time = .true.
+                else                                            ! a spacecraft (a marker with no trajectory)
+                    k = spacecraft_of(self, h)
+                    write(text, '(a,a,i0,a)') h%frame%name(), ': ', nint(norm2(h%position) - self%radius), ' km'
+                end if
+                if (k > 0) then
+                    self%selected = k
+                    call self%selection%set_color(self%colors(:, k))
+                end if
             case (PICK_BODY)
                 write(text, '(a,f6.1,a,f7.1)') h%frame%name()//': latitude ', h%latitude * 180.0_wp / pi, &
                     ', longitude ', h%longitude * 180.0_wp / pi
@@ -164,6 +173,27 @@ contains
             call self%ring%show_contents(.true.)
         end associate
     end subroutine picker_select
+
+    !> The hits without those on the selection's ring.
+    subroutine drop_ring(hits)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        logical :: keep(size(hits))
+        integer :: i
+        do i = 1, size(hits)
+            keep(i) = hits(i)%frame%name() /= 'Ring'
+        end do
+        hits = pack(hits, keep)
+    end subroutine drop_ring
+
+    !> The spacecraft a hit is on (its frame), or 0.
+    integer function spacecraft_of(self, hit) result(k)
+        type(Picker), intent(in) :: self
+        type(PickHit), intent(in) :: hit
+        do k = 1, n_orbits
+            if (associated(hit%frame, self%crafts(k))) return
+        end do
+        k = 0
+    end function spacecraft_of
 
     !> The orbit a hit is on (its curve's or its markers' trajectory), or 0.
     integer function orbit_of(self, hit) result(k)
