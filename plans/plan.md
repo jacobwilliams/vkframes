@@ -339,7 +339,8 @@ Decided so far:
   `tools/fpm_vsg.py`) into a generated `src/vsg/vkf_shaders.cpp`.
 - **Lines:** no vertex buffers; points in a storage buffer, each segment
   expanded to a screen-space quad in the vertex shader (`gl_VertexIndex`),
-  square caps at the joins, clipped at `w = ε`. Widths are in window units
+  mitre joins between a strip's segments (square caps at its ends, at turns
+  over 120 degrees and for separate segments), clipped at `w = ε`. Widths are in window units
   (logical pixels), scaled by the framebuffer/window pixel ratio on Retina.
 - **Line data path:** Fortran writes points straight into the VSG-owned
   storage buffer (`c_f_pointer`, no intermediate copy): 6 floats per point
@@ -430,7 +431,10 @@ Decided so far:
     trajectories should upload only the appended range, or use fixed-size
     chunks.
   - Each segment's quad transforms both endpoints in each of its 6
-    vertices; instancing or a geometry-free indexed layout could cut that.
+    vertices. Measured, this is only 11 to 16% of a frame, so instancing or
+    an indexed layout isn't worth it for now. Most of the time is
+    rasterizing; mitre joins (instead of square caps that overlapped) halved
+    it (see openframes-compare.md).
   - Decimation/LOD for very long trajectories seen from far away.
 - **Precision:** OpenFrames' method, adapted to VSG.
   - Trajectory points are (high, low) float pairs, drawn relative to the eye

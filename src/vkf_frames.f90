@@ -81,6 +81,8 @@ module vkf_frames
         type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
         logical :: shown_ = .false.                         !! realized for a window (not headless): later nodes are compiled
         logical :: realized = .false.
+        logical :: synced = .false.                         !! the node has synced_position/attitude
+        real(wp) :: synced_position(3) = 0.0_wp, synced_attitude(4) = 0.0_wp
         ! axes (OpenFrames' moveXAxis/...: base, length, head ratio, radii; 0 radius: auto)
         real(wp) :: axis_base(3,3) = 0.0_wp
         real(wp) :: axis_len(3) = 1.0_wp
@@ -709,6 +711,7 @@ contains
         self%realized = .true.
         self%shown_ = c_associated(viewer)
         self%node_ = vkf_transform_create()
+        self%synced = .false.
         self%contents_node = vkf_switch_create()
         call check(vkf_node_add_child(self%node_, self%contents_node))
         call self%build_contents(viewer, self%contents_node)
@@ -731,12 +734,18 @@ contains
     end subroutine build_contents
 
     !> Copy the positions and attitudes of this frame and its descendants to
-    !> their transform nodes.
+    !> their transform nodes (only those that changed since the last sync).
     recursive subroutine sync(self)
         class(ReferenceFrame), intent(inout) :: self
         integer :: k
         if (.not. self%realized) return
-        call check(vkf_transform_set_matrix(self%node_, self%local_matrix()))
+        if (.not. (self%synced .and. all(self%position_ == self%synced_position) .and. &
+                   all(self%attitude_ == self%synced_attitude))) then
+            call check(vkf_transform_set_matrix(self%node_, self%local_matrix()))
+            self%synced_position = self%position_
+            self%synced_attitude = self%attitude_
+            self%synced = .true.
+        end if
         do k = 1, self%n_children
             call self%children(k)%p%sync()
         end do

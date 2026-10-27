@@ -69,7 +69,7 @@ module vkf_trajectory
         procedure :: time, position, attitude, optional
         procedure :: times, positions, attitudes
         procedure :: time_range, time_distance, time_index
-        procedure :: point, verify_data, num_points
+        procedure :: point, points, verify_data, num_points
         procedure :: revision, generation
     end type Trajectory
 
@@ -133,9 +133,9 @@ contains
         att = .true.
         if (present(positions)) pos = positions
         if (present(attitudes)) att = attitudes
-        call grow_times(self, n)
-        if (pos) call grow_positions(self, n)
-        if (att) call grow_attitudes(self, n)
+        call grow_times(self, n, exact=.true.)
+        if (pos) call grow_positions(self, n, exact=.true.)
+        if (att) call grow_attitudes(self, n, exact=.true.)
     end subroutine reserve
 
     !> Remove all points (keeping the memory).
@@ -481,6 +481,34 @@ contains
         end do
     end function point
 
+    !> Points i1, i1 + stride, ... (up to i2) with components from `sources`, into
+    !> v(3, :) (as many columns as points; `point` for a range, a whole array
+    !> slice per component). No checks: use `verify_data` and `num_points` first.
+    pure subroutine points(self, i1, i2, sources, v, stride)
+        class(Trajectory), intent(in) :: self
+        integer, intent(in) :: i1, i2
+        type(DataSource), intent(in) :: sources(3)
+        real(wp), intent(out) :: v(:,:)
+        integer, intent(in), optional :: stride
+        integer :: k, s
+        s = 1
+        if (present(stride)) s = stride
+        do k = 1, 3
+            associate (src => sources(k))
+                select case (src%src)
+                case (SOURCE_TIME)
+                    v(k, :) = src%scale * self%t(i1:i2:s)
+                case (SOURCE_POSOPT)
+                    v(k, :) = src%scale * self%posopt(src%element, src%opt, i1:i2:s)
+                case (SOURCE_ATTITUDE)
+                    v(k, :) = src%scale * self%att(src%element, i1:i2:s)
+                case default
+                    v(k, :) = 0.0_wp
+                end select
+            end associate
+        end do
+    end subroutine points
+
     !> True if the trajectory has the data the sources refer to (elements and
     !> optionals in range).
     pure logical function verify_data(self, sources)
@@ -522,46 +550,56 @@ contains
     ! ==================================================================
     ! storage (amortized doubling)
 
-    pure integer function new_capacity(current, needed)
+    !> The capacity to grow to for `needed` points: twice the current, or what is
+    !> needed and a quarter more (so that appending after a large bulk add
+    !> doesn't copy everything at once); `exact` (reserve): what is needed.
+    pure integer function new_capacity(current, needed, exact)
         integer, intent(in) :: current, needed
-        new_capacity = max(needed, 2 * current, 16)
+        logical, intent(in), optional :: exact
+        new_capacity = max(needed + needed / 4, 2 * current, 16)
+        if (present(exact)) then
+            if (exact) new_capacity = needed
+        end if
     end function new_capacity
 
-    subroutine grow_times(self, n)
+    subroutine grow_times(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
+        logical, intent(in), optional :: exact
         real(wp), allocatable :: tmp(:)
         integer :: cap
         cap = 0
         if (allocated(self%t)) cap = size(self%t)
         if (n <= cap) return
-        allocate(tmp(new_capacity(cap, n)))
+        allocate(tmp(new_capacity(cap, n, exact)))
         if (self%n_times > 0) tmp(1:self%n_times) = self%t(1:self%n_times)
         call move_alloc(tmp, self%t)
     end subroutine grow_times
 
-    subroutine grow_positions(self, n)
+    subroutine grow_positions(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
+        logical, intent(in), optional :: exact
         real(wp), allocatable :: tmp(:,:,:)
         integer :: cap
         cap = 0
         if (allocated(self%posopt)) cap = size(self%posopt, 3)
         if (n <= cap) return
-        allocate(tmp(3, 0:self%nopt_, new_capacity(cap, n)))
+        allocate(tmp(3, 0:self%nopt_, new_capacity(cap, n, exact)))
         if (self%n_pos > 0) tmp(:, :, 1:self%n_pos) = self%posopt(:, :, 1:self%n_pos)
         call move_alloc(tmp, self%posopt)
     end subroutine grow_positions
 
-    subroutine grow_attitudes(self, n)
+    subroutine grow_attitudes(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
+        logical, intent(in), optional :: exact
         real(wp), allocatable :: tmp(:,:)
         integer :: cap
         cap = 0
         if (allocated(self%att)) cap = size(self%att, 2)
         if (n <= cap) return
-        allocate(tmp(4, new_capacity(cap, n)))
+        allocate(tmp(4, new_capacity(cap, n, exact)))
         if (self%n_att > 0) tmp(:, 1:self%n_att) = self%att(:, 1:self%n_att)
         call move_alloc(tmp, self%att)
     end subroutine grow_attitudes

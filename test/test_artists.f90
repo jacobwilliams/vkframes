@@ -22,6 +22,7 @@ program test_artists
 
     failures = 0
     call check_bulk_and_appends()
+    call check_large_bulk()
     call check_trace(1.0_wp)
     call check_trace(-1.0_wp)
     call check_sources()
@@ -130,6 +131,31 @@ contains
         call a%update(0.0_wp)
         call check(a%num_drawn() == 0, 'clear: nothing drawn')
     end subroutine check_bulk_and_appends
+
+    !> A bulk load larger than max_chunk: chunks of at most max_chunk points
+    !> (consecutive chunks of a strip share a point), drawn and measured as one
+    !> chunk would be.
+    subroutine check_large_bulk()
+        type(Trajectory), target :: traj
+        type(CurveArtist) :: a
+        real(wp), allocatable :: t(:), pos(:,:)
+        integer :: i, n
+        n = 3 * max_chunk + 5
+        allocate(t(n), pos(3, n))
+        do i = 1, n
+            t(i) = real(i, wp)
+            pos(:, i) = orbit(t(i))
+        end do
+        traj = Trajectory()
+        call traj%add(t, pos)
+        a = CurveArtist(traj)
+        call a%build(c_null_ptr, vkf_switch_create())
+        call a%update(0.0_wp)
+        call check(a%num_drawn() == n, 'large bulk load: all points drawn')
+        call check(a%num_chunks() == ceiling(real(n - 1) / real(max_chunk - 1)), 'large bulk load: max_chunk chunks')
+        call check(drawn_error(a, traj) < 1.0e-6_wp, 'large bulk load: points drawn to double precision')
+        call check(distance_error(a, traj) < 1.0e-12_wp, 'large bulk load: distances along the curve')
+    end subroutine check_large_bulk
 
     !> Trace mode, with times increasing (dir = 1) or decreasing (dir = -1).
     subroutine check_trace(dir)

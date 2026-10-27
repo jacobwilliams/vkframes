@@ -1866,7 +1866,7 @@ VKF_API void* vkf_line_create(int capacity)
         auto line = std::make_unique<LineStrip>();
         line->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
-        line->style = dynamic_vec4_array(2);
+        line->style = dynamic_vec4_array(3);     // [color, params, (points written: shaders/line.vert's joins)]
 
         auto descriptorSet = vsg::DescriptorSet::create(pipeline.descriptorSetLayout, vsg::Descriptors{
             vsg::DescriptorBuffer::create(line->points, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
@@ -2123,6 +2123,11 @@ VKF_API int vkf_line_points_changed(void* line, int n)
     if (!l || n < 0 || 8 * static_cast<uint32_t>(n) > l->points->size()) return -1;
     l->points->dirty();
     l->setRange(1, static_cast<uint32_t>(n));
+    if (!l->markers && l->style->size() > 2)       // lines: the points written (neighbours for the joins)
+    {
+        l->style->at(2).x = static_cast<float>(n);
+        l->style->dirty();
+    }
     return 0;
 }
 

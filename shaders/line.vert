@@ -6,8 +6,15 @@
 // There are no vertex buffers: the points come from a storage buffer indexed
 // by gl_VertexIndex, so a strip of n points is one draw of 6*(n-1) vertices,
 // and n/2 separate segments one of 3*n vertices.
-// Segments are extended by half the width at each end (square caps), which
-// covers the gaps at the joins.
+// Joins: in a strip, consecutive segments meet in a mitre (both quads end on
+// the line bisecting the turn), so that they neither leave a gap nor overlap
+// (overlapping caps would draw the many short segments of a dense trajectory
+// about twice). Where there is no neighbouring point (a strip's ends, the ends
+// of a buffer, separate segments), where the segment is clipped at the eye, or
+// where the turn is sharp (over 120 degrees: the mitre would be longer than
+// twice the half width), the segment is extended by half the width instead
+// (a square cap), which covers the join. A neighbour is used only if it was
+// written (style.count.x points in the buffer).
 //
 // Dash patterns (OpenGL's line stipple: 16 bits, each covering `factor`
 // window units, bit 0 first) are drawn by line.frag from `dash`, the position
@@ -48,6 +55,7 @@ layout(set = 0, binding = 1) uniform Style {
     vec4 color;
     vec4 params;            // x = width in window units (logical pixels), y = 1 for separate segments,
                             // z = dash pattern (16 bits; 65535 or 0: solid), w = window units per bit
+    vec4 count;             // x = points written in the buffer (set by vkf_line_points_changed)
 } style;
 
 layout(location = 0) out vec4 fragColor;
@@ -87,9 +95,9 @@ vec3 eyeRelative(int i)
 
 // The dash positions (in periods 2^n and 2^(n+1)) and the weight of the
 // second at a vertex of the segment from point `first` to the next: at its
-// drawn start (ta) or end (tb), extended over the square cap; screenLength is
-// the drawn part's length in pixels.
-vec3 dashPosition(int first, float end, float ta, float tb, float screenLength, float halfWidth)
+// drawn start (ta) or end (tb), moved `along` pixels along the segment (a cap
+// or a mitre); screenLength is the drawn part's length in pixels.
+vec3 dashPosition(int first, float end, float ta, float tb, float screenLength, float along)
 {
     vec2 sa = vec2(0.0), sb;                       // distances along the strip (high, low)
     if (style.params.y > 0.5) {
@@ -110,8 +118,7 @@ vec3 dashPosition(int first, float end, float ta, float tb, float screenLength, 
     vec2 start = fract(sa.x * scale) + fract(sa.y * scale);            // exact: powers of two
     vec2 span = sceneLength * scale;                                   // the whole segment, in periods
     vec2 perPixel = (screenLength > 1.0e-6) ? (tb - ta) * span / screenLength : vec2(0.0);
-    vec2 d = (end == 0.0) ? start + ta * span - halfWidth * perPixel
-                          : start + tb * span + halfWidth * perPixel;
+    vec2 d = ((end == 0.0) ? start + ta * span : start + tb * span) + along * perPixel;
     return vec3(d, lambda - n);
 }
 
@@ -147,8 +154,30 @@ void main()
     vec2 normal = vec2(-dir.y, dir.x);
 
     float halfWidth = 0.5 * style.params.x * pc.viewport.z;
-    vec4 pos = (corner.x == 0.0) ? a : b;
+    bool atEnd = corner.x == 1.0;
+    vec4 pos = atEnd ? b : a;
+    // the join at this end: a square cap, or (strips) a mitre with the neighbouring segment
     vec2 offset = halfWidth * (corner.y * normal + (2.0 * corner.x - 1.0) * dir);
+    float along = atEnd ? halfWidth : -halfWidth;      // (pixels beyond the end point, along the segment)
+    int neighbour = atEnd ? first + 2 : first - 1;
+    bool clipped = atEnd ? (tb < 1.0) : (ta > 0.0);
+    if (style.params.y < 0.5 && neighbour >= 0 && neighbour < int(style.count.x) && !clipped && len > 1.0e-6) {
+        vec4 c = mvp * vec4(eyeRelative(neighbour), 1.0);
+        if (c.w >= W_MIN) {
+            vec2 sc = (c.xy / c.w) * halfSize;
+            vec2 e = atEnd ? sc - sb : sa - sc;        // the neighbouring segment, in the line's direction
+            vec2 t = dir + e / max(length(e), 1.0e-6);
+            if (length(e) > 1.0e-6 && length(t) > 1.0e-3) {
+                t = normalize(t);                      // along the bisector of the turn
+                vec2 m = vec2(-t.y, t.x);
+                float k = dot(m, normal);              // cos(half the turn)
+                if (k > 0.5) {                         // (turn under 120 degrees)
+                    offset = corner.y * (halfWidth / k) * m;
+                    along = dot(offset, dir);
+                }
+            }
+        }
+    }
     pos.xy += (offset / halfSize) * pos.w;
 
     gl_Position = pos;
@@ -156,5 +185,5 @@ void main()
     dash = vec3(0.0);
     uint pattern = uint(style.params.z) & 0xFFFFu;
     if (pattern != 0xFFFFu && pattern != 0u)
-        dash = dashPosition(first, corner.x, ta, tb, len, halfWidth);
+        dash = dashPosition(first, corner.x, ta, tb, len, along);
 }

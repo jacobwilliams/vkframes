@@ -568,22 +568,27 @@ contains
         integer, intent(in) :: i1, i2
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp), dimension(:,:), pointer :: pos
-        real(wp) :: v(3, 1)
-        integer :: j, lo, hi, i
+        real(wp), allocatable :: v(:,:)
+        integer :: j, lo, hi
         do j = 1, self%chain%num_chunks()
             call self%chain%slice(j, i1, i2, lo, hi, p)
             if (.not. associated(p)) cycle
             if (is_position_xyz(self%sources_)) then        ! the usual case: straight from the positions
                 call self%traj%positions(pos)
                 call split_points(pos(:, lo:hi), p)
-            else
-                do i = lo, hi
-                    v(:, 1) = self%traj%point(i, self%sources_)
-                    call split_points(v, p(:, :, i-lo+1:i-lo+1))
-                end do
+            else                                            ! other sources: gathered a range at a time
+                allocate(v(3, hi - lo + 1))
+                call self%traj%points(lo, hi, self%sources_, v)
+                call split_points(v, p)
+                deallocate(v)
             end if
         end do
-        call self%chain%written(i1, i2)
+        if (is_position_xyz(self%sources_)) then           ! distances from the positions in double
+            call self%traj%positions(pos)
+            call self%chain%written(i1, i2, pos)
+        else
+            call self%chain%written(i1, i2)
+        end if
     end subroutine write_curve
 
     !> The tail: from point k to the point interpolated at time t (none if
@@ -856,17 +861,22 @@ contains
         type(SegmentArtist), intent(inout) :: self
         integer, intent(in) :: s1, s2
         real(c_float), dimension(:,:,:), pointer :: p
-        real(wp) :: v(3, 2)
-        integer :: j, lo, hi, s, i
+        real(wp), allocatable :: v(:,:)
+        integer :: j, lo, hi, sa, sb, ia, ib
         do j = 1, self%chain%num_chunks()
             call self%chain%slice(j, 2 * s1 - 1, 2 * s2, lo, hi, p)   ! chunks hold whole segments
             if (.not. associated(p)) cycle
-            do s = (lo + 1) / 2, hi / 2
-                i = 1 + (s - 1) * self%stride_
-                v(:, 1) = self%traj%point(i, self%start_)
-                v(:, 2) = self%traj%point(i, self%end_)
-                call split_points(v, p(:, :, 2*s-lo:2*s-lo+1))
-            end do
+            ! segments sa .. sb: their start points (odd chain points) and end points (even)
+            sa = (lo + 1) / 2
+            sb = hi / 2
+            ia = 1 + (sa - 1) * self%stride_
+            ib = 1 + (sb - 1) * self%stride_
+            allocate(v(3, sb - sa + 1))
+            call self%traj%points(ia, ib, self%start_, v, self%stride_)
+            call split_points(v, p(:, :, 2*sa-lo:2*sb-lo:2))
+            call self%traj%points(ia, ib, self%end_, v, self%stride_)
+            call split_points(v, p(:, :, 2*sa-lo+1:2*sb-lo+1:2))
+            deallocate(v)
         end do
         call self%chain%written(2 * s1 - 1, 2 * s2)
     end subroutine write_segments
@@ -1286,22 +1296,20 @@ contains
         type(MarkerArtist), intent(inout) :: self
         integer, intent(in) :: n
         logical, intent(in) :: zero
-        real(wp) :: v(3), r
-        integer :: i
+        real(wp), allocatable :: v(:,:)
+        real(wp) :: r
         if (zero) then
             self%lo = 0.0_wp
             self%hi = 0.0_wp
-        else
-            do i = self%n_seen + 1, n
-                v = self%traj%point(i, self%sources_)
-                if (i == 1) then
-                    self%lo = v
-                    self%hi = v
-                else
-                    self%lo = min(self%lo, v)
-                    self%hi = max(self%hi, v)
-                end if
-            end do
+        else if (n > self%n_seen) then                      ! the new points, a range at a time
+            allocate(v(3, n - self%n_seen))
+            call self%traj%points(self%n_seen + 1, n, self%sources_, v)
+            if (self%n_seen == 0) then
+                self%lo = v(:, 1)
+                self%hi = v(:, 1)
+            end if
+            self%lo = min(self%lo, minval(v, dim=2))
+            self%hi = max(self%hi, maxval(v, dim=2))
         end if
         self%n_seen = n
         r = 0.5_wp * norm2(self%hi - self%lo)

@@ -3,12 +3,12 @@
 !> or markers (one per point). Points are written in place, as (high, low)
 !> float pairs for double precision (see src/vsg/vkf_layer.cpp: EyeRelative),
 !> with a strip's distance along it (for dash patterns, see shaders/line.vert;
-!> measured from the points written), and only the chunks written to are
-!> uploaded again. A full chain gets a new
-!> chunk as large as the chain so far (at least min_chunk, at most max_chunk
-!> points, or what is needed at once), so nothing is ever copied or
-!> reallocated. In a strip, consecutive chunks share their end point so that
-!> the line is continuous.
+!> measured from the trajectory's points), and only the chunks written to are
+!> uploaded again. A full chain gets new chunks, each as large as the chain so
+!> far or as what is needed at once, but at least min_chunk and at most
+!> max_chunk points, so nothing is ever copied or reallocated, and changing a
+!> point uploads at most max_chunk points again. In a strip, consecutive chunks
+!> share their end point so that the line is continuous.
 !>
 !> Writing points i1 .. i2 (indices along the whole chain):
 !>
@@ -139,13 +139,13 @@ contains
         do while (self%n_chunks == 0 .or. covered < n)
             if (self%n_chunks == 0) then
                 c%first = 1
-                c%capacity = max(min_chunk, n)                 ! the data so far in one chunk
+                c%capacity = max(min_chunk, min(max_chunk, n))       ! the data so far, up to max_chunk
             else if (self%kind == CHAIN_STRIP) then
                 c%first = covered                              ! sharing the previous chunk's last point
-                c%capacity = max(n - covered + 1, min(max_chunk, max(min_chunk, covered)))
+                c%capacity = min(max_chunk, max(min_chunk, covered, n - covered + 1))
             else
                 c%first = covered + 1
-                c%capacity = max(n - covered, min(max_chunk, max(min_chunk, covered)))
+                c%capacity = min(max_chunk, max(min_chunk, covered, n - covered))
             end if
             if (self%kind == CHAIN_SEGMENTS) c%capacity = c%capacity + modulo(c%capacity, 2)
             if (self%kind == CHAIN_MARKERS) then
@@ -189,17 +189,20 @@ contains
     end subroutine slice
 
     !> Points i1 .. i2 were written: measure a strip's distances along it (from
-    !> the distance at point i1-1), and upload the chunks holding them.
-    subroutine written(self, i1, i2)
+    !> the distance at point i1-1), and upload the chunks holding them. `x`:
+    !> the points in double precision, x(:, i) for chain point i (at least
+    !> i1-1 .. i2), to measure from; without it, from the floats written.
+    subroutine written(self, i1, i2, x)
         class(LineChain), intent(in) :: self
         integer, intent(in) :: i1, i2
+        real(wp), intent(in), optional :: x(:,:)
         integer :: j, lo, hi
         do j = 1, self%n_chunks
             associate (c => self%chunks(j))
                 lo = max(i1, c%first)
                 hi = min(i2, c%first + c%capacity - 1)
                 if (lo > hi) cycle
-                if (self%kind == CHAIN_STRIP) call measure(self, j, lo, hi)
+                if (self%kind == CHAIN_STRIP) call measure(self, j, lo, hi, x)
                 call check(vkf_line_points_changed(c%line, int(hi - c%first + 1, c_int)))
             end associate
         end do
@@ -208,12 +211,14 @@ contains
     !> The distances along the strip of points lo .. hi of chunk j: from the
     !> previous point (in this chunk; the first point of a chunk after the
     !> first is the previous chunk's last, measured before), or 0 at point 1.
-    subroutine measure(self, j, lo, hi)
+    !> From `x` (as in `written`) if given, else from the floats written.
+    subroutine measure(self, j, lo, hi, x)
         type(LineChain), intent(in) :: self
         integer, intent(in) :: j, lo, hi
+        real(wp), intent(in), optional :: x(:,:)
         real(c_float), dimension(:,:,:), pointer :: p, prev
-        real(wp), allocatable :: x(:,:), s(:)
-        integer :: k0, k1, k
+        real(wp), allocatable :: xf(:,:), s(:)
+        integer :: k0, k1, k, g
         call line_buffer(self%chunks(j)%line, p)
         if (.not. associated(p)) return
         k1 = hi - self%chunks(j)%first + 1                 ! local indices k0 .. k1
@@ -229,11 +234,18 @@ contains
         else
             s(k0) = real(p(4, 1, k0), wp) + real(p(4, 2, k0), wp)
         end if
-        x = real(p(1:3, 1, k0:k1), wp) + real(p(1:3, 2, k0:k1), wp)
-        s(k0+1:k1) = norm2(x(:, 2:) - x(:, :k1-k0), dim=1)
-        do k = k0 + 1, k1
-            s(k) = s(k - 1) + s(k)
-        end do
+        if (present(x)) then                               ! (one pass, no temporary arrays)
+            g = self%chunks(j)%first - 1                   ! chain index = g + local index
+            do k = k0 + 1, k1
+                s(k) = s(k - 1) + norm2(x(:, g + k) - x(:, g + k - 1))
+            end do
+        else
+            xf = real(p(1:3, 1, k0:k1), wp) + real(p(1:3, 2, k0:k1), wp)
+            s(k0+1:k1) = norm2(xf(:, 2:) - xf(:, :k1-k0), dim=1)
+            do k = k0 + 1, k1
+                s(k) = s(k - 1) + s(k)
+            end do
+        end if
         call split_distances(s, p(4, :, k0:k1))
     end subroutine measure
 

@@ -12,6 +12,7 @@ program test_trajectory
     real(wp), pointer :: p(:,:)
     real(wp), allocatable :: t(:), pos(:,:)
     real(wp) :: t0, tf
+    real(wp), allocatable :: v(:,:)
     logical :: ok
     integer :: i, index, status, failures, rev, gen
 
@@ -77,6 +78,19 @@ program test_trajectory
            DataSource(SOURCE_POSOPT, element=1)]
     call check(traj%verify_data(src), 'verify_data')
     call check(all(traj%point(1, src) == [8.0_wp, 10.0_wp, 1.0_wp]), 'point from sources')
+    ! points for a range, with a stride: as `point` for each
+    call traj%add(2.0_wp, pos=[4.0_wp, 5.0_wp, 6.0_wp])
+    call traj%set_optional(2, [1.0_wp, 2.0_wp, 3.0_wp])
+    call traj%add(3.0_wp, pos=[7.0_wp, 8.0_wp, 9.0_wp])
+    call traj%set_optional(2, [4.0_wp, 5.0_wp, 6.0_wp])
+    allocate(v(3, 3))
+    call traj%points(1, 3, src, v)
+    call check(all(v(:, 1) == traj%point(1, src)) .and. all(v(:, 2) == traj%point(2, src)) .and. &
+               all(v(:, 3) == traj%point(3, src)), 'points: a range from sources')
+    deallocate(v)
+    allocate(v(3, 2))
+    call traj%points(1, 3, src, v, stride=2)
+    call check(all(v(:, 1) == traj%point(1, src)) .and. all(v(:, 2) == traj%point(3, src)), 'points: every 2nd')
     src(1)%opt = 3
     call check(.not. traj%verify_data(src), 'verify_data: no optional 3')
 

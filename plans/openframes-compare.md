@@ -34,9 +34,12 @@ are from macOS 27 on an Apple M5, on 2026-10-27, with stock OpenFrames; the
 full tables are in `bench/README.md`.
 
 - **Drawing large trajectories (`static`) and adding points while drawing
-  (`grow`):** vkframes draws 1.7 to 2.0 times as many frames, at 1 million
-  and 5 million points.
-  - vkframes is limited by the GPU, at under 5% CPU.
+  (`grow`):** vkframes first drew 1.7 to 2.0 times as many frames, at 1
+  million and 5 million points. After the improvements of 2026-10-27
+  (mitre joins, growth headroom, capped chunks), it draws 3.7 to 4.5 times
+  as many at 5 million points. At 1 million it is held to the display's
+  rate inside Qt's window (see `bench/README.md`).
+  - vkframes is limited by the GPU, at under 10% CPU.
   - OpenFrames is limited by the CPU. On macOS that is partly because
     Apple's OpenGL falls back to the CPU for OpenFrames' line shader. The
     gap may be smaller on Linux or Windows.
@@ -46,12 +49,15 @@ full tables are in `bench/README.md`.
     point).
   - vkframes adding one point at a time costs the same as OpenFrames.
   - None of these matter next to frame times.
-- **Memory:** about the same per point (around 170 B, the whole process).
-  vkframes' process starts about 100 MB larger.
+- **Memory:** about the same per point at first (around 170 B, the whole
+  process). With chunks capped at 65,536 points, vkframes now uses about
+  870 MB at 5 million points against OpenFrames' 1,000 MB, although its
+  process starts about 100 MB larger.
 - **Two problems the estimates missed:**
-  - A slow append after a large bulk add (20 to 49 ms at 5 million points; see
-    [growth after a bulk add](#growth-after-a-bulk-add)).
-  - The first frame takes 0.15 s or more, against OpenFrames' 0.03 s.
+  - A slow append after a large bulk add (20 to 49 ms at 5 million points;
+    fixed, now 0.4 ms; see [growth after a bulk add](#growth-after-a-bulk-add)).
+  - The first frame takes 0.14 s or more, against OpenFrames' 0.03 s (still
+    open).
 
 The upload estimates (the bytes uploaded) haven't been measured: the
 benchmark measures time, not bytes.
@@ -173,9 +179,11 @@ attitudes.
 - **OpenFrames:** `getPoint` is the same kind of loop, so the two libraries
   are equal here.
 
-- [ ] **Future work:** fill each component of a whole range at once from an
-  array slice (time, a column of positions and optionals, or attitudes),
-  times its scale. Use this for curves, segments and markers.
+- [x] **Done (2026-10-27):** `Trajectory%points(i1, i2, sources, v, stride)`
+  fills each component of a whole range at once from an array slice (time,
+  a column of positions and optionals, or attitudes), times its scale.
+  Curves, segments (both ends, with their stride) and the markers' bounds
+  use it.
 
 ### Syncing frames every frame
 
@@ -187,9 +195,12 @@ Every frame, `WindowProxy%frame` calls `root%update(t)` and `root%sync()`.
 - The cost grows with the number of frames times the number of windows.
   This is negligible for tens of frames, but it is wasted work.
 
-- [ ] **Future work:** skip frames whose position and attitude haven't
-  changed. Update the scene once for each new simulation time, not once
-  per window. Windows whose clocks are synchronized share that time.
+- [x] **Done (2026-10-27):** `sync` skips frames whose position and attitude
+  haven't changed since they were last sent.
+- Not done: updating the scene once per simulation time across windows.
+  Windows' frames are rendered at different moments, so their times differ
+  even when their clocks are synchronized, and skipping on an equal time
+  would also stop artists from seeing new data while time is paused.
 
 ### Time search in followers
 
@@ -197,7 +208,8 @@ A `TrajectoryFollower` searches for the time twice per frame, once in
 `interpolate_position` and once in `interpolate_attitude`. OpenFrames
 searches once. Each search is a small cost (O(log n)).
 
-- [ ] **Future work:** search once and use the index for both.
+- [x] **Done (2026-10-27):** `update` searches once and passes the index to
+  both.
 
 ### Distances along the line
 
@@ -205,9 +217,10 @@ searches once. Each search is a small cost (O(log n)).
 it has just written, and allocates temporary arrays (`x(3, n)`, `s(n)`) on
 each call. The running sum is sequential, so that part can't vectorize.
 
-- [ ] **Future work:** measure from the trajectory's double positions
-  directly (passed in by the artist), without the temporary arrays. This is
-  also a little more accurate.
+- [x] **Done (2026-10-27):** `LineChain%written` takes the points in double
+  precision (`CurveArtist` passes the trajectory's positions), and
+  `measure` adds the distances in one pass without temporary arrays. Other
+  data sources still measure from the floats.
 
 ### Storage for 2-D trajectories
 
@@ -228,9 +241,9 @@ all of its points, to upload them in one go.
   rewrites from the last point it has written.
 - For a trajectory of 10 million points, that edit uploads 320 MB again.
 
-- [ ] **Future work:** cap the first chunk at `max_chunk` points, or use
-  partial uploads (see
-  [Upload rate](#upload-rate-for-small-trajectories-that-grow)).
+- [x] **Done (2026-10-27):** every chunk holds at most `max_chunk` points
+  (65,536); a large bulk load gets several. A change uploads at most one
+  chunk (2 MB) again.
 
 ### Growth after a bulk add
 
@@ -243,10 +256,13 @@ Measured by the benchmark: this was not in the estimates.
   At 5 million points this makes one append take 20 to 49 ms.
 - OpenFrames' vectors, grown one point at a time, already have spare room.
 
-- [ ] **Future work:** leave room when growing for a bulk add, for example
-  half as much again. Callers can already avoid the copy with
-  `Trajectory%reserve`. Storage in chunks would avoid copies altogether, but
-  `Trajectory%positions` and the artists rely on contiguous arrays.
+- [x] **Done (2026-10-27):** growing for an add leaves a quarter more room
+  than needed (`new_capacity`); `Trajectory%reserve` stays exact. The
+  benchmark's slowest append at 5 million points went from 20 to 49 ms down
+  to 0.07 ms: the appends fit in the room left. A copy still happens when
+  the room runs out, once per quarter of the trajectory's size. Storage in
+  chunks would avoid copies altogether, but `Trajectory%positions` and the
+  artists rely on contiguous arrays.
 
 ### The first frame
 
@@ -261,12 +277,28 @@ uploading all the points. OpenGL uploads lazily.
 
 - **GPU work for lines.** vkframes draws each segment as a quad: 6 vertices,
   each reading both endpoints. OpenFrames draws `GL_LINE_STRIP` with
-  `glLineWidth`, one vertex per point. vkframes does more vertex work, but
-  this is how wide lines are drawn on Vulkan and on macOS, where OpenGL's
-  line width isn't available.
-  - [ ] **Future work:** use instancing, or an indexed layout without
-    vertex data, so that each endpoint is transformed once. This is also in
-    `plans/plan.md`.
+  `glLineWidth`, one vertex per point. This is how wide lines are drawn on
+  Vulkan and on macOS, where OpenGL's line width isn't available.
+  - **Measured (2026-10-27):** the vertex work is only 11 to 16% of a frame.
+    With every triangle culled, 1 million points render at 619 fps and 5
+    million at 184, against 98 and 19.4 drawn. So transforming each
+    endpoint once (instancing or an indexed layout) would save at most that.
+    It isn't worth it now.
+  - Most of the time went to rasterizing many tiny overlapping triangles.
+    Each segment was extended by half the width at both ends (square caps,
+    to cover the joins), which drew a dense trajectory about twice. Without
+    the caps, the frame rate doubled.
+  - [x] **Done (2026-10-27):** mitre joins (`shaders/line.vert`).
+    - Consecutive segments of a strip meet on the line bisecting the turn,
+      so they neither overlap nor leave a gap.
+    - Square caps remain where there is no neighbouring point, where the
+      segment is clipped at the eye, and at turns over 120 degrees.
+    - The joins also look cleaner: the caps left small notches at turns.
+    - The shader reads the number of points written from the line's style
+      buffer (set by `vkf_line_points_changed`), to use only real
+      neighbours.
+    - Static drawing went from 98 to 194 fps at 1 million points, and from
+      19.4 to 42 at 5 million.
 - **Depth.** OpenFrames' `DepthPartitioner` renders the scene once for each
   depth slice. vkframes renders once, with reverse-Z depth.
 - **Long trajectories seen from far away.** Neither library thins out
@@ -276,25 +308,28 @@ uploading all the points. OpenGL uploads lazily.
 
 ## Future work
 
-In rough order of benefit, after the benchmark. vkframes is limited by the
-GPU on large trajectories, so the line quads move to the top.
+In rough order of benefit, after the benchmark.
 
-- [ ] Use instancing or an indexed layout for line quads, so that each
-      endpoint is transformed once ([GPU work](#not-about-fortran-but-relevant)).
-- [ ] Leave room when growing for a bulk add
+- [x] Draw lines with less rasterizing: mitre joins instead of square caps
+      (about twice as fast; [GPU work](#not-about-fortran-but-relevant)).
+- [ ] ~~Use instancing or an indexed layout for line quads~~: measured at
+      only 11 to 16% of a frame, so not worth it for now
+      ([GPU work](#not-about-fortran-but-relevant)).
+- [x] Leave room when growing for a bulk add
       ([growth](#growth-after-a-bulk-add)).
 - [ ] Profile the first frame ([first frame](#the-first-frame)).
 - [ ] Upload only the range of points written, or limit uploads to about 20
       per second ([upload rate](#upload-rate-for-small-trajectories-that-grow)).
-- [ ] Fill data sources other than x, y, z a range at a time
+- [x] Fill data sources other than x, y, z a range at a time
       ([data sources](#data-sources-other-than-x-y-z)).
-- [ ] Cap the first chunk at `max_chunk` points
+- [x] Cap the first chunk at `max_chunk` points
       ([first chunk](#a-first-chunk-the-size-of-the-trajectory)).
-- [ ] Skip unchanged frames when syncing, and update once per simulation
-      time across windows ([syncing](#syncing-frames-every-frame)).
-- [ ] Measure line distances from the double positions
+- [x] Skip unchanged frames when syncing
+      ([syncing](#syncing-frames-every-frame)). (Not done: updating once per
+      simulation time across windows, which wouldn't help; see there.)
+- [x] Measure line distances from the double positions
       ([distances](#distances-along-the-line)).
-- [ ] Search for the time once per follower update
+- [x] Search for the time once per follower update
       ([followers](#time-search-in-followers)).
 - [ ] Decimation or level of detail for long trajectories
       ([GPU work](#not-about-fortran-but-relevant)).

@@ -124,10 +124,21 @@ unaffected; only what reaches the screen is.
 
 These results come from macOS 27 on an Apple M5, on 2026-10-27, with stock
 OpenFrames and the defaults (10 s measured, 2 s warmup, 60,000 points per
-second in `grow`). Each number is from a single run. At 100,000 points the
-two vkframes `static` runs differ by about 50% although they draw the same
-scene, so treat differences of that size at small sizes as noise. The full
-tables come from `pixi run bench -- --report <file>`.
+second in `grow`). They include the improvements of 2026-10-27 (mitre joins
+for lines, growth headroom, chunks capped at 65,536 points; see
+`plans/openframes-compare.md`). Each number is from a single run.
+
+- **Noise.** At 100,000 points the two vkframes `static` runs differ by about
+  60% although they draw the same scene, so treat differences of that size
+  at small sizes as noise.
+- **The display's rate.** Inside a Qt window on macOS, vkframes' frames are
+  sometimes held to the display's rate (120 Hz here) even without vsync.
+  Core Animation seems to throttle a Metal layer inside Qt's layer tree
+  while the window is visible. Results at about 120 fps (marked ≥) are that
+  limit, not vkframes'. An earlier run of the same build that wasn't held
+  reached 194 fps (`static`) and 171 fps (`grow`) at 1,000,000 points.
+
+The full tables come from `pixi run bench -- --report <file>`.
 
 ### Frame rate
 
@@ -135,30 +146,33 @@ Frames per second, with the mean frame time in brackets:
 
 | Scenario | Points | vkframes | OpenFrames | vkframes / OpenFrames |
 |---|---|---|---|---|
-| static | 100,000 | 565 (1.8 ms) | 443 (2.3 ms) | 1.3× |
-| static | 1,000,000 | 98 (10.2 ms) | 56 (17.9 ms) | 1.8× |
-| static | 5,000,000 | 19.4 (51 ms) | 11.2 (89 ms) | 1.7× |
-| grow | 100,000 | 287 (3.5 ms) | 157 (6.4 ms) | 1.8× |
-| grow | 1,000,000 | 77 (12.9 ms) | 40.5 (24.7 ms) | 1.9× |
-| grow | 5,000,000 | 17.9 (56 ms) | 9.1 (110 ms) | 2.0× |
+| static | 100,000 | 496–816 (1.2–2.0 ms) | 509 (2.0 ms) | about 1–1.6× |
+| static | 1,000,000 | ≥ 119 (8.4 ms) | 58 (17.2 ms) | ≥ 2.1× |
+| static | 5,000,000 | 41.8 (24 ms) | 11.4 (88 ms) | 3.7× |
+| grow | 100,000 | 545 (1.8 ms) | 144 (7.0 ms) | 3.8× |
+| grow | 1,000,000 | ≥ 118 (8.5 ms) | 39.8 (25 ms) | ≥ 3.0× |
+| grow | 5,000,000 | 39.4 (25 ms) | 8.7 (116 ms) | 4.5× |
+
+Before the improvements, vkframes got 98 and 19.4 fps (`static`) and 77 and
+17.9 fps (`grow`) at 1 and 5 million points.
 
 ### Other measurements
 
 | Measurement | vkframes | OpenFrames |
 |---|---|---|
-| Adding 1,000,000 points | 7 ms in bulk, 14 ms one at a time | 13 ms, one at a time |
-| Adding 5,000,000 points | 31 ms in bulk, 84 ms one at a time | 77 ms, one at a time |
-| Time to first frame | 0.15–0.28 s | about 0.03 s at every size |
-| Slowest append, `grow` (1,000 points each) | 1.6 ms at 100,000 points; 4.9 ms at 1M; **49 ms at 5M** | 1.5 ms; 2.7 ms; 0.07 ms |
-| CPU / wall, large trajectories | 0.01–0.05 (limited by the GPU) | 1.3–1.4 (render thread always busy) |
-| Memory per point (100,000 to 5,000,000 points, `static`) | about 177 B | about 168 B |
-| Memory with 100,000 points | about 270 MB | about 175 MB |
+| Adding 1,000,000 points | 7 ms in bulk, 14 ms one at a time | 14 ms, one at a time |
+| Adding 5,000,000 points | 30 ms in bulk, 80 ms one at a time | 73 ms, one at a time |
+| Time to first frame | 0.14–0.27 s | about 0.03 s at every size |
+| Slowest append, `grow` (1,000 points each) | 2.2 ms at 100,000 points; 10 ms at 1M; 0.4 ms at 5M | 1.4 ms; 2.5 ms; 0.08 ms |
+| CPU / wall, large trajectories | 0.02–0.1 (limited by the GPU) | 1.2–1.4 (render thread always busy) |
+| Memory with 5,000,000 points (`static`, bulk) | about 870 MB | about 1,000 MB |
+| Memory with 100,000 points | about 275 MB | about 165 MB |
 
 ### What this shows
 
-- **Drawing and growing large trajectories:** vkframes draws 1.7 to 2.0
-  times as many frames.
-  - vkframes is limited by the GPU, using under 5% CPU.
+- **Drawing and growing large trajectories:** at 5 million points vkframes
+  draws 3.7 to 4.5 times as many frames as OpenFrames.
+  - vkframes is limited by the GPU, using under 10% CPU.
   - OpenFrames is limited by the CPU. Part of that is because Apple's
     OpenGL runs its line shader's vertex work on the CPU (see
     [Reading the results](#reading-the-results)).
@@ -167,18 +181,20 @@ Frames per second, with the mean frame time in brackets:
 - **Adding data from Fortran:**
   - vkframes' bulk add is about twice as fast as OpenFrames' one call per
     value.
-  - OpenFrames' per-point C interface costs about 13 ns per point, the
+  - OpenFrames' per-point C interface costs about 14 ns per point, the
     same as vkframes adding one point at a time.
   - None of these matter next to frame times.
-- **Regressions found:**
-  - vkframes' slowest append at 5,000,000 points is 20 to 49 ms. A bulk add
-    sizes the trajectory's arrays exactly, so the first append afterwards
-    doubles and copies all of them. OpenFrames' vectors, grown one point at
-    a time, already have spare room.
-  - vkframes' first frame is 0.15 s or more. This is probably pipeline
-    creation and the first upload, while OpenFrames uploads lazily.
-- **Memory:** per point, the two are about the same. vkframes' process
-  starts about 100 MB larger (the Vulkan driver and VSG).
+- **Appends:** the slow append after a large bulk add is gone (0.4 ms at 5
+  million points, from 20 to 49 ms). A copy still happens when the room
+  left runs out, once per quarter of the trajectory's size: the 10 ms
+  append at 1 million points is that copy.
+- **First frame:** vkframes' first frame still takes 0.14 s or more. This is
+  probably pipeline creation and the first upload, while OpenFrames uploads
+  lazily.
+- **Memory:** with 5 million points, vkframes now uses less than OpenFrames.
+  Its process starts about 100 MB larger (the Vulkan driver and VSG), but
+  capping chunks at 65,536 points cut its memory at 5 million points by
+  about 270 MB.
 
 ## Files
 

@@ -250,6 +250,7 @@ contains
         logical, intent(out) :: has_position, has_attitude
         type(Trajectory), pointer :: traj
         real(wp) :: t
+        integer :: status, i
         has_position = .false.
         has_attitude = .false.
         if (self%n == 0) return
@@ -262,10 +263,11 @@ contains
         self%last_time_ = t
         self%current = chosen_trajectory(self, t)
         traj => self%trajs(self%current)%p
+        status = traj%time_index(t, i)                      ! (once, for the position and the attitude)
         if (iand(self%data_, FOLLOW_POSITION) /= 0 .and. self%data_valid()) &
-            call interpolate_position(traj, self%sources_, t, position, has_position)
+            call interpolate_position(traj, self%sources_, t, status, i, position, has_position)
         if (iand(self%data_, FOLLOW_ATTITUDE) /= 0) &
-            call interpolate_attitude(traj, t, attitude, has_attitude)
+            call interpolate_attitude(traj, t, status, i, attitude, has_attitude)
     end subroutine update
 
     !> FOLLOW_LOOP: t wrapped into the combined time range of the trajectories.
@@ -320,14 +322,16 @@ contains
     end function chosen_trajectory
 
     !> Linear interpolation of the position (from `sources`) at time t; the
-    !> first/last point outside the time range.
-    subroutine interpolate_position(traj, sources, t, position, ok)
+    !> first/last point outside the time range. `status` and `index`: the
+    !> trajectory's time_index for t.
+    subroutine interpolate_position(traj, sources, t, status, index, position, ok)
         type(Trajectory), intent(in) :: traj
         type(DataSource), intent(in) :: sources(3)
         real(wp), intent(in) :: t
+        integer, intent(in) :: status, index
         real(wp), intent(inout) :: position(3)
         logical, intent(out) :: ok
-        integer :: n, i, status
+        integer :: n, i
         real(wp) :: frac
         ok = .false.
         n = traj%num_points(sources)
@@ -337,7 +341,7 @@ contains
             ok = .true.
             return
         end if
-        status = traj%time_index(t, i)
+        i = index
         if (status == TIME_NOT_FOUND) return
         if (status == TIME_OUT_OF_RANGE) then
             i = merge(1, n, i < 1)
@@ -356,18 +360,20 @@ contains
         ok = .true.
     end subroutine interpolate_position
 
-    !> Slerp of the attitude at time t; the first/last attitude outside the time range.
-    subroutine interpolate_attitude(traj, t, attitude, ok)
+    !> Slerp of the attitude at time t; the first/last attitude outside the time
+    !> range. `status` and `index`: the trajectory's time_index for t.
+    subroutine interpolate_attitude(traj, t, status, index, attitude, ok)
         type(Trajectory), intent(in) :: traj
         real(wp), intent(in) :: t
+        integer, intent(in) :: status, index
         real(wp), intent(inout) :: attitude(4)
         logical, intent(out) :: ok
-        integer :: n, i, status
+        integer :: n, i
         real(wp) :: frac
         ok = .false.
         n = traj%num_attitudes()
         if (n == 0) return
-        status = traj%time_index(t, i)
+        i = index
         if (status == TIME_NOT_FOUND) return
         if (status == TIME_OUT_OF_RANGE) then
             i = merge(1, n, i < 1)
