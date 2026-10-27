@@ -197,10 +197,16 @@ Every frame, `WindowProxy%frame` calls `root%update(t)` and `root%sync()`.
 
 - [x] **Done (2026-10-27):** `sync` skips frames whose position and attitude
   haven't changed since they were last sent.
-- Not done: updating the scene once per simulation time across windows.
-  Windows' frames are rendered at different moments, so their times differ
-  even when their clocks are synchronized, and skipping on an equal time
-  would also stop artists from seeing new data while time is paused.
+- [x] **Done (2026-10-27):** the scene is updated once per simulation time
+  across windows (`FrameManager%update`).
+  - Windows whose clocks are synchronized render exactly their master's
+    time at its last frame, so they show the scene in the same state.
+  - A window skips the update when its time is the one the scene was last
+    updated for, by another window since this window's last frame. So each
+    round of frames updates the scene once, also while time is paused (for
+    data added meanwhile).
+  - A window left alone (the others closed) updates every frame.
+  - `test/test_scene_update.f90` checks this.
 
 ### Time search in followers
 
@@ -324,9 +330,8 @@ In rough order of benefit, after the benchmark.
       ([data sources](#data-sources-other-than-x-y-z)).
 - [x] Cap the first chunk at `max_chunk` points
       ([first chunk](#a-first-chunk-the-size-of-the-trajectory)).
-- [x] Skip unchanged frames when syncing
-      ([syncing](#syncing-frames-every-frame)). (Not done: updating once per
-      simulation time across windows, which wouldn't help; see there.)
+- [x] Skip unchanged frames when syncing, and update the scene once per
+      simulation time across windows ([syncing](#syncing-frames-every-frame)).
 - [x] Measure line distances from the double positions
       ([distances](#distances-along-the-line)).
 - [x] Search for the time once per follower update

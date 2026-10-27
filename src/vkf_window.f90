@@ -11,6 +11,15 @@
 !> positions and attitudes to the renderer, places the camera for the current
 !> View and draws.
 !>
+!> Several windows can show one scene (its render nodes are shared). The scene
+!> is updated once per simulation time: a window whose time is the one the
+!> scene was last updated for, by another window since this one's last frame,
+!> doesn't update it again (`FrameManager%update`). Windows whose clocks are
+!> synchronized (`SimulationClock%synchronize`) render the same time, their
+!> master's at its last frame, so they show the scene in the same state and
+!> update it once per round of frames, also while the time is paused (then
+!> each round still updates once, for data added meanwhile).
+!>
 !> A window has a list of views (`add_view`, `select_view`, `next_view`, ...);
 !> each keeps its own camera (the trackball) while another one is shown.
 !> Without views, a default view of the scene's root frame is used.
@@ -44,9 +53,12 @@ module vkf_window
     type, public :: FrameManager
         private
         class(ReferenceFrame), pointer :: root => null()
+        integer :: updates = 0                              !! scene updates so far
+        real(wp) :: updated_time = 0.0_wp                   !! the time of the last one
     contains
         procedure :: set_frame => fm_set_frame
         procedure :: frame => fm_frame
+        procedure :: update => fm_update, num_updates => fm_num_updates
     end type FrameManager
 
     interface FrameManager
@@ -69,6 +81,7 @@ module vkf_window
         private
         type(c_ptr) :: viewer_ = c_null_ptr
         type(FrameManager), pointer :: scene => null()
+        integer :: scene_seen = -1                          !! the scene's updates at this window's last frame
         type(SimulationClock) :: clock_
         logical :: scene_added = .false.
         real(wp) :: background(3) = [0.0_wp, 0.0_wp, 0.0_wp]
@@ -136,6 +149,30 @@ contains
         root => self%root
     end function fm_frame
 
+    !> Update the scene for time t (followed trajectories, artists) and copy
+    !> the frames' positions and attitudes to the renderer, unless another
+    !> window already did for this time since this window's last frame.
+    !> `seen` is the window's own: the number of updates at its last frame.
+    subroutine fm_update(self, t, seen)
+        class(FrameManager), intent(inout) :: self
+        real(wp), intent(in) :: t
+        integer, intent(inout) :: seen
+        if (.not. associated(self%root)) return
+        if (.not. (self%updates > 0 .and. t == self%updated_time .and. seen /= self%updates)) then
+            call self%root%update(t)
+            call self%root%sync()
+            self%updates = self%updates + 1
+            self%updated_time = t
+        end if
+        seen = self%updates
+    end subroutine fm_update
+
+    !> Number of scene updates so far (`update`).
+    pure integer function fm_num_updates(self) result(n)
+        class(FrameManager), intent(in) :: self
+        n = self%updates
+    end function fm_num_updates
+
     ! ==================================================================
     ! the window
 
@@ -197,6 +234,7 @@ contains
         class(WindowProxy), intent(inout) :: self
         type(FrameManager), intent(in), target :: fm
         self%scene => fm
+        self%scene_seen = -1
         self%scene_added = .false.
     end subroutine set_scene
 
@@ -225,10 +263,7 @@ contains
         end if
         call update_huds(self)
         t = self%clock_%update()
-        if (associated(root)) then
-            call root%update(t)
-            call root%sync()
-        end if
+        if (associated(root)) call self%scene%update(t, self%scene_seen)     ! (once per time across windows)
         call update_window_light(self, root)
         call place_camera(self)
         status = vkf_viewer_frame(self%viewer_)
