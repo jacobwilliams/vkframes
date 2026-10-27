@@ -26,7 +26,7 @@ module vkf_line_chain
     use vkf_math, only: wp
     use vkf_layer, only: vkf_line_create, vkf_marker_create, vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
-                         vkf_viewer_compile_node, line_set_style, line_set_pattern, line_set_segments, &
+                         vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
                          marker_set_style
 
     implicit none
@@ -49,7 +49,8 @@ module vkf_line_chain
 
     type, public :: LineChain
         private
-        type(c_ptr) :: viewer = c_null_ptr, group = c_null_ptr
+        type(c_ptr) :: group = c_null_ptr
+        logical :: compile_new = .false.                !! chunks made from now on are compiled (the group is shown)
         type(LineChunk), allocatable :: chunks(:)
         integer :: n_chunks = 0
         integer :: kind = CHAIN_STRIP
@@ -62,7 +63,7 @@ module vkf_line_chain
         integer :: pattern_factor = 1                   !! lines: dash pattern (see line_set_pattern)
         integer :: pattern = int(z'FFFF')
     contains
-        procedure :: init, set_viewer, is_built, release, detach
+        procedure :: init, set_compile, is_built, release, detach
         procedure :: reserve, slice, written, draw
         procedure :: set_style, set_pattern, set_marker_style, point, distance, num_chunks
     end type LineChain
@@ -71,7 +72,7 @@ contains
 
     !> Draw under `group` (a CHAIN_* kind; markers with `image`, a
     !> vkf_image_read handle, for the image shape). Chunks made later are
-    !> compiled by the viewer set with set_viewer.
+    !> compiled once set_compile says so.
     subroutine init(self, group, kind, image)
         class(LineChain), intent(inout) :: self
         type(c_ptr), intent(in) :: group
@@ -79,7 +80,7 @@ contains
         type(c_ptr), intent(in), optional :: image
         self%group = group
         self%kind = kind
-        self%viewer = c_null_ptr
+        self%compile_new = .false.
         self%image = c_null_ptr
         if (present(image)) self%image = image
     end subroutine init
@@ -94,7 +95,7 @@ contains
         end do
         self%n_chunks = 0
         self%group = c_null_ptr
-        self%viewer = c_null_ptr
+        self%compile_new = .false.
     end subroutine release
 
     !> Remove the chunks from the group (also while running), and release them.
@@ -107,13 +108,13 @@ contains
         call self%release()
     end subroutine detach
 
-    !> The viewer that compiles chunks made from now on (null: none, e.g. while
-    !> building, when they are compiled with the group).
-    subroutine set_viewer(self, viewer)
+    !> Compile chunks made from now on (for the windows running): once the
+    !> group is shown (not while building, when they are compiled with it).
+    subroutine set_compile(self, compile)
         class(LineChain), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer
-        self%viewer = viewer
-    end subroutine set_viewer
+        logical, intent(in) :: compile
+        self%compile_new = compile
+    end subroutine set_compile
 
     pure logical function is_built(self)
         class(LineChain), intent(in) :: self
@@ -155,7 +156,7 @@ contains
             if (.not. c_associated(c%line)) return
             if (self%kind == CHAIN_SEGMENTS) call check(line_set_segments(c%line, .true.))
             call apply_style(self, c%line)
-            if (c_associated(self%viewer)) call check(vkf_viewer_compile_node(self%viewer, c%line))
+            if (self%compile_new) call check(vkf_compile_node(c%line))
             call check(vkf_node_add_child(self%group, c%line))
             if (.not. allocated(self%chunks)) allocate(self%chunks(4))
             if (self%n_chunks == size(self%chunks)) then

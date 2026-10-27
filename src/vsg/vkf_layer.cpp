@@ -65,7 +65,7 @@ namespace vkf
     void release_viewer(vsg::Viewer* viewer);
     // ... and the device features they need, and their state for a view (before the first compile)
     void device_features(vsg::WindowTraits& traits);
-    void prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device);
+    bool prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device);
 } // namespace vkf
 
 namespace
@@ -106,6 +106,11 @@ namespace
     }
 
 #if defined(__APPLE__)
+    // The class of the view VSG's own macOS windows render into (VSG 1.1's
+    // vsg_MacOS_NSView, which is private to VSG: see accept_first_mouse_in_vsg_windows
+    // and new_window_layer).
+    constexpr const char* vsg_view_class = "vsg_MacOS_NSView";
+
     // The view VSG renders into: an NSView that is invisible to hit-testing
     // (hitTest: returns nil), so the window gives every mouse event straight to
     // the host's view under it. As a plain NSView, the host's view would only
@@ -136,12 +141,7 @@ namespace
         auto send = [](auto f, auto... args) { return reinterpret_cast<decltype(f)>(objc_msgSend)(args...); };
         using IdSel = id (*)(id, SEL);
         id p = static_cast<id>(parent);
-#    if defined(__x86_64__)
-        CGRect bounds;
-        reinterpret_cast<void (*)(CGRect*, id, SEL)>(objc_msgSend_stret)(&bounds, p, sel_registerName("bounds"));
-#    else
-        CGRect bounds = send(static_cast<CGRect (*)(id, SEL)>(nullptr), p, sel_registerName("bounds"));
-#    endif
+        CGRect bounds = send(static_cast<CGRect (*)(id, SEL)>(nullptr), p, sel_registerName("bounds"));   // (arm64: no _stret)
         id view = send(static_cast<IdSel>(nullptr), reinterpret_cast<id>(render_view_class()), sel_registerName("alloc"));
         view = send(static_cast<id (*)(id, SEL, CGRect)>(nullptr), view, sel_registerName("initWithFrame:"), bounds);
         // NSViewWidthSizable | NSViewHeightSizable
@@ -161,17 +161,19 @@ namespace
 
     void accept_first_mouse_in_vsg_windows()
     {
-        static const bool added = [] {
-            Class c = objc_getClass("vsg_MacOS_NSView");
-#    if defined(__arm64__) || defined(__aarch64__)
-            const char* types = "B@:@";   // BOOL is bool
-#    else
-            const char* types = "c@:@";   // BOOL is signed char
-#    endif
-            return c && class_addMethod(c, sel_registerName("acceptsFirstMouse:"),
-                                        reinterpret_cast<IMP>(accepts_first_mouse), types);
+        static const bool done = [] {
+            Class c = objc_getClass(vsg_view_class);
+            SEL selector = sel_registerName("acceptsFirstMouse:");
+            if (c && class_getInstanceMethod(c, selector) && class_getMethodImplementation(c, selector) !=
+                                                                  class_getMethodImplementation(objc_getClass("NSView"), selector))
+                return true;                                    // (VSG's view implements it itself)
+            if (c && class_addMethod(c, selector, reinterpret_cast<IMP>(accepts_first_mouse), "B@:@"))   // (arm64: BOOL is bool)
+                return true;
+            std::cerr << "vkframes: VSG's macOS view class (" << vsg_view_class << ") is not as expected: "
+                         "a click that activates a window will not start a drag" << std::endl;
+            return false;
         }();
-        (void)added;
+        (void)done;
     }
 
     void delete_child_view(void* view)
@@ -254,7 +256,7 @@ namespace
             {
                 id window = reinterpret_cast<id (*)(id, SEL, unsigned long)>(objc_msgSend)(windows, sel_registerName("objectAtIndex:"), i);
                 id view = send(window, "contentView");
-                if (!view || std::strcmp(object_getClassName(view), "vsg_MacOS_NSView") != 0) continue;
+                if (!view || std::strcmp(object_getClassName(view), vsg_view_class) != 0) continue;
                 id l = send(view, "layer");
                 if (l && !metal_layers().count(l)) layer = l;
             }
@@ -437,17 +439,23 @@ namespace
         LabelShaders()
         {
             shaderSet = vsg::createTextShaderSet();
-            for (auto& [hints, stages] : shaderSet->variants)
-            {
-                if (hints && hints->defines.count("BILLBOARD") && hints->defines.count("GPU_LAYOUT"))
-                {
-                    auto vert = vsg::ShaderModule::create(vkf_shaders::label_vert);
-                    auto frag = vsg::ShaderModule::create(vkf_shaders::label_frag);
-                    vert->hints = frag->hints = hints; // this variant: never recompiled
-                    stages = {vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vert),
-                              vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", frag)};
-                }
-            }
+            // the variant labels use (billboard, GPU layout): looked up by
+            // vsg::Text under these hints (its pipeline configurator's: the
+            // shader set's default hints and these defines), whether or not
+            // VSG has precompiled a variant of its own for them
+            auto hints = shaderSet->defaultShaderHints ? vsg::ShaderCompileSettings::create(*shaderSet->defaultShaderHints)
+                                                       : vsg::ShaderCompileSettings::create();
+            hints->defines = {"BILLBOARD", "GPU_LAYOUT"};
+            auto vert = vsg::ShaderModule::create(vkf_shaders::label_vert);
+            auto frag = vsg::ShaderModule::create(vkf_shaders::label_frag);
+            vert->hints = frag->hints = hints; // (SPIR-V: never recompiled)
+            vsg::ShaderStages stages{vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vert),
+                                     vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", frag)};
+            shaderSet->variants[hints] = stages;
+            if (shaderSet->getShaderStages(hints) != stages)
+                std::cerr << "vkframes: labels: VSG's text shaders are not as expected; labels use VSG's" << std::endl;
+            if (shaderSet->pushConstantRanges.empty())
+                std::cerr << "vkframes: labels: VSG's text shaders have no push constants; labels are not pixel-sized" << std::endl;
             for (auto& range : shaderSet->pushConstantRanges)
             {
                 range.range.size = 144; // projection, model-view, viewport
@@ -584,6 +592,15 @@ namespace
         bool resizePending = false;            // resized before the first frame (no swapchain yet)
     };
 
+    // The viewers that exist (vkf_viewer_create to vkf_viewer_delete), oldest
+    // first: Fortran keeps no viewer handle beyond a window's own (a frame tree
+    // shown in several windows outlives any one of them).
+    std::vector<Viewer*>& live_viewers()
+    {
+        static std::vector<Viewer*> viewers;
+        return viewers;
+    }
+
     // Compile a node for a viewer that is already running (before adding it to
     // its scene); nothing to do before the first frame, which compiles the
     // whole scene. False on failure.
@@ -594,6 +611,22 @@ namespace
         if (!result) return false;
         vsg::updateViewer(*v.viewer, result);
         return true;
+    }
+
+    // The optional parts' state for the viewer's scene views (Rocky's, once
+    // the viewer has maps: vkf::prepare_view), each frame; a view given it
+    // while the viewer runs is compiled now.
+    void prepare_views(Viewer& v)
+    {
+        if (!v.commandGraph) return;
+        for (auto& child : v.commandGraph->children)
+            if (auto renderGraph = child.cast<vsg::RenderGraph>(); renderGraph && !renderGraph->children.empty())
+                if (auto view = renderGraph->children.front().cast<vsg::View>())   // (the scene's; not the HUD's)
+                    if (vkf::prepare_view(v.viewer.get(), *view, v.window->getOrCreateDevice()) && v.compiled)
+                    {
+                        v.viewer->deviceWaitIdle();
+                        compile_for(v, view);
+                    }
     }
 
     // A driver's memory budget (VK_EXT_memory_budget), which VSG trusts when
@@ -1068,6 +1101,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
 
         v->viewer->addEventHandler(vsg::CloseHandler::create(v->viewer));
         v->viewer->addEventHandler(vsg::Trackball::create(v->camera));
+        live_viewers().push_back(v.get());
         return v.release();
     });
 }
@@ -1079,6 +1113,8 @@ VKF_API void vkf_viewer_delete(void* viewer)
         if (v && v->compiled) v->viewer->deviceWaitIdle();
         if (v) delete static_cast<Node*>(v->headlightHandle);
         auto vsgViewer = v ? v->viewer : vsg::ref_ptr<vsg::Viewer>();
+        auto& viewers = live_viewers();
+        viewers.erase(std::remove(viewers.begin(), viewers.end(), v), viewers.end());
 #if defined(__APPLE__)
         void* childView = v ? v->childView : nullptr;
         if (v) metal_layers().erase(v->metalLayer);
@@ -1290,10 +1326,6 @@ VKF_API int vkf_viewer_frame(void* viewer)
         {
             // (no VSG headlight: the window's light is vkframes', v->headlight)
             v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene, VK_SUBPASS_CONTENTS_INLINE, false);
-            for (auto& child : v->commandGraph->children)
-                if (auto renderGraph = child.cast<vsg::RenderGraph>())
-                    for (auto& node : renderGraph->children)
-                        if (auto view = node.cast<vsg::View>()) vkf::prepare_view(v->viewer.get(), *view, v->window->getOrCreateDevice());
             if (v->hudScene)
             {
                 // the HUD: a second view in the same render pass, after the scene
@@ -1305,11 +1337,13 @@ VKF_API int vkf_viewer_frame(void* viewer)
             }
             set_pixel_ratio(*v->commandGraph, v->pixelRatio);
             v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
+            prepare_views(*v);                                  // (compiled with the scene)
             v->viewer->compile();
             v->compiled = true;
             if (v->resizePending) v->window->resize();
             v->resizePending = false;
         }
+        prepare_views(*v);
         if (!v->viewer->advanceToNextFrame()) return 0;
         v->viewer->handleEvents();
         v->viewer->update();
@@ -1399,7 +1433,7 @@ VKF_API void vkf_node_delete(void* node)
 }
 
 // Add child to a group node (a transform or a switch). While running, compile the
-// child first (vkf_viewer_compile_node).
+// child first (vkf_compile_node).
 VKF_API int vkf_node_add_child(void* parent, void* child)
 {
     auto p = static_cast<Node*>(parent);
@@ -1448,21 +1482,30 @@ VKF_API int vkf_node_remove_child(void* parent, void* child)
     return -1;
 }
 
-// Compile a node (and its subgraph) for a viewer that is already running, so
-// it can be added to the scene between frames. Windows share their device, so
-// one viewer compiles it for all of them. Returns 0 on success.
-VKF_API int vkf_viewer_compile_node(void* viewer, void* node)
+// Compile a node (and its subgraph) for the viewers that are running, so it
+// can be added to a scene between frames: for each of them (windows share
+// their device, so its GPU objects are made once; each viewer also learns its
+// dynamic data, which it uploads). Viewers not yet running compile it with
+// their scene at their first frame. Returns 0 on success.
+VKF_API int vkf_compile_node(void* node)
 {
-    auto v = static_cast<Viewer*>(viewer);
     auto n = static_cast<Node*>(node);
-    if (!v || !n) return -1;
-    if (!v->compiled) return 0; // compiled with the scene at the first frame
-    return guarded("vkf_viewer_compile_node", -1, [&]() {
-        auto result = v->viewer->compileManager->compile(n->node);
-        if (!result) return -1;
-        vsg::updateViewer(*v->viewer, result);
+    if (!n) return -1;
+    return guarded("vkf_compile_node", -1, [&]() {
+        for (auto* v : live_viewers())
+            if (!compile_for(*v, n->node)) return -1;
         return 0;
     });
+}
+
+// A viewer that exists (the oldest running one, else the oldest), or null:
+// for frames shown while running (Rocky maps are made for a viewer).
+VKF_API void* vkf_viewer_any()
+{
+    auto& viewers = live_viewers();
+    for (auto* v : viewers)
+        if (v->compiled) return v;
+    return viewers.empty() ? nullptr : viewers.front();
 }
 
 // A switch node: a group whose children can be hidden and shown together.

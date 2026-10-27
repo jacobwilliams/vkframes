@@ -16,7 +16,7 @@ module vkf_layer
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
-    public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_viewer_compile_node
+    public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_compile_node, vkf_viewer_any
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
@@ -30,7 +30,7 @@ module vkf_layer
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
     public :: mesh_arrays
-    public :: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_map_radius
+    public :: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_map_radius, vkf_rocky_map_alive
     public :: vkf_rocky_add_image, vkf_rocky_add_elevation, vkf_rocky_elevation
     public :: mesh_set_material
 
@@ -169,6 +169,13 @@ module vkf_layer
             real(c_float), dimension(4), intent(in) :: background
         end function vkf_rocky_map_settings
 
+        !> 1 while a map can be drawn (the viewer it was made for exists), else 0.
+        integer(c_int) function vkf_rocky_map_alive(map) bind(C, name="vkf_rocky_map_alive")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: map
+        end function vkf_rocky_map_alive
+
         real(c_double) function vkf_rocky_map_radius(map) bind(C, name="vkf_rocky_map_radius")
             import :: c_ptr, c_double
             implicit none
@@ -228,11 +235,18 @@ module vkf_layer
             type(c_ptr), value :: parent, child
         end function vkf_node_remove_child
 
-        integer(c_int) function vkf_viewer_compile_node(viewer, node) bind(C, name="vkf_viewer_compile_node")
+        !> Compile a node for the running viewers (to add it to a shown scene).
+        integer(c_int) function vkf_compile_node(node) bind(C, name="vkf_compile_node")
             import :: c_ptr, c_int
             implicit none
-            type(c_ptr), value :: viewer, node
-        end function vkf_viewer_compile_node
+            type(c_ptr), value :: node
+        end function vkf_compile_node
+
+        !> A viewer that exists (the oldest running one), or null.
+        type(c_ptr) function vkf_viewer_any() bind(C, name="vkf_viewer_any")
+            import :: c_ptr
+            implicit none
+        end function vkf_viewer_any
 
         integer(c_int) function vkf_line_set_range(line, first, n) bind(C, name="vkf_line_set_range")
             import :: c_ptr, c_int

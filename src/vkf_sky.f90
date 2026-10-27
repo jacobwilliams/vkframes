@@ -26,7 +26,7 @@ module vkf_sky
     use vkf_layer, only: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed, &
                          vkf_sky_style, vkf_sky_style_changed, vkf_image_read, vkf_image_delete, &
                          vkf_transform_create, vkf_switch_create, vkf_switch_set, vkf_node_add_child, &
-                         vkf_node_remove_child, vkf_node_delete, vkf_viewer_compile_node
+                         vkf_node_remove_child, vkf_node_delete, vkf_compile_node
 
     implicit none
 
@@ -51,7 +51,7 @@ module vkf_sky
         type(c_ptr) :: image = c_null_ptr
         type(c_ptr) :: root = c_null_ptr, texture_switch = c_null_ptr, star_switch = c_null_ptr
         type(c_ptr) :: texture_node = c_null_ptr, star_node = c_null_ptr
-        type(c_ptr) :: viewer = c_null_ptr                  !! compiles nodes made while shown
+        logical :: shown = .false.                          !! made for a window: nodes made later are compiled
     contains
         procedure :: set_texture_map, texture_map
         procedure :: set_star_data, star_catalog, star_magnitudes, star_sizes
@@ -212,7 +212,8 @@ contains
     end function attitude
 
     !> The sky's node, made on first use, for a window (WindowProxy%set_sky).
-    !> `viewer` compiles nodes made later (a new texture or catalog).
+    !> For a window's `viewer` (null: headless), nodes made later (a new texture
+    !> or catalog) are compiled for the windows running.
     function node(self, viewer) result(n)
         class(SkySphere), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer
@@ -225,7 +226,7 @@ contains
             call check(vkf_node_add_child(self%root, self%star_switch))
             call make_texture_node(self)
             call make_star_node(self)
-            self%viewer = viewer                       ! (the first nodes are compiled with the scene)
+            self%shown = c_associated(viewer)          ! (the first nodes are compiled with the scene)
         end if
         n = self%root
     end function node
@@ -245,7 +246,7 @@ contains
             self%texture_node = vkf_sky_texture_create(self%image)
             if (c_associated(self%texture_node)) then
                 call apply_attitude(self, self%texture_node)
-                if (c_associated(self%viewer)) call check(vkf_viewer_compile_node(self%viewer, self%texture_node))
+                if (self%shown) call check(vkf_compile_node(self%texture_node))
                 call check(vkf_node_add_child(self%texture_switch, self%texture_node))
             end if
         end if
@@ -273,7 +274,7 @@ contains
                     call check(vkf_sky_stars_changed(self%star_node, int(self%n_stars, c_int)))
                 end if
                 call apply_attitude(self, self%star_node)
-                if (c_associated(self%viewer)) call check(vkf_viewer_compile_node(self%viewer, self%star_node))
+                if (self%shown) call check(vkf_compile_node(self%star_node))
                 call check(vkf_node_add_child(self%star_switch, self%star_node))
             end if
         end if

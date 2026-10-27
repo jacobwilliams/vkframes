@@ -28,7 +28,7 @@ module vkf_artists
     use vkf_frames, only: ReferenceFrame
     use vkf_layer, only: vkf_line_create, vkf_line_points_changed, vkf_line_set_range, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
-                         vkf_viewer_compile_node, line_set_style, line_set_pattern, vkf_image_read, vkf_image_delete
+                         vkf_compile_node, vkf_viewer_any, line_set_style, line_set_pattern, vkf_image_read, vkf_image_delete
     use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, split_points, split_distances, &
                               line_buffer, check
 
@@ -180,7 +180,8 @@ module vkf_artists
         type(c_ptr) :: image = c_null_ptr
         logical :: attenuate = .false.
         ! rendering
-        type(c_ptr) :: viewer = c_null_ptr, group = c_null_ptr
+        type(c_ptr) :: group = c_null_ptr
+        logical :: shown = .false.                  !! built for a window (marker nodes made later are compiled)
         type(LineChain) :: start_node, end_node, inter
         logical :: drawn = .false.                  !! drawn at least once since built
         integer :: n_seen = 0                       !! points seen (for the bounds)
@@ -227,7 +228,8 @@ module vkf_artists
         private
         type(ArtistPointer), allocatable :: artists(:)
         integer :: n_artists = 0
-        type(c_ptr) :: viewer = c_null_ptr, contents_group = c_null_ptr
+        type(c_ptr) :: contents_group = c_null_ptr
+        logical :: shown = .false.                  !! built for a window (artists added later are compiled)
     contains
         procedure :: add_artist, remove_artist, remove_all_artists, num_artists, artist
         procedure :: frame_info => drawable_frame_info
@@ -500,7 +502,7 @@ contains
         call self%chain%init(group, CHAIN_STRIP)
         call self%chain%set_style(self%color_, self%width_)
         call self%chain%reserve(curve_points(self))       ! compiled with the group
-        call self%chain%set_viewer(viewer)
+        call self%chain%set_compile(c_associated(viewer))
         self%tail = vkf_line_create(2_c_int)
         if (c_associated(self%tail)) call check(vkf_node_add_child(group, self%tail))
         call curve_style(self)
@@ -801,7 +803,7 @@ contains
         call self%chain%set_style(self%color_, self%width_)
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
         call self%chain%reserve(2 * segment_count(self))  ! compiled with the group
-        call self%chain%set_viewer(viewer)
+        call self%chain%set_compile(c_associated(viewer))
         self%seen_generation = -1
     end subroutine segment_build
 
@@ -1127,7 +1129,7 @@ contains
         class(MarkerArtist), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
         self%group = group
-        self%viewer = viewer
+        self%shown = c_associated(viewer)
         call build_marker_nodes(self, compile=.false.)
     end subroutine marker_build
 
@@ -1136,21 +1138,18 @@ contains
     subroutine build_marker_nodes(self, compile)
         type(MarkerArtist), intent(inout) :: self
         logical, intent(in) :: compile
-        type(c_ptr) :: viewer
-        viewer = c_null_ptr
-        if (compile) viewer = self%viewer
         call self%start_node%init(self%group, CHAIN_MARKERS, self%image)
         call self%end_node%init(self%group, CHAIN_MARKERS, self%image)
         call self%inter%init(self%group, CHAIN_MARKERS, self%image)
-        call self%start_node%set_viewer(viewer)
-        call self%end_node%set_viewer(viewer)
-        call self%inter%set_viewer(viewer)
+        call self%start_node%set_compile(compile .and. self%shown)
+        call self%end_node%set_compile(compile .and. self%shown)
+        call self%inter%set_compile(compile .and. self%shown)
         call self%start_node%reserve(1)
         call self%end_node%reserve(1)
         call self%inter%reserve(1)
-        call self%start_node%set_viewer(self%viewer)
-        call self%end_node%set_viewer(self%viewer)
-        call self%inter%set_viewer(self%viewer)
+        call self%start_node%set_compile(self%shown)
+        call self%end_node%set_compile(self%shown)
+        call self%inter%set_compile(self%shown)
         call marker_style(self)
         call redraw_markers(self)
     end subroutine build_marker_nodes
@@ -1551,7 +1550,7 @@ contains
         class(DrawableTrajectory), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
         integer :: k
-        self%viewer = viewer
+        self%shown = c_associated(viewer)
         self%contents_group = group
         do k = 1, self%n_artists
             call build_artist(self, k, compile=.false.)
@@ -1579,8 +1578,9 @@ contains
         type(c_ptr) :: group
         group = vkf_switch_create()
         if (.not. c_associated(group)) return
-        call self%artists(k)%p%build(self%viewer, group)
-        if (compile .and. c_associated(self%viewer)) call check(vkf_viewer_compile_node(self%viewer, group))
+        ! (built for a window that exists now, if shown; compiled for the windows running)
+        call self%artists(k)%p%build(merge(vkf_viewer_any(), c_null_ptr, self%shown), group)
+        if (compile .and. self%shown) call check(vkf_compile_node(group))
         call check(vkf_node_add_child(self%contents_group, group))
         self%artists(k)%group = group
     end subroutine build_artist

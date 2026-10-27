@@ -18,7 +18,7 @@ module vkf_shapes
     use vkf_artists, only: MARKER_DISK, MARKER_IMAGE
     use vkf_files, only: find_data_file
     use vkf_layer, only: vkf_line_create, vkf_marker_create, vkf_mesh_create, vkf_switch_create, &
-                         vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_viewer_compile_node, &
+                         vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_compile_node, &
                          vkf_image_read, vkf_image_delete, line_set_points, line_set_style, line_set_segments, &
                          marker_set_style, mesh_arrays
 
@@ -33,7 +33,8 @@ module vkf_shapes
     !> A shape's nodes: made under the frame's contents, replaced when the
     !> shape changes.
     type :: ShapeNodes
-        type(c_ptr) :: viewer = c_null_ptr, contents = c_null_ptr
+        type(c_ptr) :: contents = c_null_ptr
+        logical :: shown = .false.                          !! built for a window: rebuilt nodes are compiled
         type(c_ptr) :: shape = c_null_ptr
     contains
         procedure :: replace
@@ -202,7 +203,7 @@ contains
         end if
         self%shape = new
         if (.not. c_associated(new)) return
-        if (c_associated(self%viewer)) call check(vkf_viewer_compile_node(self%viewer, new))
+        if (self%shown) call check(vkf_compile_node(new))
         call check(vkf_node_add_child(self%contents, new))
     end subroutine replace
 
@@ -480,7 +481,7 @@ contains
         type(c_ptr), intent(in) :: viewer, group
         self%nodes%contents = group
         call make_axes(self)
-        self%nodes%viewer = viewer
+        self%nodes%shown = c_associated(viewer)
     end subroutine axes_build_contents
 
     subroutine make_axes(self)
@@ -606,7 +607,7 @@ contains
         type(c_ptr), intent(in) :: viewer, group
         self%nodes%contents = group
         call make_grid(self)
-        self%nodes%viewer = viewer
+        self%nodes%shown = c_associated(viewer)
     end subroutine grid_build_contents
 
     !> The point at geodetic latitude lat and longitude lon on the ellipsoid
@@ -747,7 +748,7 @@ contains
         type(c_ptr), intent(in) :: viewer, group
         self%nodes%contents = group
         call make_plane(self)
-        self%nodes%viewer = viewer
+        self%nodes%shown = c_associated(viewer)
     end subroutine plane_build_contents
 
     subroutine make_plane(self)
@@ -983,7 +984,7 @@ contains
         type(c_ptr), intent(in) :: viewer, group
         self%nodes%contents = group
         call make_cone(self)
-        self%nodes%viewer = viewer
+        self%nodes%shown = c_associated(viewer)
     end subroutine cone_build_contents
 
     subroutine make_cone(self)

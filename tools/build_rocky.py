@@ -41,6 +41,8 @@ def patch():
     fixed = re.sub(r"(?<![:\w.])contains\((ndef|new_entry)", r"::contains(\1", text)
     if fixed != text:
         srs.write_text(fixed)
+    elif "::contains(ndef" not in text:
+        sys.exit("build_rocky: src/rocky/SRS.cpp: the contains() calls to qualify are not there (Rocky changed)")
     # only the library and rocky_simple: the tests (Catch2's RNG fails
     # libc++'s checks) and rocky_demo (u8 strings as std::string, C++17
     # style) don't build with libc++ in C++20
@@ -95,9 +97,16 @@ def patch():
 
 
 def replace(path, old, new):
+    """Replace `old` by `new` in the file at `path` (once applied, nothing to
+    do). Stops the build if neither is there: Rocky's source has changed (a
+    new commit), and the fix must be redone."""
     text = path.read_text()
-    if new not in text:
-        path.write_text(text.replace(old, new))
+    if new in text:
+        return
+    if old not in text:
+        sys.exit(f"build_rocky: {path.relative_to(src)}: the text to replace is not there "
+                 f"(Rocky changed; update tools/build_rocky.py):\n{old}")
+    path.write_text(text.replace(old, new))
 
 
 def main():

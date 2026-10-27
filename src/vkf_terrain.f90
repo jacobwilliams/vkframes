@@ -27,16 +27,18 @@
 !> the Sun, or the window's light; `set_lighting(.false.)` shows the imagery
 !> as it is). The frame's color is the color where no imagery covers the body.
 !>
-!> The map is made for the window that first shows the body (Rocky's tiles
-!> are loaded through that window's viewer); show it in one window.
-!> Headless (no viewer), the body has no map.
+!> The map is made for a window that shows the body (Rocky's tiles are loaded
+!> through that window's viewer, and the map is drawn in that window only);
+!> when that window closes, it is made again for one still open (other
+!> windows then show it). Headless (no viewer), the body has no map.
 module vkf_terrain
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
     use vkf_math, only: wp
     use vkf_frames, only: ReferenceFrame
-    use vkf_layer, only: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_add_image, &
-                         vkf_rocky_add_elevation, vkf_rocky_elevation, vkf_node_add_child
+    use vkf_layer, only: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_map_alive, &
+                         vkf_rocky_add_image, vkf_rocky_add_elevation, vkf_rocky_elevation, vkf_node_add_child, &
+                         vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_viewer_any
     use vkf_files, only: find_data_file
 
     implicit none
@@ -70,6 +72,7 @@ module vkf_terrain
         type(MapLayer), allocatable :: layers(:)
         integer :: n_layers = 0
         type(c_ptr) :: map = c_null_ptr
+        type(c_ptr) :: map_group = c_null_ptr                   !! the group the map is in (once shown)
     contains
         procedure :: add_image_layer, add_elevation_layer, num_layers
         procedure :: set_lighting, lighting
@@ -77,6 +80,7 @@ module vkf_terrain
         procedure :: frame_info => terrain_frame_info
         procedure :: bound => terrain_bound
         procedure :: build_contents => terrain_build_contents
+        procedure :: update => terrain_update
     end type TerrainBody
 
     interface TerrainBody
@@ -234,13 +238,21 @@ contains
     subroutine terrain_build_contents(self, viewer, group)
         class(TerrainBody), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
-        integer :: k
         if (.not. c_associated(viewer)) return
         if (.not. rocky_available()) then
             write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': vkframes was built without Rocky ' // &
                             '(pixi run -e rocky rocky-build, then run in the rocky environment)'
             return
         end if
+        self%map_group = group
+        call make_map(self, viewer)
+    end subroutine terrain_build_contents
+
+    !> The map (in the contents group) for `viewer`, with the settings and layers.
+    subroutine make_map(self, viewer)
+        type(TerrainBody), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer
+        integer :: k
         self%map = vkf_rocky_map_create(viewer, self%profile_, len(self%profile_, kind=c_int), &
                                         real(self%units_per_meter_, c_double))
         if (.not. c_associated(self%map)) then
@@ -251,9 +263,34 @@ contains
         do k = 1, self%n_layers
             call apply_layer(self, self%layers(k))
         end do
-        if (vkf_node_add_child(group, self%map) /= 0) &
+        if (vkf_node_add_child(self%map_group, self%map) /= 0) &
             write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not build the scene'
-    end subroutine terrain_build_contents
+    end subroutine make_map
+
+    !> Each frame: if the map's window has closed (the map was released with
+    !> it), the map again for a window still open (compiled for the windows
+    !> running), then the frame's update.
+    recursive subroutine terrain_update(self, t)
+        class(TerrainBody), intent(inout) :: self
+        real(wp), intent(in) :: t
+        type(c_ptr) :: viewer
+        integer(c_int) :: status
+        if (c_associated(self%map)) then
+            if (vkf_rocky_map_alive(self%map) == 0) then
+                viewer = vkf_viewer_any()
+                if (c_associated(viewer)) then
+                    status = vkf_node_remove_child(self%map_group, self%map)
+                    call vkf_node_delete(self%map)
+                    call make_map(self, viewer)
+                    if (c_associated(self%map)) then
+                        if (vkf_compile_node(self%map) /= 0) &
+                            write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not compile the map'
+                    end if
+                end if
+            end if
+        end if
+        call self%ReferenceFrame%update(t)
+    end subroutine terrain_update
 
     subroutine apply_settings(self)
         type(TerrainBody), intent(inout) :: self

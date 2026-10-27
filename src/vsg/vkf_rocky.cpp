@@ -4,9 +4,13 @@
 // report that Rocky is not available.
 //
 // A map is Rocky's MapNode (geocentric, in meters) under a scale transform to
-// the scene's units, created with the Rocky context of the viewer it is first
-// shown in (one context per viewer, kept for the run). Rocky pages its tiles
-// in through the viewer's update operations, which vkf_viewer_frame runs.
+// the scene's units, made with the Rocky context of a viewer (one context per
+// viewer): Rocky pages its tiles in through that viewer's update operations,
+// which vkf_viewer_frame runs, and keeps view data for its views. So a map is
+// drawn in that viewer's window only (a WindowMap, its top node, skips other
+// windows' views), and when that viewer is deleted the map is released (with
+// its context) and draws nothing; TerrainBody then makes it again for a
+// viewer that exists (vkf_rocky_map_alive).
 
 #ifndef VKF_EXTERNAL_LAYER  // Windows: built into vkf.dll instead (see fpm_vsg.py)
 
@@ -35,6 +39,7 @@
 #    include <gdal.h>
 #    include <algorithm>
 #    include <map>
+#    include <set>
 #endif
 
 namespace vkf
@@ -49,18 +54,46 @@ namespace vkf
 
     // called by vkf_viewer_create and vkf_viewer_frame (defined below)
     void device_features(vsg::WindowTraits& traits);
-    void prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device);
+    bool prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device);
 } // namespace vkf
 
 #ifdef VKF_ROCKY
 namespace
 {
+    // A map's top node: the map (its scale transform and MapNode) is drawn
+    // only in the views of its viewer's window, which have its Rocky
+    // context's view data (vkf::prepare_view); once the viewer is deleted
+    // (vkf::release_viewer) it has no children and no context.
+    class WindowMap : public vsg::Inherit<vsg::Group, WindowMap>
+    {
+    public:
+        rocky::VSGContext context = nullptr;
+
+        void traverse(vsg::RecordTraversal& visitor) const override
+        {
+            if (!context) return;
+            const auto& vds = visitor.viewDependentState;
+            if (!vds || !vds->view || vds->view->viewID >= ROCKY_MAX_NUMBER_OF_VIEWS) return;
+            const auto& own = context->sharedRenderData->viewDependentState[vds->view->viewID];
+            if (static_cast<const vsg::ViewDependentState*>(own.get()) != vds.get()) return;   // another window's view
+            Group::traverse(visitor);
+        }
+    };
+
+    // A viewer's Rocky context, its maps, and the views given its view data.
+    struct Context
+    {
+        rocky::VSGContextSingleton context;
+        std::vector<vsg::observer_ptr<WindowMap>> maps;
+        std::set<uint32_t> preparedViews;
+    };
+
     // One Rocky context per VSG viewer, released when vkframes deletes the
     // viewer (vkf::release_viewer): its destructor stops Rocky's tile jobs,
     // which must not run on into the program's exit.
-    std::map<vsg::Viewer*, rocky::VSGContextSingleton>& contexts()
+    std::map<vsg::Viewer*, Context>& contexts()
     {
-        static auto* all = new std::map<vsg::Viewer*, rocky::VSGContextSingleton>; // (not destroyed at exit)
+        static auto* all = new std::map<vsg::Viewer*, Context>; // (not destroyed at exit)
         return *all;
     }
 
@@ -85,25 +118,34 @@ namespace
         auto it = contexts.find(viewer.get());
         if (it == contexts.end())
         {
-            it = contexts.emplace(viewer.get(), rocky::VSGContextFactory::create(viewer)).first;
+            it = contexts.emplace(viewer.get(), Context{rocky::VSGContextFactory::create(viewer)}).first;
+            auto context = it->second.context.get();
             // vkframes' framebuffers are UNORM (colors in display values): the
-            // terrain encodes its (linear) color to sRGB itself (a patch to
-            // Rocky's terrain shader, tools/build_rocky.py)
-            it->second.get()->shaderCompileSettings->defines.insert("VKF_UNORM_FRAMEBUFFER");
-            remove_osg_reader(it->second.get()->readerWriterOptions->readerWriters);
+            // terrain encodes its (linear) color to sRGB itself (vkframes' copy
+            // of Rocky's terrain shader, shaders/rocky)
+            context->shaderCompileSettings->defines.insert("VKF_UNORM_FRAMEBUFFER");
+            remove_osg_reader(context->readerWriterOptions->readerWriters);
             // a shader's includes are found next to it, or on the reader's
             // paths: Rocky's shader directories, for vkframes' copies of the
             // shaders it changes (shaders/rocky, first on ROCKY_FILE_PATH)
-            for (auto& path : it->second.get()->searchPaths)
-                if (vsg::fileExists(path / "shaders")) it->second.get()->readerWriterOptions->paths.push_back(path / "shaders");
+            for (auto& path : context->searchPaths)
+                if (vsg::fileExists(path / "shaders")) context->readerWriterOptions->paths.push_back(path / "shaders");
         }
-        return it->second.get();
+        return it->second.context.get();
     }
 
-    rocky::MapNode* map_node(void* map)
+    WindowMap* window_map(void* map)
     {
         auto node = vkf::unwrap_node(map);
-        auto scale = node ? node->cast<vsg::MatrixTransform>() : nullptr;
+        return node ? node->cast<WindowMap>() : nullptr;
+    }
+
+    // The MapNode of a map (null once its viewer is deleted).
+    rocky::MapNode* map_node(void* map)
+    {
+        auto top = window_map(map);
+        if (!top || top->children.empty()) return nullptr;
+        auto scale = top->children[0]->cast<vsg::MatrixTransform>();
         if (!scale || scale->children.empty()) return nullptr;
         return scale->children[0]->cast<rocky::MapNode>();
     }
@@ -134,15 +176,22 @@ namespace
 
 // The viewer is being deleted (vkframes dropped its references): release its
 // Rocky context in the order Rocky's Application does: stop the tile jobs,
-// release the scene (the map nodes, while their context lives), then the
-// context (which holds the viewer).
+// release the scene (its maps' MapNodes, while their context lives: other
+// windows may still show the frame tree, whose WindowMaps then draw nothing),
+// then the context (which holds the viewer).
 void vkf::release_viewer(vsg::Viewer* viewer)
 {
 #ifdef VKF_ROCKY
     auto it = contexts().find(viewer);
     if (it == contexts().end()) return;
-    it->second.get()->io.services().jobs.shutdown();
-    viewer->deviceWaitIdle();
+    it->second.context.get()->io.services().jobs.shutdown();
+    viewer->deviceWaitIdle();                  // (the device is shared: all windows' frames)
+    for (auto& observed : it->second.maps)
+        if (auto map = observed.ref_ptr())
+        {
+            map->children.clear();
+            map->context = nullptr;
+        }
     viewer->recordAndSubmitTasks.clear();
     viewer->presentations.clear();
     contexts().erase(it);
@@ -166,23 +215,29 @@ void vkf::device_features(vsg::WindowTraits& traits)
 #endif
 }
 
-// Before the viewer's first compile: a view showing a map gets Rocky's
-// view-dependent state (its shaders' view data, descriptor set 1), as Rocky's
-// DisplayManager installs it.
-void vkf::prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device)
+// A view of a viewer with maps gets Rocky's view-dependent state (its
+// shaders' view data, descriptor set 1), as Rocky's DisplayManager installs
+// it: called each frame (once a map exists, for a view not given it yet).
+// True if it was given now (the caller compiles it if the viewer runs).
+bool vkf::prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device)
 {
 #ifdef VKF_ROCKY
     auto it = contexts().find(viewer);
-    if (it == contexts().end()) return;
-    auto context = it->second.get();
-    if (!context->trackView(&view)) return;
+    if (it == contexts().end()) return false;
+    auto& entry = it->second;
+    if (entry.preparedViews.count(view.viewID)) return false;
+    auto context = entry.context.get();
+    if (!context->trackView(&view)) return false;
     auto vds = rocky::ViewDependentStateEx::create(vsg::ref_ptr<vsg::View>(&view), device);
     view.viewDependentState = vds;
     context->sharedRenderData->viewDependentState[view.viewID] = vds;
     auto& ids = context->activeViewIDs;
     if (std::find(ids.begin(), ids.end(), view.viewID) == ids.end()) ids.push_back(view.viewID);
+    entry.preparedViews.insert(view.viewID);
+    return true;
 #else
     (void)viewer; (void)view; (void)device;
+    return false;
 #endif
 }
 
@@ -220,7 +275,11 @@ VKF_API void* vkf_rocky_map_create(void* viewer, const char* profile, int profil
         if (!name.empty()) mapNode->profile = rocky::Profile(name);
         auto transform = vsg::MatrixTransform::create(vsg::scale(scale));
         transform->addChild(mapNode);
-        return vkf::wrap_node(transform);
+        auto top = WindowMap::create();
+        top->context = context;
+        top->addChild(transform);
+        contexts()[vsgViewer.get()].maps.emplace_back(top);
+        return vkf::wrap_node(top);
     }
     catch (const std::exception& e)
     {
@@ -248,6 +307,18 @@ VKF_API int vkf_rocky_map_settings(void* map, int lighting, const float* backgro
 #else
     (void)map; (void)lighting; (void)background;
     return -1;
+#endif
+}
+
+// 1 while a map can be drawn (its viewer exists), 0 once it has been released.
+VKF_API int vkf_rocky_map_alive(void* map)
+{
+#ifdef VKF_ROCKY
+    auto top = window_map(map);
+    return (top && top->context) ? 1 : 0;
+#else
+    (void)map;
+    return 0;
 #endif
 }
 

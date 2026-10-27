@@ -17,13 +17,13 @@
 !> parent's transform, so a frame with several parents is drawn under each.
 !> Each frame, `sync` copies positions and attitudes to the transforms. A shown
 !> tree can change: children added to a shown frame are realized and compiled
-!> (by the viewer that realized the tree) and drawn from the next frame;
+!> (for the windows running) and drawn from the next frame;
 !> removed ones stop being drawn; moved axes (move_x_axis, ...) are made again.
 module vkf_frames
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
     use vkf_layer, only: vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
-                         vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_viewer_compile_node, &
+                         vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_viewer_any, &
                          vkf_light_create, vkf_light_set
     use vkf_geometry, only: arrow_create
     use vkf_text, only: label_create
@@ -79,7 +79,7 @@ module vkf_frames
         ! rendering
         type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
         type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
-        type(c_ptr) :: viewer_ = c_null_ptr                 !! the viewer that realized it (compiles later nodes)
+        logical :: shown_ = .false.                         !! realized for a window (not headless): later nodes are compiled
         logical :: realized = .false.
         ! axes (OpenFrames' moveXAxis/...: base, length, head ratio, radii; 0 radius: auto)
         real(wp) :: axis_base(3,3) = 0.0_wp
@@ -540,8 +540,12 @@ contains
         ok = .true.
         if (self%realized) then                         ! shown: draw the child from the next frame
             if (.not. child%realized) then
-                call child%realize(self%viewer_)
-                if (c_associated(self%viewer_)) call check(vkf_viewer_compile_node(self%viewer_, child%node_))
+                if (self%shown_) then                   ! (for a window that exists now)
+                    call child%realize(vkf_viewer_any())
+                    call check(vkf_compile_node(child%node_))
+                else
+                    call child%realize(c_null_ptr)
+                end if
             end if
             call check(vkf_node_add_child(self%node_, child%node_))
         end if
@@ -695,14 +699,15 @@ contains
     ! rendering
 
     !> Create the render nodes of this frame and its descendants (once; for
-    !> `viewer`, the window's viewer handle, which some contents need).
+    !> `viewer`, a window's viewer handle, which some contents need while they
+    !> are built (not kept); null: headless).
     recursive subroutine realize(self, viewer)
         class(ReferenceFrame), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer
         integer :: k
         if (self%realized) return
         self%realized = .true.
-        self%viewer_ = viewer
+        self%shown_ = c_associated(viewer)
         self%node_ = vkf_transform_create()
         self%contents_node = vkf_switch_create()
         call check(vkf_node_add_child(self%node_, self%contents_node))
@@ -811,7 +816,7 @@ contains
         end if
         old = new
         if (.not. c_associated(new)) return
-        if (c_associated(self%viewer_)) call check(vkf_viewer_compile_node(self%viewer_, new))
+        if (self%shown_) call check(vkf_compile_node(new))
         call check(vkf_node_add_child(switch, new))
     end subroutine replace_child
 
