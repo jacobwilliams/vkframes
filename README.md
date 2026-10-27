@@ -168,7 +168,7 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   available.
 - **GUI embedding**: in Fortran Qt GUIs through
   [qt-fortran](https://github.com/jacobwilliams/qt-fortran), and in Python
-  through PySide6.
+  through [PySide6](https://www.qt.io/development/qt-framework/python-bindings).
 
 Not done yet: shadows cast on bodies (darkening them), sensor visibility and
 video recording.
