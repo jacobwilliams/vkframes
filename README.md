@@ -57,6 +57,13 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     <td>Thrust vectors along an orbit transfer, drawn from each point at an adjustable scale (<code>thrust_arcs</code>).</td>
     <td>The Sun as a light source: the day texture, city lights on the night side and a specular glint (<code>day_night</code>).</td>
   </tr>
+  <tr>
+    <td><img src="media/screenshots/frames_inertial.png" alt="A lunar flyby in inertial coordinates"></td>
+    <td><img src="media/screenshots/frames_moon_fixed.png" alt="The same lunar flyby in the Moon-fixed frame"></td>
+  </tr>
+  <tr>
+    <td colspan="2">One trajectory in two frames, in two windows at the same moment: a free-return lunar flyby, inertial about the Earth (left) and Moon-fixed about the Moon (right) (<code>earth_moon_frames</code>).</td>
+  </tr>
 </table>
 
 ## Features
@@ -238,6 +245,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `day_night` | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
 | `shapes` | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
 | `two_windows` | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
+| `earth_moon_frames` | One trajectory in two frames at once: a free-return lunar flyby shown in inertial coordinates about the Earth in one window, and in the Moon's body-fixed frame about the Moon in the other. Each window has its own scene; the Moon-fixed copy is transformed in Fortran, each point at its own time. |
 | `live_changes` | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |
 | `precision` | Double precision: a 10 m spacecraft on a 7000 km orbit line, seen from 30 m away; the line passes through the spacecraft's center (in plain float it would be off by about a meter). |
 | `line_of_sight` | `CustomLineSegments`: five spacecraft in different orbits (LEO, sun-synchronous, GPS, GEO, Molniya), shown as markers, with a line of sight between every pair, recomputed each frame by a callback: clear links in the spacecraft's colors, links the Earth blocks dashed. |
@@ -255,6 +263,7 @@ pixi run example earth -- texture.jpg model.3ds     # e.g. OpenFrames' Demos/Ima
 pixi run example day_night
 pixi run example shapes
 pixi run example two_windows
+pixi run example earth_moon_frames
 pixi run example live_changes
 pixi run example precision
 pixi run example line_of_sight

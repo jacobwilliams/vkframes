@@ -946,11 +946,17 @@ Astrodynamics graphics:
 - [ ] Osculating orbit: the two-body orbit through a frame's current state,
       redrawn as it moves (e.g. while thrusting), with its apsides and nodes
       marked.
-- [ ] **(first)** Trajectories drawn in another frame: the same data shown
-      relative to a chief spacecraft (RIC/LVLH, for rendezvous), in a rotating
-      frame (CR3BP, a body-fixed frame), transformed per point (in Fortran,
-      for the points written; a frame that moves needs them all rewritten).
-      Today a curve is drawn in its DrawableTrajectory's coordinates only.
+- [ ] **(first)** Trajectories drawn in a moving frame, each point at its
+      own time: one trajectory's data shown relative to a chief spacecraft
+      (RIC/LVLH, for rendezvous), in a rotating frame (CR3BP, a body-fixed
+      frame), without a second copy, by an artist transforming the points as
+      it writes them (in Fortran, only the points written). Placing a
+      DrawableTrajectory under a frame moves the whole curve rigidly with
+      that frame's current position and attitude, which is right only for
+      data computed in that frame. Today: transform the data into a second
+      Trajectory, and show each copy in a scene of its own, in its own window
+      (`example/earth_moon_frames.f90`: a lunar flyby, inertial and
+      Moon-fixed, two scenes with synchronized clocks).
 - [ ] Event markers and time labels: text at chosen trajectory points
       (maneuvers, apoapsis, eclipse entry) and tick marks at regular times.
 - [ ] Covariance ellipsoids at chosen points of a trajectory (navigation,
