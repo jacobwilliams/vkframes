@@ -88,7 +88,7 @@ module vkf_line_chain
         integer :: pattern = int(z'FFFF')
         logical :: lod = .true.                         !! strips: level of detail (else every point drawn)
     contains
-        procedure :: init, set_compile, is_built, release, detach
+        procedure :: init, set_compile, is_built, is_colored, release, detach
         procedure :: reserve, slice, color_slice, written, draw
         procedure :: set_style, set_pattern, set_marker_style, point, point_color, distance, num_chunks
         procedure :: set_lod, lod_error
@@ -149,6 +149,12 @@ contains
         class(LineChain), intent(in) :: self
         is_built = c_associated(self%group)
     end function is_built
+
+    !> Lines: whether each point has its own color (init's `colored`).
+    pure logical function is_colored(self)
+        class(LineChain), intent(in) :: self
+        is_colored = self%colored
+    end function is_colored
 
     pure integer function num_chunks(self)
         class(LineChain), intent(in) :: self

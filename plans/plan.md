@@ -763,6 +763,25 @@ Decided so far:
         blocked links dashed) and in the Qt demo ("Line of sight").
       - Not done: OpenFrames' custom line shader (`setLineShader`), which
         would need run-time GLSL, as `MarkerArtist%set_marker_shader`.
+- [x] Point colors (new, not in OpenFrames): a `Trajectory` can have a
+      color per point (`add_color`, or `add`'s `color`, one at a time or in
+      bulk). Like attitudes, colors may be fewer than times, and they take
+      no memory unless used. They're stored as single-precision rgba, which
+      is copied straight into the line buffers.
+      - `CurveArtist` draws a trajectory with colors in them (on by
+        default; `set_point_colors(.false.)` turns it off). Each segment
+        blends from its first point's color to its second's.
+      - Its chain holds colors only when they're drawn. It's made again,
+        with or without colors, when that changes.
+      - Points with no color yet are drawn in the artist's color, and are
+        drawn again when their colors arrive.
+      - In trace mode, the tail's color is interpolated too.
+      - Tested headless (`test_artists`, `test_trajectory`). Shown in
+        `example/colored_orbits.f90` and in the Qt demo ("Color orbit by
+        altitude", `--altitude-colors`).
+      - [ ] Optional later: point colors for `SegmentArtist` and
+            `MarkerArtist`, and `"color"` per point in the trajectory
+            demo's JSON.
 - [x] Shadow cones (new, not in OpenFrames; `src/vkf_shadow.f90`):
       `ShadowCones`, a frame showing a celestial body's shadow in the light
       of another as transparent cones: the umbra (to its apex, d R / (Rs - R)

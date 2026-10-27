@@ -2,13 +2,16 @@
 !> in OpenFrames' Trajectory.
 !>
 !> Data are appended: each time may get one position (with `num_optionals`
-!> optional vectors) and one attitude, so there may be fewer positions or
-!> attitudes than times (data can arrive separately). No sorting is done; times
+!> optional vectors), one attitude and one color, so there may be fewer
+!> positions, attitudes or colors than times (data can arrive separately).
+!> Colors are optional (not in OpenFrames): a CurveArtist draws a trajectory
+!> with colors in them, blended along each segment between its points'
+!> colors (see CurveArtist%set_point_colors). No sorting is done; times
 !> are expected to be monotonic, increasing or decreasing. Indices are 1-based.
 !>
 !> Differences from OpenFrames:
-!> * Storage grows by doubling, positions and attitudes separately, so a
-!>   trajectory without attitudes holds no attitude memory.
+!> * Storage grows by doubling, positions, attitudes and colors separately, so
+!>   a trajectory without attitudes (colors) holds no attitude (color) memory.
 !> * Instead of subscriber callbacks, a trajectory counts its changes
 !>   (`revision`) and clears (`generation`): a reader such as an artist compares
 !>   them with what it last saw and updates only what changed (e.g. uploads only
@@ -16,6 +19,7 @@
 !> * No locking: vkframes updates and renders on one thread.
 module vkf_trajectory
 
+    use, intrinsic :: iso_c_binding, only: c_float
     use vkf_math, only: wp
 
     implicit none
@@ -51,10 +55,11 @@ module vkf_trajectory
         private
         integer :: dof_ = 3                                 !! degrees of freedom of positions and optionals (2 or 3)
         integer :: nopt_ = 0                                !! optionals per position
-        integer :: n_times = 0, n_pos = 0, n_att = 0
+        integer :: n_times = 0, n_pos = 0, n_att = 0, n_col = 0
         real(wp), allocatable :: t(:)                       !! (capacity)
         real(wp), allocatable :: posopt(:,:,:)              !! (3, 0:nopt, capacity): position, then optionals
         real(wp), allocatable :: att(:,:)                   !! (4, capacity): quaternions [x, y, z, w]
+        real(c_float), allocatable :: col(:,:)              !! (4, capacity): colors [r, g, b, a] (as drawn)
         integer :: revision_ = 0                            !! incremented on every change
         integer :: generation_ = 0                          !! incremented when the data are cleared
     contains
@@ -62,12 +67,12 @@ module vkf_trajectory
         procedure :: clear
         procedure :: set_dof, dof
         procedure :: set_num_optionals, num_optionals
-        procedure :: num_times, num_positions, num_attitudes, is_empty
-        procedure :: add_time, add_position, add_attitude, set_optional
+        procedure :: num_times, num_positions, num_attitudes, num_colors, is_empty
+        procedure :: add_time, add_position, add_attitude, add_color, set_optional
         generic :: add => add_point, add_points
         procedure, private :: add_point, add_points
-        procedure :: time, position, attitude, optional
-        procedure :: times, positions, attitudes
+        procedure :: time, position, attitude, optional, color
+        procedure :: times, positions, attitudes, colors
         procedure :: time_range, time_distance, time_index
         procedure :: point, points, verify_data, num_points
         procedure :: revision, generation
@@ -122,12 +127,13 @@ contains
     end function position_sources
 
     !> Reserve memory for `n` points (times, and positions and/or attitudes
-    !> unless `positions` / `attitudes` is false). Optional: storage grows as
-    !> needed, but reserving avoids reallocations for a known size.
-    subroutine reserve(self, n, positions, attitudes)
+    !> unless `positions` / `attitudes` is false, and colors if `colors`).
+    !> Optional: storage grows as needed, but reserving avoids reallocations
+    !> for a known size.
+    subroutine reserve(self, n, positions, attitudes, colors)
         class(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
-        logical, intent(in), optional :: positions, attitudes
+        logical, intent(in), optional :: positions, attitudes, colors
         logical :: pos, att
         pos = .true.
         att = .true.
@@ -136,6 +142,9 @@ contains
         call grow_times(self, n, exact=.true.)
         if (pos) call grow_positions(self, n, exact=.true.)
         if (att) call grow_attitudes(self, n, exact=.true.)
+        if (present(colors)) then
+            if (colors) call grow_colors(self, n, exact=.true.)
+        end if
     end subroutine reserve
 
     !> Remove all points (keeping the memory).
@@ -144,6 +153,7 @@ contains
         self%n_times = 0
         self%n_pos = 0
         self%n_att = 0
+        self%n_col = 0
         self%generation_ = self%generation_ + 1
         self%revision_ = self%revision_ + 1
     end subroutine clear
@@ -189,6 +199,11 @@ contains
         class(Trajectory), intent(in) :: self
         num_attitudes = self%n_att
     end function num_attitudes
+
+    pure integer function num_colors(self)
+        class(Trajectory), intent(in) :: self
+        num_colors = self%n_col
+    end function num_colors
 
     pure logical function is_empty(self)
         class(Trajectory), intent(in) :: self
@@ -254,6 +269,31 @@ contains
         if (present(ok)) ok = .true.
     end subroutine add_attitude
 
+    !> Add a color ([r, g, b], alpha 1, or [r, g, b, a], 0 to 1) for the next
+    !> time that has none. `ok` is false if every time already has a color.
+    subroutine add_color(self, color, ok)
+        class(Trajectory), intent(inout) :: self
+        real(wp), intent(in) :: color(:)
+        logical, intent(out), optional :: ok
+        if (present(ok)) ok = .false.
+        if (self%n_col >= self%n_times) return
+        call grow_colors(self, self%n_col + 1)
+        self%n_col = self%n_col + 1
+        call set_rgba(self%col(:, self%n_col), color)
+        self%revision_ = self%revision_ + 1
+        if (present(ok)) ok = .true.
+    end subroutine add_color
+
+    !> rgba from [r, g, b] (alpha 1) or [r, g, b, a].
+    pure subroutine set_rgba(rgba, color)
+        real(c_float), intent(out) :: rgba(4)
+        real(wp), intent(in) :: color(:)
+        integer :: n
+        n = min(4, size(color))
+        rgba = 1.0_c_float
+        rgba(1:n) = real(color(1:n), c_float)
+    end subroutine set_rgba
+
     !> Set optional vector `index` (1 to num_optionals) of the most recently
     !> added position. `ok` is false if there is no position or no such optional.
     subroutine set_optional(self, index, v, ok)
@@ -270,24 +310,26 @@ contains
         if (present(ok)) ok = .true.
     end subroutine set_optional
 
-    !> Add a point: a time with an optional position and attitude.
-    subroutine add_point(self, t, pos, att)
+    !> Add a point: a time with an optional position, attitude and color
+    !> ([r, g, b] or [r, g, b, a]).
+    subroutine add_point(self, t, pos, att, color)
         class(Trajectory), intent(inout) :: self
         real(wp), intent(in) :: t
-        real(wp), intent(in), optional :: pos(:), att(4)
+        real(wp), intent(in), optional :: pos(:), att(4), color(:)
         call self%add_time(t)
         if (present(pos)) call self%add_position(pos)
         if (present(att)) call self%add_attitude(att)
+        if (present(color)) call self%add_color(color)
     end subroutine add_point
 
-    !> Add points in bulk: times `t(n)`, with optional positions `pos(dof, n)`
-    !> and attitudes `att(4, n)`. Times, positions and attitudes must all have
-    !> been complete before (as many positions/attitudes as times) for the given
-    !> ones to line up with `t`.
-    subroutine add_points(self, t, pos, att)
+    !> Add points in bulk: times `t(n)`, with optional positions `pos(dof, n)`,
+    !> attitudes `att(4, n)` and colors `color(3 or 4, n)`. Times, positions,
+    !> attitudes and colors must all have been complete before (as many of each
+    !> as times) for the given ones to line up with `t`.
+    subroutine add_points(self, t, pos, att, color)
         class(Trajectory), intent(inout) :: self
         real(wp), intent(in) :: t(:)
-        real(wp), intent(in), optional :: pos(:,:), att(:,:)
+        real(wp), intent(in), optional :: pos(:,:), att(:,:), color(:,:)
         integer :: n, i0, d
         n = size(t)
         i0 = self%n_times
@@ -307,6 +349,14 @@ contains
             call grow_attitudes(self, self%n_att + n)
             self%att(:, self%n_att+1:self%n_att+n) = att(:, 1:n)
             self%n_att = self%n_att + n
+        end if
+        if (present(color)) then
+            n = min(size(color, 2), self%n_times - self%n_col)
+            d = min(4, size(color, 1))
+            call grow_colors(self, self%n_col + n)
+            self%col(:, self%n_col+1:self%n_col+n) = 1.0_c_float
+            self%col(1:d, self%n_col+1:self%n_col+n) = real(color(1:d, 1:n), c_float)
+            self%n_col = self%n_col + n
         end if
         self%revision_ = self%revision_ + 1
     end subroutine add_points
@@ -334,6 +384,14 @@ contains
         real(wp) :: q(4)
         q = self%att(:, i)
     end function attitude
+
+    !> Color i ([r, g, b, a]).
+    pure function color(self, i) result(c)
+        class(Trajectory), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp) :: c(4)
+        c = real(self%col(:, i), wp)
+    end function color
 
     !> Optional vector k (1 to num_optionals) of position i.
     pure function optional(self, i, k) result(v)
@@ -375,6 +433,18 @@ contains
             q => self%att(:, 1:self%n_att)
         end if
     end subroutine attitudes
+
+    !> Pointer to the colors (4, num_colors; single precision, as drawn),
+    !> without copying.
+    subroutine colors(self, c)
+        class(Trajectory), intent(in), target :: self
+        real(c_float), dimension(:,:), pointer, intent(out) :: c
+        if (self%n_col == 0) then
+            c => null()
+        else
+            c => self%col(:, 1:self%n_col)
+        end if
+    end subroutine colors
 
     !> The first and last times, ordered (t0 <= tf); false if there are no times.
     logical function time_range(self, t0, tf)
@@ -603,5 +673,19 @@ contains
         if (self%n_att > 0) tmp(:, 1:self%n_att) = self%att(:, 1:self%n_att)
         call move_alloc(tmp, self%att)
     end subroutine grow_attitudes
+
+    subroutine grow_colors(self, n, exact)
+        type(Trajectory), intent(inout) :: self
+        integer, intent(in) :: n
+        logical, intent(in), optional :: exact
+        real(c_float), allocatable :: tmp(:,:)
+        integer :: cap
+        cap = 0
+        if (allocated(self%col)) cap = size(self%col, 2)
+        if (n <= cap) return
+        allocate(tmp(4, new_capacity(cap, n, exact)))
+        if (self%n_col > 0) tmp(:, 1:self%n_col) = self%col(:, 1:self%n_col)
+        call move_alloc(tmp, self%col)
+    end subroutine grow_colors
 
 end module vkf_trajectory

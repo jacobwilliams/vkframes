@@ -17,16 +17,23 @@
 !> trajectory's time direction (times may decrease: e.g. a trajectory
 !> propagated backwards, shown with time running backwards).
 !>
+!> Point colors (not in OpenFrames): a CurveArtist draws a trajectory with
+!> colors (Trajectory%add_color, or add's `color`) in them, each segment
+!> blended from its first point's color to its second's (one color: that
+!> color); without colors, or with `set_point_colors(.false.)`, in its own
+!> color. Its line buffers hold colors only then.
+!>
 !> Artists and their trajectories are not owned: they must stay alive while
 !> drawn.
 module vkf_artists
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
     use vkf_math, only: wp
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, SOURCE_ZERO, SOURCE_POSOPT, &
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
     use vkf_frames, only: ReferenceFrame
-    use vkf_layer, only: vkf_line_create, vkf_line_points_changed, vkf_line_set_range, &
+    use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_line_points_changed, &
+                         vkf_line_set_range, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
                          vkf_compile_node, vkf_viewer_any, line_set_style, line_set_pattern, vkf_image_read, vkf_image_delete
     use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, split_points, split_distances, &
@@ -72,7 +79,8 @@ module vkf_artists
 
     !> Draws a trajectory's points connected by a line (OpenFrames' CurveArtist).
     !> The x, y and z of the points come from data sources (default: the
-    !> trajectory's positions).
+    !> trajectory's positions). The line is in the artist's color, or in the
+    !> trajectory's point colors if it has any (see the module documentation).
     type, extends(TrajectoryArtist), public :: CurveArtist
         private
         type(DataSource) :: sources_(3)
@@ -82,8 +90,12 @@ module vkf_artists
         integer :: pattern_factor = 1
         integer :: pattern_ = int(z'FFFF')
         logical :: lod_ = .true.                    !! level of detail (see set_level_of_detail)
+        logical :: point_colors_ = .true.           !! the trajectory's colors, if any (see set_point_colors)
         ! rendering
+        type(c_ptr) :: group = c_null_ptr           !! the chain's group (to make it again, colored or not)
+        logical :: compile = .false.                !! (chunks made later are compiled)
         type(LineChain) :: chain
+        integer :: n_colored = 0                    !! points written with the trajectory's own colors
         type(c_ptr) :: tail = c_null_ptr
         integer :: n_written = 0                    !! points written to the chain
         integer :: n_drawn = 0                      !! points drawn from it
@@ -96,6 +108,7 @@ module vkf_artists
         procedure :: set_width => curve_set_width, width => curve_width
         procedure :: set_pattern => curve_set_pattern, pattern => curve_pattern
         procedure :: set_level_of_detail, level_of_detail, lod_error
+        procedure :: set_point_colors, point_colors, drawn_color
         procedure :: build => curve_build
         procedure :: update => curve_update
         procedure :: release => curve_release
@@ -409,12 +422,14 @@ contains
         s = self%sources_
     end function data_sources
 
-    !> The line's color: [r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1.
+    !> The line's color: [r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1
+    !> (with the trajectory's point colors drawn: for points without one).
     subroutine curve_set_color(self, color)
         class(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: color(:)
         call set_rgba(self%color_, color)
         call curve_style(self)
+        if (self%chain%is_colored()) self%seen_generation = -1    ! (points without colors redrawn)
     end subroutine curve_set_color
 
     pure function curve_color(self) result(c)
@@ -475,6 +490,35 @@ contains
         error = real(self%chain%lod_error(j), wp)
     end function lod_error
 
+    !> Whether a trajectory with colors is drawn in them (default true): each
+    !> segment blended from its first point's color to its second's; points
+    !> without a color yet (colors arriving after positions) in the artist's
+    !> color. False: all in the artist's color. With level of detail, a color
+    !> lasting fewer points than are skipped may not show from far away.
+    subroutine set_point_colors(self, enabled)
+        class(CurveArtist), intent(inout) :: self
+        logical, intent(in) :: enabled
+        self%point_colors_ = enabled
+    end subroutine set_point_colors
+
+    pure logical function point_colors(self)
+        class(CurveArtist), intent(in) :: self
+        point_colors = self%point_colors_
+    end function point_colors
+
+    !> The color of point i (1 to num_drawn) as drawn: read back from the line
+    !> buffers.
+    function drawn_color(self, i) result(rgba)
+        class(CurveArtist), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp) :: rgba(4)
+        if (self%chain%is_colored()) then
+            rgba = self%chain%point_color(i)
+        else
+            rgba = self%color_
+        end if
+    end function drawn_color
+
     pure subroutine curve_pattern(self, factor, bits)
         class(CurveArtist), intent(in) :: self
         integer, intent(out) :: factor, bits
@@ -527,16 +571,33 @@ contains
     subroutine curve_build(self, viewer, group)
         class(CurveArtist), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
-        call self%chain%init(group, CHAIN_STRIP)
-        call self%chain%set_style(self%color_, self%width_)
-        call self%chain%set_lod(self%lod_)
+        self%group = group
+        self%compile = .false.
+        call init_chain(self)
         call self%chain%reserve(curve_points(self))       ! compiled with the group
-        call self%chain%set_compile(c_associated(viewer))
-        self%tail = vkf_line_create(2_c_int)
+        self%compile = c_associated(viewer)
+        call self%chain%set_compile(self%compile)
+        self%tail = vkf_line_create_colored(2_c_int)      ! (white unless the points' colors are drawn)
         if (c_associated(self%tail)) call check(vkf_node_add_child(group, self%tail))
         call curve_style(self)
         self%seen_generation = -1
     end subroutine curve_build
+
+    !> The chain, colored if the trajectory's colors are drawn.
+    subroutine init_chain(self)
+        type(CurveArtist), intent(inout) :: self
+        call self%chain%init(self%group, CHAIN_STRIP, colored=uses_colors(self))
+        call self%chain%set_lod(self%lod_)
+        call self%chain%set_compile(self%compile)
+        self%n_colored = 0
+    end subroutine init_chain
+
+    !> Whether the trajectory's colors are drawn: wanted, and it has some.
+    logical function uses_colors(self)
+        type(CurveArtist), intent(in) :: self
+        uses_colors = self%point_colors_ .and. associated(self%traj)
+        if (uses_colors) uses_colors = self%traj%num_colors() > 0
+    end function uses_colors
 
     subroutine curve_release(self)
         class(CurveArtist), intent(inout) :: self
@@ -545,6 +606,8 @@ contains
         self%tail = c_null_ptr
         self%n_written = 0
         self%n_drawn = 0
+        self%n_colored = 0
+        self%group = c_null_ptr
         self%tail_shown = .false.
         call artist_release(self)
     end subroutine curve_release
@@ -557,11 +620,24 @@ contains
         if (.not. self%chain%is_built()) return
         n = curve_points(self)
 
+        ! the trajectory's colors drawn or not (its first colors, or the
+        ! setting, changed): the chain made again, with or without colors
+        if (uses_colors(self) .neqv. self%chain%is_colored()) then
+            call self%chain%detach()
+            call init_chain(self)
+            call curve_style(self)
+            self%seen_generation = -1
+        end if
+
         ! new points, or a redraw (cleared, new trajectory or data sources)
         changed = data_changed(self, redraw)
-        if (redraw .or. .not. associated(self%traj)) self%n_written = 0
+        if (redraw .or. .not. associated(self%traj)) then
+            self%n_written = 0
+            self%n_colored = 0
+        end if
         if (changed) then
             i1 = max(1, min(self%n_written, n))          ! from the last point written (set_optional)
+            if (self%chain%is_colored()) i1 = max(1, min(i1, self%n_colored))   ! (and colors added since)
             call self%chain%reserve(n)
             if (n >= i1) call write_curve(self, i1, n)
             self%n_written = n
@@ -612,6 +688,7 @@ contains
                 deallocate(v)
             end if
         end do
+        if (self%chain%is_colored()) call write_colors(self, i1, i2)
         if (is_position_xyz(self%sources_)) then           ! distances from the positions in double
             call self%traj%positions(pos)
             call self%chain%written(i1, i2, pos)
@@ -619,6 +696,37 @@ contains
             call self%chain%written(i1, i2)
         end if
     end subroutine write_curve
+
+    !> The colors of points i1 .. i2 into the chain: the trajectory's, and the
+    !> artist's color for points without one yet.
+    subroutine write_colors(self, i1, i2)
+        type(CurveArtist), intent(inout) :: self
+        integer, intent(in) :: i1, i2
+        real(c_float), dimension(:,:), pointer :: c, col
+        integer :: j, lo, hi, m
+        call self%traj%colors(col)
+        m = self%traj%num_colors()
+        do j = 1, self%chain%num_chunks()
+            call self%chain%color_slice(j, i1, i2, lo, hi, c)
+            if (.not. associated(c)) cycle
+            if (m >= lo) c(:, 1:min(hi, m)-lo+1) = col(:, lo:min(hi, m))
+            if (hi > m) c(:, max(lo, m+1)-lo+1:) = spread(real(self%color_, c_float), 2, hi - max(lo, m+1) + 1)
+        end do
+        self%n_colored = min(m, i2)
+    end subroutine write_colors
+
+    !> Color of point i as drawn by a colored chain: the trajectory's, or the
+    !> artist's if it has none yet.
+    function point_rgba(self, i) result(rgba)
+        type(CurveArtist), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp) :: rgba(4)
+        if (i <= self%traj%num_colors()) then
+            rgba = self%traj%color(i)
+        else
+            rgba = self%color_
+        end if
+    end function point_rgba
 
     !> The tail: from point k to the point interpolated at time t (none if
     !> before the first point or at/after the last).
@@ -644,16 +752,45 @@ contains
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:2))
         call split_distances(self%chain%distance(k) + [0.0_wp, norm2(xyz(:, 2) - xyz(:, 1))], p(4, :, 1:2))
+        call tail_colors(self, k, frac)
         call check(vkf_line_points_changed(self%tail, 2_c_int))
         self%tail_shown = .true.
     end subroutine update_tail
 
+    !> The tail's colors: from point k's to the color at frac along to point
+    !> k + 1's (white, showing the style's color, if the chain has none).
+    subroutine tail_colors(self, k, frac)
+        type(CurveArtist), intent(inout) :: self
+        integer, intent(in) :: k
+        real(wp), intent(in) :: frac
+        real(c_float), dimension(:,:), pointer :: c
+        real(wp) :: c0(4), c1(4)
+        integer(c_int) :: capacity
+        type(c_ptr) :: data
+        data = vkf_line_colors(self%tail, capacity)
+        if (.not. c_associated(data) .or. capacity < 2) return
+        call c_f_pointer(data, c, [4, 2])
+        if (self%chain%is_colored()) then
+            c0 = point_rgba(self, k)
+            c1 = point_rgba(self, k + 1)
+            c(:, 1) = real(c0, c_float)
+            c(:, 2) = real(c0 + frac * (c1 - c0), c_float)
+        else
+            c = 1.0_c_float
+        end if
+    end subroutine tail_colors
+
+    !> The style: the artist's color, or white if the points' colors are drawn
+    !> (the shader multiplies them by it).
     subroutine curve_style(self)
         type(CurveArtist), intent(inout) :: self
-        call self%chain%set_style(self%color_, self%width_)
+        real(wp) :: rgba(4)
+        rgba = self%color_
+        if (self%chain%is_colored()) rgba = 1.0_wp
+        call self%chain%set_style(rgba, self%width_)
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
         if (c_associated(self%tail)) then
-            call check(line_set_style(self%tail, real(self%color_, c_float), real(self%width_, c_float)))
+            call check(line_set_style(self%tail, real(rgba, c_float), real(self%width_, c_float)))
             call check(line_set_pattern(self%tail, self%pattern_factor, self%pattern_))
         end if
     end subroutine curve_style

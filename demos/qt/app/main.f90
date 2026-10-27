@@ -45,6 +45,8 @@
 !> 1000 km (a CoordinateAxes at its center, fixed while the Earth's body-fixed
 !> axes, from its surface, turn with it; its arrows hidden), the equatorial
 !> plane (a RadialPlane) and spacecraft 1's nadir sensor (an EllipticCone).
+!> The orbit can be colored by altitude from the dock (a color per point of
+!> its trajectory, blended along the line: blue at perigee to red at apogee).
 !> The Earth's shadow in sunlight (ShadowCones, a child of the Earth: umbra
 !> and penumbra, out to 10 Earth radii) can be shown from the dock; it turns
 !> away from the Sun as the Earth turns, and the spacecraft pass through it.
@@ -72,7 +74,8 @@
 !> n (1 to 6, as in the view menu); `--windows n` opens n
 !> windows at startup (the others start in the next views); `--rotation-speed n`
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
-!> starts with the orbit traced; `--radius` with the radius vectors shown;
+!> starts with the orbit traced; `--altitude-colors` with the orbit colored by
+!> altitude; `--radius` with the radius vectors shown;
 !> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral);
 !> `--position-marker n` with the spacecraft shown as marker shape n (0: their
 !> bodies; 1 disk, ... 10 spiral); `--sky n`
@@ -140,7 +143,7 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
-        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate
+        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors
         type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los, show_shadow
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
@@ -199,6 +202,7 @@ module vkdemo
         real(wp) :: quit_after = -1.0_wp
         logical :: test_resize = .false.
         logical :: start_trace = .false.
+        logical :: start_altitude_colors = .false.
         logical :: start_radius = .false.
         integer :: start_marker = 1
         integer :: start_position_marker = 0
@@ -221,6 +225,22 @@ contains
     !> Position at time t (km) on the orbit of semi-major axis a, eccentricity
     !> e, inclination i and ascending node raan (default 0), at perigee at t = 0
     !> (Kepler's equation by Newton iteration).
+    !> A color for x in [0, 1] (altitude from perigee to apogee): blue, cyan,
+    !> green, yellow, red.
+    pure function altitude_color(x) result(c)
+        real(wp), intent(in) :: x
+        real(wp) :: c(3)
+        real(wp), parameter :: stops(3, 5) = reshape([0.2_wp, 0.3_wp, 1.0_wp, 0.0_wp, 0.9_wp, 1.0_wp, &
+                                                       0.2_wp, 1.0_wp, 0.3_wp, 1.0_wp, 0.9_wp, 0.1_wp, &
+                                                       1.0_wp, 0.15_wp, 0.1_wp], [3, 5])
+        real(wp) :: s
+        integer :: k
+        s = 4.0_wp * max(0.0_wp, min(1.0_wp, x))
+        k = min(4, int(s) + 1)
+        s = s - real(k - 1, wp)
+        c = stops(:, k) + s * (stops(:, k + 1) - stops(:, k))
+    end function altitude_color
+
     pure function orbit_position(t, a, e, i, raan) result(r)
         real(wp), intent(in) :: t, a, e, i
         real(wp), intent(in), optional :: raan
@@ -266,7 +286,8 @@ contains
         do k = 1, n_orbit
             t = period * real(k - 1, wp) / real(n_orbit - 1, wp)
             r = orbit_position(t, sma, ecc, inc)
-            call app%orbit%add(t, pos=r, att=orbit_attitude(r))
+            call app%orbit%add(t, pos=r, att=orbit_attitude(r), &         ! (colors drawn from the dock)
+                               color=altitude_color((norm2(r) - sma * (1.0_wp - ecc)) / (2.0_wp * sma * ecc)))
         end do
 
         app%earth = Sphere('Earth', radius=re, color=[0.3_wp, 0.5_wp, 1.0_wp])
@@ -325,6 +346,7 @@ contains
 
         ! the orbit's curve, in a frame of its own (no decorations)
         app%orbit_curve = CurveArtist(app%orbit, color=orbit_color, width=2.0_wp)
+        call app%orbit_curve%set_point_colors(.false.)                   ! (its own color until chosen)
         app%orbit_frame = DrawableTrajectory('Orbit')
         call app%orbit_frame%show_axes(NO_AXES)
         call app%orbit_frame%show_axes_labels(NO_AXES)
@@ -975,6 +997,13 @@ contains
     !> Trace mode: the orbit drawn up to the spacecraft only (with a loop
     !> follow mode, whole again after the first period: the trace follows the
     !> trajectory's own times).
+    !> The orbit in its points' colors (by altitude), or in its own color.
+    subroutine on_altitude_colors(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%orbit_curve%set_point_colors(checked)
+    end subroutine on_altitude_colors
+
     subroutine on_trace_orbit(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -1250,6 +1279,9 @@ contains
         app%trace_orbit = QCheckBox('Trace orbit')
         call app%trace_orbit%toggled%connect(on_trace_orbit)
         call form%addRow('', app%trace_orbit)
+        app%altitude_colors = QCheckBox('Color orbit by altitude')
+        call app%altitude_colors%toggled%connect(on_altitude_colors)
+        call form%addRow('', app%altitude_colors)
         app%show_radius = QCheckBox('Radius vectors')
         call app%show_radius%toggled%connect(on_show_radius)
         call form%addRow('', app%show_radius)
@@ -1361,6 +1393,8 @@ program vkframes_qt_demo
             app%test_resize = .true.
         case ('--trace')
             app%start_trace = .true.
+        case ('--altitude-colors')
+            app%start_altitude_colors = .true.
         case ('--radius')
             app%start_radius = .true.
         case ('--shapes')
@@ -1397,6 +1431,7 @@ program vkframes_qt_demo
     call build_ui()
     call app%rotation_speed%setValue(app%start_rotation_speed)
     call app%trace_orbit%setChecked(app%start_trace)
+    call app%altitude_colors%setChecked(app%start_altitude_colors)
     call app%show_radius%setChecked(app%start_radius)
     call app%marker_shape%setCurrentIndex(app%start_marker)
     call app%position_marker%setCurrentIndex(app%start_position_marker)

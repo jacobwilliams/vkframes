@@ -1,13 +1,15 @@
 !> Checks Trajectory: data with fewer positions/attitudes than times, optionals,
 !> time search (increasing and decreasing times), data sources, growth, change
-!> counters.
+!> counters, colors.
 program test_trajectory
 
+    use, intrinsic :: iso_c_binding, only: c_float
     use vkframes
 
     implicit none
 
-    type(Trajectory), target :: traj, down, big, flat
+    type(Trajectory), target :: traj, down, big, flat, colored
+    real(c_float), pointer :: c(:,:)
     type(DataSource) :: src(3)
     real(wp), pointer :: p(:,:)
     real(wp), allocatable :: t(:), pos(:,:)
@@ -122,6 +124,26 @@ program test_trajectory
     call check(status > 0 .and. index == 77777 .and. status <= 20, 'time_index in 100000 points')
     call big%clear()
     call check(big%is_empty() .and. big%generation() == gen + 1, 'clear changes generation')
+
+    ! colors: optional, for fewer points than times, one at a time and in bulk
+    colored = Trajectory()
+    call colored%add(0.0_wp, pos=[1.0_wp, 0.0_wp, 0.0_wp], color=[1.0_wp, 0.0_wp, 0.0_wp])
+    call colored%add(1.0_wp, pos=[2.0_wp, 0.0_wp, 0.0_wp])
+    call check(colored%num_colors() == 1 .and. all(colored%color(1) == [1.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]), &
+               'colors: one, alpha 1')
+    call colored%add_color([0.0_wp, 1.0_wp, 0.0_wp, 0.25_wp], ok)
+    call check(ok .and. colored%num_colors() == 2 .and. all(colored%color(2) == [0.0_wp, 1.0_wp, 0.0_wp, 0.25_wp]), &
+               'colors: added later')
+    call colored%add_color([0.0_wp, 0.0_wp, 1.0_wp], ok)
+    call check(.not. ok .and. colored%num_colors() == 2, 'colors: no more than times')
+    call colored%add([2.0_wp, 3.0_wp], pos=reshape([3.0_wp, 0.0_wp, 0.0_wp, 4.0_wp, 0.0_wp, 0.0_wp], [3, 2]), &
+                     color=reshape([0.5_wp, 0.5_wp, 0.5_wp, 0.1_wp, 0.2_wp, 0.3_wp], [3, 2]))
+    call colored%colors(c)
+    call check(colored%num_colors() == 4 .and. size(c, 2) == 4 .and. &
+               all(abs(c(:, 4) - [0.1_c_float, 0.2_c_float, 0.3_c_float, 1.0_c_float]) < 1.0e-7), 'colors: bulk')
+    call colored%clear()
+    call check(colored%num_colors() == 0, 'colors: cleared')
+    call check(big%num_colors() == 0, 'colors: none unless added')
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'

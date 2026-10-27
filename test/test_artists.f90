@@ -6,7 +6,10 @@
 !> increasing and decreasing times. SegmentArtist: segments at every stride-th
 !> point from the start to the end sources, appends, trace mode. MarkerArtist:
 !> start and end markers, intermediate markers by data, time and distance,
-!> from the start or the end, appends, trace mode.
+!> from the start or the end, appends, trace mode. Point colors: a curve of a
+!> trajectory with colors is drawn in them (colors added after the positions,
+!> with appended points, in bulk), points without one in the artist's color,
+!> and all in the artist's color with point colors off.
 program test_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr
@@ -28,6 +31,7 @@ program test_artists
     call check_trace(1.0_wp)
     call check_trace(-1.0_wp)
     call check_sources()
+    call check_point_colors()
     call check_segments()
     call check_markers()
     call check_drawable()
@@ -284,6 +288,82 @@ contains
         call a%update(dir * 505.0_wp)
         call check(a%num_drawn() == 200 .and. .not. a%trace_end(v), what//'off: everything')
     end subroutine check_trace
+
+    !> A trajectory's colors: drawn when it has some (the chain made again with
+    !> colors), the artist's color for points without one yet, colors added
+    !> later redrawn; off: the artist's color.
+    subroutine check_point_colors()
+        type(Trajectory), target :: traj
+        type(CurveArtist) :: a
+        real(wp), parameter :: red(4) = [1.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], blue(3) = [0.0_wp, 0.0_wp, 1.0_wp]
+        real(wp), parameter :: green(4) = [0.0_wp, 1.0_wp, 0.0_wp, 0.5_wp], yellow(3) = [1.0_wp, 1.0_wp, 0.0_wp]
+        real(wp), allocatable :: t(:), pos(:,:), col(:,:)
+        real(wp) :: v(3)
+        integer :: i
+        traj = Trajectory()
+        do i = 1, 100
+            call traj%add(real(i, wp), orbit(real(i, wp)))
+        end do
+        a = CurveArtist(traj, color=red)
+        call a%build(c_null_ptr, vkf_switch_create())
+        call a%update(0.0_wp)
+        call check(all(a%drawn_color(50) == red), "point colors: none, the artist's color")
+
+        ! colors for the first 60 points: the chain made again, with colors
+        do i = 1, 60
+            if (i <= 30) then
+                call traj%add_color(blue)
+            else
+                call traj%add_color(green)
+            end if
+        end do
+        call a%update(0.0_wp)
+        call check(a%num_drawn() == 100 .and. drawn_error(a, traj) < 1.0e-6_wp, 'point colors: all points drawn')
+        call check(all(a%drawn_color(10) == [blue, 1.0_wp]) .and. all(abs(a%drawn_color(45) - green) < 1.0e-7_wp), &
+                   "point colors: the trajectory's")
+        call check(all(a%drawn_color(80) == red), "point colors: without one yet, the artist's color")
+
+        ! the rest of the colors, then appended points with colors
+        do i = 61, 100
+            call traj%add_color(yellow)
+        end do
+        call a%update(0.0_wp)
+        call check(all(a%drawn_color(80) == [yellow, 1.0_wp]), 'point colors: added later, redrawn')
+        do i = 101, 3000
+            call traj%add(real(i, wp), orbit(real(i, wp)), color=blue)
+        end do
+        call a%update(0.0_wp)
+        call check(a%num_drawn() == 3000 .and. all(a%drawn_color(2500) == [blue, 1.0_wp]) .and. &
+                   drawn_error(a, traj) < 1.0e-6_wp, 'point colors: appended points')
+
+        ! bulk, after a clear
+        call traj%clear()
+        allocate(t(200), pos(3, 200), col(4, 200))
+        do i = 1, 200
+            t(i) = real(i, wp)
+            pos(:, i) = orbit(t(i))
+            col(:, i) = [real(i, wp) / 200.0_wp, 0.0_wp, 1.0_wp - real(i, wp) / 200.0_wp, 1.0_wp]
+        end do
+        call traj%add(t, pos, color=col)
+        call a%update(0.0_wp)
+        call check(a%num_drawn() == 200 .and. all(abs(a%drawn_color(150) - col(:, 150)) < 1.0e-7_wp), &
+                   'point colors: bulk')
+
+        ! trace mode: the tail drawn
+        call a%set_trace_mode(.true.)
+        call a%update(100.5_wp)
+        call check(a%num_drawn() == 100 .and. a%trace_end(v), 'point colors: trace mode')
+        call a%set_trace_mode(.false.)
+
+        ! off: the artist's color
+        call a%set_point_colors(.false.)
+        call a%update(0.0_wp)
+        call check(.not. a%point_colors() .and. all(a%drawn_color(150) == red) .and. a%num_drawn() == 200 .and. &
+                   drawn_error(a, traj) < 1.0e-6_wp, "point colors off: the artist's color")
+        call a%set_point_colors(.true.)
+        call a%update(0.0_wp)
+        call check(all(abs(a%drawn_color(150) - col(:, 150)) < 1.0e-7_wp), 'point colors on again')
+    end subroutine check_point_colors
 
     !> Other data sources, and a change to the last point (set_optional).
     subroutine check_sources()
