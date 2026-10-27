@@ -48,6 +48,8 @@ test = "python tools/fpm_vsg.py test"
 example = "python tools/fpm_vsg.py run --example"
 pyside6-build = { cmd = "python demo.py build", cwd = "demos/pyside6" }
 pyside6-demo = { cmd = "python demo.py run", cwd = "demos/pyside6" }
+# the vkframes / OpenFrames benchmark (bench/README.md): runs both apps in their environments
+bench = "python bench/run.py"
 
 # Qt embedding (qt-fortran GUIs): `pixi run -e qt ...`
 [feature.qt.dependencies]
@@ -56,12 +58,15 @@ qt6-main = ">=6.11,<7"
 [environments]
 qt = ["qt"]
 rocky = ["rocky", "qt"]
+openframes = ["openframes", "qt"]
 
 [feature.qt.tasks]
 qt-build = { cmd = "python demo.py build", cwd = "demos/qt" }
 qt-demo = { cmd = "python demo.py run", cwd = "demos/qt" }
 trajectory-build = { cmd = "python demo.py build", cwd = "demos/trajectory" }
 trajectory-demo = { cmd = "python demo.py run", cwd = "demos/trajectory" }
+bench-vkframes-build = { cmd = "python demo.py build", cwd = "bench/vkframes" }
+bench-vkframes = { cmd = "python demo.py run", cwd = "bench/vkframes" }
 
 # Rocky (maps and terrain, optional): `pixi run -e rocky rocky-build` builds
 # Rocky from source (tools/build_rocky.py) into this environment
@@ -84,3 +89,20 @@ rocky-build = "python tools/build_rocky.py"
 moon-data = "python tools/get_moon_dem.py"
 moon-demo-build = { cmd = "python demo.py build", cwd = "demos/moon" }
 moon-demo = { cmd = "python demo.py run", cwd = "demos/moon" }
+
+# OpenFrames (for the efficiency benchmark, bench/): built from source against
+# conda-forge's OpenSceneGraph, `pixi run -e openframes openframes-build`
+[feature.openframes]
+platforms = ["osx-arm64-macos26", "linux-64"]
+
+[feature.openframes.dependencies]
+openscenegraph = "3.6.5.*"
+git = "*"
+
+[feature.openframes.target.linux-64.dependencies]
+libgl-devel = "*"
+
+[feature.openframes.tasks]
+openframes-build = { cmd = "python demo.py openframes", cwd = "bench/openframes" }
+bench-openframes-build = { cmd = "python demo.py build", cwd = "bench/openframes" }
+bench-openframes = { cmd = "python demo.py run", cwd = "bench/openframes" }

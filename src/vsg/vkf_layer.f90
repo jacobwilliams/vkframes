@@ -43,7 +43,7 @@ module vkf_layer
             integer(c_int), value :: buflen
         end function vkf_vulkan_device_name
 
-        type(c_ptr) function vkf_viewer_create(width, height, title, title_len, native_window, pixel_ratio) &
+        type(c_ptr) function vkf_viewer_create(width, height, title, title_len, native_window, pixel_ratio, vsync) &
                 bind(C, name="vkf_viewer_create")
             import :: c_ptr, c_int, c_char, c_long_long, c_double
             implicit none
@@ -52,6 +52,7 @@ module vkf_layer
             integer(c_int), value :: title_len
             integer(c_long_long), value :: native_window
             real(c_double), value :: pixel_ratio
+            integer(c_int), value :: vsync
         end function vkf_viewer_create
 
         integer(c_int) function vkf_viewer_mouse(viewer, kind, x, y, mask, button) bind(C, name="vkf_viewer_mouse")

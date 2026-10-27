@@ -1018,7 +1018,10 @@ VKF_API int vkf_vulkan_device_name(char* buf, int buflen)
 //   events and forwards them (vkf_viewer_mouse, ..., vkf_viewer_resize).
 // pixel_ratio: framebuffer pixels per window unit of an existing window (Qt's
 //   devicePixelRatio); ignored for a window of its own.
-VKF_API void* vkf_viewer_create(int width, int height, const char* title, int title_len, long long native_window, double pixel_ratio)
+// vsync: 1 to present at the display's refresh (FIFO), 0 as soon as a frame is
+//   ready (IMMEDIATE, where the driver has it; else FIFO), e.g. for benchmarks.
+VKF_API void* vkf_viewer_create(int width, int height, const char* title, int title_len, long long native_window, double pixel_ratio,
+                                int vsync)
 {
     return guarded("vkf_viewer_create", static_cast<void*>(nullptr), [&]() -> void* {
         auto traits = vsg::WindowTraits::create();
@@ -1027,6 +1030,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         traits->height = static_cast<uint32_t>(height);
         traits->swapchainPreferences.imageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT; // for capture
         traits->swapchainPreferences.surfaceFormat = {VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR}; // see "Color"
+        traits->swapchainPreferences.presentMode = vsync ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR;
         void* childView = nullptr;
         if (native_window != 0)
         {

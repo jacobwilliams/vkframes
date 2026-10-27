@@ -1,0 +1,24 @@
+name = "openframes-bench"
+version = "0.0.1"
+license = "MIT"
+author = "Jacob Williams"
+maintainer = "Jacob Williams"
+description = "The OpenFrames side of the vkframes / OpenFrames benchmark (a qt-fortran app)"
+
+[build]
+auto-executables = true
+auto-tests = false
+auto-examples = false
+# OpenFrames is built from source by `pixi run -e openframes openframes-build`
+# (demo.py, which also supplies the library path)
+link = ["OpenFrames_Interface_C", "OpenFrames"]
+
+[fortran]
+implicit-typing = false
+implicit-external = false
+source-form = "free"
+
+[dependencies]
+vkframes-bench-common = { path = "../common" }
+qt-fortran = { git = "https://github.com/jacobwilliams/qt-fortran.git", rev = "a72fe43e6c4974879456d5df8e53856a84b88505" }
+openframes-fortran = { git = "https://github.com/jacobwilliams/openframes-fortran.git", rev = "b8bc110d6f65d3afc805cb6fe4ba46e0f2903b29" }

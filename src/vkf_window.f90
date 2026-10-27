@@ -141,23 +141,30 @@ contains
 
     !> Open the window: `width` x `height` (logical pixels) titled `title`, or,
     !> with `native_window` (a host window's native handle) and its
-    !> `pixel_ratio`, render into that window. Returns false on failure.
-    logical function open(self, width, height, title, native_window, pixel_ratio) result(ok)
+    !> `pixel_ratio`, render into that window. `vsync` (default true): frames
+    !> are presented at the display's refresh; false: as soon as they are ready
+    !> (where the driver allows it), e.g. to measure frame times. Returns false
+    !> on failure.
+    logical function open(self, width, height, title, native_window, pixel_ratio, vsync) result(ok)
         class(WindowProxy), intent(inout) :: self
         integer, intent(in) :: width, height
         character(len=*), intent(in), optional :: title
         integer(c_long_long), intent(in), optional :: native_window
         real(wp), intent(in), optional :: pixel_ratio
+        logical, intent(in), optional :: vsync
         character(len=:), allocatable :: t
         integer(c_long_long) :: handle
         real(c_double) :: ratio
+        integer(c_int) :: sync
         t = 'vkframes'
         if (present(title)) t = title
         handle = 0
         ratio = 1.0_c_double
         if (present(native_window)) handle = native_window
         if (present(pixel_ratio)) ratio = pixel_ratio
-        self%viewer_ = vkf_viewer_create(int(width, c_int), int(height, c_int), t, len(t, kind=c_int), handle, ratio)
+        sync = 1_c_int
+        if (present(vsync)) sync = merge(1_c_int, 0_c_int, vsync)
+        self%viewer_ = vkf_viewer_create(int(width, c_int), int(height, c_int), t, len(t, kind=c_int), handle, ratio, sync)
         ok = c_associated(self%viewer_)
         if (.not. ok) return
         self%running = .true.
