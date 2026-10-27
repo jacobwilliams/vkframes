@@ -22,6 +22,35 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
 > Linux is built and run only in CI, and Windows has had little testing (see
 > [Platforms](#platforms)). Don't depend on it for anything important yet.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="media/screenshots/moon_terrain.jpg" alt="Tycho crater on the Moon, with terrain"></td>
+    <td width="50%"><img src="media/screenshots/line_of_sight.png" alt="Lines of sight between five spacecraft"></td>
+  </tr>
+  <tr>
+    <td>Terrain through Rocky: Tycho crater, from LRO imagery and LOLA elevation (<code>rocky_map</code>).</td>
+    <td>Lines of sight between spacecraft in five orbits, recomputed each frame (<code>line_of_sight</code>).</td>
+  </tr>
+  <tr>
+    <td><img src="media/screenshots/shadow_cones.png" alt="Shadow cones in a solar eclipse"></td>
+    <td><img src="media/screenshots/point_colors.png" alt="Orbits colored along their length"></td>
+  </tr>
+  <tr>
+    <td>Shadow cones in a solar eclipse: the Moon's umbra reaching the Earth inside its penumbra, and the Earth's own shadow behind it (<code>eclipse</code>).</td>
+    <td>Colors per point: a Molniya orbit by altitude, a low orbit by sunlight, and the Earth's shadow (<code>colored_orbits</code>).</td>
+  </tr>
+  <tr>
+    <td><img src="media/screenshots/orbit_planes.png" alt="Orbit planes swept out from the Earth's center"></td>
+    <td><img src="media/screenshots/reference_shapes.png" alt="Reference shapes around the Earth"></td>
+  </tr>
+  <tr>
+    <td>Orbit planes swept from the Earth's center, one traced as its spacecraft moves (<code>orbit_planes</code>).</td>
+    <td>Reference shapes: a latitude/longitude grid, a radial plane, axes with ticks and sensor cones (<code>shapes</code>).</td>
+  </tr>
+</table>
+
 ## Features
 
 - **Reference frames**: a tree of frames with positions, attitudes
@@ -234,6 +263,8 @@ GUI toolkit owns the window and forwards its events, and vkframes renders
 into it.
 
 #### Qt demo
+
+<img src="media/screenshots/qt_demo.png" alt="The Qt demo's view: the Earth, two spacecraft, their orbits and the Earth's shadow" width="300" align="right">
 
 [demos/qt](demos/qt): a spacecraft orbiting the Earth in a
 [qt-fortran](https://github.com/jacobwilliams/qt-fortran) main window, next
