@@ -328,10 +328,13 @@ namespace
     // shared by all nodes of a kind, in all windows: line strips and segments
     // (shaders/line.vert, line.frag), markers (marker.vert, marker.frag, with a
     // marker image), stars (stars.vert, stars.frag) and the sky texture
-    // (sky.vert, sky.frag: no points). Bindings: 0 the points, 1 the style (or
-    // the sky's attitude), 2 an image. The sky kinds are drawn at the far
-    // plane without writing depth, stars blended by the brighter color.
-    enum class PointsKind { lines, markers, stars, skyTexture };
+    // (sky.vert, sky.frag: no points), ribbons (ribbon.vert, ribbon.frag:
+    // translucent surfaces between pairs of points). Bindings: 0 the points, 1
+    // the style (or the sky's attitude), 2 an image, 3 the points' colors. The
+    // sky kinds are drawn at the far plane without writing depth, stars blended
+    // by the brighter color; ribbons are depth tested but write no depth (as
+    // the transparent surfaces of vkf_mesh_create).
+    enum class PointsKind { lines, markers, stars, skyTexture, ribbons };
 
     struct PointsPipeline
     {
@@ -347,7 +350,7 @@ namespace
             bindings.push_back({1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
             if (kind == PointsKind::markers || kind == PointsKind::skyTexture)
                 bindings.push_back({2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
-            if (kind == PointsKind::lines)       // the points' colors (vkf_line_create_colored)
+            if (kind == PointsKind::lines || kind == PointsKind::ribbons)   // the points' colors (vkf_line_create_colored)
                 bindings.push_back({3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
             descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
@@ -374,6 +377,7 @@ namespace
                 depth->depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL; // at depth 0, where nothing was drawn
                 depth->depthWriteEnable = VK_FALSE;
             }
+            if (kind == PointsKind::ribbons) depth->depthWriteEnable = VK_FALSE;
             vsg::GraphicsPipelineStates states{
                 vsg::VertexInputState::create(), // no vertex buffers: points come from the storage buffer
                 vsg::InputAssemblyState::create(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
@@ -398,6 +402,12 @@ namespace
     PointsPipeline& marker_pipeline()
     {
         static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::marker_vert, vkf_shaders::marker_frag, PointsKind::markers);
+        return *pipeline;
+    }
+
+    PointsPipeline& ribbon_pipeline()
+    {
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::ribbon_vert, vkf_shaders::ribbon_frag, PointsKind::ribbons);
         return *pipeline;
     }
 
@@ -864,12 +874,16 @@ namespace
         std::shared_ptr<LineLod> lod;        // lines: the level of detail (EyeRelative)
         vsg::ref_ptr<vsg::vec4Array> colors; // lines: a color per point (colored), else one, white
         bool colored = false;
+        bool ribbon = false;                 // a surface between pairs of points (vkf_ribbon_create)
 
         bool segments() const { return style->at(1).y > 0.5f; }
         // the vertices drawing points first .. first+n-1 (1-based)
         void setRange(uint32_t first, uint32_t n)
         {
-            if (markers) {
+            if (ribbon) {                    // a quad (6 vertices) between consecutive pairs
+                draw->firstVertex = 6 * ((first - 1) / 2);
+                draw->vertexCount = (n >= 4) ? 6 * (n / 2 - 1) : 0;
+            } else if (markers) {
                 draw->firstVertex = 6 * (first - 1);
                 draw->vertexCount = 6 * n;
             } else if (segments()) {
@@ -882,7 +896,7 @@ namespace
             if (lod)
             {
                 lod->drawnPoints = first - 1 + n;        // (strips are drawn from point 1)
-                lod->strip = !markers && !segments();
+                lod->strip = !markers && !ribbon && !segments();
             }
         }
     };
@@ -2136,12 +2150,13 @@ VKF_API int vkf_viewer_hud_remove(void* viewer, void* label)
 // A line of up to capacity points (see vkf_line_create), with a color per
 // point when `colored` (vkf_line_colors): blended along each segment and
 // multiplied by the style's color.
-static void* make_line(int capacity, bool colored)
+static void* make_line(int capacity, bool colored, bool ribbon = false)
 {
     if (capacity < 2) return nullptr;
-    return guarded("vkf_line_create", static_cast<void*>(nullptr), [&]() -> void* {
-        auto& pipeline = line_pipeline();
+    return guarded(ribbon ? "vkf_ribbon_create" : "vkf_line_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto& pipeline = ribbon ? ribbon_pipeline() : line_pipeline();
         auto line = std::make_unique<LineStrip>();
+        line->ribbon = ribbon;
         line->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
         line->style = dynamic_vec4_array(3);     // [color, params, (points written, colored): shaders/line.vert]
@@ -2181,6 +2196,14 @@ VKF_API void* vkf_line_create(int capacity) { return make_line(capacity, false);
 // each segment (vkf_line_colors; uploaded with the points by
 // vkf_line_points_changed).
 VKF_API void* vkf_line_create_colored(int capacity) { return make_line(capacity, true); }
+
+// A ribbon of up to capacity points (even; initially none): a translucent
+// surface through pairs of points (2i-1, 2i), a quad between each pair and the
+// next (shaders/ribbon.vert), in the style's color, times each point's color
+// if `colored` (vkf_line_colors). The buffers are a line's (vkf_line_points,
+// vkf_line_style, vkf_line_points_changed, vkf_line_set_range with whole
+// pairs).
+VKF_API void* vkf_ribbon_create(int capacity, int colored) { return make_line(capacity, colored != 0, true); }
 
 // The colors of a line made by vkf_line_create_colored: 4 floats per point,
 // to fill in place (null for other lines).

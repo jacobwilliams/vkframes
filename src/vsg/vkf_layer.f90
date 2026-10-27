@@ -27,6 +27,7 @@ module vkf_layer
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
+    public :: vkf_ribbon_create
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
@@ -537,6 +538,15 @@ module vkf_layer
             implicit none
             integer(c_int), value :: capacity
         end function vkf_line_create_colored
+
+        !> A ribbon of up to `capacity` points (even): a translucent surface through
+        !> pairs of points, a quad between each pair and the next; a color per
+        !> point (vkf_line_colors) if `colored` is not 0. The buffers are a line's.
+        type(c_ptr) function vkf_ribbon_create(capacity, colored) bind(C, name="vkf_ribbon_create")
+            import :: c_ptr, c_int
+            implicit none
+            integer(c_int), value :: capacity, colored
+        end function vkf_ribbon_create
 
         !> The colors (4 floats per point) of a line made by vkf_line_create_colored (null for others).
         type(c_ptr) function vkf_line_colors(line, capacity) bind(C, name="vkf_line_colors")

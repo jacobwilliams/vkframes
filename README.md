@@ -44,6 +44,10 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - Trace mode: draw only up to the current time.
   - Level of detail: seen from far away, a curve is drawn from fewer
     points, staying within half a pixel of all of them, chosen per view.
+  - `RibbonArtist` (not in OpenFrames): a translucent surface swept out
+    between two points at each trajectory point. By default it runs from the
+    origin to the positions, filling in an orbit's plane. It's drawn whole,
+    or in trace mode up to the spacecraft as it moves.
   - Point colors (not in OpenFrames): a trajectory can have a color for
     each point, and its curve is then drawn in them. Each segment blends
     from one point's color to the next, so runs of one color are solid and
@@ -183,6 +187,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `precision` | Double precision: a 10 m spacecraft on a 7000 km orbit line, seen from 30 m away; the line passes through the spacecraft's center (in plain float it would be off by about a meter). |
 | `line_of_sight` | `CustomLineSegments`: five spacecraft in different orbits (LEO, sun-synchronous, GPS, GEO, Molniya), shown as markers, with a line of sight between every pair, recomputed each frame by a callback: clear links in the spacecraft's colors, links the Earth blocks dashed. |
 | `colored_orbits` | A color per trajectory point: a Molniya orbit colored by altitude (a smooth gradient), and a traced low orbit colored by sunlight (yellow while sunlit, blue in the Earth's umbra, matching the Earth's `ShadowCones`). |
+| `orbit_planes` | `RibbonArtist`: orbit planes swept out from the Earth's center, for a low orbit and a geostationary orbit drawn whole, and a Molniya orbit traced as its spacecraft moves. |
 | `eclipse` | `ShadowCones`: a total solar eclipse. The Earth orbits the Sun and the Moon orbits the Earth, and the Moon's umbra reaches the Earth inside its wide penumbra. The Earth's own shadow points away from the Sun. A HUD line shows the umbra's length. |
 | `rocky_map` | Terrain with Rocky (`TerrainBody`; needs the `rocky` environment): the Earth from ReadyMap's tiles, or the Moon from NASA's Moon Trek and LOLA's elevation, from orbit and close to the surface. |
 
@@ -198,6 +203,7 @@ pixi run example precision
 pixi run example line_of_sight
 pixi run example eclipse
 pixi run example colored_orbits
+pixi run example orbit_planes
 pixi run -e rocky example rocky_map -- moon         # or: earth (after the Rocky build, see the lunar demo)
 ```
 
@@ -225,8 +231,8 @@ library:
   spacecraft (OpenFrames' Hubble model, or a sphere) and a second spacecraft
   on part of another orbit; the Sun as a light source; a starry sky.
 - **Trajectories:** the orbits drawn whole or traced up to the spacecraft,
-  in a dash pattern, or colored by altitude (a color per point); markers
-  along them; radius vectors (a `SegmentArtist`)
+  in a dash pattern, or colored by altitude (a color per point); the orbit's
+  plane swept out (`RibbonArtist`); markers along them; radius vectors (a `SegmentArtist`)
   added and removed while running.
 - **The spacecraft as markers:** shown as their bodies, or as a marker of
   any shape at their current positions.
@@ -249,7 +255,7 @@ pixi run -e qt qt-demo -- --windows 2 --shapes --los --shadow --position-marker 
 ```
 
 Options include `--view n`, `--windows n`, `--trace`, `--altitude-colors`,
-`--radius`,
+`--plane`, `--radius`,
 `--marker n`, `--position-marker n`, `--sky n`, `--shapes`, `--los`,
 `--shadow`,
 `--pattern n`, `--capture file` and `--quit-after seconds`; the comment at

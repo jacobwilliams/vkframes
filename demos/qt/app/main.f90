@@ -45,6 +45,9 @@
 !> 1000 km (a CoordinateAxes at its center, fixed while the Earth's body-fixed
 !> axes, from its surface, turn with it; its arrows hidden), the equatorial
 !> plane (a RadialPlane) and spacecraft 1's nadir sensor (an EllipticCone).
+!> The orbit's plane can be swept out from the dock (a RibbonArtist from the
+!> Earth's center to the orbit, translucent, added and removed while running:
+!> traced with the orbit, drawn whole otherwise).
 !> The orbit can be colored by altitude from the dock (a color per point of
 !> its trajectory, blended along the line: blue at perigee to red at apogee).
 !> The Earth's shadow in sunlight (ShadowCones, a child of the Earth: umbra
@@ -74,7 +77,7 @@
 !> n (1 to 6, as in the view menu); `--windows n` opens n
 !> windows at startup (the others start in the next views); `--rotation-speed n`
 !> sets the Earth's rotation speed slider (0 to 50 x the real rate); `--trace`
-!> starts with the orbit traced; `--altitude-colors` with the orbit colored by
+!> starts with the orbit traced; `--plane` with the orbit's plane swept out; `--altitude-colors` with the orbit colored by
 !> altitude; `--radius` with the radius vectors shown;
 !> `--marker n` with marker shape n (0 none, 1 disk, ... 10 spiral);
 !> `--position-marker n` with the spacecraft shown as marker shape n (0: their
@@ -143,7 +146,7 @@ module vkdemo
         type(QCheckBox) :: pause_time
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
-        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors
+        type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors, show_plane_swept
         type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los, show_shadow
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
@@ -176,6 +179,7 @@ module vkdemo
         type(DrawableTrajectory) :: orbit_frame                !! draws the orbit (in inertial coordinates)
         type(CurveArtist) :: orbit_curve
         type(SegmentArtist) :: radius_vectors                  !! from the Earth's center, added from the dock
+        type(RibbonArtist) :: orbit_plane                      !! swept from the Earth's center, added from the dock
         type(MarkerArtist) :: orbit_markers                    !! start, end, every 10 minutes
         ! the second spacecraft, on part of another orbit
         type(Trajectory) :: orbit2
@@ -204,6 +208,7 @@ module vkdemo
         logical :: start_trace = .false.
         logical :: start_altitude_colors = .false.
         logical :: start_radius = .false.
+        logical :: start_plane = .false.
         integer :: start_marker = 1
         integer :: start_position_marker = 0
         integer :: start_sky = 1
@@ -353,6 +358,8 @@ contains
         call app%orbit_frame%show_name_label(.false.)
         call app%orbit_frame%add_artist(app%orbit_curve)
         app%radius_vectors = SegmentArtist(app%orbit, color=[0.4_wp, 0.8_wp, 1.0_wp, 0.8_wp], stride=12)
+        app%orbit_plane = RibbonArtist(app%orbit, color=[orbit_color(1:3), 0.2_wp])
+        call app%orbit_plane%set_point_colors(.false.)                   ! (with the orbit's, by altitude)
         app%orbit_markers = MarkerArtist(app%orbit, markers=ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END), &
                                          size=12.0_wp)
         call app%orbit_markers%set_marker_color(MARKER_START, [0.2_wp, 1.0_wp, 0.3_wp])
@@ -1002,6 +1009,7 @@ contains
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
         call app%orbit_curve%set_point_colors(checked)
+        call app%orbit_plane%set_point_colors(checked)
     end subroutine on_altitude_colors
 
     subroutine on_trace_orbit(checked, data)
@@ -1009,6 +1017,7 @@ contains
         class(*), intent(inout), optional :: data
         call app%orbit_curve%set_trace_mode(checked)
         call app%radius_vectors%set_trace_mode(checked)
+        call app%orbit_plane%set_trace_mode(checked)
         call app%orbit_markers%set_trace_mode(checked)
         call app%orbit2_curve%set_trace_mode(checked)
         call app%orbit2_markers%set_trace_mode(checked)
@@ -1129,6 +1138,18 @@ contains
             call app%orbit_frame%remove_artist(app%radius_vectors)
         end if
     end subroutine on_show_radius
+
+    !> The orbit's plane, swept from the Earth's center (added to the orbit's
+    !> frame while running, or removed).
+    subroutine on_show_plane_swept(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        if (checked) then
+            call app%orbit_frame%add_artist(app%orbit_plane)
+        else
+            call app%orbit_frame%remove_artist(app%orbit_plane)
+        end if
+    end subroutine on_show_plane_swept
 
     !> Open another window on the scene (up to max_windows).
     subroutine on_new_window(data)
@@ -1285,6 +1306,9 @@ contains
         app%show_radius = QCheckBox('Radius vectors')
         call app%show_radius%toggled%connect(on_show_radius)
         call form%addRow('', app%show_radius)
+        app%show_plane_swept = QCheckBox('Orbit plane (swept)')
+        call app%show_plane_swept%toggled%connect(on_show_plane_swept)
+        call form%addRow('', app%show_plane_swept)
         app%sun_light = QCheckBox('Sun light (day and night)')
         call app%sun_light%setChecked(.true.)
         call app%sun_light%toggled%connect(on_sun_light)
@@ -1397,6 +1421,8 @@ program vkframes_qt_demo
             app%start_altitude_colors = .true.
         case ('--radius')
             app%start_radius = .true.
+        case ('--plane')
+            app%start_plane = .true.
         case ('--shapes')
             app%start_shapes = .true.
         case ('--los')
@@ -1433,6 +1459,7 @@ program vkframes_qt_demo
     call app%trace_orbit%setChecked(app%start_trace)
     call app%altitude_colors%setChecked(app%start_altitude_colors)
     call app%show_radius%setChecked(app%start_radius)
+    call app%show_plane_swept%setChecked(app%start_plane)
     call app%marker_shape%setCurrentIndex(app%start_marker)
     call app%position_marker%setCurrentIndex(app%start_position_marker)
     call app%sky_choice%setCurrentIndex(app%start_sky)

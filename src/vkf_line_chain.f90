@@ -1,6 +1,7 @@
 !> A growing set of points drawn from a chain of GPU buffers ("chunks"), for
-!> the trajectory artists: a line strip, separate segments (pairs of points)
-!> or markers (one per point). Points are written in place, as (high, low)
+!> the trajectory artists: a line strip, separate segments (pairs of points),
+!> markers (one per point) or a ribbon (a translucent surface through pairs of
+!> points: a quad between each pair and the next). Points are written in place, as (high, low)
 !> float pairs for double precision (see src/vsg/vkf_layer.cpp: EyeRelative),
 !> with a strip's distance along it (for dash patterns, see shaders/line.vert;
 !> measured from the trajectory's points), and only the chunks written to are
@@ -8,7 +9,8 @@
 !> far or as what is needed at once, but at least min_chunk and at most
 !> max_chunk points, so nothing is ever copied or reallocated, and changing a
 !> point uploads at most max_chunk points again. In a strip, consecutive chunks
-!> share their end point so that the line is continuous.
+!> share their end point so that the line is continuous; in a ribbon, their
+!> end pair.
 !>
 !> Level of detail (strips): seen from far away, a dense trajectory is mostly
 !> segments shorter than a pixel. For each chunk, the chain keeps the bounding
@@ -35,7 +37,7 @@ module vkf_line_chain
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
     use vkf_math, only: wp
-    use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_marker_create, &
+    use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_marker_create, vkf_ribbon_create, &
                          vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
                          vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
@@ -51,7 +53,7 @@ module vkf_line_chain
     integer, parameter :: lod_levels = 12               !! strides up to 2^12 = 4096 (strips)
 
     ! what a chain draws
-    integer, parameter, public :: CHAIN_STRIP = 0, CHAIN_SEGMENTS = 1, CHAIN_MARKERS = 2
+    integer, parameter, public :: CHAIN_STRIP = 0, CHAIN_SEGMENTS = 1, CHAIN_MARKERS = 2, CHAIN_RIBBON = 3
 
     public :: split_points, split_distances, line_buffer, check
 
@@ -161,8 +163,8 @@ contains
         num_chunks = self%n_chunks
     end function num_chunks
 
-    !> Chunks for at least n points (at least one chunk). Separate segments:
-    !> chunks hold whole segments (n should be even).
+    !> Chunks for at least n points (at least one chunk). Separate segments and
+    !> ribbons: chunks hold whole pairs (n should be even).
     subroutine reserve(self, n)
         class(LineChain), intent(inout) :: self
         integer, intent(in) :: n
@@ -178,13 +180,18 @@ contains
             else if (self%kind == CHAIN_STRIP) then
                 c%first = covered                              ! sharing the previous chunk's last point
                 c%capacity = min(max_chunk, max(min_chunk, covered, n - covered + 1))
+            else if (self%kind == CHAIN_RIBBON) then
+                c%first = covered - 1                          ! sharing the previous chunk's last pair
+                c%capacity = min(max_chunk, max(min_chunk, covered, n - covered + 2))
             else
                 c%first = covered + 1
                 c%capacity = min(max_chunk, max(min_chunk, covered, n - covered))
             end if
-            if (self%kind == CHAIN_SEGMENTS) c%capacity = c%capacity + modulo(c%capacity, 2)
+            if (self%kind == CHAIN_SEGMENTS .or. self%kind == CHAIN_RIBBON) c%capacity = c%capacity + modulo(c%capacity, 2)
             if (self%kind == CHAIN_MARKERS) then
                 c%line = vkf_marker_create(int(c%capacity, c_int), self%image)
+            else if (self%kind == CHAIN_RIBBON) then
+                c%line = vkf_ribbon_create(int(c%capacity, c_int), merge(1_c_int, 0_c_int, self%colored))
             else
                 if (self%colored) then
                     c%line = vkf_line_create_colored(int(c%capacity, c_int))

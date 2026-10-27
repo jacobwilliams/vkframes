@@ -9,7 +9,10 @@
 !> from the start or the end, appends, trace mode. Point colors: a curve of a
 !> trajectory with colors is drawn in them (colors added after the positions,
 !> with appended points, in bulk), points without one in the artist's color,
-!> and all in the artist's color with point colors off.
+!> and all in the artist's color with point colors off. RibbonArtist: the
+!> pairs (origin and position, or other sources) drawn to double precision
+!> across chunks, appends, trace mode (the quad to the interpolated pair),
+!> point colors with the artist's alpha.
 program test_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr
@@ -33,6 +36,7 @@ program test_artists
     call check_sources()
     call check_point_colors()
     call check_segments()
+    call check_ribbon()
     call check_markers()
     call check_drawable()
 
@@ -288,6 +292,72 @@ contains
         call a%update(dir * 505.0_wp)
         call check(a%num_drawn() == 200 .and. .not. a%trace_end(v), what//'off: everything')
     end subroutine check_trace
+
+    !> RibbonArtist: from the origin to the positions, in chunks; trace mode;
+    !> other sources (a curtain down to z = 0); point colors.
+    subroutine check_ribbon()
+        type(Trajectory), target :: traj
+        type(RibbonArtist) :: a
+        real(wp) :: s(3), e(3), worst, expected(3)
+        real(wp), parameter :: green(3) = [0.0_wp, 1.0_wp, 0.0_wp]
+        integer :: i
+        traj = Trajectory()
+        do i = 1, 1000
+            call traj%add(real(i, wp), orbit(real(i, wp)))
+        end do
+        a = RibbonArtist(traj, color=[0.2_wp, 0.6_wp, 1.0_wp])
+        call check(all(a%color() == [0.2_wp, 0.6_wp, 1.0_wp, 0.25_wp]), 'ribbon: color, alpha 0.25 by default')
+        call a%build(c_null_ptr, vkf_switch_create())
+        call a%update(0.0_wp)
+        call a%drawn_pair(500, s, e)
+        call check(a%num_drawn() == 1000 .and. all(s == 0.0_wp) .and. maxval(abs(e - traj%position(500))) < 1.0e-6_wp, &
+                   'ribbon: from the origin to the positions, double precision')
+
+        ! appends: more chunks (sharing their last pair), every pair as written
+        do i = 1001, 150000
+            call traj%add(real(i, wp), orbit(real(i, wp)))
+            if (modulo(i, 10000) == 0) call a%update(0.0_wp)
+        end do
+        call a%update(0.0_wp)
+        worst = 0.0_wp
+        do i = 1, a%num_drawn()
+            call a%drawn_pair(i, s, e)
+            worst = max(worst, maxval(abs(s)), maxval(abs(e - traj%position(i))))
+        end do
+        call check(a%num_drawn() == 150000 .and. a%num_chunks() > 2 .and. worst < 1.0e-6_wp, &
+                   'ribbon: appends, across chunks')
+
+        ! trace mode: the quads passed, and one to the pair at the time
+        call a%set_trace_mode(.true.)
+        call a%update(500.5_wp)
+        expected = 0.5_wp * (orbit(500.0_wp) + orbit(501.0_wp))
+        call check(a%num_drawn() == 500 .and. a%trace_end(s, e), 'ribbon trace: points passed, tail')
+        call check(all(abs(s) < 1.0e-9_wp) .and. maxval(abs(e - expected)) < 1.0e-6_wp, &
+                   'ribbon trace: to the interpolated pair')
+        call a%update(1.0e9_wp)
+        call check(a%num_drawn() == 150000 .and. .not. a%trace_end(s, e), 'ribbon trace: after the end, all')
+        call a%set_trace_mode(.false.)
+
+        ! a curtain: from the positions' (x, y, 0) up to the positions
+        call check(a%set_start_x_data(DataSource(SOURCE_POSOPT, element=1)) .and. &
+                   a%set_start_y_data(DataSource(SOURCE_POSOPT, element=2)), 'ribbon: start sources')
+        call a%update(0.0_wp)
+        call a%drawn_pair(77, s, e)
+        expected = traj%position(77)
+        call check(maxval(abs(s - [expected(1:2), 0.0_wp])) < 1.0e-6_wp .and. maxval(abs(e - expected)) < 1.0e-6_wp, &
+                   'ribbon: other sources (a curtain)')
+
+        ! point colors: the trajectory's, with the artist's alpha
+        call traj%clear()
+        do i = 1, 100
+            call traj%add(real(i, wp), orbit(real(i, wp)), color=green)
+        end do
+        call a%update(0.0_wp)
+        call check(all(abs(a%drawn_color(50) - [green, 0.25_wp]) < 1.0e-7_wp), "ribbon: point colors, the artist's alpha")
+        call a%set_point_colors(.false.)
+        call a%update(0.0_wp)
+        call check(all(a%drawn_color(50) == a%color()) .and. a%num_drawn() == 100, "ribbon: point colors off")
+    end subroutine check_ribbon
 
     !> A trajectory's colors: drawn when it has some (the chain made again with
     !> colors), the artist's color for points without one yet, colors added

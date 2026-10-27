@@ -23,7 +23,7 @@ module vkframes
     use vkf_shapes, only: CoordinateAxes, LatLonGrid, RadialPlane, PolyhedralCone, EllipticCone, RectangularCone, &
                           CONE_NONE, CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE, CONE_ALL
     use vkf_files, only: find_data_file
-    use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist, DrawableTrajectory, &
+    use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist, RibbonArtist, DrawableTrajectory, &
                            MARKER_START, MARKER_INTERMEDIATE, MARKER_END, &
                            INTERMEDIATE_TIME, INTERMEDIATE_DISTANCE, INTERMEDIATE_DATA, &
                            MARKER_DISK, MARKER_CIRCLE, MARKER_SQUARE, MARKER_PLUS, MARKER_X, MARKER_TARGET, &

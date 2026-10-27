@@ -763,6 +763,29 @@ Decided so far:
         blocked links dashed) and in the Qt demo ("Line of sight").
       - Not done: OpenFrames' custom line shader (`setLineShader`), which
         would need run-time GLSL, as `MarkerArtist%set_marker_shader`.
+- [x] `RibbonArtist` (new, not in OpenFrames): a translucent surface swept
+      between two points at each trajectory point, a quad between each
+      point's pair and the next. The pairs come from start and end data
+      sources, as `SegmentArtist`'s. By default it runs from the origin to the
+      positions, sweeping out an orbit's plane.
+      - A trajectory artist, so it gets the artists' behaviour: appended points
+        uploaded alone, a clear redrawn in place, trace mode (the quads
+        passed as a draw range, plus a tail quad to the pair at the current
+        time), and point colors with the artist's alpha.
+      - The line chain has a new `CHAIN_RIBBON` kind: pairs of points, with
+        chunks sharing their last pair.
+      - The C++ layer draws it as a line node with a ribbon pipeline
+        (`vkf_ribbon_create`, `shaders/ribbon.vert`): the same
+        double-precision point buffer as the lines, drawn eye-relative, so
+        its edge lies exactly on the orbit line. Translucent, unlit,
+        two-sided, depth tested, writing no depth.
+      - A trajectory going round several times covers the surface again each
+        time, so it gets more opaque (documented).
+      - Tested headless (`test_artists`: across chunks, appends, trace, other
+        sources, colors). Shown in `example/orbit_planes.f90` and in the Qt
+        demo ("Orbit plane (swept)", `--plane`).
+      - [ ] Optional later: level of detail (fewer quads from far away, as the
+            curves' stride).
 - [x] Point colors (new, not in OpenFrames): a `Trajectory` can have a
       color per point (`add_color`, or `add`'s `color`, one at a time or in
       bulk). Like attitudes, colors may be fewer than times, and they take

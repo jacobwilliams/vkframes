@@ -1,6 +1,8 @@
 !> Trajectory artists: what draws a Trajectory, in a DrawableTrajectory frame, as
 !> OpenFrames' TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist and
-!> DrawableTrajectory.
+!> DrawableTrajectory, and RibbonArtist (not in OpenFrames: a translucent
+!> surface swept between two points at each trajectory point, e.g. an orbit's
+!> plane from the origin to the positions).
 !>
 !> A DrawableTrajectory is a frame (its points are in its coordinates) holding
 !> artists. Each frame update, an artist draws what changed in its trajectory:
@@ -33,10 +35,12 @@ module vkf_artists
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
     use vkf_frames, only: ReferenceFrame
     use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_line_points_changed, &
+                         vkf_ribbon_create, &
                          vkf_line_set_range, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
                          vkf_compile_node, vkf_viewer_any, line_set_style, line_set_pattern, vkf_image_read, vkf_image_delete
-    use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, split_points, split_distances, &
+    use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, CHAIN_RIBBON, split_points, &
+                              split_distances, &
                               line_buffer, check
 
     implicit none
@@ -159,6 +163,60 @@ module vkf_artists
     interface SegmentArtist
         module procedure new_segment_artist
     end interface SegmentArtist
+
+    !> Draws a translucent surface swept between two points at each point of
+    !> a trajectory (not in OpenFrames): from the point given by the start data
+    !> sources to the one given by the end data sources, with a quad between
+    !> each point's pair and the next's. Default: from the frame's origin to the
+    !> positions, sweeping out an orbit's plane (a fan, as the radius vectors of
+    !> a SegmentArtist would fill it); other sources give e.g. a curtain from
+    !> the positions down to a ground track stored as an optional. Unlit, seen
+    !> from both sides, depth tested but writing no depth (as the equatorial
+    !> plane of a RadialPlane), drawn to double precision as the curves (its
+    !> edge on a CurveArtist's line through the same points).
+    !>
+    !> Trace mode draws the surface up to the current time: the quads passed
+    !> (a draw range, no upload) and one from the last point passed to the
+    !> point interpolated at the time. Point colors: a trajectory with colors
+    !> colors the surface, each point's pair in its color, with the artist's
+    !> opacity (its alpha times theirs); see set_point_colors. A trajectory
+    !> going round several times covers the surface again each time, so it
+    !> gets more opaque: trace one revolution, or lower the alpha.
+    type, extends(TrajectoryArtist), public :: RibbonArtist
+        private
+        type(DataSource) :: start_(3), end_(3)
+        logical :: default_data = .true.
+        real(wp) :: color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.25_wp]
+        logical :: point_colors_ = .true.           !! the trajectory's colors, if any
+        ! rendering: trajectory point i is chain points 2i-1 (start) and 2i (end)
+        type(c_ptr) :: group = c_null_ptr
+        logical :: compile = .false.
+        type(LineChain) :: chain
+        type(c_ptr) :: tail = c_null_ptr            !! the quad to the point at the current time (trace mode)
+        integer :: n_written = 0                    !! trajectory points written to the chain
+        integer :: n_drawn = 0                      !! trajectory points drawn from it
+        integer :: n_colored = 0                    !! points written with the trajectory's own colors
+        logical :: tail_shown = .false.
+        real(wp) :: tail_time = huge(1.0_wp)
+    contains
+        procedure :: set_trajectory => ribbon_set_trajectory
+        procedure :: set_start_x_data => ribbon_set_start_x_data, set_start_y_data => ribbon_set_start_y_data
+        procedure :: set_start_z_data => ribbon_set_start_z_data
+        procedure :: set_end_x_data => ribbon_set_end_x_data, set_end_y_data => ribbon_set_end_y_data
+        procedure :: set_end_z_data => ribbon_set_end_z_data
+        procedure :: start_data_sources => ribbon_start_data_sources, end_data_sources => ribbon_end_data_sources
+        procedure :: set_color => ribbon_set_color, color => ribbon_color
+        procedure :: set_point_colors => ribbon_set_point_colors, point_colors => ribbon_point_colors
+        procedure :: build => ribbon_build
+        procedure :: update => ribbon_update
+        procedure :: release => ribbon_release
+        procedure :: num_chunks => ribbon_num_chunks, num_drawn => ribbon_num_drawn
+        procedure :: drawn_pair, drawn_color => ribbon_drawn_color, trace_end => ribbon_trace_end
+    end type RibbonArtist
+
+    interface RibbonArtist
+        module procedure new_ribbon_artist
+    end interface RibbonArtist
 
     ! which markers a MarkerArtist draws (OpenFrames' DrawnMarkers; combine with ior)
     integer, parameter, public :: MARKER_START = 1, MARKER_INTERMEDIATE = 2, MARKER_END = 4
@@ -1046,6 +1104,390 @@ contains
         end do
         call self%chain%written(2 * s1 - 1, 2 * s2)
     end subroutine write_segments
+
+    ! ==================================================================
+    ! RibbonArtist
+
+    !> A ribbon artist for `traj` (optional), of color `color` ([r, g, b], alpha
+    !> unchanged, or [r, g, b, a]; default white, alpha 0.25), from the frame's
+    !> origin to the positions (see set_start_x_data, ... for others).
+    function new_ribbon_artist(traj, color) result(a)
+        type(Trajectory), intent(in), target, optional :: traj
+        real(wp), intent(in), optional :: color(:)
+        type(RibbonArtist) :: a
+        a%end_ = position_sources(3)
+        if (present(traj)) call a%set_trajectory(traj)
+        if (present(color)) call set_rgba(a%color_, color)
+    end function new_ribbon_artist
+
+    !> Draw `traj`; with the default data sources, from the origin to its
+    !> positions (per its DOF).
+    subroutine ribbon_set_trajectory(self, traj)
+        class(RibbonArtist), intent(inout) :: self
+        type(Trajectory), intent(in), target :: traj
+        self%traj => traj
+        if (self%default_data) self%end_ = position_sources(traj%dof())
+        self%seen_generation = -1
+    end subroutine ribbon_set_trajectory
+
+    !> Where the x (y, z) of the surface's start (end) points come from.
+    !> Returns whether the trajectory has the data of all sources.
+    logical function ribbon_set_start_x_data(self, src) result(valid)
+        class(RibbonArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_ribbon_source(self, 1, 1, src)
+    end function ribbon_set_start_x_data
+
+    logical function ribbon_set_start_y_data(self, src) result(valid)
+        class(RibbonArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_ribbon_source(self, 1, 2, src)
+    end function ribbon_set_start_y_data
+
+    logical function ribbon_set_start_z_data(self, src) result(valid)
+        class(RibbonArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_ribbon_source(self, 1, 3, src)
+    end function ribbon_set_start_z_data
+
+    logical function ribbon_set_end_x_data(self, src) result(valid)
+        class(RibbonArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_ribbon_source(self, 2, 1, src)
+    end function ribbon_set_end_x_data
+
+    logical function ribbon_set_end_y_data(self, src) result(valid)
+        class(RibbonArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_ribbon_source(self, 2, 2, src)
+    end function ribbon_set_end_y_data
+
+    logical function ribbon_set_end_z_data(self, src) result(valid)
+        class(RibbonArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src
+        valid = set_ribbon_source(self, 2, 3, src)
+    end function ribbon_set_end_z_data
+
+    !> Set component k of the start (side 1) or end (side 2) sources.
+    logical function set_ribbon_source(self, side, k, src) result(valid)
+        class(RibbonArtist), intent(inout) :: self
+        integer, intent(in) :: side, k
+        type(DataSource), intent(in) :: src
+        if (side == 1) then
+            self%start_(k) = src
+        else
+            self%end_(k) = src
+        end if
+        self%default_data = .false.
+        self%seen_generation = -1
+        valid = .true.
+        if (associated(self%traj)) valid = self%traj%verify_data(self%start_) .and. self%traj%verify_data(self%end_)
+    end function set_ribbon_source
+
+    pure function ribbon_start_data_sources(self) result(s)
+        class(RibbonArtist), intent(in) :: self
+        type(DataSource) :: s(3)
+        s = self%start_
+    end function ribbon_start_data_sources
+
+    pure function ribbon_end_data_sources(self) result(s)
+        class(RibbonArtist), intent(in) :: self
+        type(DataSource) :: s(3)
+        s = self%end_
+    end function ribbon_end_data_sources
+
+    !> The surface's color: [r, g, b] (alpha unchanged) or [r, g, b, a]; its
+    !> alpha is the surface's opacity (also with the trajectory's colors).
+    subroutine ribbon_set_color(self, color)
+        class(RibbonArtist), intent(inout) :: self
+        real(wp), intent(in) :: color(:)
+        call set_rgba(self%color_, color)
+        call ribbon_style(self)
+        if (self%chain%is_colored()) self%seen_generation = -1    ! (points without colors redrawn)
+    end subroutine ribbon_set_color
+
+    pure function ribbon_color(self) result(c)
+        class(RibbonArtist), intent(in) :: self
+        real(wp) :: c(4)
+        c = self%color_
+    end function ribbon_color
+
+    !> Whether a trajectory with colors colors the surface (default true):
+    !> each point's pair in its color (points without one yet in the artist's),
+    !> times the artist's alpha. False: all in the artist's color.
+    subroutine ribbon_set_point_colors(self, enabled)
+        class(RibbonArtist), intent(inout) :: self
+        logical, intent(in) :: enabled
+        self%point_colors_ = enabled
+    end subroutine ribbon_set_point_colors
+
+    pure logical function ribbon_point_colors(self)
+        class(RibbonArtist), intent(in) :: self
+        ribbon_point_colors = self%point_colors_
+    end function ribbon_point_colors
+
+    pure integer function ribbon_num_chunks(self)
+        class(RibbonArtist), intent(in) :: self
+        ribbon_num_chunks = self%chain%num_chunks()
+    end function ribbon_num_chunks
+
+    !> Number of trajectory points the surface is drawn through now (all, or
+    !> in trace mode those passed).
+    pure integer function ribbon_num_drawn(self)
+        class(RibbonArtist), intent(in) :: self
+        ribbon_num_drawn = self%n_drawn
+    end function ribbon_num_drawn
+
+    !> The pair at trajectory point i (1 to num_drawn) as drawn, its start a
+    !> and end b: read back from the buffers.
+    subroutine drawn_pair(self, i, a, b)
+        class(RibbonArtist), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp), intent(out) :: a(3), b(3)
+        a = self%chain%point(2 * i - 1)
+        b = self%chain%point(2 * i)
+    end subroutine drawn_pair
+
+    !> The color of the pair at trajectory point i as drawn (rgba: the
+    !> trajectory's color times the artist's alpha, or the artist's color).
+    function ribbon_drawn_color(self, i) result(rgba)
+        class(RibbonArtist), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp) :: rgba(4)
+        rgba = self%color_
+        if (.not. self%chain%is_colored()) return
+        rgba = self%chain%point_color(2 * i - 1)
+        rgba(4) = rgba(4) * self%color_(4)
+    end function ribbon_drawn_color
+
+    !> In trace mode, the pair at the current time (the tail's end) as drawn;
+    !> false if no tail is drawn.
+    logical function ribbon_trace_end(self, a, b)
+        class(RibbonArtist), intent(in) :: self
+        real(wp), intent(out) :: a(3), b(3)
+        real(c_float), dimension(:,:,:), pointer :: p
+        a = 0.0_wp
+        b = 0.0_wp
+        ribbon_trace_end = self%tail_shown
+        if (.not. ribbon_trace_end) return
+        call line_buffer(self%tail, p)
+        if (.not. associated(p)) return
+        a = real(p(1:3, 1, 3), wp) + real(p(1:3, 2, 3), wp)
+        b = real(p(1:3, 1, 4), wp) + real(p(1:3, 2, 4), wp)
+    end function ribbon_trace_end
+
+    subroutine ribbon_build(self, viewer, group)
+        class(RibbonArtist), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer, group
+        self%group = group
+        self%compile = .false.
+        call init_ribbon_chain(self)
+        call self%chain%reserve(2 * ribbon_points(self))  ! compiled with the group
+        self%compile = c_associated(viewer)
+        call self%chain%set_compile(self%compile)
+        self%tail = vkf_ribbon_create(4_c_int, 1_c_int)   ! (white unless the points' colors are drawn)
+        if (c_associated(self%tail)) call check(vkf_node_add_child(group, self%tail))
+        call ribbon_style(self)
+        self%seen_generation = -1
+    end subroutine ribbon_build
+
+    !> The chain, colored if the trajectory's colors are drawn.
+    subroutine init_ribbon_chain(self)
+        type(RibbonArtist), intent(inout) :: self
+        logical :: colored
+        colored = self%point_colors_ .and. associated(self%traj)
+        if (colored) colored = self%traj%num_colors() > 0
+        call self%chain%init(self%group, CHAIN_RIBBON, colored=colored)
+        call self%chain%set_compile(self%compile)
+        self%n_colored = 0
+    end subroutine init_ribbon_chain
+
+    !> Whether the trajectory's colors are drawn: wanted, and it has some.
+    logical function ribbon_uses_colors(self) result(uses)
+        type(RibbonArtist), intent(in) :: self
+        uses = self%point_colors_ .and. associated(self%traj)
+        if (uses) uses = self%traj%num_colors() > 0
+    end function ribbon_uses_colors
+
+    subroutine ribbon_release(self)
+        class(RibbonArtist), intent(inout) :: self
+        call self%chain%release()
+        if (c_associated(self%tail)) call vkf_node_delete(self%tail)
+        self%tail = c_null_ptr
+        self%group = c_null_ptr
+        self%n_written = 0
+        self%n_drawn = 0
+        self%n_colored = 0
+        self%tail_shown = .false.
+        call artist_release(self)
+    end subroutine ribbon_release
+
+    subroutine ribbon_update(self, t)
+        class(RibbonArtist), intent(inout) :: self
+        real(wp), intent(in) :: t
+        integer :: n, i1
+        logical :: changed, redraw
+        if (.not. self%chain%is_built()) return
+        n = ribbon_points(self)
+
+        ! the trajectory's colors drawn or not: the chain made again
+        if (ribbon_uses_colors(self) .neqv. self%chain%is_colored()) then
+            call self%chain%detach()
+            call init_ribbon_chain(self)
+            call ribbon_style(self)
+            self%seen_generation = -1
+        end if
+
+        ! new points, or a redraw (cleared, new trajectory or data sources)
+        changed = data_changed(self, redraw)
+        if (redraw .or. .not. associated(self%traj)) then
+            self%n_written = 0
+            self%n_colored = 0
+        end if
+        if (changed) then
+            i1 = max(1, min(self%n_written, n))          ! from the last point written (set_optional)
+            if (self%chain%is_colored()) i1 = max(1, min(i1, self%n_colored))   ! (and colors added since)
+            call self%chain%reserve(2 * n)
+            if (n >= i1) call write_ribbon(self, i1, n)
+            self%n_written = n
+        end if
+
+        if (.not. self%trace) then
+            self%n_drawn = self%n_written
+            call self%chain%draw(2 * self%n_drawn)
+            if (c_associated(self%tail)) call check(vkf_line_set_range(self%tail, 1_c_int, 0_c_int))
+            self%tail_shown = .false.
+            self%tail_time = huge(1.0_wp)
+            return
+        end if
+        ! trace mode: the quads passed, and one to the pair at time t
+        if (.not. changed .and. t == self%tail_time) return
+        self%n_drawn = 0
+        if (associated(self%traj)) self%n_drawn = points_passed(self%traj, t, self%n_written)
+        call self%chain%draw(2 * self%n_drawn)
+        call update_ribbon_tail(self, t, self%n_drawn)
+        self%tail_time = t
+    end subroutine ribbon_update
+
+    !> Number of trajectory points to draw the surface through (none if all
+    !> sources are zero).
+    integer function ribbon_points(self) result(n)
+        type(RibbonArtist), intent(in) :: self
+        n = 0
+        if (all(self%start_%src == SOURCE_ZERO) .and. all(self%end_%src == SOURCE_ZERO)) return
+        n = min(source_points(self%traj, self%start_), source_points(self%traj, self%end_))
+    end function ribbon_points
+
+    !> Write the pairs of trajectory points i1 .. i2 into the chain, with their
+    !> colors (and upload the chunks written to).
+    subroutine write_ribbon(self, i1, i2)
+        type(RibbonArtist), intent(inout) :: self
+        integer, intent(in) :: i1, i2
+        real(c_float), dimension(:,:,:), pointer :: p
+        real(c_float), dimension(:,:), pointer :: c, col
+        real(c_float) :: own(4)
+        real(wp), allocatable :: v(:,:)
+        integer :: j, lo, hi, ia, ib, m, k
+        do j = 1, self%chain%num_chunks()
+            call self%chain%slice(j, 2 * i1 - 1, 2 * i2, lo, hi, p)  ! chunks hold whole pairs
+            if (.not. associated(p)) cycle
+            ia = (lo + 1) / 2                             ! the trajectory points of the pairs
+            ib = hi / 2
+            allocate(v(3, ib - ia + 1))
+            call self%traj%points(ia, ib, self%start_, v)
+            call split_points(v, p(:, :, 1:hi-lo+1:2))
+            call self%traj%points(ia, ib, self%end_, v)
+            call split_points(v, p(:, :, 2:hi-lo+1:2))
+            deallocate(v)
+        end do
+        if (self%chain%is_colored()) then                 ! each pair in its point's color
+            call self%traj%colors(col)
+            m = self%traj%num_colors()
+            own = real(self%color_, c_float)
+            own(4) = 1.0_c_float                          ! (the style has the alpha)
+            do j = 1, self%chain%num_chunks()
+                call self%chain%color_slice(j, 2 * i1 - 1, 2 * i2, lo, hi, c)
+                if (.not. associated(c)) cycle
+                do k = (lo + 1) / 2, hi / 2
+                    if (k <= m) then
+                        c(:, 2*k-lo:2*k-lo+1) = spread(col(:, k), 2, 2)
+                    else
+                        c(:, 2*k-lo:2*k-lo+1) = spread(own, 2, 2)
+                    end if
+                end do
+            end do
+            self%n_colored = min(m, i2)
+        end if
+        call self%chain%written(2 * i1 - 1, 2 * i2)
+    end subroutine write_ribbon
+
+    !> The tail: the quad from the pair at point k to the pair interpolated at
+    !> time t (none if before the first point or at/after the last).
+    subroutine update_ribbon_tail(self, t, k)
+        type(RibbonArtist), intent(inout) :: self
+        real(wp), intent(in) :: t
+        integer, intent(in) :: k
+        real(c_float), dimension(:,:,:), pointer :: p
+        real(c_float), dimension(:,:), pointer :: c
+        real(wp) :: t0, t1, frac, xyz(3, 4), c0(4), c1(4)
+        integer(c_int) :: capacity
+        type(c_ptr) :: data
+        self%tail_shown = .false.
+        if (.not. c_associated(self%tail)) return
+        if (k < 1 .or. k >= self%n_written) then
+            call check(vkf_line_set_range(self%tail, 1_c_int, 0_c_int))
+            return
+        end if
+        t0 = self%traj%time(k)
+        t1 = self%traj%time(k + 1)
+        frac = 0.0_wp
+        if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
+        xyz(:, 1) = self%traj%point(k, self%start_)
+        xyz(:, 2) = self%traj%point(k, self%end_)
+        xyz(:, 3) = xyz(:, 1) + frac * (self%traj%point(k + 1, self%start_) - xyz(:, 1))
+        xyz(:, 4) = xyz(:, 2) + frac * (self%traj%point(k + 1, self%end_) - xyz(:, 2))
+        call line_buffer(self%tail, p)
+        if (.not. associated(p)) return
+        call split_points(xyz, p(:, :, 1:4))
+        data = vkf_line_colors(self%tail, capacity)
+        if (c_associated(data) .and. capacity >= 4) then
+            call c_f_pointer(data, c, [4, 4])
+            if (self%chain%is_colored()) then
+                c0 = ribbon_point_rgba(self, k)
+                c1 = ribbon_point_rgba(self, k + 1)
+                c(:, 1:2) = spread(real(c0, c_float), 2, 2)
+                c(:, 3:4) = spread(real(c0 + frac * (c1 - c0), c_float), 2, 2)
+            else
+                c = 1.0_c_float
+            end if
+        end if
+        call check(vkf_line_points_changed(self%tail, 4_c_int))
+        self%tail_shown = .true.
+    end subroutine update_ribbon_tail
+
+    !> Color of point i in a colored chain: the trajectory's, or the artist's
+    !> (opaque: the style has the alpha) if it has none yet.
+    function ribbon_point_rgba(self, i) result(rgba)
+        type(RibbonArtist), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp) :: rgba(4)
+        if (i <= self%traj%num_colors()) then
+            rgba = self%traj%color(i)
+        else
+            rgba = [self%color_(1:3), 1.0_wp]
+        end if
+    end function ribbon_point_rgba
+
+    !> The style: the artist's color, or white with its alpha if the points'
+    !> colors are drawn (the shader multiplies them by it).
+    subroutine ribbon_style(self)
+        type(RibbonArtist), intent(inout) :: self
+        real(wp) :: rgba(4)
+        rgba = self%color_
+        if (self%chain%is_colored()) rgba(1:3) = 1.0_wp
+        call self%chain%set_style(rgba, 1.0_wp)
+        if (c_associated(self%tail)) call check(line_set_style(self%tail, real(rgba, c_float), 1.0_c_float))
+    end subroutine ribbon_style
 
     ! ==================================================================
     ! MarkerArtist
