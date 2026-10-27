@@ -120,8 +120,9 @@ Each run produces one JSON line with these fields:
   frame times show work done, not waits for the display.
   - vkframes opens its window with `vsync=.false.` (Vulkan present mode
     `IMMEDIATE`). A zero-interval `QTimer` calls `WindowProxy%frame`.
-  - OpenFrames gets an OpenGL swap interval of 0 (`src/bench_gl.cpp`) and a
-    frame limiter set to 10000 frames per second.
+  - OpenFrames gets an OpenGL swap interval of 0
+    (`QSurfaceFormat%setSwapInterval`) and a frame limiter set to 10000
+    frames per second.
 - **Optimized builds.** Both apps are built with fpm's `release` profile,
   and vkframes' C++ layer with `-O2`. OpenFrames is a CMake `Release` build.
   OpenSceneGraph, VSG and Qt are conda-forge's release builds.
@@ -239,7 +240,7 @@ Frames per second, with the mean frame time in brackets:
 |---|---|
 | `common/` | Shared Fortran, a package used by both apps: options, data, timing, statistics, results |
 | `vkframes/` | The vkframes app: `app/main.f90`, and `demo.py` (vkframes' and qt-fortran's build settings) |
-| `openframes/` | The OpenFrames app: `app/main.f90`, `src/bench_gl.cpp`, and `demo.py` (builds OpenFrames, then the app) |
+| `openframes/` | The OpenFrames app: `app/main.f90`, and `demo.py` (builds OpenFrames, then the app) |
 | `run.py` | Runs everything and prints the tables |
 
 ## Platforms

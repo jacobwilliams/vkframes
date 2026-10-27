@@ -6,7 +6,7 @@
 !> OpenFrames renders on its own thread, calling `make_current` and
 !> `swap_buffers` (below) every frame; each frame's time is taken in
 !> `swap_buffers`. Frames are rendered as fast as possible: no vsync (the
-!> surface's swap interval 0, bench_gl.cpp) and OpenFrames' frame limiter
+!> default surface format's swap interval 0) and OpenFrames' frame limiter
 !> set to 10000 frames per second. Points are added from the GUI thread
 !> (oftraj_addtime and oftraj_addposition for each point: OpenFrames' C
 !> interface has no bulk add), while the render thread draws.
@@ -51,13 +51,6 @@ module ofbench
     type(app_t), target, save :: app
 
     interface
-        !> In bench_gl.cpp.
-        subroutine bench_default_surface_format(depth_bits, swap_interval) bind(C, name="bench_default_surface_format")
-            import :: c_int
-            implicit none
-            integer(c_int), value :: depth_bits, swap_interval
-        end subroutine bench_default_surface_format
-
         !> Trace mode of the current artist (OpenFrames' fork; not in openframes-fortran yet).
         subroutine oftrajartist_settracemode_c(enabled) bind(C, name="oftrajartist_settracemode")
             import :: c_bool
@@ -348,10 +341,16 @@ program openframes_bench
     implicit none
 
     type(QApplication) :: qapp
+    type(QSurfaceFormat) :: fmt
     integer :: ierr
 
     call parse_options(app%opt)
-    call bench_default_surface_format(24_c_int, merge(1_c_int, 0_c_int, app%opt%vsync))   ! depth buffer; vsync or not
+    ! every OpenGL surface (set before the application): a depth buffer, and vsync or not
+    fmt = QSurfaceFormat()
+    call fmt%setDepthBufferSize(24)
+    call fmt%setSwapInterval(merge(1, 0, app%opt%vsync))
+    call QSurfaceFormat_setDefaultFormat(fmt)
+    call fmt%delete()
     qapp = QApplication()
     gui_thread_updates = .not. QOpenGLContext_supportsThreadedOpenGL()
     if (gui_thread_updates) call QApplication_setAttribute(Qt_AA_DontCheckOpenGLContextThreadAffinity)
