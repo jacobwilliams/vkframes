@@ -272,4 +272,4 @@ user's cache directory, or in `VKFRAMES_CACHE_DIR` if it's set.
 
 ## License
 
-MIT (as declared in [fpm.toml](fpm.toml)).
+[Apache](LICENSE.TXT)
