@@ -28,6 +28,7 @@
 #include <vsg/all.h>
 #include <vsgXchange/all.h>
 #if defined(_WIN32)
+#    include <process.h>    // _getpid
 #    include <ole2.h>
 #    include <vsg/platform/win32/Win32_Window.h>
 #    pragma comment(lib, "ole32.lib")   // RevokeDragDrop
@@ -47,6 +48,9 @@
 #include <string>
 #include <typeinfo>
 
+#if !defined(_WIN32)
+#    include <unistd.h>     // getpid
+#endif
 #if defined(__APPLE__)
 #    include <CoreGraphics/CGGeometry.h>
 #    include <cxxabi.h>
@@ -921,6 +925,30 @@ namespace
                                                   std::to_string(time) + "|" + VSG_VERSION_STRING);
         return dir / (font.stem().string() + "-" + std::to_string(key) + ".vsgb");
     }
+
+    // Save a converted font in the cache, safely with other programs using it:
+    // written to a temporary file of this process's own (its id and the time in
+    // its name), then renamed into place, which replaces a file in one step
+    // (readers see the old file or the new one, never part of one). If the rename
+    // fails (on Windows while another program reads the file) or anything else
+    // does, the temporary file is removed and the cache left as it is.
+    void write_font_cache(const vsg::ref_ptr<vsg::Font>& font, const std::filesystem::path& cached)
+    {
+        namespace fs = std::filesystem;
+        std::error_code ec;
+        fs::create_directories(cached.parent_path(), ec);
+    #if defined(_WIN32)
+        const auto pid = _getpid();
+    #else
+        const auto pid = getpid();
+    #endif
+        auto tmp = cached;
+        tmp.replace_extension(".tmp" + std::to_string(pid) + "-" +
+                              std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".vsgb");
+        const bool written = vsg::write(font, tmp.string(), read_options()) && fs::file_size(tmp, ec) > 0 && !ec;
+        if (written) fs::rename(tmp, cached, ec);
+        if (!written || ec) fs::remove(tmp, ec);
+    }
 } // namespace
 
 extern "C" {
@@ -1671,17 +1699,7 @@ VKF_API void* vkf_font_read(const char* filename, int filename_len)
                 std::cerr << "vkf_font_read: could not read " << path << std::endl;
                 return nullptr;
             }
-            if (!cached.empty())
-            {
-                // (written to a temporary file first: another program may read the cache)
-                std::error_code ec;
-                std::filesystem::create_directories(cached.parent_path(), ec);
-                auto tmp = cached;
-                tmp.replace_extension(".tmp" + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".vsgb");
-                if (vsg::write(font, tmp.string(), read_options()))
-                    std::filesystem::rename(tmp, cached, ec);
-                if (ec) std::filesystem::remove(tmp, ec);
-            }
+            if (!cached.empty()) write_font_cache(font, cached);
         }
         auto f = std::make_unique<Font>();
         f->font = font;
