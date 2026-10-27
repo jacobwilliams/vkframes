@@ -23,6 +23,19 @@
 !> A window has a list of views (`add_view`, `select_view`, `next_view`, ...);
 !> each keeps its own camera (the trackball) while another one is shown.
 !> Without views, a default view of the scene's root frame is used.
+!>
+!> Keyboard and mouse (OpenFrames' WindowProxy callbacks, setKeyPressCallback,
+!> setMouseMotionCallback, setButtonPressCallback, setButtonReleaseCallback):
+!> a program's WindowEventHandler, an extension overriding the procedures it
+!> wants (`key_press`, `key_release`, `mouse_motion`, `button_press`,
+!> `button_release`), is given the window's events (`set_event_handler`),
+!> also those a host forwards. They're passed on after the frame in which they
+!> arrived (from `frame()`), so a handler may change anything, the window
+!> included (its views, its time, closing it). Positions are in -1 to 1 across
+!> the window, y up, as OpenFrames'. The built-in keys, as OpenFrames': `v` the
+!> next view, `V` the previous one, the space bar resets the view (unless the
+!> handler's `key_press` says it handled the key, or `set_default_keys(.false.)`).
+!> The mouse moves the camera (the trackball); the keys don't.
 module vkf_window
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float
@@ -39,7 +52,8 @@ module vkf_window
                          vkf_viewer_hud_add, vkf_label_set_text, vkf_label_set_color, &
                          vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close, &
                          vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set, vkf_viewer_remove_node, &
-                         vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio
+                         vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio, &
+                         vkf_viewer_events, vkf_viewer_size
 
     implicit none
 
@@ -47,6 +61,19 @@ module vkf_window
 
     ! mouse event kinds for WindowProxy%mouse
     integer, parameter, public :: MOUSE_MOVE = 1, MOUSE_PRESS = 2, MOUSE_RELEASE = 3
+    ! mouse buttons (WindowEventHandler, WindowProxy%mouse)
+    integer, parameter, public :: MOUSE_LEFT = 1, MOUSE_MIDDLE = 2, MOUSE_RIGHT = 3
+    ! keys (WindowEventHandler): printable keys are their characters,
+    ! iachar('a'), iachar('A') with shift; the others (VSG's key symbols):
+    integer, parameter, public :: KEY_SPACE = 32, KEY_BACKSPACE = int(z'FF08'), KEY_TAB = int(z'FF09'), &
+                                  KEY_RETURN = int(z'FF0D'), KEY_ESCAPE = int(z'FF1B'), KEY_DELETE = int(z'FFFF'), &
+                                  KEY_HOME = int(z'FF50'), KEY_LEFT = int(z'FF51'), KEY_UP = int(z'FF52'), &
+                                  KEY_RIGHT = int(z'FF53'), KEY_DOWN = int(z'FF54'), KEY_PAGE_UP = int(z'FF55'), &
+                                  KEY_PAGE_DOWN = int(z'FF56'), KEY_END = int(z'FF57'), KEY_INSERT = int(z'FF63'), &
+                                  KEY_F1 = int(z'FFBE')                             !! F2 to F12: KEY_F1 + 1 to 11
+    ! modifier keys held (bits of `modifiers`: iand(modifiers, MOD_SHIFT) /= 0)
+    integer, parameter, public :: MOD_SHIFT = 1, MOD_CAPS_LOCK = 2, MOD_CONTROL = 4, MOD_ALT = 8, &
+                                  MOD_NUM_LOCK = 16, MOD_META = 128
 
     !> The root frame of a scene (OpenFrames' FrameManager). The frame is not
     !> owned: it must stay alive while managed.
@@ -76,6 +103,18 @@ module vkf_window
         integer :: revision = -1                    !! the text's revision last shown
     end type HUDEntry
 
+    !> A program's handler of a window's keyboard and mouse events (see the
+    !> module documentation): extend it and override the procedures wanted
+    !> (the others do nothing).
+    type, public :: WindowEventHandler
+    contains
+        procedure :: key_press => handler_key_press
+        procedure :: key_release => handler_key_release
+        procedure :: mouse_motion => handler_mouse_motion
+        procedure :: button_press => handler_button_press
+        procedure :: button_release => handler_button_release
+    end type WindowEventHandler
+
     !> A window showing a scene (see the module documentation).
     type, public :: WindowProxy
         private
@@ -101,6 +140,10 @@ module vkf_window
         real(wp) :: light_ambient_(3) = 0.2_wp, light_diffuse_(3) = 1.0_wp, light_specular_(3) = 0.0_wp
         real(wp) :: light_position_(4) = [0.0_wp, 0.0_wp, 1.0_wp, 0.0_wp]
         logical :: light_on = .true.
+        ! keyboard and mouse
+        class(WindowEventHandler), pointer :: handler => null()
+        logical :: default_keys_ = .true.
+        logical :: hosted = .false.                         !! in a host's window (its size from `resize`)
     contains
         procedure :: open, close, is_open, pixel_ratio
         procedure :: set_scene
@@ -123,6 +166,9 @@ module vkf_window
         procedure :: viewer => window_viewer
         ! events from a host window
         procedure :: mouse, scroll, key, resize
+        ! the program's event handler (OpenFrames' callbacks), built-in keys
+        procedure :: set_event_handler, clear_event_handler, event_handler
+        procedure :: set_default_keys, default_keys
     end type WindowProxy
 
 contains
@@ -212,6 +258,7 @@ contains
         self%shown => null()
         self%width_ = max(1, width)
         self%height_ = max(1, height)
+        self%hosted = handle /= 0
         call self%set_background_color(self%background)
         self%light_on = .true.
         call apply_window_light(self)
@@ -278,7 +325,8 @@ contains
         call place_camera(self)
         status = vkf_viewer_frame(self%viewer_)
         self%running = status == 1
-        running = self%running
+        if (self%running) call dispatch_events(self)
+        running = self%running .and. self%is_open()
     end function frame
 
     !> Render frames until the window is closed (or for `max_frames` frames).
@@ -625,7 +673,7 @@ contains
             self%shown => v
         end if
         if (v%take_reset()) then
-            call v%home(real(self%width_, wp) / real(self%height_, wp), eye, center, up)
+            call v%home(aspect_ratio(self), eye, center, up)
             call set_camera(self, eye, center, up)
         end if
         if (vkf_viewer_set_view_transform(self%viewer_, v%world_to_view()) /= 0) &
@@ -779,5 +827,164 @@ contains
             if (self%frame()) continue
         end if
     end subroutine resize
+
+    ! ==================================================================
+    ! keyboard and mouse: the program's handler (OpenFrames' callbacks)
+
+    !> Give the window's keyboard and mouse events to `handler` (not owned: it
+    !> must stay alive while set), in place of any handler set before.
+    subroutine set_event_handler(self, handler)
+        class(WindowProxy), intent(inout) :: self
+        class(WindowEventHandler), intent(in), target :: handler
+        self%handler => handler
+    end subroutine set_event_handler
+
+    subroutine clear_event_handler(self)
+        class(WindowProxy), intent(inout) :: self
+        self%handler => null()
+    end subroutine clear_event_handler
+
+    !> The event handler (null if none).
+    function event_handler(self) result(handler)
+        class(WindowProxy), intent(in) :: self
+        class(WindowEventHandler), pointer :: handler
+        handler => self%handler
+    end function event_handler
+
+    !> The built-in keys (default on): `v` the next view, `V` the previous
+    !> one, the space bar resets the view.
+    subroutine set_default_keys(self, on)
+        class(WindowProxy), intent(inout) :: self
+        logical, intent(in) :: on
+        self%default_keys_ = on
+    end subroutine set_default_keys
+
+    pure logical function default_keys(self)
+        class(WindowProxy), intent(in) :: self
+        default_keys = self%default_keys_
+    end function default_keys
+
+    !> A key was pressed: `key` (a character's code, iachar('v'), or KEY_*),
+    !> with the modifier keys held (MOD_* bits). Set `handled` (false on entry)
+    !> to skip the built-in key's action.
+    subroutine handler_key_press(self, window, key, modifiers, handled)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        integer, intent(in) :: key, modifiers
+        logical, intent(inout) :: handled
+    end subroutine handler_key_press
+
+    !> A key was released (see `key_press`).
+    subroutine handler_key_release(self, window, key, modifiers)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        integer, intent(in) :: key, modifiers
+    end subroutine handler_key_release
+
+    !> The mouse moved to (x, y) (-1 to 1 across the window, y up), with the
+    !> buttons held (left, middle, right): moving (none held, OpenFrames' mouse
+    !> motion) or dragging.
+    subroutine handler_mouse_motion(self, window, x, y, buttons)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: x, y
+        logical, intent(in) :: buttons(3)
+    end subroutine handler_mouse_motion
+
+    !> A mouse button (MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT) was pressed at
+    !> (x, y) (see `mouse_motion`).
+    subroutine handler_button_press(self, window, x, y, button)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: x, y
+        integer, intent(in) :: button
+    end subroutine handler_button_press
+
+    !> A mouse button was released at (x, y) (see `button_press`).
+    subroutine handler_button_release(self, window, x, y, button)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: x, y
+        integer, intent(in) :: button
+    end subroutine handler_button_release
+
+    !> The keyboard and mouse events of the last frame, to the handler and the
+    !> built-in keys (stopping if the window is closed meanwhile).
+    subroutine dispatch_events(self)
+        class(WindowProxy), intent(inout), target :: self
+        integer, parameter :: capacity = 64
+        integer(c_int) :: events(12, capacity), n
+        integer :: i
+        do
+            if (.not. self%is_open()) return
+            n = vkf_viewer_events(self%viewer_, events, int(capacity, c_int))
+            do i = 1, n
+                if (.not. self%is_open()) return
+                call dispatch_event(self, int(events(:, i)))
+            end do
+            if (n < capacity) return
+        end do
+    end subroutine dispatch_events
+
+    !> One event (see vkf_viewer_events): kind, key, key base, modifiers,
+    !> button, buttons held, x, y (framebuffer pixels from the top left), the
+    !> render area (x, y, width, height).
+    subroutine dispatch_event(self, e)
+        class(WindowProxy), intent(inout), target :: self
+        integer, intent(in) :: e(12)
+        integer, parameter :: KEY_PRESS = 1, KEY_RELEASE = 2, MOVE = 3, BUTTON_PRESS = 4, BUTTON_RELEASE = 5
+        integer, parameter :: BUTTON_MASKS(3) = [256, 512, 1024]            ! (VSG's BUTTON_MASK_1/2/3)
+        integer :: key
+        real(wp) :: x, y
+        logical :: handled
+        key = e(2)
+        if (key == 0) key = e(3)                                             ! (no modified key given)
+        x = 0.0_wp
+        y = 0.0_wp
+        if (e(11) > 0) x = 2.0_wp * real(e(7) - e(9), wp) / real(e(11), wp) - 1.0_wp
+        if (e(12) > 0) y = 1.0_wp - 2.0_wp * real(e(8) - e(10), wp) / real(e(12), wp)
+        select case (e(1))
+        case (KEY_PRESS)
+            handled = .false.
+            if (associated(self%handler)) call self%handler%key_press(self, key, e(4), handled)
+            if (.not. handled .and. self%default_keys_ .and. self%is_open()) call default_key(self, key, e(4))
+        case (KEY_RELEASE)
+            if (associated(self%handler)) call self%handler%key_release(self, key, e(4))
+        case (MOVE)
+            if (associated(self%handler)) call self%handler%mouse_motion(self, x, y, iand(e(6), BUTTON_MASKS) /= 0)
+        case (BUTTON_PRESS)
+            if (associated(self%handler)) call self%handler%button_press(self, x, y, e(5))
+        case (BUTTON_RELEASE)
+            if (associated(self%handler)) call self%handler%button_release(self, x, y, e(5))
+        end select
+    end subroutine dispatch_event
+
+    !> The built-in keys (OpenFrames'): `v` the next view, `V` the previous
+    !> one, the space bar resets the view; not with control, alt or meta held.
+    subroutine default_key(self, key, modifiers)
+        class(WindowProxy), intent(inout), target :: self
+        integer, intent(in) :: key, modifiers
+        type(View), pointer :: v
+        if (iand(modifiers, MOD_CONTROL + MOD_ALT + MOD_META) /= 0) return
+        if (key == iachar('v')) then
+            call self%next_view()
+        else if (key == iachar('V')) then
+            call self%previous_view()
+        else if (key == KEY_SPACE) then
+            v => self%current_view()
+            call v%reset_view()
+        end if
+    end subroutine default_key
+
+    !> The width / height of the window drawn: a host's (from `resize`), or of
+    !> the window's own, as it is now.
+    real(wp) function aspect_ratio(self)
+        class(WindowProxy), intent(in) :: self
+        integer(c_int) :: width, height
+        aspect_ratio = real(self%width_, wp) / real(self%height_, wp)
+        if (self%hosted .or. .not. c_associated(self%viewer_)) return
+        if (vkf_viewer_size(self%viewer_, width, height) /= 0) return
+        if (width > 0 .and. height > 0) aspect_ratio = real(width, wp) / real(height, wp)
+    end function aspect_ratio
 
 end module vkf_window

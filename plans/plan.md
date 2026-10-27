@@ -849,10 +849,35 @@ Decided so far:
             would be an analytic sphere-occlusion test per light in the
             lighting shaders (it's also the cheap form of OpenFrames'
             `FocalPointShadowMap` for spherical bodies).
-- [ ] Window callbacks (OpenFrames' `setKeyPressCallback`,
-      `setMouseMotionCallback`, `setButtonPressCallback`): for vkframes' own
-      windows, a program's procedures called with key presses and mouse
-      events (in embedded windows the host gets the events first).
+- [x] Window callbacks (OpenFrames' `setKeyPressCallback`,
+      `setMouseMotionCallback`, `setButtonPressCallback`,
+      `setButtonReleaseCallback`): `WindowEventHandler` (`src/vkf_window.f90`),
+      an extension overriding the procedures it wants (`key_press`,
+      `key_release`, `mouse_motion`, `button_press`, `button_release`; the
+      others do nothing), set with `WindowProxy%set_event_handler`. It can
+      hold its own state, where OpenFrames' plain function pointers could not.
+      - The C++ layer only records the events (an event handler before the
+        trackball, `vkf_viewer_events`). Fortran passes them on after the
+        frame in which they arrived, so a handler may change anything,
+        closing the window included. Embedded windows get the events their
+        host forwards.
+      - Positions are -1 to 1 across the window, y up, as OpenFrames'.
+        `mouse_motion` covers drags as well, with the buttons held.
+      - OpenFrames' built-in keys: `v` and `V` for the next and previous
+        view, the space bar to reset the view (not with control, alt or
+        meta). `key_press` can say it handled a key, which skips the built-in
+        action (OpenFrames' callback can't), and `set_default_keys(.false.)`
+        turns them off.
+      - VSG's trackball keys are off (its space bar went back to the camera
+        it started with, and w/a/s/d, q/e, i/o and the arrows moved the
+        camera, which OpenFrames doesn't do and a program's keys would
+        trigger). The mouse still moves the camera.
+      - A view reset in a window of its own uses the window's current size
+        (it used the size it was opened at, after a resize).
+      - Tested with forwarded events (`test/test_events.f90`). Shown in the Qt
+        demo (`v`/`V` through the view menu, `p` pauses, the pointer and the
+        last click in the dock). Untested: key presses in VSG's own windows
+        (they go through the same path).
 - [ ] An OpenFrames-like convenience API (optional), examples (orbit,
       multiple viewports, a Qt GUI with controls), documentation (FORD).
 

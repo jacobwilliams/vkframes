@@ -53,6 +53,11 @@
 !> The Earth's shadow in sunlight (ShadowCones, a child of the Earth: umbra
 !> and penumbra, out to 10 Earth radii) can be shown from the dock; it turns
 !> away from the Sun as the Earth turns, and the spacecraft pass through it.
+!> Each window has a WindowEventHandler (OpenFrames' window callbacks): `v` and
+!> `V` show the next and previous views (the handler does it, so the window's
+!> view menu follows, and says it handled the key), `p` pauses and resumes the
+!> time, the space bar resets the view (vkframes' built-in key); the pointer's
+!> position in the window (-1 to 1) and the last click are shown in the dock.
 !>
 !> How the pieces fit:
 !>
@@ -121,6 +126,17 @@ module vkdemo
         procedure :: compute => line_of_sight_compute
     end type LineOfSightLink
 
+    !> A window's keyboard and mouse (vkframes' WindowEventHandler, OpenFrames'
+    !> window callbacks): keys for the views and the time, the pointer shown
+    !> in the dock.
+    type, extends(WindowEventHandler) :: DemoEvents
+        integer :: window = 0                                  !! the window's index (app%windows)
+    contains
+        procedure :: key_press => demo_key_press
+        procedure :: mouse_motion => demo_mouse_motion
+        procedure :: button_press => demo_button_press
+    end type DemoEvents
+
     !> One window showing the scene: a QWindow (in the main window, or in a
     !> top-level widget of its own) with its WindowProxy and views.
     type :: view_window_t
@@ -134,6 +150,7 @@ module vkdemo
         type(WindowProxy) :: proxy
         type(View) :: views(n_views)                           !! as view_names
         type(HUDText) :: hud_view                              !! the view's name, top left
+        type(DemoEvents) :: events_handler                     !! its keys and mouse
         integer :: frame = 0
     end type view_window_t
 
@@ -156,6 +173,8 @@ module vkdemo
         type(QSlider) :: rotation_speed                        !! the Earth's rotation, in multiples of the real rate
         type(QLabel) :: rotation_label
         type(QLabel) :: time_label
+        type(QLabel) :: pointer_label                          !! the pointer and the last click (DemoEvents)
+        character(len=64) :: last_click = ''
         type(QSlider) :: time_slider                           !! the simulation time (s), 0 to time_end
         logical :: slider_held = .false.                       !! the user holds the slider's handle
         logical :: slider_setting = .false.                    !! the demo moves the slider (to the time)
@@ -627,6 +646,8 @@ contains
         call w%proxy%select_view(w%view_choice%currentIndex() + 1)
         call w%proxy%add_hud_text(w%hud_view)
         call w%proxy%add_hud_text(app%hud_time)
+        w%events_handler%window = w%index
+        call w%proxy%set_event_handler(w%events_handler)
         if (w%index == 1) then
             call w%proxy%set_time_range(0.0_wp, app%time_end)
             call w%proxy%set_time_scale(app%time_scale%value())
@@ -883,6 +904,56 @@ contains
             call w%hud_view%set_text(trim(view_names(index + 1)))
         end select
     end subroutine on_view
+
+    !> Keys (DemoEvents): v and V the next and previous views, through the
+    !> window's view menu (which shows the view, and its name in the HUD), p
+    !> pauses and resumes the time; the others (the space bar: vkframes' reset
+    !> of the view) are left to the window.
+    subroutine demo_key_press(self, window, key, modifiers, handled)
+        class(DemoEvents), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        integer, intent(in) :: key, modifiers
+        logical, intent(inout) :: handled
+        integer :: current
+        if (iand(modifiers, MOD_CONTROL + MOD_ALT + MOD_META) /= 0) return
+        associate (w => app%windows(self%window))
+            current = w%view_choice%currentIndex()
+            if (key == iachar('v')) then
+                call w%view_choice%setCurrentIndex(modulo(current + 1, n_views))
+                handled = .true.
+            else if (key == iachar('V')) then
+                call w%view_choice%setCurrentIndex(modulo(current - 1, n_views))
+                handled = .true.
+            else if (key == iachar('p') .or. key == iachar('P')) then
+                call app%pause_time%setChecked(.not. app%pause_time%isChecked())
+                handled = .true.
+            end if
+        end associate
+    end subroutine demo_key_press
+
+    !> The pointer's position (-1 to 1 across the window, y up), in the dock.
+    subroutine demo_mouse_motion(self, window, x, y, buttons)
+        class(DemoEvents), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: x, y
+        logical, intent(in) :: buttons(3)
+        character(len=160) :: text
+        write(text, '(a,i0,a,f6.2,a,f6.2,a)') 'Pointer (window ', self%window, '): ', x, ', ', y, &
+            merge(' (dragging)', '           ', any(buttons))
+        call app%pointer_label%setText('<small>'//trim(text)//'<br>'//trim(app%last_click)//'</small>')
+    end subroutine demo_mouse_motion
+
+    !> The last click, in the dock.
+    subroutine demo_button_press(self, window, x, y, button)
+        class(DemoEvents), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: x, y
+        integer, intent(in) :: button
+        character(len=*), parameter :: names(3) = [character(len=6) :: 'left', 'middle', 'right']
+        if (button < 1 .or. button > 3) return
+        write(app%last_click, '(a,a,a,f6.2,a,f6.2)') 'Clicked: ', trim(names(button)), ' at ', x, ', ', y
+        call app%pointer_label%setText('<small>'//trim(app%last_click)//'</small>')
+    end subroutine demo_button_press
 
     !> A window other than the main one closes.
     subroutine on_close_window(event, data)
@@ -1361,7 +1432,10 @@ contains
         call app%time_slider%sliderReleased%connect(on_slider_released)
         call form%addRow('Time', app%time_slider)
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
-                                'Wheel: zoom</small>'))
+                                'Wheel: zoom<br>v / V: next / previous view<br>Space: reset the view<br>' // &
+                                'p: pause or resume the time</small>'))
+        app%pointer_label = QLabel('<small>Pointer: (move over a view)</small>')
+        call form%addRow(app%pointer_label)
         dock = QDockWidget('Controls', app%main)
         call dock%setWidget(panel)
         call app%main%addDockWidget(Qt_LeftDockWidgetArea, dock)

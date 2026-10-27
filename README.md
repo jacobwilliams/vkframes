@@ -87,6 +87,11 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - Vsync by default; `vsync=.false.` renders as fast as possible (for
     measuring).
   - HUD text and screen capture to PNG.
+  - Keyboard and mouse: a program's `WindowEventHandler` (OpenFrames' window
+    callbacks) is given key presses and releases, mouse motion and button
+    presses and releases, also in embedded windows. OpenFrames' keys are
+    built in: `v` and `V` for the next and previous view, the space bar to
+    reset the view.
 - **Precision**: double precision throughout. Lines are drawn relative to the
   eye and the depth buffer uses reverse-Z, so a 10 m spacecraft and an Earth
   orbit can share one view without OpenFrames' `DepthPartitioner`.
@@ -253,6 +258,9 @@ library:
 - **Views and time:** six views (of the Earth, of each spacecraft, and from
   each spacecraft toward the Earth or the other); a time scale, pause and a
   time slider.
+- **Keys and mouse:** a `WindowEventHandler` per window: `v` and `V` change
+  the view (the view menu follows), `p` pauses the time, the space bar resets
+  the view; the pointer's position and the last click are shown in the dock.
 - **Windows:** up to four, each with its own view, their clocks synchronized
   to the main window's; resizing, Retina displays and moving between screens
   of different scales are handled.

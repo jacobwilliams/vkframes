@@ -762,6 +762,44 @@ namespace
         bool resizeDeferred = false;           // macOS, embedded: the swapchain to rebuild once settled
         bool resizeOwn = false;                // macOS, VSG's own window: resized (see vkf_viewer_frame)
         vsg::clock::time_point lastResize;     // (see resize_settle)
+        std::vector<std::array<int32_t, 12>> events;   // keyboard and mouse events for Fortran (EventRecorder)
+    };
+
+    // Records the window's keyboard and mouse events for Fortran (its event
+    // handler and built-in keys: vkf_viewer_events), before the trackball sees
+    // them. Each: kind (1 key press, 2 key release, 3 pointer move, 4 button
+    // press, 5 button release), key (modified: 'V' with shift), key base,
+    // modifiers, button, buttons held (mask), x, y (framebuffer pixels from the
+    // top left), and the render area (offset x, y, width, height).
+    class EventRecorder : public vsg::Inherit<vsg::Visitor, EventRecorder>
+    {
+    public:
+        explicit EventRecorder(Viewer* viewer) : v(viewer) {}
+
+        void apply(vsg::KeyPressEvent& e) override { key(1, e); }
+        void apply(vsg::KeyReleaseEvent& e) override { key(2, e); }
+        void apply(vsg::MoveEvent& e) override { pointer(3, e, 0); }
+        void apply(vsg::ButtonPressEvent& e) override { pointer(4, e, e.button); }
+        void apply(vsg::ButtonReleaseEvent& e) override { pointer(5, e, e.button); }
+
+    private:
+        static constexpr size_t max_events = 4096;     // (kept while nothing reads them)
+        Viewer* v;
+
+        void key(int32_t kind, vsg::KeyEvent& e)
+        {
+            record({kind, int32_t(e.keyModified), int32_t(e.keyBase), int32_t(e.keyModifier), 0, 0, 0, 0, 0, 0, 0, 0});
+        }
+        void pointer(int32_t kind, vsg::PointerEvent& e, uint32_t button)
+        {
+            const auto area = v->camera->getRenderArea();
+            record({kind, 0, 0, 0, int32_t(button), int32_t(e.mask), e.x, e.y,
+                    area.offset.x, area.offset.y, int32_t(area.extent.width), int32_t(area.extent.height)});
+        }
+        void record(const std::array<int32_t, 12>& event)
+        {
+            if (v->events.size() < max_events) v->events.push_back(event);
+        }
     };
 
     // The viewers that exist (vkf_viewer_create to vkf_viewer_delete), oldest
@@ -1305,7 +1343,17 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         v->camera = vsg::Camera::create(perspective, lookAt, vsg::ViewportState::create(extent));
 
         v->viewer->addEventHandler(vsg::CloseHandler::create(v->viewer));
-        v->viewer->addEventHandler(vsg::Trackball::create(v->camera));
+        v->viewer->addEventHandler(EventRecorder::create(v.get()));
+        // the trackball (mouse only, as OpenFrames': its keys are the program's
+        // and vkframes' built-in keys, WindowProxy: no viewpoint on the space
+        // bar, no camera moves on w/a/s/d, q/e, i/o and the arrow keys)
+        auto trackball = vsg::Trackball::create(v->camera);
+        trackball->keyViewpointMap.clear();
+        for (auto key : {&trackball->turnLeftKey, &trackball->turnRightKey, &trackball->pitchUpKey, &trackball->pitchDownKey,
+                         &trackball->rollLeftKey, &trackball->rollRightKey, &trackball->moveForwardKey, &trackball->moveBackwardKey,
+                         &trackball->moveLeftKey, &trackball->moveRightKey, &trackball->moveUpKey, &trackball->moveDownKey})
+            *key = vsg::KEY_Undefined;
+        v->viewer->addEventHandler(trackball);
         live_viewers().push_back(v.get());
         return v.release();
     });
@@ -1354,6 +1402,32 @@ VKF_API int vkf_viewer_mouse(void* viewer, int kind, int x, int y, int mask, int
     case 3: events.push_back(vsg::ButtonReleaseEvent::create(v->window, t, x, y, m, static_cast<uint32_t>(button))); break;
     default: return -1;
     }
+    return 0;
+}
+
+// The keyboard and mouse events since the last call (see EventRecorder), up to
+// `capacity` (12 integers each, into `out`), oldest first. Returns how many
+// were copied (the rest are kept for the next call), or -1 on failure.
+VKF_API int vkf_viewer_events(void* viewer, int* out, int capacity)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || capacity < 0) return -1;
+    const auto n = std::min(v->events.size(), static_cast<size_t>(capacity));
+    for (size_t i = 0; i < n; ++i)
+        std::copy(v->events[i].begin(), v->events[i].end(), out + 12 * i);
+    v->events.erase(v->events.begin(), v->events.begin() + static_cast<std::ptrdiff_t>(n));
+    return static_cast<int>(n);
+}
+
+// The swapchain's size (framebuffer pixels): a VSG window's size, as it is
+// resized (a host's window has the size it gives, vkf_viewer_resize).
+VKF_API int vkf_viewer_size(void* viewer, int* width, int* height)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    const auto extent = v->window->extent2D();
+    *width = static_cast<int>(extent.width);
+    *height = static_cast<int>(extent.height);
     return 0;
 }
 

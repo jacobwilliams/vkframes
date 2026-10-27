@@ -17,7 +17,11 @@ module vkframes
                           ALIGN_LEFT_BASE_LINE, ALIGN_CENTER_BASE_LINE, ALIGN_RIGHT_BASE_LINE
     use vkf_sphere, only: Sphere
     use vkf_model, only: Model
-    use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE
+    use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE, &
+                          WindowEventHandler, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT, &
+                          KEY_SPACE, KEY_BACKSPACE, KEY_TAB, KEY_RETURN, KEY_ESCAPE, KEY_DELETE, KEY_HOME, &
+                          KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN, KEY_PAGE_UP, KEY_PAGE_DOWN, KEY_END, KEY_INSERT, &
+                          KEY_F1, MOD_SHIFT, MOD_CAPS_LOCK, MOD_CONTROL, MOD_ALT, MOD_NUM_LOCK, MOD_META
     use vkf_hud, only: HUDText
     use vkf_sky, only: SkySphere, SKY_NONE, SKY_TEXTURE, SKY_STARS
     use vkf_shapes, only: CoordinateAxes, LatLonGrid, RadialPlane, PolyhedralCone, EllipticCone, RectangularCone, &
