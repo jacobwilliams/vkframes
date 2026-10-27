@@ -15,9 +15,9 @@ are built with CMake (Release) against conda-forge's OpenSceneGraph; the app
 is built with qt-fortran's tools/fpm_qt.py, plus OpenFrames' library
 directory and an rpath to it.
 
-OpenFrames is pinned to a commit of Jacob Williams' fork, which has trace mode
-(TrajectoryArtist::setTraceMode, oftrajartist_settracemode); this is the
-commit compared in plans/openframes-compare.md.
+OpenFrames is stock OpenFrames (github.com/ravidavi/OpenFrames), pinned to the
+commit compared in plans/openframes-compare.md (the same as qt-fortran's
+OpenFrames demo).
 """
 
 import glob
@@ -27,8 +27,8 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.path.join(HERE, "build")
-OF_REPO = "https://github.com/jacobwilliams/OpenFrames.git"
-OF_COMMIT = "4fba41c"                       # branch `trace` (2026-07-15)
+OF_REPO = "https://github.com/ravidavi/OpenFrames.git"
+OF_COMMIT = "798dc4a"                       # master (2026-03-02)
 OF_SRC = os.path.join(BUILD, "OpenFrames")
 OF_BUILD = os.path.join(BUILD, "openframes-build")
 OF_PREFIX = os.path.join(BUILD, "openframes-install")
@@ -45,7 +45,6 @@ def openframes():
     """Clone, configure, build and install OpenFrames (only the libraries)."""
     if not os.path.isdir(OF_SRC):
         run(["git", "clone", OF_REPO, OF_SRC])
-    run(["git", "-C", OF_SRC, "fetch", "-q", "origin", "trace"])
     run(["git", "-C", OF_SRC, "checkout", "-q", OF_COMMIT])
     prefix = os.environ["CONDA_PREFIX"]
     run(["cmake", "-S", OF_SRC, "-B", OF_BUILD, "-G", "Ninja",

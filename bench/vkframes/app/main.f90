@@ -1,7 +1,7 @@
 !> The vkframes side of the vkframes / OpenFrames benchmark (bench/README.md):
 !> a qt-fortran window showing an Earth, a trajectory of many points drawn by
 !> a CurveArtist and a body following it, in one of the scenarios of
-!> bench_common (static, grow, trace), and the measurements written as one
+!> bench_common (static, grow), and the measurements written as one
 !> JSON line.
 !>
 !> Frames are rendered as fast as possible: no vsync (`WindowProxy%open(...,
@@ -69,7 +69,6 @@ contains
         app%earth = Sphere('Earth', radius=earth_radius, color=[0.2_dp, 0.4_dp, 1.0_dp])
         call hide_decorations(app%earth)
         app%curve = CurveArtist(app%traj, color=[1.0_dp, 0.75_dp, 0.2_dp], width=2.0_dp)
-        call app%curve%set_trace_mode(app%opt%scenario == 'trace')
         app%drawing = DrawableTrajectory('Orbit')
         call hide_decorations(app%drawing)
         call app%drawing%add_artist(app%curve)
@@ -125,13 +124,24 @@ contains
         call app%proxy%add_view(app%view)
         call app%proxy%set_time_range(app%t(1), app%t(size(app%t)))
         call app%proxy%set_time_scale(20.0_dp)               ! one revolution every 5 s
-        if (app%opt%scenario == 'trace') call app%proxy%pause_time(.true.)   ! (swept while measuring)
         call app%log%init(2000000)
         app%t_start = now()
-        app%frames = QTimer(app%main)
-        call app%frames%timeout%connect(on_frame)
-        call app%frames%start(0)
+        if (app%opt%paced) then                              ! as the demos: a frame per update request
+            call app%events%updateRequest%connect(on_update)
+            call app%window%requestUpdate()
+        else
+            app%frames = QTimer(app%main)
+            call app%frames%timeout%connect(on_frame)
+            call app%frames%start(0)
+        end if
     end subroutine on_startup
+
+    !> --paced: a frame, then ask for the next one (at the display's next refresh).
+    subroutine on_update(data)
+        class(*), intent(inout), optional :: data
+        call on_frame()
+        if (app%phase /= 3) call app%window%requestUpdate()
+    end subroutine on_update
 
     !> One frame, and the phases: the first frame (timed), the warmup, the
     !> measurement, the result.
@@ -163,16 +173,11 @@ contains
         app%cpu0 = cpu_seconds()
         app%phase = 2
         call show_status('measuring: '//app%opt%scenario)
-        select case (app%opt%scenario)
-        case ('trace')                                       ! sweep the whole trajectory
-            call app%proxy%set_time_scale((app%t(app%opt%points) - app%t(1)) / app%opt%seconds)
-            call app%proxy%set_time(app%t(1))
-            call app%proxy%pause_time(.false.)
-        case ('grow')
+        if (app%opt%scenario == 'grow') then
             app%appends = QTimer(app%main)
             call app%appends%timeout%connect(on_append)
             call app%appends%start(nint(1000.0_dp * append_interval))
-        end select
+        end if
     end subroutine start_measuring
 
     !> grow: append the points due at --rate since the measurement began (timed).
@@ -192,7 +197,7 @@ contains
     subroutine finish()
         app%cpu1 = cpu_seconds()
         app%phase = 3
-        call app%frames%stop()
+        if (.not. app%opt%paced) call app%frames%stop()
         if (app%opt%scenario == 'grow') call app%appends%stop()
         call write_result(app%opt, 'vkframes', 'VulkanSceneGraph', &
                           trim(merge('add, per point', 'add, bulk     ', app%opt%per_point)), app%insert_s, &

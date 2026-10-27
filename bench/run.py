@@ -1,13 +1,13 @@
 """Run the vkframes / OpenFrames benchmark (bench/README.md): each scenario at
 each size with both apps, then print a comparison. From the vkframes root:
 
-    pixi run bench                                   everything (about 10 minutes)
+    pixi run bench                                   everything (about 6 minutes)
     pixi run bench -- --points 1000000 --scenarios grow
     pixi run bench -- --report bench/results/results.jsonl     only the tables
 
 Options:
     --points N [N ...]        trajectory sizes (default 100000 1000000 5000000)
-    --scenarios S [S ...]     static, grow, trace (default all)
+    --scenarios S [S ...]     static, grow (default both)
     --libraries L [L ...]     vkframes, openframes (default both)
     --seconds S, --warmup S   measured and warmup time per run (default 10, 2)
     --rate R                  points appended per second in grow (default 60000)
@@ -99,7 +99,7 @@ def report(path):
             key = (r["scenario"], r["points"], r["library"], r["insert_method"])
             rows[key] = r
     print(f"\nResults: {os.path.relpath(path, ROOT)}\n")
-    for scenario in ("static", "grow", "trace"):
+    for scenario in ("static", "grow"):
         sel = sorted((k for k in rows if k[0] == scenario), key=lambda k: (k[1], k[2], k[3]))
         if not sel:
             continue
@@ -126,7 +126,7 @@ def report(path):
 def main():
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--points", type=int, nargs="+", default=[100000, 1000000, 5000000])
-    p.add_argument("--scenarios", nargs="+", default=["static", "grow", "trace"], choices=["static", "grow", "trace"])
+    p.add_argument("--scenarios", nargs="+", default=["static", "grow"], choices=["static", "grow"])
     p.add_argument("--libraries", nargs="+", default=["vkframes", "openframes"], choices=list(APPS))
     p.add_argument("--seconds", type=float, default=10.0)
     p.add_argument("--warmup", type=float, default=2.0)

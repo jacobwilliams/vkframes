@@ -219,8 +219,8 @@ pixi run -e rocky example rocky_map -- moon     # or: earth
 ### Benchmark against OpenFrames
 
 [bench/](bench/README.md) has two qt-fortran apps that draw the same scene,
-one with vkframes and one with OpenFrames, in three scenarios: a large static
-trajectory, a growing one, and trace mode.
+one with vkframes and one with stock OpenFrames, in two scenarios: a large
+static trajectory, and a growing one.
 
 ```sh
 pixi run -e openframes openframes-build    # once

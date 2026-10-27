@@ -50,15 +50,6 @@ module ofbench
 
     type(app_t), target, save :: app
 
-    interface
-        !> Trace mode of the current artist (OpenFrames' fork; not in openframes-fortran yet).
-        subroutine oftrajartist_settracemode_c(enabled) bind(C, name="oftrajartist_settracemode")
-            import :: c_bool
-            implicit none
-            logical(c_bool), intent(in) :: enabled
-        end subroutine oftrajartist_settracemode_c
-    end interface
-
 contains
 
     ! ==================================================================
@@ -128,7 +119,6 @@ contains
         call ofcurveartist_setzdata(of_posopt, of_z, 0, 1.0_dp)
         call ofcurveartist_setcolor(1.0_real32, 0.75_real32, 0.2_real32)
         call ofcurveartist_setwidth(2.0_real32)
-        if (app%opt%scenario == 'trace') call oftrajartist_settracemode_c(.true._c_bool)
         call ofdrawtraj_create('Orbit')
         call ofdrawtraj_addartist('OrbitLine')
         call hide_decorations()
@@ -153,7 +143,6 @@ contains
         call ofwin_setbackgroundcolor(0, 0, 0.0_real32, 0.0_real32, 0.02_real32)
         call ofwin_setdesiredframerate(10000.0_dp)
         call ofwin_settimescale(20.0_dp)                     ! one revolution every 5 s
-        if (app%opt%scenario == 'trace') call ofwin_pausetime(.true.)   ! (swept while measuring)
 
         call ofview_create('View')
         call ofview_setviewframe('Root', 'Earth')
@@ -235,17 +224,11 @@ contains
         app%cpu0 = cpu_seconds()
         app%phase = 2
         call show_status('measuring: '//app%opt%scenario)
-        call ofwin_activate(winid)
-        select case (app%opt%scenario)
-        case ('trace')                                       ! sweep the whole trajectory
-            call ofwin_settimescale((app%t(app%opt%points) - app%t(1)) / app%opt%seconds)
-            call ofwin_settime(app%t(1))
-            call ofwin_pausetime(.false.)
-        case ('grow')
+        if (app%opt%scenario == 'grow') then
             app%appends = QTimer(app%main)
             call app%appends%timeout%connect(on_append)
             call app%appends%start(nint(1000.0_dp * append_interval))
-        end select
+        end if
     end subroutine start_measuring
 
     !> grow: append the points due at --rate since the measurement began (timed).

@@ -17,8 +17,8 @@
 !>   (a body follows the trajectory); nothing changes.
 !> * `grow`: the same, and `--rate` points per second appended during the
 !>   measurement (from a timer at 60 Hz, as a simulation would add them).
-!> * `trace`: the trajectory drawn up to the current time (trace mode), time
-!>   sweeping over the whole trajectory during the measurement.
+!>
+!> (No trace mode scenario: stock OpenFrames has no trace mode.)
 module bench_common
 
     use, intrinsic :: iso_fortran_env, only: real64, int64, output_unit
@@ -40,13 +40,14 @@ module bench_common
 
     !> What to run (the command-line options; defaults in brackets).
     type :: BenchOptions
-        character(len=:), allocatable :: scenario          !! static, grow or trace [static]
+        character(len=:), allocatable :: scenario          !! static or grow [static]
         integer :: points = 1000000                         !! points before the measurement [1e6]
         real(dp) :: rate = 60000.0_dp                       !! points appended per second (grow) [6e4]
         real(dp) :: warmup = 2.0_dp                         !! s before measuring [2]
         real(dp) :: seconds = 10.0_dp                       !! s measured [10]
         logical :: per_point = .false.                      !! vkframes: add points one at a time [bulk]
         logical :: vsync = .false.                          !! present at the display's refresh [no: as fast as possible]
+        logical :: paced = .false.                          !! vkframes: a frame per display update request [no: a zero timer]
         integer :: width = 1280, height = 800               !! the view's size (logical pixels)
         character(len=:), allocatable :: out                !! results file (JSON lines) [none]
         character(len=:), allocatable :: capture            !! an image of the last frame [none]
@@ -110,6 +111,8 @@ contains
                 opt%per_point = .true.
             case ('--vsync')
                 opt%vsync = .true.
+            case ('--paced')
+                opt%paced = .true.
             case ('--size')
                 call next_arg(i, arg)
                 read(arg, *) opt%width
@@ -124,8 +127,8 @@ contains
             end select
             i = i + 1
         end do
-        if (all(opt%scenario /= [character(len=6) :: 'static', 'grow', 'trace'])) &
-            error stop 'bench: --scenario must be static, grow or trace'
+        if (all(opt%scenario /= [character(len=6) :: 'static', 'grow'])) &
+            error stop 'bench: --scenario must be static or grow'
         opt%points = max(2, opt%points)
     end subroutine parse_options
 

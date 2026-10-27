@@ -2,7 +2,8 @@
 
 How vkframes and OpenFrames move trajectory data from a Fortran program to
 the GPU, and where each is more efficient. This was worked out on 2026-10-26
-by reading both code bases (OpenFrames at commit `4fba41c`, July 2026). The
+by reading both code bases (stock OpenFrames, [ravidavi/OpenFrames](https://github.com/ravidavi/OpenFrames)
+at commit `798dc4a`, March 2026). The
 numbers in the sections after [Measured](#measured) are estimates from the
 code. The benchmark in [bench/](../bench/README.md) measured both libraries
 afterwards; its findings are under [Measured](#measured).
@@ -15,11 +16,12 @@ items are listed together under [Future work](#future-work) at the end.
 - vkframes is as efficient as OpenFrames, or more, at every step from
   Fortran to the GPU, except one: small trajectories that grow every frame
   upload more data per second.
-- From the code, the biggest gains looked like trace mode and how data gets
-  in from Fortran. The benchmark confirms trace mode. Fortran input is
-  faster but too cheap in both libraries to matter. The largest measured
-  gain is in drawing large trajectories, where vkframes is about twice as
-  fast on macOS.
+- From the code, the biggest gain looked like how data gets in from
+  Fortran. The benchmark shows Fortran input is faster but too cheap in both
+  libraries to matter. The largest measured gain is in drawing large
+  trajectories, where vkframes is about twice as fast on macOS.
+- Trace mode (drawing only up to the current time) is a vkframes feature;
+  stock OpenFrames doesn't have it.
 - There are a few small inefficiencies on the Fortran side, none of them
   serious. The benchmark found two more: a slow append after a large bulk
   add, and a slow first frame.
@@ -28,32 +30,26 @@ items are listed together under [Future work](#future-work) at the end.
 
 The benchmark in [bench/](../bench/README.md) runs two qt-fortran apps, one
 for each library. They draw the same scene, with no vsync. The results below
-are from macOS 27 on an Apple M5, on 2026-10-26; the full tables are in
-`bench/README.md`.
+are from macOS 27 on an Apple M5, on 2026-10-27, with stock OpenFrames; the
+full tables are in `bench/README.md`.
 
 - **Drawing large trajectories (`static`) and adding points while drawing
-  (`grow`):** vkframes draws 1.8 to 2.1 times as many frames, at 1 million
+  (`grow`):** vkframes draws 1.7 to 2.0 times as many frames, at 1 million
   and 5 million points.
   - vkframes is limited by the GPU, at under 5% CPU.
   - OpenFrames is limited by the CPU. On macOS that is partly because
     Apple's OpenGL falls back to the CPU for OpenFrames' line shader. The
     gap may be smaller on Linux or Windows.
-- **Trace mode:** confirms the estimates below. On large trajectories
-  vkframes is 1.2 to 1.3 times faster. Its 95th-percentile frame time is
-  about half of OpenFrames', which uploads the whole trajectory again 20
-  times a second. On a small trajectory (100,000 points), OpenFrames' typical
-  frame is faster, 0.6 ms against 1.6 ms. vkframes seems to have a fixed
-  cost of about 1.5 ms per frame.
 - **Adding data from Fortran:** the estimate below overstated the gain.
-  - vkframes' bulk add takes 6 ms for a million points, about 2.3 times as
-    fast as OpenFrames' per-point calls, which take 14 ms (about 14 ns per
+  - vkframes' bulk add takes 7 ms for a million points, about twice as fast
+    as OpenFrames' per-point calls, which take 13 ms (about 13 ns per
     point).
   - vkframes adding one point at a time costs the same as OpenFrames.
   - None of these matter next to frame times.
 - **Memory:** about the same per point (around 170 B, the whole process).
   vkframes' process starts about 100 MB larger.
 - **Two problems the estimates missed:**
-  - A slow append after a large bulk add (20 ms at 5 million points; see
+  - A slow append after a large bulk add (20 to 49 ms at 5 million points; see
     [growth after a bulk add](#growth-after-a-bulk-add)).
   - The first frame takes 0.15 s or more, against OpenFrames' 0.03 s.
 
@@ -105,19 +101,9 @@ uploads about 24 MB per update. vkframes uploads at most one chunk, about
 
 ### Trace mode
 
-Trace mode, where the line is drawn only up to the current time, shows the
-biggest difference.
-
-**OpenFrames:**
-
-- While time runs, it updates at most every 50 ms. Each update rewrites the
-  interpolated end point and marks the whole vertex array dirty, so the
-  whole trajectory is uploaded again on every update.
-- When data is added, `dataAdded()` resets `_lastTracePointIdx` to 0. On a
-  growing trajectory, finding the current point then becomes a linear scan
-  from the start.
-
-**vkframes:**
+Trace mode draws a trajectory only up to the current time. Stock OpenFrames
+doesn't have it, so this is a vkframes feature rather than an efficiency
+comparison. vkframes keeps it cheap:
 
 - It finds the current point by binary search (`points_passed`,
   O(log n)).
@@ -254,7 +240,7 @@ Measured by the benchmark: this was not in the estimates.
   `new_capacity` takes the larger of what is needed and twice the current
   size.
 - The first append after that doubles the arrays and copies all the points.
-  At 5 million points this makes one append take 20 ms.
+  At 5 million points this makes one append take 20 to 49 ms.
 - OpenFrames' vectors, grown one point at a time, already have spare room.
 
 - [ ] **Future work:** leave room when growing for a bulk add, for example
@@ -262,21 +248,13 @@ Measured by the benchmark: this was not in the estimates.
   `Trajectory%reserve`. Storage in chunks would avoid copies altogether, but
   `Trajectory%positions` and the artists rely on contiguous arrays.
 
-### Fixed cost per frame, and the first frame
+### The first frame
 
-Measured by the benchmark:
+Measured by the benchmark: vkframes' first frame takes 0.15 to 0.28 s,
+against OpenFrames' 0.03 s. It probably goes to creating pipelines and
+uploading all the points. OpenGL uploads lazily.
 
-- **Per frame:** with 100,000 points, a vkframes frame takes about 1.6 ms
-  even when little is drawn (trace mode at the start of the sweep).
-  OpenFrames takes about 0.6 ms. The CPU is mostly idle then (0.2 to 0.4 CPU
-  per wall second), so the time is spent waiting on the GPU or on
-  presentation.
-- **First frame:** this takes 0.15 to 0.29 s, against OpenFrames' 0.03 s. It
-  probably goes to creating pipelines and uploading all the points.
-  OpenGL uploads lazily.
-
-- [ ] **Future work:** profile a near-empty frame (VSG's record and submit,
-  the present, KosmicKrisp) and the first frame (pipeline creation and
+- [ ] **Future work:** profile the first frame (pipeline creation and
   compilation, the first upload).
 
 ## Not about Fortran, but relevant
@@ -305,8 +283,7 @@ GPU on large trajectories, so the line quads move to the top.
       endpoint is transformed once ([GPU work](#not-about-fortran-but-relevant)).
 - [ ] Leave room when growing for a bulk add
       ([growth](#growth-after-a-bulk-add)).
-- [ ] Profile the fixed cost per frame and the first frame
-      ([fixed cost](#fixed-cost-per-frame-and-the-first-frame)).
+- [ ] Profile the first frame ([first frame](#the-first-frame)).
 - [ ] Upload only the range of points written, or limit uploads to about 20
       per second ([upload rate](#upload-rate-for-small-trajectories-that-grow)).
 - [ ] Fill data sources other than x, y, z a range at a time
@@ -324,7 +301,7 @@ GPU on large trajectories, so the line quads move to the top.
 - [ ] Store `dof` components per point (low priority;
       [2-D storage](#storage-for-2-d-trajectories)).
 - [x] Benchmarks to check these estimates: adding points one at a time and
-      in bulk, appending while drawing, and trace mode, in both libraries
+      in bulk, and appending while drawing, in both libraries
       ([bench/](../bench/README.md); see [Measured](#measured)).
 - [ ] Measure the bytes uploaded per frame in both libraries, and run the
       benchmark on Linux and Windows, where OpenGL drivers are native.
