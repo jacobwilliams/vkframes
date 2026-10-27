@@ -4,7 +4,9 @@
 !> only while filling), a clear, a changed last point and other data sources;
 !> trace mode draws the points passed and ends at the interpolated point, for
 !> increasing and decreasing times. SegmentArtist: segments at every stride-th
-!> point from the start to the end sources, appends, trace mode. MarkerArtist:
+!> point from the start to the end sources, appends, trace mode; relative ends
+!> (a vector per point drawn from the positions, its scale changed, zero
+!> vectors drawn as nothing: both ends the same). MarkerArtist:
 !> start and end markers, intermediate markers by data, time and distance,
 !> from the start or the end, appends, trace mode. Point colors: a curve of a
 !> trajectory with colors is drawn in them (colors added after the positions,
@@ -36,6 +38,7 @@ program test_artists
     call check_sources()
     call check_point_colors()
     call check_segments()
+    call check_relative_segments()
     call check_ribbon()
     call check_markers()
     call check_drawable()
@@ -521,6 +524,70 @@ contains
         call radius%update(0.5_wp)
         call check(radius%num_drawn() == (100000 - 1) / 7 + 1, 'segments: trace off, appended points too')
     end subroutine check_segments
+
+    !> Relative ends: a thrust vector per point (zero while coasting), drawn
+    !> from each position at the end sources' scale.
+    subroutine check_relative_segments()
+        type(Trajectory), target :: traj
+        type(SegmentArtist) :: thrust
+        real(wp) :: a(3), b(3)
+        integer :: i
+        logical :: zero_ok
+        traj = Trajectory(nopt=1)
+        do i = 1, 300
+            call traj%add(real(i, wp), orbit(real(i, wp)))
+            call traj%set_optional(1, thrust_at(i))
+        end do
+        thrust = SegmentArtist(traj, color=[1.0_wp, 0.4_wp, 0.1_wp])
+        call check(thrust%set_start_data(position_sources(3)) .and. thrust%set_end_data(optional_sources(1, scale=2.0_wp)), &
+                   'relative segments: sources')
+        call thrust%set_end_relative(.true.)
+        call check(thrust%end_relative(), 'relative segments: on')
+        call thrust%build(c_null_ptr, vkf_switch_create())
+        call thrust%update(0.0_wp)
+        call check(thrust%num_drawn() == 300, 'relative segments: one per point')
+        call check(relative_error(thrust, 2.0_wp, zero_ok) < 1.0e-6_wp, 'relative segments: position + 2 x the vector')
+        call check(zero_ok, 'relative segments: no thrust, both ends the same')
+
+        ! a new scale: the same trajectory, the segments written again
+        call thrust%set_end_scale(50.0_wp)
+        call thrust%update(0.0_wp)
+        call check(relative_error(thrust, 50.0_wp, zero_ok) < 1.0e-6_wp .and. zero_ok, 'relative segments: scale changed')
+
+        ! absolute ends again: to the scaled vector itself
+        call thrust%set_end_relative(.false.)
+        call thrust%update(0.0_wp)
+        call thrust%drawn_segment(10, a, b)
+        call check(maxval(abs(b - 50.0_wp * thrust_at(10))) < 1.0e-6_wp, 'relative segments: off again')
+    end subroutine check_relative_segments
+
+    !> The thrust at point i (check_relative_segments): along the velocity for
+    !> points 1-50 and 251-300, none between.
+    function thrust_at(i) result(v)
+        integer, intent(in) :: i
+        real(wp) :: v(3), d(3)
+        v = 0.0_wp
+        d = orbit(real(i, wp) + 0.5_wp) - orbit(real(i, wp) - 0.5_wp)
+        if (i <= 50 .or. i > 250) v = 3.0_wp * d / norm2(d)
+    end function thrust_at
+
+    !> The largest error of the drawn segments from position + scale x thrust,
+    !> and whether those without thrust have both ends the same.
+    real(wp) function relative_error(thrust, scale, zero_ok) result(e)
+        type(SegmentArtist), intent(in) :: thrust
+        real(wp), intent(in) :: scale
+        logical, intent(out) :: zero_ok
+        real(wp) :: a(3), b(3), f(3)
+        integer :: s
+        e = 0.0_wp
+        zero_ok = .true.
+        do s = 1, thrust%num_drawn()
+            call thrust%drawn_segment(s, a, b)
+            f = thrust_at(s)
+            e = max(e, maxval(abs(a - orbit(real(s, wp)))), maxval(abs(b - (orbit(real(s, wp)) + scale * f))))
+            if (all(f == 0.0_wp) .and. any(a /= b)) zero_ok = .false.
+        end do
+    end function relative_error
 
     !> Marker `which` is drawn, at [x, 0, 0].
     logical function marker_at(a, which, x) result(ok)

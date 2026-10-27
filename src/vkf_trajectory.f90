@@ -86,7 +86,7 @@ module vkf_trajectory
         module procedure new_data_source
     end interface DataSource
 
-    public :: position_sources
+    public :: position_sources, optional_sources
 
 contains
 
@@ -125,6 +125,22 @@ contains
             if (k <= dof) s(k) = DataSource(SOURCE_POSOPT, element=k)
         end do
     end function position_sources
+
+    !> The sources of optional `opt`'s x, y, (z) (zero beyond `dof`, default
+    !> 3), each times `scale` (default 1): e.g. a thrust vector stored per
+    !> point, for SegmentArtist%set_end_data with relative ends.
+    pure function optional_sources(opt, dof, scale) result(s)
+        integer, intent(in) :: opt
+        integer, intent(in), optional :: dof
+        real(wp), intent(in), optional :: scale
+        type(DataSource) :: s(3)
+        integer :: k, d
+        d = 3
+        if (present(dof)) d = dof
+        do k = 1, min(3, d)
+            s(k) = DataSource(SOURCE_POSOPT, element=k, opt=opt, scale=scale)
+        end do
+    end function optional_sources
 
     !> Reserve memory for `n` points (times, and positions and/or attitudes
     !> unless `positions` / `attitudes` is false, and colors if `colors`).

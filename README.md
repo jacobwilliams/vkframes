@@ -49,6 +49,14 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     <td>Orbit planes swept from the Earth's center, one traced as its spacecraft moves (<code>orbit_planes</code>).</td>
     <td>Reference shapes: a latitude/longitude grid, a radial plane, axes with ticks and sensor cones (<code>shapes</code>).</td>
   </tr>
+  <tr>
+    <td><img src="media/screenshots/thrust_arcs.png" alt="Thrust vectors along an orbit transfer"></td>
+    <td><img src="media/screenshots/day_night.jpg" alt="The Earth's day and night sides"></td>
+  </tr>
+  <tr>
+    <td>Thrust vectors along an orbit transfer, drawn from each point at an adjustable scale (<code>thrust_arcs</code>).</td>
+    <td>The Sun as a light source: the day texture, city lights on the night side and a specular glint (<code>day_night</code>).</td>
+  </tr>
 </table>
 
 ## Features
@@ -71,7 +79,11 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
 - **Drawing trajectories**: a `DrawableTrajectory` holds artists, which can
   be added, changed and removed at run time. Only changed data is uploaded.
   - `CurveArtist`: thick lines with dash patterns.
-  - `SegmentArtist`: segments between data points.
+  - `SegmentArtist`: segments between data points. With relative ends (not
+    in OpenFrames), a vector stored at each point, such as a thrust, is drawn
+    from each position. Its length is a scale that can be changed at any
+    time without touching the trajectory, and points with no vector draw
+    nothing.
   - `MarkerArtist`: markers at the start, the end and in between, in
     OpenFrames' marker shapes, with optional attenuation.
   - Trace mode: draw only up to the current time.
@@ -231,6 +243,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `line_of_sight` | `CustomLineSegments`: five spacecraft in different orbits (LEO, sun-synchronous, GPS, GEO, Molniya), shown as markers, with a line of sight between every pair, recomputed each frame by a callback: clear links in the spacecraft's colors, links the Earth blocks dashed. |
 | `colored_orbits` | A color per trajectory point: a Molniya orbit colored by altitude (a smooth gradient), and a traced low orbit colored by sunlight (yellow while sunlit, blue in the Earth's umbra, matching the Earth's `ShadowCones`). |
 | `orbit_planes` | `RibbonArtist`: orbit planes swept out from the Earth's center, for a low orbit and a geostationary orbit drawn whole, and a Molniya orbit traced as its spacecraft moves. |
+| `thrust_arcs` | Thrust vectors along a transfer between two circular orbits, with a burn at the start and another at the apoapsis that also changes the plane (`SegmentArtist` with relative ends). The orbit is orange while thrusting, and `+` and `-` change the vectors' scale (a `WindowEventHandler`). |
 | `eclipse` | `ShadowCones`: a total solar eclipse. The Earth orbits the Sun and the Moon orbits the Earth, and the Moon's umbra reaches the Earth inside its wide penumbra. The Earth's own shadow points away from the Sun. A HUD line shows the umbra's length. |
 | `rocky_map` | Terrain with Rocky (`TerrainBody`; needs the `rocky` environment): the Earth from ReadyMap's tiles, or the Moon from NASA's Moon Trek and LOLA's elevation, from orbit and close to the surface. |
 
@@ -248,6 +261,7 @@ pixi run example line_of_sight
 pixi run example eclipse
 pixi run example colored_orbits
 pixi run example orbit_planes
+pixi run example thrust_arcs
 pixi run -e rocky example rocky_map -- moon         # or: earth (after the Rocky build, see the lunar demo)
 ```
 

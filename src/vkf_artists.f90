@@ -128,13 +128,21 @@ module vkf_artists
     !> (OpenFrames' SegmentArtist), from the point given by the start data
     !> sources to the one given by the end data sources: e.g. radius vectors
     !> (the origin to the positions), or from the positions to points stored as
-    !> an optional (the tip of a velocity vector, a target). Default (an
-    !> addition to OpenFrames, which draws nothing until the sources are set):
-    !> from the frame's origin to the trajectory's positions.
+    !> an optional (a target). Default (an addition to OpenFrames, which draws
+    !> nothing until the sources are set): from the frame's origin to the
+    !> trajectory's positions.
+    !>
+    !> Relative ends (`set_end_relative`, not in OpenFrames): the end sources
+    !> give an offset from the start, so a vector stored per point (a thrust,
+    !> a velocity) is drawn from each position, at a length set by the end
+    !> sources' scale (`set_end_scale`), which can be changed without touching
+    !> the trajectory (only this artist's segments are written again). Where
+    !> the vector is zero (no thrust) nothing is drawn.
     type, extends(TrajectoryArtist), public :: SegmentArtist
         private
         type(DataSource) :: start_(3), end_(3)
         logical :: default_data = .true.
+        logical :: end_relative_ = .false.          !! the end sources: an offset from the start
         integer :: stride_ = 1
         real(wp) :: color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]
         real(wp) :: width_ = 1.0_wp
@@ -148,7 +156,9 @@ module vkf_artists
         procedure :: set_trajectory => segment_set_trajectory
         procedure :: set_start_x_data, set_start_y_data, set_start_z_data
         procedure :: set_end_x_data, set_end_y_data, set_end_z_data
+        procedure :: set_start_data, set_end_data
         procedure :: start_data_sources, end_data_sources
+        procedure :: set_end_relative, end_relative, set_end_scale
         procedure :: set_stride, stride
         procedure :: set_color => segment_set_color, color => segment_color
         procedure :: set_width => segment_set_width, width => segment_width
@@ -947,6 +957,53 @@ contains
         s = self%end_
     end function end_data_sources
 
+    !> All three start (end) sources at once, e.g. position_sources(3) or
+    !> optional_sources(1). Returns whether the trajectory has their data.
+    logical function set_start_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src(3)
+        integer :: k
+        do k = 1, 3
+            valid = set_segment_source(self, 1, k, src(k))
+        end do
+    end function set_start_data
+
+    logical function set_end_data(self, src) result(valid)
+        class(SegmentArtist), intent(inout) :: self
+        type(DataSource), intent(in) :: src(3)
+        integer :: k
+        do k = 1, 3
+            valid = set_segment_source(self, 2, k, src(k))
+        end do
+    end function set_end_data
+
+    !> Relative ends (default false): each segment ends at its start plus the
+    !> end sources' values (a vector drawn from each point), not at them.
+    subroutine set_end_relative(self, relative)
+        class(SegmentArtist), intent(inout) :: self
+        logical, intent(in) :: relative
+        if (relative .eqv. self%end_relative_) return
+        self%end_relative_ = relative
+        self%seen_generation = -1                   ! (all segments written again)
+    end subroutine set_end_relative
+
+    pure logical function end_relative(self)
+        class(SegmentArtist), intent(in) :: self
+        end_relative = self%end_relative_
+    end function end_relative
+
+    !> Set the scale of all three end sources (with relative ends: the length
+    !> drawn per unit of the stored vector, e.g. km per newton). Only this
+    !> artist's segments are written again.
+    subroutine set_end_scale(self, scale)
+        class(SegmentArtist), intent(inout) :: self
+        real(wp), intent(in) :: scale
+        if (all(self%end_%scale == scale)) return
+        self%end_%scale = scale
+        self%default_data = .false.
+        self%seen_generation = -1
+    end subroutine set_end_scale
+
     !> Draw a segment at points 1, 1 + stride, 1 + 2 stride, ... (stride >= 1).
     subroutine set_stride(self, stride)
         class(SegmentArtist), intent(inout) :: self
@@ -1085,7 +1142,7 @@ contains
         type(SegmentArtist), intent(inout) :: self
         integer, intent(in) :: s1, s2
         real(c_float), dimension(:,:,:), pointer :: p
-        real(wp), allocatable :: v(:,:)
+        real(wp), allocatable :: v(:,:), w(:,:)
         integer :: j, lo, hi, sa, sb, ia, ib
         do j = 1, self%chain%num_chunks()
             call self%chain%slice(j, 2 * s1 - 1, 2 * s2, lo, hi, p)   ! chunks hold whole segments
@@ -1095,12 +1152,13 @@ contains
             sb = hi / 2
             ia = 1 + (sa - 1) * self%stride_
             ib = 1 + (sb - 1) * self%stride_
-            allocate(v(3, sb - sa + 1))
+            allocate(v(3, sb - sa + 1), w(3, sb - sa + 1))
             call self%traj%points(ia, ib, self%start_, v, self%stride_)
             call split_points(v, p(:, :, 2*sa-lo:2*sb-lo:2))
-            call self%traj%points(ia, ib, self%end_, v, self%stride_)
-            call split_points(v, p(:, :, 2*sa-lo+1:2*sb-lo+1:2))
-            deallocate(v)
+            call self%traj%points(ia, ib, self%end_, w, self%stride_)
+            if (self%end_relative_) w = v + w        ! (no offset: exactly the start, a segment drawn as nothing)
+            call split_points(w, p(:, :, 2*sa-lo+1:2*sb-lo+1:2))
+            deallocate(v, w)
         end do
         call self%chain%written(2 * s1 - 1, 2 * s2)
     end subroutine write_segments

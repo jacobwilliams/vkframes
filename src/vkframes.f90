@@ -5,7 +5,7 @@ module vkframes
     use vkf_math, only: wp, pi, quat_identity, quat_from_axis_angle, quat_multiply, quat_conjugate, quat_from_matrix, &
                         quat_normalize, quat_rotate, quat_to_matrix, quat_slerp, &
                         quat_from_vectors, identity_matrix, translation_matrix, frame_matrix, rigid_inverse
-    use vkf_trajectory, only: Trajectory, DataSource, position_sources, &
+    use vkf_trajectory, only: Trajectory, DataSource, position_sources, optional_sources, &
                               SOURCE_ZERO, SOURCE_TIME, SOURCE_POSOPT, SOURCE_ATTITUDE, &
                               TIME_NOT_FOUND, TIME_OUT_OF_RANGE, TIME_AT_BOUND
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_LIMIT, FOLLOW_POSITION, FOLLOW_ATTITUDE

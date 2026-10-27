@@ -50,6 +50,8 @@ program day_night
     call earth%set_material(specular=[0.4_wp, 0.4_wp, 0.4_wp], shininess=30.0_wp)
     call earth%set_twilight(6.0_wp * pi / 180.0_wp)                    ! (an atmosphere's; none for an airless body)
     call earth%set_attitude(quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], 2.6_wp))
+    call earth%show_axes(NO_AXES)
+    call earth%show_axes_labels(NO_AXES)
 
     ! the Sun: 1 AU away, to the right of the view and a little toward the viewer
     sun = ReferenceFrame('Sun', color=[1.0_wp, 0.9_wp, 0.5_wp])

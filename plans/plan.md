@@ -826,6 +826,27 @@ Decided so far:
       - [ ] Optional later: point colors for `SegmentArtist` and
             `MarkerArtist`, and `"color"` per point in the trajectory
             demo's JSON.
+- [x] Relative segment ends (new, not in OpenFrames): a `SegmentArtist`
+      with `set_end_relative(.true.)` ends each segment at its start plus the
+      end sources' values, so a vector stored per point (a thrust, a
+      velocity) is drawn from each position; `set_end_scale` sets its length
+      (e.g. km per m/s^2). OpenFrames' way, a tip stored per point, still
+      works and is the default.
+      - A new scale writes only this artist's segments again (all of them,
+        once); the trajectory and its other artists are untouched. Drawing
+        costs the same as before.
+      - Where the vector is zero (no thrust) the segment's two ends are the
+        same, and the line shader draws a separate segment of no length as
+        nothing (it drew a cap's square before).
+      - `set_start_data` and `set_end_data` set all three sources at once;
+        `optional_sources(opt, scale=)` gives an optional's (beside
+        `position_sources`).
+      - Tested headless (`test_artists`: offsets, a changed scale, zero
+        vectors, relative off again). Shown in `example/thrust_arcs.f90`.
+      - [ ] Optional later: a scale on the GPU (start and vector uploaded
+            once, `start + scale x vector` in the shader), for a length
+            changed every frame (a slider, or following the zoom) without
+            writing the segments again.
 - [x] Shadow cones (new, not in OpenFrames; `src/vkf_shadow.f90`):
       `ShadowCones`, a frame showing a celestial body's shadow in the light
       of another as transparent cones: the umbra (to its apex, d R / (Rs - R)

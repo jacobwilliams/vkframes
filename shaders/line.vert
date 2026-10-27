@@ -152,8 +152,11 @@ void main()
     vec4 a = mvp * vec4(eyeRelative(first), 1.0);
     vec4 b = mvp * vec4(eyeRelative(second), 1.0);
 
-    // clip the segment to the part in front of the eye (w > 0)
-    if (a.w < W_MIN && b.w < W_MIN) {
+    // clip the segment to the part in front of the eye (w > 0); a separate
+    // segment of no length (its two points the same: e.g. a thrust vector
+    // where there is no thrust) draws nothing, not a cap's square
+    bool empty = separate && points.p[2 * first] == points.p[2 * second] && points.p[2 * first + 1] == points.p[2 * second + 1];
+    if ((a.w < W_MIN && b.w < W_MIN) || empty) {
         gl_Position = vec4(0.0, 0.0, 0.0, -1.0);   // whole segment behind: outside the clip volume
         fragColor = vec4(0.0);
         dash = vec3(0.0);
