@@ -106,6 +106,10 @@ namespace
         return "unknown exception";
     }
 
+    // Seconds a deferred resize waits for the size to stop changing (macOS,
+    // embedded windows: see disable_layer_animations).
+    constexpr double resize_settle = 0.1;
+
 #if defined(__APPLE__)
     // The class of the view VSG's own macOS windows render into (VSG 1.1's
     // vsg_MacOS_NSView, which is private to VSG: see accept_first_mouse_in_vsg_windows
@@ -189,7 +193,6 @@ namespace
     // change of size: it is set back to the old size's just before). The layer also gets no implicit animations (its
     // actions are null). (presentsWithTransaction, which would present with
     // the window's resize, shows nothing with KosmicKrisp.)
-    constexpr double resize_settle = 0.1;
 
     void disable_layer_animations(void* layer)
     {
