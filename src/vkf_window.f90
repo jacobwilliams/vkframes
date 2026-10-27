@@ -64,12 +64,12 @@ module vkf_window
     use, intrinsic :: iso_fortran_env, only: int64
     use vkf_math, only: wp, rigid_inverse, identity_matrix
     use vkf_frames, only: ReferenceFrame, PickHit
-    use vkf_pick, only: PickCamera, pick_camera
+    use vkf_pick, only: PickCamera, pick_camera, project
     use vkf_clock, only: SimulationClock
     use vkf_view, only: View, PERSPECTIVE, camera_between, transform_camera
     use vkf_hud, only: HUDText
     use vkf_sky, only: SkySphere
-    use vkf_text, only: label_create
+    use vkf_text, only: label_create, label_set_layout
     use vkf_layer, only: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_add_node, vkf_viewer_frame, &
                          vkf_viewer_capture, vkf_viewer_look_at, vkf_viewer_perspective, vkf_viewer_set_background, &
                          vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic, &
@@ -125,6 +125,7 @@ module vkf_window
         type(HUDText), pointer :: p => null()
         type(c_ptr) :: node = c_null_ptr
         integer :: revision = -1                    !! the text's revision last shown
+        character(len=:), allocatable :: font       !! the font its node was made with
     end type HUDEntry
 
     !> A camera flight (see the module documentation): from camera `start`
@@ -195,8 +196,9 @@ module vkf_window
         ! the camera (OpenFrames' trackball transformation), smooth transitions
         procedure :: get_camera, set_camera
         procedure :: set_view_transition, view_transition, in_transition, stop_transition
-        ! picking (see the module documentation)
+        ! picking (see the module documentation), and where points are on the screen
         procedure :: pick => window_pick
+        procedure :: screen_position
         ! HUD text (OpenFrames' RenderRectangle HUD)
         procedure :: add_hud_text, remove_hud_text
         procedure :: set_sky, sky
@@ -582,23 +584,33 @@ contains
         h => self%huds(k)%p
         self%huds(k)%node = label_create(h%text(), [h%position(), 0.0_wp], h%color(), h%size(), 0.0_wp, &
                                          h%alignment(), h%font())
+        self%huds(k)%font = h%font()
         if (.not. c_associated(self%huds(k)%node)) return
         if (vkf_viewer_hud_add(self%viewer_, self%huds(k)%node) /= 0) write(*, '(a)') 'vkframes: could not add HUD text'
         self%huds(k)%revision = h%revision()
     end subroutine create_hud
 
-    !> Show the HUD texts' new text and color, if they changed.
+    !> Show the HUD texts' changes: text, color, position, size and alignment
+    !> in place; a new font makes the text's node again.
     subroutine update_huds(self)
         type(WindowProxy), intent(inout) :: self
         type(HUDText), pointer :: h
         character(len=:), allocatable :: t
+        integer(c_int) :: status
         integer :: k
         do k = 1, self%n_huds
             h => self%huds(k)%p
             if (.not. c_associated(self%huds(k)%node) .or. h%revision() == self%huds(k)%revision) cycle
+            if (h%font() /= self%huds(k)%font) then
+                status = vkf_viewer_hud_remove(self%viewer_, self%huds(k)%node)
+                call vkf_node_delete(self%huds(k)%node)
+                call create_hud(self, k)
+                cycle
+            end if
             t = h%text()
             if (vkf_label_set_text(self%huds(k)%node, t, len(t, kind=c_int)) /= 0 .or. &
-                vkf_label_set_color(self%huds(k)%node, real(h%color(), c_float)) /= 0) &
+                vkf_label_set_color(self%huds(k)%node, real(h%color(), c_float)) /= 0 .or. &
+                .not. label_set_layout(self%huds(k)%node, [h%position(), 0.0_wp], h%size(), 0.0_wp, h%alignment())) &
                 write(*, '(a)') 'vkframes: could not update HUD text'
             self%huds(k)%revision = h%revision()
         end do
@@ -741,6 +753,30 @@ contains
         end subroutine pick_frame
 
     end subroutine window_pick
+
+    !> Where point `p` (root frame) is in the window, as HUD text positions:
+    !> (x, y) from 0 to 1, left to right and bottom to top (as at the last
+    !> frame). False if it is behind the eye (or before the first frame).
+    !> E.g. to keep HUD text next to a moving object, each frame: a callout.
+    logical function screen_position(self, p, position) result(visible)
+        class(WindowProxy), intent(in) :: self
+        real(wp), intent(in) :: p(3)
+        real(wp), intent(out) :: position(2)
+        type(PickCamera) :: cam
+        real(wp) :: eye(3), center(3), up(3), sx, sy, depth
+        integer(c_int) :: width, height
+        visible = .false.
+        position = 0.0_wp
+        if (.not. self%is_open() .or. .not. associated(self%shown)) return
+        if (vkf_viewer_size(self%viewer_, width, height) /= 0) return
+        call self%get_camera(eye, center, up, in_root=.true.)
+        cam = pick_camera(eye, center, up, self%shown%projection_type() == PERSPECTIVE, self%shown%field_of_view(), &
+                          aspect_ratio(self), self%shown%orthographic_bounds(), int(width), int(height), &
+                          0.0_wp, 0.0_wp, 0.0_wp)
+        if (.not. project(cam, p, sx, sy, depth)) return            ! (offsets from the center, in pixels)
+        position = 0.5_wp * ([sx / cam%half_w, sy / cam%half_h] + 1.0_wp)
+        visible = .true.
+    end function screen_position
 
     ! ==================================================================
     ! the camera

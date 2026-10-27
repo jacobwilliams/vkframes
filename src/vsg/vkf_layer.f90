@@ -25,7 +25,7 @@ module vkf_layer
     public :: vkf_mesh_create, vkf_mesh_array, vkf_mesh_material, vkf_mesh_material_changed, vkf_mesh_vertices_changed, &
               vkf_mesh_set_twilight
     public :: vkf_light_create, vkf_light_set, vkf_viewer_light, vkf_viewer_light_enable
-    public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
+    public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color, vkf_label_set_layout, vkf_label_set_on_top
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
@@ -499,6 +499,23 @@ module vkf_layer
             character(kind=c_char), dimension(*), intent(in) :: text
             integer(c_int), value :: text_len
         end function vkf_label_set_text
+
+        integer(c_int) function vkf_label_set_on_top(label, on) bind(C, name="vkf_label_set_on_top")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: label
+            integer(c_int), value :: on
+        end function vkf_label_set_on_top
+
+        integer(c_int) function vkf_label_set_layout(label, position, size, max_size, halign, valign) &
+                bind(C, name="vkf_label_set_layout")
+            import :: c_ptr, c_int, c_double, c_float
+            implicit none
+            type(c_ptr), value :: label
+            real(c_double), intent(in) :: position(3)
+            real(c_float), value :: size, max_size
+            integer(c_int), value :: halign, valign
+        end function vkf_label_set_layout
 
         integer(c_int) function vkf_label_set_color(label, rgba) bind(C, name="vkf_label_set_color")
             import :: c_ptr, c_int, c_float

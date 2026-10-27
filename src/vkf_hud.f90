@@ -4,11 +4,14 @@
 !> Its position is (x, y) from 0 to 1 across the window, left to right and
 !> bottom to top, and the text's alignment (an ALIGN_* constant) says which
 !> point of the text is there; its size is in window units (logical pixels).
-!> The text and color can change at any time (e.g. a clock): up to 256
-!> characters, or twice the text's length when first shown if more (longer
-!> ones are cut); the other settings apply when a window first shows the text. A HUDText can be shown in
-!> several windows (`WindowProxy%add_hud_text`); it is not owned by them and
-!> must stay alive while shown.
+!> Everything can change at any time, also while shown: the text (e.g. a
+!> clock; up to 256 characters, or twice the text's length when first shown
+!> if more: longer ones are cut), color, position, size and alignment in
+!> place, and the font (the text is made again). Moved each frame to an
+!> object's place on the screen (WindowProxy%screen_position), it is a
+!> callout that follows the object. A HUDText can be shown in several
+!> windows (`WindowProxy%add_hud_text`); it is not owned by them and must
+!> stay alive while shown.
 module vkf_hud
 
     use vkf_math, only: wp

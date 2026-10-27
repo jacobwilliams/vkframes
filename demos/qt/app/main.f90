@@ -62,7 +62,8 @@
 !> position in the window (-1 to 1) is shown in the dock, and a click picks
 !> what is under it (WindowProxy%pick): an orbit or marker (its frame, the time
 !> there and the altitude; g goes to that time) or a body (the latitude and
-!> longitude), shown in the dock.
+!> longitude), shown in the dock and in a callout at the point picked (a
+!> frame moved there whose name label, drawn on top, is the readout).
 !>
 !> How the pieces fit:
 !>
@@ -224,6 +225,7 @@ module vkdemo
         type(CustomLineSegments) :: line_of_sight
         type(LineOfSightLink) :: line_of_sight_link
         type(SkySphere) :: sky                                 !! stars and (with OpenFrames' data) a texture
+        type(ReferenceFrame) :: picked                         !! at the point picked: its name label is the readout
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -475,6 +477,16 @@ contains
                    app%inertial%add_child(app%sun) .and. app%inertial%add_child(app%ticks) .and. &
                    app%inertial%add_child(app%line_of_sight))) &
             write(*, '(a)') 'vkframes: add_child failed'
+        ! the readout of a click (a callout): a frame moved to the point picked,
+        ! whose name label is the readout, on top of the scene
+        app%picked = ReferenceFrame('Picked')
+        call app%picked%show_axes(NO_AXES)
+        call app%picked%show_axes_labels(NO_AXES)
+        call app%picked%show_name_label(.false.)
+        call app%picked%set_name_label_on_top(.true.)
+        call app%picked%set_label_size(15)
+        call app%picked%set_label_alignment(ALIGN_LEFT_CENTER)
+        if (.not. app%inertial%add_child(app%picked)) write(*, '(a)') 'vkframes: add_child failed'
         call app%scene%set_frame(app%inertial)
         write(*, '(a)', advance='no') app%inertial%frame_string()
 
@@ -964,9 +976,11 @@ contains
         real(wp), intent(in) :: x, y
         integer, intent(in) :: button
         type(PickHit), allocatable :: hits(:)
+        character(len=96) :: readout
         if (button /= MOUSE_LEFT) return
         call window%pick(x, y, hits)
         app%have_picked_time = .false.
+        call app%picked%show_name_label(.false.)
         if (size(hits) == 0) then
             write(app%last_click, '(a,i0,a)') 'Clicked (window ', self%window, '): nothing there'
         else
@@ -978,12 +992,19 @@ contains
                         ' s, altitude ', norm2(h%position) - re, ' km (g: go there)'
                     app%picked_time = h%time
                     app%have_picked_time = .true.
+                    write(readout, '(a,i0,a,i0,a)') '   t = ', nint(h%time), ' s, ', nint(norm2(h%position) - re), ' km'
                 case (PICK_BODY)
                     write(app%last_click, '(a,a,a,f7.2,a,f8.2)') 'Picked: ', h%frame%name(), ', latitude ', &
                         h%latitude * 180.0_wp / pi, ', longitude ', h%longitude * 180.0_wp / pi
+                    write(readout, '(a,f6.1,a,f7.1)') '   ', h%latitude * 180.0_wp / pi, ', ', h%longitude * 180.0_wp / pi
                 case default
                     app%last_click = 'Picked: '//h%frame%name()
+                    readout = '   '//h%frame%name()
                 end select
+                ! the callout at the point picked
+                call app%picked%set_name(trim(readout))
+                call app%picked%set_position(h%position)
+                call app%picked%show_name_label(.true.)
             end associate
         end if
         call app%pointer_label%setText('<small>'//trim(app%last_click)//'</small>')

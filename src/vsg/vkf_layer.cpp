@@ -2246,6 +2246,35 @@ VKF_API int vkf_label_set_color(void* label, const float* rgba)
     });
 }
 
+// Change a label's layout, in place: its position (3 doubles), size and
+// maximum size (as vkf_label_create's) and alignments.
+VKF_API int vkf_label_set_layout(void* label, const double* position, float size, float max_size, int halign, int valign)
+{
+    auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
+    if (!l) return -1;
+    return guarded("vkf_label_set_layout", -1, [&]() {
+        l->layout->position = vsg::vec3(static_cast<float>(position[0]), static_cast<float>(position[1]), static_cast<float>(position[2]));
+        l->layout->billboardAutoScaleDistance = size;
+        l->layout->outlineWidth = max_size;
+        l->layout->horizontalAlignment = static_cast<vsg::StandardLayout::Alignment>(halign);
+        l->layout->verticalAlignment = static_cast<vsg::StandardLayout::Alignment>(valign);
+        l->text->setup(l->capacity, read_options());
+        return 0;
+    });
+}
+
+// Draw a label on top of the scene (on != 0: at the near plane, as HUD
+// labels, not hidden by what is in front of it) or depth-tested (0).
+VKF_API int vkf_label_set_on_top(void* label, int on)
+{
+    auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
+    if (!l) return -1;
+    auto group = l->node.cast<LabelGroup>();
+    if (!group) return -1;
+    group->hud = on != 0;
+    return 0;
+}
+
 // Show a label in the viewer's HUD (at x, y from 0 to 1 across the viewport,
 // bottom to top: the label's position), on top of the scene. Also while running.
 VKF_API int vkf_viewer_hud_add(void* viewer, void* label)

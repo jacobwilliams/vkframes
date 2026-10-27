@@ -956,12 +956,28 @@ Interaction:
             model's subgraph, through a thin C++ call), terrain's heights
             (Rocky), RibbonArtist surfaces and CustomLineSegments, and labels
             and HUD text.
-- [ ] Callouts from picks, with what exists: HUD text that can be moved,
-      resized and restyled after it is shown (position, size, font, color;
-      now only its text can change), and frame labels whose text and color
-      can change after they are shown. Then a pick can show a readout next to
-      what was clicked (e.g. kept at the object's projected screen position
-      each frame). Needs no new dependency.
+- [x] Callouts:
+      - HUD text changes while shown: text, color, position, size and
+        alignment in place (`vkf_label_set_layout`: VSG's GPU text layout
+        recomputed), a new font by making its node again.
+      - Frames' labels change while shown: the name (`set_name`), color,
+        label size, alignment and font, and the axes' labels (the axes made
+        again where the color or font is in them). A name label can be drawn
+        on top of the scene (`set_name_label_on_top`: at the near plane, as
+        HUD labels), so a frame moved to a picked point is a readout there
+        that follows it as the view turns.
+      - `WindowProxy%screen_position(p, position)`: where a root point is on
+        the screen (HUD positions), to keep HUD text next to a moving object
+        each frame.
+      - Fixed on the way: an axis or label made again while hidden showed (a
+        node added to a switch is shown: the switches are set again).
+      - Tested in `test_pick` (screen_position; HUD text and a name label
+        changed while shown). Shown in `example/pick_trajectories.f90` (a
+        readout at the point picked, placed on the side with room; HUD text
+        following the selected orbit's spacecraft) and the Qt demo (a
+        readout at the point clicked).
+      - [ ] Later: a background box behind HUD text and labels, and several
+            lines (newlines) checked.
 - [ ] A GUI in vkframes' own windows: Dear ImGui through vsgImGui (both on
       conda-forge: `vsgimgui`, `imgui`) for panels, buttons, sliders and text
       fields drawn in the Vulkan window, without Qt; e.g. a popup placed at a

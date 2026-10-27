@@ -4,7 +4,10 @@
 !> point between two trajectory points and the time there, interpolated;
 !> within the tolerance and not beyond it), its markers, its segments, trace
 !> mode (what isn't drawn isn't picked; the tail is), and the vkf_pick
-!> geometry (perspective-correct fractions along a segment).
+!> geometry (perspective-correct fractions along a segment). Callouts:
+!> screen_position (where a point is, as HUD positions), HUD text and a
+!> frame's name label changed while shown (position, size, alignment, color,
+!> font, text).
 program test_pick
 
     use, intrinsic :: iso_c_binding, only: c_int
@@ -28,6 +31,8 @@ program test_pick
     type(WindowProxy) :: window
     type(View), target :: top
     type(PickHit), allocatable :: hits(:)
+    type(HUDText), target :: callout
+    real(wp) :: pos(2)
     integer(c_int) :: width, height
     real(wp) :: aspect, ratio, x, y
     integer :: failures, k
@@ -129,6 +134,36 @@ program test_pick
     if (k > 0) call check(hits(k)%index == 1 .and. near3(hits(k)%position, 0.7_wp * [-2000.0_wp, 0.0_wp, 1500.0_wp], &
                           1.0e-6_wp), 'segment: the first, the point')
 
+    ! callouts: where a point is (HUD positions: 0 to 1, y up), and HUD text
+    ! and a frame's label changed while shown
+    call at([550.0_wp, 0.0_wp, 1500.0_wp], x, y)
+    call check(window%screen_position([550.0_wp, 0.0_wp, 1500.0_wp], pos), 'screen position: in front')
+    call check(abs(pos(1) - 0.5_wp * (x + 1.0_wp)) < 1.0e-9_wp .and. abs(pos(2) - 0.5_wp * (y + 1.0_wp)) < 1.0e-9_wp, &
+               'screen position: the point')
+    call check(.not. window%screen_position([0.0_wp, -20000.0_wp, 0.0_wp], pos), 'screen position: behind the eye')
+    callout = HUDText('callout', position=[0.1_wp, 0.1_wp])
+    call window%add_hud_text(callout)
+    call frame()
+    call callout%set_position(pos)
+    call callout%set_size(30.0_wp)
+    call callout%set_alignment(ALIGN_CENTER_BOTTOM)
+    call callout%set_color([1.0_wp, 0.5_wp, 0.0_wp])
+    call callout%set_text('t = 255 s')
+    call frame()
+    call callout%set_font('DejaVuSans-Bold.ttf')                  ! (the text's node made again)
+    call frame()
+    call check(callout%font() == 'DejaVuSans-Bold.ttf' .and. all(callout%position() == pos), 'HUD text changed while shown')
+    call path%show_name_label(.true.)
+    call path%set_name('readout: t = 255 s')
+    call path%set_color([0.2_wp, 1.0_wp, 0.4_wp])
+    call path%set_label_size(28)
+    call path%set_label_font('DejaVuSans-Oblique.ttf')
+    call frame()
+    call check(path%name() == 'readout: t = 255 s', 'frame label changed while shown')
+    call path%show_name_label(.false.)
+    call window%remove_hud_text(callout)
+    call frame()
+
     ! trace mode at t = 155: drawn up to point 16 (x = -500), and the tail to x = -450
     call curve%set_trace_mode(.true.)
     call window%set_time(155.0_wp)
@@ -150,7 +185,7 @@ program test_pick
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
         error stop 1
     end if
-    write(*, '(a)') 'PASS: picking (bodies, curves, markers, segments, trace mode)'
+    write(*, '(a)') 'PASS: picking (bodies, curves, markers, segments, trace mode), callouts'
 
 contains
 

@@ -23,6 +23,11 @@
 !> (for the windows running) and drawn from the next frame;
 !> removed ones stop being drawn; moved axes (move_x_axis, ...) are made again.
 !>
+!> Labels: the name label (at the origin, facing the screen) and the axes'
+!> labels can change while shown: the name (`set_name`, e.g. a readout that
+!> follows the frame), color, label size, alignment and font, and the axes'
+!> label texts.
+!>
 !> Picking (WindowProxy%pick): each frame tests what it draws against a
 !> PickCamera (vkf_pick) in its `pick` procedure, given its transform to the
 !> root frame, and adds a PickHit for each thing within reach (the window
@@ -34,9 +39,9 @@ module vkf_frames
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
     use vkf_layer, only: vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_viewer_any, &
-                         vkf_light_create, vkf_light_set
+                         vkf_light_create, vkf_light_set, vkf_label_set_text, vkf_label_set_color, vkf_label_set_on_top
     use vkf_geometry, only: arrow_create
-    use vkf_text, only: label_create
+    use vkf_text, only: label_create, label_set_layout
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, rigid_inverse
     use vkf_pick, only: PickCamera, point_pick, ray, ray_ellipsoid
     use vkf_trajectory, only: Trajectory
@@ -108,6 +113,7 @@ module vkf_frames
         integer :: axes = ALL_AXES                          !! OpenFrames' defaults: all shown
         integer :: axes_labels = ALL_AXES
         logical :: name_label = .true.
+        logical :: name_on_top = .false.                    !! the name label drawn on top of the scene
         character(len=:), allocatable :: x_label_, y_label_, z_label_
         character(len=:), allocatable :: label_font_
         integer :: label_size_ = 20
@@ -135,6 +141,7 @@ module vkf_frames
         type(c_ptr) :: axis_arrow(3) = c_null_ptr           !! their contents (made again when an axis moves)
         type(c_ptr) :: axis_text(3) = c_null_ptr
         type(c_ptr) :: name_label_node = c_null_ptr
+        type(c_ptr) :: name_text = c_null_ptr               !! the name label (in name_label_node)
     contains
         procedure :: set_name, name
         procedure :: set_color, color
@@ -144,6 +151,7 @@ module vkf_frames
         procedure :: show_axes, axes_shown
         procedure :: show_axes_labels, axes_labels_shown
         procedure :: show_name_label, name_label_shown
+        procedure :: set_name_label_on_top, name_label_on_top
         procedure :: set_x_label, set_y_label, set_z_label, axis_label
         procedure :: set_label_font, label_font
         procedure :: set_label_size, label_size
@@ -185,10 +193,13 @@ contains
     ! ==================================================================
     ! name, color, position, attitude
 
+    !> The frame's name, shown by its name label (also once shown: e.g. a
+    !> readout that follows the frame).
     subroutine set_name(self, name)
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: name
         self%name_ = name
+        if (c_associated(self%name_text)) call check(vkf_label_set_text(self%name_text, name, len(name, kind=c_int)))
     end subroutine set_name
 
     function name(self) result(n)
@@ -208,6 +219,9 @@ contains
         integer :: n
         n = min(4, size(color))
         self%color_(1:n) = color(1:n)
+        if (.not. self%realized) return
+        if (c_associated(self%name_text)) call check(vkf_label_set_color(self%name_text, real(self%color_, c_float)))
+        call remake_axes(self)
     end subroutine set_color
 
     pure function color(self) result(c)
@@ -306,6 +320,22 @@ contains
         call update_switches(self)
     end subroutine show_name_label
 
+    !> Draw the name label on top of the scene (true: not hidden by bodies in
+    !> front of it, as HUD text; e.g. a readout) or depth-tested (false, the
+    !> default, as OpenFrames').
+    subroutine set_name_label_on_top(self, on_top)
+        class(ReferenceFrame), intent(inout) :: self
+        logical, intent(in) :: on_top
+        self%name_on_top = on_top
+        if (c_associated(self%name_text)) &
+            call check(vkf_label_set_on_top(self%name_text, merge(1_c_int, 0_c_int, on_top)))
+    end subroutine set_name_label_on_top
+
+    pure logical function name_label_on_top(self)
+        class(ReferenceFrame), intent(in) :: self
+        name_label_on_top = self%name_on_top
+    end function name_label_on_top
+
     pure logical function name_label_shown(self)
         class(ReferenceFrame), intent(in) :: self
         name_label_shown = self%name_label
@@ -316,18 +346,21 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: text
         self%x_label_ = text
+        if (self%realized) call make_axis(self, 1)
     end subroutine set_x_label
 
     subroutine set_y_label(self, text)
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: text
         self%y_label_ = text
+        if (self%realized) call make_axis(self, 2)
     end subroutine set_y_label
 
     subroutine set_z_label(self, text)
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: text
         self%z_label_ = text
+        if (self%realized) call make_axis(self, 3)
     end subroutine set_z_label
 
     !> The label text of axis X_AXIS, Y_AXIS or Z_AXIS.
@@ -356,6 +389,9 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: font
         self%label_font_ = font
+        if (.not. self%realized) return
+        call make_name_label(self)                              ! (another font: made again)
+        call remake_axes(self)
     end subroutine set_label_font
 
     function label_font(self) result(font)
@@ -374,6 +410,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         integer, intent(in) :: size
         self%label_size_ = size
+        call relayout_labels(self)
     end subroutine set_label_size
 
     pure integer function label_size(self)
@@ -387,6 +424,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         integer, intent(in) :: alignment
         self%label_alignment_ = alignment
+        call relayout_labels(self)
     end subroutine set_label_alignment
 
     pure integer function label_alignment(self)
@@ -896,7 +934,6 @@ contains
     !> the frame's color (OpenFrames' ReferenceFrame decorations).
     subroutine build_decorations(self)
         class(ReferenceFrame), intent(inout) :: self
-        type(c_ptr) :: node
         integer :: k
         if (.not. self%axes_moved) call self%reposition_axes()
         do k = 1, 3
@@ -908,15 +945,42 @@ contains
         end do
         ! the name label at the origin, label_size pixels tall
         self%name_label_node = vkf_switch_create()
-        node = label_create(self%name(), [0.0_wp, 0.0_wp, 0.0_wp], self%color_, real(self%label_size_, wp), 0.0_wp, &
-                            self%label_alignment_, self%label_font())
-        if (c_associated(node)) then
-            call check(vkf_node_add_child(self%name_label_node, node))
-            call vkf_node_delete(node)
-        end if
+        call make_name_label(self)
         call check(vkf_node_add_child(self%node_, self%name_label_node))
         call update_switches(self)
     end subroutine build_decorations
+
+    !> The name label (in place of the old one; compiled first if shown).
+    subroutine make_name_label(self)
+        class(ReferenceFrame), intent(inout) :: self
+        call replace_child(self, self%name_label_node, self%name_text, &
+                           label_create(self%name(), [0.0_wp, 0.0_wp, 0.0_wp], self%color_, &
+                                        real(self%label_size_, wp), 0.0_wp, self%label_alignment_, self%label_font()))
+        if (self%name_on_top .and. c_associated(self%name_text)) call check(vkf_label_set_on_top(self%name_text, 1_c_int))
+        call update_switches(self)                              ! (a node added to a switch is shown)
+    end subroutine make_name_label
+
+    !> The axes and their labels made again (another color, size or font).
+    subroutine remake_axes(self)
+        class(ReferenceFrame), intent(inout) :: self
+        integer :: k
+        if (.not. self%realized) return
+        do k = 1, 3
+            call make_axis(self, k)
+        end do
+    end subroutine remake_axes
+
+    !> The labels' size and alignment changed: the name label's in place, the
+    !> axes' labels made again.
+    subroutine relayout_labels(self)
+        class(ReferenceFrame), intent(inout) :: self
+        if (.not. self%realized) return
+        if (c_associated(self%name_text)) then
+            if (.not. label_set_layout(self%name_text, [0.0_wp, 0.0_wp, 0.0_wp], real(self%label_size_, wp), 0.0_wp, &
+                                       self%label_alignment_)) call check(-1_c_int)
+        end if
+        call remake_axes(self)
+    end subroutine relayout_labels
 
     !> Axis k's arrow and label, in their switches (in place of the old ones;
     !> compiled first if the window already runs).
@@ -941,6 +1005,7 @@ contains
         call replace_child(self, self%axis_label_node(k), self%axis_text(k), &
                            label_create(self%axis_label(2**(k-1)), tip, self%color_, -0.4_wp * len, &
                                         real(self%label_size_, wp), self%label_alignment_, self%label_font()))
+        call update_switches(self)                              ! (a node added to a switch is shown)
     end subroutine make_axis
 
     !> Put `new` in `switch` in place of `old` (a kept handle, deleted).

@@ -2,9 +2,14 @@
 !> with markers; the event handler picks what is under the mouse.
 !>
 !> * Hover: the orbit under the pointer is drawn thicker.
-!> * Click: selects the orbit or marker under it; the HUD shows which, the
-!>   time there and the altitude, and a ring marks the point picked (a frame
-!>   moved there, with a marker artist drawing one marker at its origin).
+!> * Click: selects the orbit or marker under it, with two callouts:
+!>   - a ring and a readout at the point picked (the orbit, the time there,
+!>     the altitude): a frame moved there, with a marker artist drawing one
+!>     marker at its origin, and its name label, changed to the readout, in
+!>     the orbit's color, drawn on top of the scene (it follows the point as
+!>     the view turns);
+!>   - HUD text kept next to the orbit's spacecraft each frame
+!>     (WindowProxy%screen_position), with its altitude as it moves.
 !>   Clicking the Earth shows the latitude and longitude instead.
 !> * g: goes to the time selected (the spacecraft move there).
 !>
@@ -24,9 +29,12 @@ module pick_trajectories_handler
     !> The program's state the handler needs (pointers to the program's objects).
     type, extends(WindowEventHandler), public :: Picker
         type(CurveArtist), pointer :: curves(:) => null()
-        type(ReferenceFrame), pointer :: selection => null()     !! moved to the point picked
+        type(ReferenceFrame), pointer :: selection => null()     !! moved to the point picked; its label: the readout
+        type(DrawableTrajectory), pointer :: ring => null()      !! the ring there (a child of the selection)
         type(HUDText), pointer :: hud => null()
         character(len=16) :: names(n_orbits) = ''
+        real(wp) :: colors(3, n_orbits) = 1.0_wp
+        integer :: selected = 0                                  !! the orbit selected (its spacecraft's callout), or 0
         real(wp), pointer :: widths(:) => null()
         integer :: hovered = 0
         real(wp) :: selected_time = 0.0_wp
@@ -85,34 +93,49 @@ contains
         real(wp), intent(in) :: x, y
         type(PickHit), allocatable :: hits(:)
         character(len=160) :: text
+        real(wp) :: at(2)
+        logical :: right
         integer :: k
         call window%pick(x, y, hits)
+        self%have_time = .false.
+        self%selected = 0
         if (size(hits) == 0) then
-            call self%hud%set_text('click an orbit, a marker or the Earth')
-            call self%selection%show_contents(.false.)
-            self%have_time = .false.
+            call self%ring%show_contents(.false.)
+            call self%selection%show_name_label(.false.)
             return
         end if
         associate (h => hits(1))
+            call self%selection%set_color([1.0_wp, 1.0_wp, 1.0_wp])
             select case (h%kind)
             case (PICK_CURVE, PICK_MARKER)
                 k = orbit_of(self, h)
-                write(text, '(a,a,f8.1,a,f9.1,a)') trim(self%names(k))//trim(merge(' (a marker)', '           ', &
-                    h%kind == PICK_MARKER)), ': t = ', h%time / 60.0_wp, ' min, altitude ', norm2(h%position) - self%radius, &
-                    ' km   (g: go there)'
+                write(text, '(a,a,i0,a,i0,a)') trim(self%names(k))//trim(merge(' marker', '       ', h%kind == PICK_MARKER)), &
+                    ': t = ', nint(h%time / 60.0_wp), ' min, ', nint(norm2(h%position) - self%radius), ' km'
                 self%selected_time = h%time
                 self%have_time = .true.
+                self%selected = k
+                call self%selection%set_color(self%colors(:, k))
             case (PICK_BODY)
-                write(text, '(a,f7.2,a,f8.2,a)') h%frame%name()//': latitude ', h%latitude * 180.0_wp / pi, &
-                    ', longitude ', h%longitude * 180.0_wp / pi, ' degrees'
-                self%have_time = .false.
+                write(text, '(a,f6.1,a,f7.1)') h%frame%name()//': latitude ', h%latitude * 180.0_wp / pi, &
+                    ', longitude ', h%longitude * 180.0_wp / pi
             case default
                 text = h%frame%name()
-                self%have_time = .false.
             end select
-            call self%hud%set_text(trim(text))
+            ! the readout: the selection frame's name label, beside the ring on
+            ! the side with room (left of it in the right of the window)
+            right = .false.
+            if (window%screen_position(h%position, at)) right = at(1) > 0.6_wp
+            if (right) then
+                call self%selection%set_label_alignment(ALIGN_RIGHT_CENTER)
+                text = trim(text)//'    '
+            else
+                call self%selection%set_label_alignment(ALIGN_LEFT_CENTER)
+                text = '    '//trim(text)
+            end if
+            call self%selection%set_name(trim(text))
+            call self%selection%show_name_label(.true.)
             call self%selection%set_position(h%position)
-            call self%selection%show_contents(.true.)
+            call self%ring%show_contents(.true.)
         end associate
     end subroutine picker_select
 
@@ -158,7 +181,9 @@ program pick_trajectories
     type(FrameManager), target :: scene
     type(WindowProxy), target :: window
     type(View), target :: earth_view
-    type(HUDText), target :: hud
+    type(HUDText), target :: hud, callout
+    character(len=96) :: callout_text
+    real(wp) :: at(2), p(3)
     type(Picker), target :: picker_
     character(len=1024) :: arg, file
     real(wp) :: period, t, x, y
@@ -222,7 +247,10 @@ program pick_trajectories
     ring_frame = DrawableTrajectory('Ring')
     call quiet(ring_frame)
     call ring_frame%add_artist(ring)
-    call selection%show_contents(.false.)
+    call ring_frame%show_contents(.false.)
+    call selection%set_label_size(16)
+    call selection%set_name_label_on_top(.true.)                     ! (a readout: not hidden by the Earth)
+    call selection%set_label_alignment(ALIGN_LEFT_CENTER)
     if (.not. (selection%add_child(ring_frame) .and. root%add_child(selection))) error stop 'add_child failed'
     scene = FrameManager(root)
 
@@ -231,24 +259,43 @@ program pick_trajectories
     call window%set_background_color([0.0_wp, 0.0_wp, 0.02_wp])
     call window%set_time_scale(300.0_wp)
     earth_view = View(root, earth)
-    call earth_view%set_default_view_parameters(eye=[10000.0_wp, -60000.0_wp, 30000.0_wp], &
-                                                center=[-3000.0_wp, 0.0_wp, 0.0_wp], up=[0.0_wp, 0.0_wp, 1.0_wp])
+    call earth_view%set_default_view_parameters(eye=[2000.0_wp, -75000.0_wp, 38000.0_wp], &
+                                                center=[4000.0_wp, 0.0_wp, 0.0_wp], up=[0.0_wp, 0.0_wp, 1.0_wp])
     call window%add_view(earth_view)
-    hud = HUDText('click an orbit, a marker or the Earth', position=[0.01_wp, 0.01_wp], &
+    hud = HUDText('click an orbit, a marker or the Earth   (g: go to the time selected)', position=[0.01_wp, 0.01_wp], &
                   alignment=ALIGN_LEFT_BOTTOM, size=16.0_wp, color=[0.85_wp, 0.85_wp, 0.85_wp])
     call window%add_hud_text(hud)
+    ! the callout next to the selected orbit's spacecraft (moved each frame)
+    callout = HUDText('', alignment=ALIGN_LEFT_BOTTOM, size=15.0_wp)
+    call callout%show(.false.)
+    call window%add_hud_text(callout)
 
     picker_%curves => curves
     picker_%widths => widths
     picker_%selection => selection
+    picker_%ring => ring_frame
     picker_%hud => hud
     picker_%names = names
+    picker_%colors = colors
     picker_%radius = re
     call window%set_event_handler(picker_)
 
     running = .true.
     frame = 0
     do while (running .and. frame < frames_to_run)
+        ! the callout: next to the selected orbit's spacecraft, where it is now
+        k = picker_%selected
+        call callout%show(.false.)
+        if (k > 0) then
+            p = crafts(k)%position()                                ! (a child of the root: root coordinates)
+            if (window%screen_position(p, at)) then
+                write(callout_text, '(a,i0,a)') trim(names(k))//' spacecraft: ', nint(norm2(p) - re), ' km'
+                call callout%set_text(trim(callout_text))
+                call callout%set_color(colors(:, k))
+                call callout%set_position(at + [0.012_wp, 0.012_wp])
+                call callout%show(.true.)
+            end if
+        end if
         running = window%frame()
         frame = frame + 1
         if (demo_pick .and. frame == 3) then                       ! (a pick on the high orbit, for a capture)

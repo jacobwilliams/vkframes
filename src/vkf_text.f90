@@ -10,7 +10,7 @@ module vkf_text
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
     use vkf_math, only: wp
-    use vkf_layer, only: vkf_font_read, vkf_label_create
+    use vkf_layer, only: vkf_font_read, vkf_label_create, vkf_label_set_layout
     use vkf_files, only: find_in_dirs
 
     implicit none
@@ -30,7 +30,7 @@ module vkf_text
     !> Fonts read so far (each is read once; kept for the whole run).
     type(font_entry), allocatable, save :: fonts(:)
 
-    public :: find_font, get_font, label_create
+    public :: find_font, get_font, label_create, label_set_layout
 
 contains
 
@@ -118,6 +118,18 @@ contains
         node = vkf_label_create(font, text, len(text, kind=c_int), real(rgba, c_float), real(position, c_double), &
                                 real(size, c_float), real(max_size, c_float), int(h, c_int), int(v, c_int))
     end function label_create
+
+    !> Change label `node`'s position, size, maximum size and alignment (as
+    !> label_create's), in place. False on failure.
+    logical function label_set_layout(node, position, size, max_size, alignment) result(ok)
+        type(c_ptr), intent(in) :: node
+        real(wp), intent(in) :: position(3), size, max_size
+        integer, intent(in) :: alignment
+        integer :: h, v
+        call vsg_alignment(alignment, h, v)
+        ok = vkf_label_set_layout(node, real(position, c_double), real(size, c_float), real(max_size, c_float), &
+                                  int(h, c_int), int(v, c_int)) == 0
+    end function label_set_layout
 
     !> vsg::StandardLayout's horizontal and vertical alignments for an ALIGN_*
     !> constant (vkf_frames: 0 left-top ... 8 right-bottom, 9 to 11 base line).
