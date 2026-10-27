@@ -33,6 +33,45 @@ for each library. They draw the same scene, with no vsync. The results below
 are from macOS 27 on an Apple M5, on 2026-10-27, with stock OpenFrames; the
 full tables are in `bench/README.md`.
 
+### Frame rate: vkframes against OpenFrames
+
+Frames per second, without vsync (higher is better). `static` draws a large
+trajectory; `grow` also appends 60,000 points a second. The vkframes columns
+are:
+
+- **before:** the morning's version, before the improvements of 2026-10-27;
+- **every point:** with mitre joins, growth headroom and capped chunks, but
+  the curve's level of detail turned off, so every point is drawn, as
+  OpenFrames does;
+- **default:** the same with level of detail on.
+
+| Scenario | Points | OpenFrames | vkframes before | vkframes, every point | vkframes, default | Default / OpenFrames | Every point / OpenFrames |
+|---|---|---|---|---|---|---|---|
+| static | 100,000 | 400–456 | 565 | 411 | 510–545 | about 1.2× | about 1× |
+| static | 1,000,000 | 57 | 98 | 199 | 580–633 | **10–11×** | 3.5× |
+| static | 5,000,000 | 10.5–11.2 | 19.4 | 42 | 155–188 | **14–17×** | 3.7–4× |
+| grow | 100,000 | 157–163 | 287 | ≥ 120 | ≥ 120–526 | (see below) | (see below) |
+| grow | 1,000,000 | 40 | 77 | 158 | 335–651 | **8–16×** | 4× |
+| grow | 5,000,000 | 8.9 | 17.9 | 40 | 123–199 | **14–22×** | 4.5× |
+
+How to read it:
+
+- Ranges are from separate runs: frame rates of the same setting vary by up
+  to a factor of 2.
+- **At 100,000 points**, both libraries are fast, and the differences are
+  within that noise.
+- **In `grow` at 100,000 points**, vkframes was held to the display's rate
+  (≥ 120) in one run. Inside a Qt window on macOS, frames are sometimes held
+  to the display's rate even without vsync (see `bench/README.md`), so that
+  run's vkframes number is a lower bound.
+- **The same frame rates as frame times** (mean, at 5,000,000 points):
+  - `static`: OpenFrames 89 ms; vkframes before 51 ms, every point 24 ms,
+    default about 6 ms.
+  - `grow`: OpenFrames 112 ms; vkframes before 56 ms, every point 25 ms,
+    default 5 to 8 ms.
+
+### Findings
+
 - **Drawing large trajectories (`static`) and adding points while drawing
   (`grow`):** vkframes first drew 1.7 to 2.0 times as many frames, at 1
   million and 5 million points. After the improvements of 2026-10-27
