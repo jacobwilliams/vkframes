@@ -34,8 +34,9 @@ def patch():
     """Fixes to Rocky's C++ for conda-forge's compilers and packages, and for
     vkframes. (vkframes' changes to Rocky's shaders are copies of them, in
     shaders/rocky/shaders, which Rocky finds first: see tools/fpm_vsg.py.)"""
-    # libc++ has unordered_map::contains also in C++17: in SRSFactory (an
-    # unordered_map) it hides SRS.cpp's own contains(string, pattern)
+    # Rocky is compiled as C++20 (EnTT 4.0 requires it), where
+    # unordered_map::contains, in SRSFactory (an unordered_map), hides
+    # SRS.cpp's own contains(string, pattern)
     srs = src / "src" / "rocky" / "SRS.cpp"
     text = srs.read_text()
     fixed = re.sub(r"(?<![:\w.])contains\((ndef|new_entry)", r"::contains(\1", text)
@@ -48,12 +49,10 @@ def patch():
     # style) don't build with libc++ in C++20
     replace(src / "src" / "CMakeLists.txt", "add_subdirectory(tests)", "# add_subdirectory(tests)")
     replace(src / "src" / "apps" / "CMakeLists.txt", "        add_subdirectory(rocky_demo)", "        # add_subdirectory(rocky_demo)")
-    # an image stream is read by the first reader for its type (as vsg::read
-    # does; Rocky's search kept the last, and a nested composite reader
-    # without one reset it), and vsgXchange's readers come before Rocky's
-    # GDAL fallback (meant for what vsgXchange can't stream, TIFF and WebP):
-    # JPEG and PNG are decoded by stb, as sRGB (GDAL decodes greyscale JPEG
-    # as 0-255 floats)
+    # vsgXchange's readers come before Rocky's GDAL reader (meant for what
+    # vsgXchange can't read, TIFF and WebP): JPEG and PNG are decoded by stb
+    # as sRGB RGBA (GDAL decodes a greyscale JPEG as one-channel 0-255
+    # floats, which the terrain draws red)
     replace(src / "src" / "rocky" / "vsg" / "VSGContext.cpp",
             "#ifdef ROCKY_HAS_GDAL\n    readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());\n#endif\n\n"
             "#ifdef ROCKY_HAS_VSGXCHANGE\n    // Adds all the readerwriters in vsgxchange to the options data.\n"
@@ -61,39 +60,6 @@ def patch():
             "#ifdef ROCKY_HAS_VSGXCHANGE\n    // Adds all the readerwriters in vsgxchange to the options data.\n"
             "    readerWriterOptions->add(vsgXchange::all::create());\n#endif\n\n"
             "#ifdef ROCKY_HAS_GDAL\n    readerWriterOptions->add(GDAL_VSG_ReaderWriter::create()); // (vkframes: after vsgXchange's)\n#endif\n")
-    replace(src / "src" / "rocky" / "vsg" / "VSGContext.cpp",
-            "                output = findReaderWriter(extension, crw->readerWriters);\n",
-            "                output = findReaderWriter(extension, crw->readerWriters);\n"
-            "                if (output) return output; // (vkframes) the first reader\n")
-    replace(src / "src" / "rocky" / "vsg" / "VSGContext.cpp",
-            "                        output = rw;\n",
-            "                        return rw; // (vkframes) the first reader\n")
-    # 8-bit one- and two-channel imagery (greyscale) as RGBA: the terrain
-    # samples color
-    replace(src / "src" / "rocky" / "ImageLayer.cpp",
-            "                return Failure_ResourceUnavailable;\n            }\n        }\n    }\n\n    return r;\n}",
-            "                return Failure_ResourceUnavailable;\n            }\n        }\n    }\n\n"
-            "    // (vkframes) one- and two-channel imagery (greyscale) as RGBA: the terrain samples color\n"
-            "    if (r.ok() && r.value().image() && r.value().image()->pixelFormat() <= Image::R8G8_SRGB)\n"
-            "    {\n"
-            "        auto in = r.value().image();\n"
-            "        // 8-bit greyscale as sRGB, as color images (JPEG and PNG pixels are display values)\n"
-            "        const bool unorm8 = in->pixelFormat() == Image::R8_UNORM || in->pixelFormat() == Image::R8G8_UNORM;\n"
-            "        const bool srgb = unorm8 || in->pixelFormat() == Image::R8_SRGB || in->pixelFormat() == Image::R8G8_SRGB;\n"
-            "        const bool alpha = in->numComponents() == 2;\n"
-            "        auto out = Image::create(srgb ? Image::R8G8B8A8_SRGB : Image::R8G8B8A8_UNORM, in->width(), in->height(), in->depth());\n"
-            "        for (unsigned l = 0; l < in->depth(); ++l)\n"
-            "            for (unsigned t = 0; t < in->height(); ++t)\n"
-            "                for (unsigned s = 0; s < in->width(); ++s)\n"
-            "                {\n"
-            "                    auto p = in->read(s, t, l);\n"
-            "                    float v = p.r;\n"
-            "                    if (unorm8) v = (v <= 0.04045f) ? v / 12.92f : std::pow((v + 0.055f) / 1.055f, 2.4f); // (write encodes)\n"
-            "                    out->write(Image::Pixel(v, v, v, alpha ? p.g : 1.0f), s, t, l);\n"
-            "                }\n"
-            "        r = GeoImage(out, r.value().extent());\n"
-            "    }\n\n"
-            "    return r;\n}")
 
 
 def replace(path, old, new):

@@ -711,14 +711,21 @@ Decided so far:
       with it into build/rocky (C++20, -lrocky, ROCKY_FILE_PATH);
       src/vsg/vkf_rocky.cpp (one Rocky context per viewer, released before
       the viewer); without Rocky it only reports it unavailable. Changes to
-      Rocky (candidates upstream): in its C++ (tools/build_rocky.py) libc++
-      build fixes, image streams read by vsgXchange's readers first
-      (greyscale JPEG was decoded by GDAL as 0-255 floats), 8-bit greyscale
-      imagery as RGBA; in its shaders, copies of the two changed
-      (shaders/rocky/shaders, first on ROCKY_FILE_PATH; their includes found
-      in Rocky's shader directories) for sRGB-encoded terrain output on UNORM
-      framebuffers and vkframes' lights (diffuse parts, and specular parts as
-      negative colors) in Rocky's PBR lighting. The Moon's
+      Rocky's C++ (tools/build_rocky.py):
+      - `SRS.cpp`'s `contains()` calls qualified (as C++20, which EnTT 4.0
+        requires, `unordered_map::contains` hides them). Bug report:
+        plans/upstream/rocky-srs-contains-cxx20.md.
+      - vsgXchange's image readers registered before Rocky's GDAL reader
+        (GDAL decoded greyscale JPEG as one-channel 0-255 floats: a red
+        Moon). Bug report: plans/upstream/rocky-gdal-reader-before-vsgxchange.md.
+      - Rocky's tests and rocky_demo not built (they don't build with libc++
+        in C++20; a workaround, not for upstream).
+      In its shaders, copies of the two changed (shaders/rocky/shaders, first
+      on ROCKY_FILE_PATH; their includes found in Rocky's shader directories)
+      for sRGB-encoded terrain output on UNORM framebuffers and vkframes'
+      lights (diffuse parts, and specular parts as negative colors) in
+      Rocky's PBR lighting: specific to vkframes (upstream, these would be a
+      request for hooks: the output encoding, the lights). The Moon's
       elevation: LRO LOLA's LDEM (tools/get_moon_dem.py, `pixi run -e rocky
       moon-data`, 4/16/64 pixels per degree) into data/. `example/rocky_map.f90`
       (the Earth from ReadyMap, the Moon from Moon Trek and LOLA, Sun-lit);
@@ -728,8 +735,8 @@ Decided so far:
       on macOS.
 - [ ] Rocky, later: one map shown in several windows (now one per window:
       the window that first shows it), Linux and Windows (untested), a
-      conda-forge recipe, upstreaming the patches, removing layers, a
-      vertical exaggeration.
+      conda-forge recipe, submitting the two bug reports (plans/upstream),
+      removing layers, a vertical exaggeration.
 - [ ] Video recording (OpenFrames has only screenshots): `WindowProxy%
       start_recording(file, fps)` / `stop_recording`, frames sent as raw
       pixels to an `ffmpeg` process's stdin (`popen`, `_popen` on Windows;
