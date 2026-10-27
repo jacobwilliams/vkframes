@@ -59,7 +59,10 @@
 !> `V` show the next and previous views (the handler does it, so the window's
 !> view menu follows, and says it handled the key), `p` pauses and resumes the
 !> time, the space bar resets the view (vkframes' built-in key); the pointer's
-!> position in the window (-1 to 1) and the last click are shown in the dock.
+!> position in the window (-1 to 1) is shown in the dock, and a click picks
+!> what is under it (WindowProxy%pick): an orbit or marker (its frame, the time
+!> there and the altitude; g goes to that time) or a body (the latitude and
+!> longitude), shown in the dock.
 !>
 !> How the pieces fit:
 !>
@@ -177,7 +180,9 @@ module vkdemo
         type(QLabel) :: rotation_label
         type(QLabel) :: time_label
         type(QLabel) :: pointer_label                          !! the pointer and the last click (DemoEvents)
-        character(len=64) :: last_click = ''
+        character(len=160) :: last_click = ''
+        real(wp) :: picked_time = 0.0_wp                       !! the time at the last orbit or marker picked
+        logical :: have_picked_time = .false.
         type(QSlider) :: time_slider                           !! the simulation time (s), 0 to time_end
         logical :: slider_held = .false.                       !! the user holds the slider's handle
         logical :: slider_setting = .false.                    !! the demo moves the slider (to the time)
@@ -931,6 +936,9 @@ contains
             else if (key == iachar('p') .or. key == iachar('P')) then
                 call app%pause_time%setChecked(.not. app%pause_time%isChecked())
                 handled = .true.
+            else if (key == iachar('g') .and. app%have_picked_time) then      ! (go to the time picked)
+                call app%windows(1)%proxy%set_time(app%picked_time)
+                handled = .true.
             end if
         end associate
     end subroutine demo_key_press
@@ -947,15 +955,37 @@ contains
         call app%pointer_label%setText('<small>'//trim(text)//'<br>'//trim(app%last_click)//'</small>')
     end subroutine demo_mouse_motion
 
-    !> The last click, in the dock.
+    !> A click: what is under it (WindowProxy%pick), in the dock. An orbit or
+    !> a marker: its time there (g goes to it) and altitude; a body: the
+    !> latitude and longitude.
     subroutine demo_button_press(self, window, x, y, button)
         class(DemoEvents), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
         real(wp), intent(in) :: x, y
         integer, intent(in) :: button
-        character(len=*), parameter :: names(3) = [character(len=6) :: 'left', 'middle', 'right']
-        if (button < 1 .or. button > 3) return
-        write(app%last_click, '(a,a,a,f6.2,a,f6.2)') 'Clicked: ', trim(names(button)), ' at ', x, ', ', y
+        type(PickHit), allocatable :: hits(:)
+        if (button /= MOUSE_LEFT) return
+        call window%pick(x, y, hits)
+        app%have_picked_time = .false.
+        if (size(hits) == 0) then
+            write(app%last_click, '(a,i0,a)') 'Clicked (window ', self%window, '): nothing there'
+        else
+            associate (h => hits(1))
+                select case (h%kind)
+                case (PICK_CURVE, PICK_SEGMENT, PICK_MARKER)
+                    write(app%last_click, '(a,a,a,f8.1,a,f8.1,a)') 'Picked: ', h%frame%name(), &
+                        trim(merge(' (marker)', '         ', h%kind == PICK_MARKER)) // ', t = ', h%time, &
+                        ' s, altitude ', norm2(h%position) - re, ' km (g: go there)'
+                    app%picked_time = h%time
+                    app%have_picked_time = .true.
+                case (PICK_BODY)
+                    write(app%last_click, '(a,a,a,f7.2,a,f8.2)') 'Picked: ', h%frame%name(), ', latitude ', &
+                        h%latitude * 180.0_wp / pi, ', longitude ', h%longitude * 180.0_wp / pi
+                case default
+                    app%last_click = 'Picked: '//h%frame%name()
+                end select
+            end associate
+        end if
         call app%pointer_label%setText('<small>'//trim(app%last_click)//'</small>')
     end subroutine demo_button_press
 
@@ -1454,7 +1484,8 @@ contains
         call form%addRow('Time', app%time_slider)
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
                                 'Wheel: zoom<br>v / V: next / previous view<br>Space: reset the view<br>' // &
-                                'p: pause or resume the time</small>'))
+                                'p: pause or resume the time<br>Click: pick an orbit, marker or body<br>' // &
+                                'g: go to the time picked</small>'))
         app%pointer_label = QLabel('<small>Pointer: (move over a view)</small>')
         call form%addRow(app%pointer_label)
         dock = QDockWidget('Controls', app%main)

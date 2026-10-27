@@ -140,6 +140,12 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - Vsync by default; `vsync=.false.` renders as fast as possible (for
     measuring).
   - HUD text and screen capture to PNG.
+  - Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
+    point of the window, nearest first: a trajectory's curve (the point and
+    the time there, interpolated), its markers and segments, a body (the
+    point on its surface, with latitude and longitude) or a frame. Lines and
+    markers are reached within a few pixels beyond their width or size; in
+    trace mode only what is drawn is picked.
   - Keyboard and mouse: a program's `WindowEventHandler` (OpenFrames' window
     callbacks) is given key presses and releases, mouse motion and button
     presses and releases, also in embedded windows. OpenFrames' keys are
@@ -250,6 +256,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `day_night` | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
 | `shapes` | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
 | `two_windows` | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
+| `pick_trajectories` | Picking: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (the HUD shows the time there and the altitude, a ring marks the point) or the Earth (latitude and longitude), and `g` goes to the time selected. |
 | `camera_tour` | The camera from a program: a scripted tour that flies between an Earth view and one following a spacecraft (a view transition), and to cameras given in the root frame (`set_camera` with a duration), printing where the camera is (`get_camera`). |
 | `earth_moon_frames` | One trajectory in two frames at once: a free-return lunar flyby shown in inertial coordinates about the Earth in one window, and in the Moon's body-fixed frame about the Moon in the other. Each window has its own scene; the Moon-fixed copy is transformed in Fortran, each point at its own time. |
 | `live_changes` | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |
@@ -271,6 +278,7 @@ pixi run example shapes
 pixi run example two_windows
 pixi run example earth_moon_frames
 pixi run example camera_tour
+pixi run example pick_trajectories
 pixi run example live_changes
 pixi run example precision
 pixi run example line_of_sight
@@ -321,6 +329,9 @@ library:
 - **Views and time:** six views (of the Earth, of each spacecraft, and from
   each spacecraft toward the Earth or the other); a time scale, pause and a
   time slider.
+- **Picking:** a click picks what is under it: an orbit or marker (the
+  frame, the time there and the altitude; `g` goes to that time) or the Earth
+  (latitude and longitude), shown in the dock.
 - **Camera:** changing the view flies the camera there (the time is set in
   the dock; 0 s cuts, as OpenFrames).
 - **Keys and mouse:** a `WindowEventHandler` per window: `v` and `V` change

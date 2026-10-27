@@ -8,8 +8,9 @@
 module vkf_model
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int
-    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
-    use vkf_frames, only: ReferenceFrame
+    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, identity_matrix
+    use vkf_frames, only: ReferenceFrame, PickHit, pick_ellipsoid
+    use vkf_pick, only: PickCamera
     use vkf_layer, only: vkf_model_read, vkf_node_bound, vkf_transform_create, vkf_transform_set_matrix, &
                          vkf_node_add_child
 
@@ -36,6 +37,7 @@ module vkf_model
         procedure :: set_model_pivot, model_pivot
         procedure :: frame_info => model_frame_info
         procedure :: bound => model_frame_bound
+        procedure :: pick => model_pick
         procedure :: build_contents => model_build_contents
     end type Model
 
@@ -196,5 +198,22 @@ contains
                 frame_matrix(self%model_position_, self%model_attitude_, self%scale_, self%pivot_)) /= 0) &
             write(*, '(a)') 'vkframes: Model '//self%name()//': transform failed'
     end subroutine update_model_transform
+
+    !> Picking: the model's bounding sphere (not its triangles); else the
+    !> frame's origin.
+    subroutine model_pick(self, cam, to_root, hits, n)
+        class(Model), intent(in), target :: self
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: to_root(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        real(wp) :: c(3), r, m(4,4)
+        call self%bound(c, r)
+        if (self%contents_shown() .and. r > 0.0_wp) then
+            m = identity_matrix()
+            if (pick_ellipsoid(self, cam, to_root, c, m(1:3, 1:3), [r, r, r], .false., hits, n)) return
+        end if
+        call self%ReferenceFrame%pick(cam, to_root, hits, n)
+    end subroutine model_pick
 
 end module vkf_model

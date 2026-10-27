@@ -93,7 +93,7 @@ module vkf_line_chain
         procedure :: init, set_compile, is_built, is_colored, release, detach
         procedure :: reserve, slice, color_slice, written, draw
         procedure :: set_style, set_pattern, set_marker_style, point, point_color, distance, num_chunks
-        procedure :: set_lod, lod_error
+        procedure :: set_lod, lod_error, chunk_bounds
     end type LineChain
 
 contains
@@ -520,6 +520,20 @@ contains
     end subroutine apply_style
 
     !> Point i as written: read back from the buffers.
+    !> Chunk j's points (strips: first .. first + n - 1 of the chain) and the
+    !> bounding box of them (n = 0 if none are measured yet), e.g. to skip a
+    !> chunk when picking.
+    subroutine chunk_bounds(self, j, first, n, lo, hi)
+        class(LineChain), intent(in) :: self
+        integer, intent(in) :: j
+        integer, intent(out) :: first, n
+        real(wp), intent(out) :: lo(3), hi(3)
+        first = self%chunks(j)%first
+        n = self%chunks(j)%n_written
+        lo = self%chunks(j)%box_lo
+        hi = self%chunks(j)%box_hi
+    end subroutine chunk_bounds
+
     function point(self, i) result(v)
         class(LineChain), intent(in) :: self
         integer, intent(in) :: i

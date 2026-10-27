@@ -11,6 +11,7 @@ module vkframes
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_LIMIT, FOLLOW_POSITION, FOLLOW_ATTITUDE
     use vkf_clock, only: SimulationClock, wall_time
     use vkf_frames, only: ReferenceFrame, FramePointer, NO_AXES, X_AXIS, Y_AXIS, Z_AXIS, ALL_AXES, &
+                          PickHit, PICK_FRAME, PICK_BODY, PICK_CURVE, PICK_SEGMENT, PICK_MARKER, &
                           ALIGN_LEFT_TOP, ALIGN_LEFT_CENTER, ALIGN_LEFT_BOTTOM, &
                           ALIGN_CENTER_TOP, ALIGN_CENTER_CENTER, ALIGN_CENTER_BOTTOM, &
                           ALIGN_RIGHT_TOP, ALIGN_RIGHT_CENTER, ALIGN_RIGHT_BOTTOM, &

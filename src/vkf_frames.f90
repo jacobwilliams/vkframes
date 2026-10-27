@@ -22,6 +22,13 @@
 !> tree can change: children added to a shown frame are realized and compiled
 !> (for the windows running) and drawn from the next frame;
 !> removed ones stop being drawn; moved axes (move_x_axis, ...) are made again.
+!>
+!> Picking (WindowProxy%pick): each frame tests what it draws against a
+!> PickCamera (vkf_pick) in its `pick` procedure, given its transform to the
+!> root frame, and adds a PickHit for each thing within reach (the window
+!> sorts them nearest first). A plain frame is picked at its origin if it
+!> shows axes or its name label (PICK_FRAME); extensions pick their contents
+!> (bodies, trajectories).
 module vkf_frames
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
@@ -31,6 +38,7 @@ module vkf_frames
     use vkf_geometry, only: arrow_create
     use vkf_text, only: label_create
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, rigid_inverse
+    use vkf_pick, only: PickCamera, point_pick, ray, ray_ellipsoid
     use vkf_trajectory, only: Trajectory
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE
 
@@ -54,6 +62,36 @@ module vkf_frames
     type :: FramePointer
         class(ReferenceFrame), pointer :: p => null()
     end type FramePointer
+
+    ! what a pick hit (PickHit%kind)
+    integer, parameter, public :: PICK_FRAME = 1        !! a frame's origin (its axes or name label shown)
+    integer, parameter, public :: PICK_BODY = 2         !! a body's surface (Sphere, Model, TerrainBody)
+    integer, parameter, public :: PICK_CURVE = 3        !! a trajectory's curve (CurveArtist)
+    integer, parameter, public :: PICK_SEGMENT = 4      !! a trajectory's segment (SegmentArtist)
+    integer, parameter, public :: PICK_MARKER = 5       !! a trajectory's marker (MarkerArtist)
+
+    !> What a pick found (WindowProxy%pick): the frame it belongs to and, for
+    !> trajectories, the artist (select type to use it) and the trajectory.
+    type, public :: PickHit
+        integer :: kind = 0                                 !! PICK_*
+        class(ReferenceFrame), pointer :: frame => null()
+        class(*), pointer :: artist => null()               !! the trajectory artist (curves, segments, markers)
+        type(Trajectory), pointer :: trajectory => null()
+        !> curves: the trajectory point the hit is after (on the segment from it
+        !> to the next); segments: the segment (from point 1 + (index - 1) *
+        !> stride); markers: the point (start, end) or the intermediate
+        !> marker's number
+        integer :: index = 0
+        integer :: marker = 0                               !! markers: MARKER_START, MARKER_END or MARKER_INTERMEDIATE
+        real(wp) :: time = 0.0_wp                           !! trajectories: the time there (interpolated on curves)
+        real(wp) :: position(3) = 0.0_wp                    !! the point hit, in the root frame
+        real(wp) :: local(3) = 0.0_wp                       !! the point hit, in the frame's coordinates
+        real(wp) :: distance = 0.0_wp                       !! its depth from the eye (nearest first)
+        real(wp) :: pixels = 0.0_wp                         !! its distance from the cursor (framebuffer pixels; 0 on a body)
+        real(wp) :: latitude = 0.0_wp, longitude = 0.0_wp   !! bodies: geodetic, radians (Sphere, TerrainBody)
+    end type PickHit
+
+    public :: add_pick_hit, pick_ellipsoid
 
     !> A reference frame (see the module documentation).
     type, public :: ReferenceFrame
@@ -122,7 +160,7 @@ module vkf_frames
         procedure :: follow, unfollow, follower, is_following
         procedure :: update, late_update
         procedure :: realize, build_contents, sync, node
-        procedure :: bound
+        procedure :: bound, pick
         procedure :: move_x_axis, move_y_axis, move_z_axis, reposition_axes
     end type ReferenceFrame
 
@@ -457,6 +495,71 @@ contains
         class(ReferenceFrame), intent(in) :: self
         contents_shown = self%contents
     end function contents_shown
+
+    !> Pick what the frame draws (see the module documentation): `to_root`
+    !> is its transform to the root frame; hits are added to hits(1:n). A
+    !> plain frame: its origin, if it shows axes or its name label.
+    subroutine pick(self, cam, to_root, hits, n)
+        class(ReferenceFrame), intent(in), target :: self
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: to_root(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        type(PickHit) :: h
+        if (self%axes == NO_AXES .and. .not. self%name_label) return
+        if (.not. point_pick(cam, to_root(1:3, 4), h%pixels, h%distance)) return
+        h%kind = PICK_FRAME
+        h%frame => self
+        h%position = to_root(1:3, 4)
+        call add_pick_hit(hits, n, h)
+    end subroutine pick
+
+    !> Pick a body of frame `self`: the ellipsoid centered at `center` with
+    !> semi-axes `radii` along the columns of `axes` (unit vectors; all in the
+    !> frame's coordinates), hit by the ray through the cursor. Adds a
+    !> PICK_BODY hit (with the geodetic latitude and longitude of the point
+    !> on the ellipsoid if `geodetic`); true if hit.
+    logical function pick_ellipsoid(self, cam, to_root, center, axes, radii, geodetic, hits, n) result(hit)
+        class(ReferenceFrame), intent(in), target :: self
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: to_root(4,4), center(3), axes(3,3), radii(3)
+        logical, intent(in) :: geodetic
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        type(PickHit) :: h
+        real(wp) :: origin(3), dir(3), along, local(3), normal(3)
+        call ray(cam, origin, dir)
+        hit = ray_ellipsoid(origin, dir, matmul(to_root(1:3, 1:3), center) + to_root(1:3, 4), &
+                            matmul(to_root(1:3, 1:3), axes), radii, along, h%position, local)
+        if (.not. hit) return
+        h%kind = PICK_BODY
+        h%frame => self
+        h%local = matmul(transpose(to_root(1:3, 1:3)), h%position - to_root(1:3, 4))
+        h%distance = dot_product(h%position - cam%eye, cam%forward)
+        h%pixels = 0.0_wp
+        if (geodetic) then
+            normal = local / radii**2                       ! (the surface normal there)
+            h%latitude = asin(max(-1.0_wp, min(1.0_wp, normal(3) / norm2(normal))))
+            h%longitude = atan2(normal(2), normal(1))
+        end if
+        call add_pick_hit(hits, n, h)
+    end function pick_ellipsoid
+
+    !> Add `hit` to hits(1:n) (growing the array).
+    subroutine add_pick_hit(hits, n, hit)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        type(PickHit), intent(in) :: hit
+        type(PickHit), allocatable :: more(:)
+        if (.not. allocated(hits)) allocate(hits(8))
+        if (n == size(hits)) then
+            allocate(more(2 * n))
+            more(1:n) = hits(1:n)
+            call move_alloc(more, hits)
+        end if
+        n = n + 1
+        hits(n) = hit
+    end subroutine add_pick_hit
 
     !> The bounding sphere of what the frame draws, in its own coordinates
     !> (radius 0 if it draws nothing; extensions override it). Views use it for

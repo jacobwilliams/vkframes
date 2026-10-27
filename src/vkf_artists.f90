@@ -27,13 +27,23 @@
 !>
 !> Artists and their trajectories are not owned: they must stay alive while
 !> drawn.
+!>
+!> Picking (WindowProxy%pick): a DrawableTrajectory picks what its artists
+!> draw, as drawn (in trace mode, up to the current time): a curve's segments
+!> (its chunks skipped by their bounds when far from the cursor), with the
+!> point and the time there (interpolated); a segment artist's segments; a
+!> marker artist's start, end and intermediate markers, with their times.
+!> Lines are reached within the tolerance plus half their width, markers
+!> plus half their size. Each artist gives its best hit: the closest to the
+!> cursor (and of those, the nearest).
 module vkf_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
     use vkf_math, only: wp
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, SOURCE_ZERO, SOURCE_POSOPT, &
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
-    use vkf_frames, only: ReferenceFrame
+    use vkf_frames, only: ReferenceFrame, PickHit, add_pick_hit, PICK_CURVE, PICK_SEGMENT, PICK_MARKER
+    use vkf_pick, only: PickCamera, point_pick, segment_pick, sphere_near
     use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_line_points_changed, &
                          vkf_ribbon_create, &
                          vkf_line_set_range, &
@@ -318,6 +328,7 @@ module vkf_artists
         procedure :: frame_info => drawable_frame_info
         procedure :: build_contents => drawable_build_contents
         procedure :: update => drawable_update
+        procedure :: pick => drawable_pick
     end type DrawableTrajectory
 
     interface DrawableTrajectory
@@ -2215,6 +2226,260 @@ contains
         class(TrajectoryArtist), pointer :: a
         a => self%artists(i)%p
     end function artist
+
+    !> Picking: what the artists draw (see the module documentation), then
+    !> the frame's origin (if it shows axes or its name label).
+    subroutine drawable_pick(self, cam, to_root, hits, n)
+        class(DrawableTrajectory), intent(in), target :: self
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: to_root(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        integer :: k
+        if (self%contents_shown()) then
+            do k = 1, self%n_artists
+                select type (a => self%artists(k)%p)
+                class is (CurveArtist)
+                    call curve_pick(a, self, cam, to_root, hits, n)
+                class is (SegmentArtist)
+                    call segment_artist_pick(a, self, cam, to_root, hits, n)
+                class is (MarkerArtist)
+                    call marker_pick(a, self, cam, to_root, hits, n)
+                end select
+            end do
+        end if
+        call self%ReferenceFrame%pick(cam, to_root, hits, n)
+    end subroutine drawable_pick
+
+    !> A candidate closer to the cursor than the best so far (or as close, and nearer).
+    pure logical function better(pixels, depth, best_pixels, best_depth)
+        real(wp), intent(in) :: pixels, depth, best_pixels, best_depth
+        better = pixels < best_pixels - 0.5_wp .or. (pixels <= best_pixels + 0.5_wp .and. depth < best_depth)
+    end function better
+
+    !> A curve's best hit: on the segments drawn (and the trace tail).
+    subroutine curve_pick(a, frame, cam, m, hits, n)
+        class(CurveArtist), intent(in), target :: a
+        class(ReferenceFrame), intent(in), target :: frame
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: m(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        real(wp), dimension(:,:), pointer :: pos
+        real(wp) :: extra, lo(3), hi(3), c(3), p0(3), p1(3), px, s, depth, best_px, best_depth, best_s, t0, t1, frac
+        integer :: j, first, count, i1, i2, i, best_i, nd
+        logical :: xyz, tail
+        type(PickHit) :: h
+        if (.not. associated(a%traj) .or. .not. a%chain%is_built()) return
+        nd = a%n_drawn
+        if (nd < 1) return
+        extra = 0.5_wp * a%width_ * cam%pixel_ratio
+        xyz = is_position_xyz(a%sources_)
+        if (xyz) call a%traj%positions(pos)
+        best_px = huge(1.0_wp)
+        best_depth = huge(1.0_wp)
+        best_i = 0
+        best_s = 0.0_wp
+        tail = .false.
+        if (nd == 1) then                                       ! (a single point)
+            if (point_pick(cam, root_point(1), px, depth, extra)) then
+                best_px = px
+                best_depth = depth
+                best_i = 1
+            end if
+        end if
+        do j = 1, a%chain%num_chunks()                          ! the segments drawn, chunk by chunk
+            call a%chain%chunk_bounds(j, first, count, lo, hi)
+            i1 = first
+            i2 = min(first + count - 1, nd)
+            if (count < 2 .or. i2 <= i1) cycle
+            c = matmul(m(1:3, 1:3), 0.5_wp * (lo + hi)) + m(1:3, 4)
+            if (.not. sphere_near(cam, c, 0.5_wp * norm2(hi - lo), extra)) cycle       ! (a chunk far off: skipped)
+            p0 = root_point(i1)
+            do i = i1, i2 - 1
+                p1 = root_point(i + 1)
+                if (segment_pick(cam, p0, p1, px, s, depth, extra)) then
+                    if (better(px, depth, best_px, best_depth)) then
+                        best_px = px
+                        best_depth = depth
+                        best_i = i
+                        best_s = s
+                    end if
+                end if
+                p0 = p1
+            end do
+        end do
+        ! trace mode: the tail from the last point passed to the point at the time drawn
+        if (a%trace .and. a%tail_shown .and. nd < a%traj%num_times()) then
+            t0 = a%traj%time(nd)
+            t1 = a%traj%time(nd + 1)
+            frac = 0.0_wp
+            if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (a%tail_time - t0) / (t1 - t0)))
+            p0 = root_point(nd)
+            p1 = p0 + frac * (root_point(nd + 1) - p0)
+            if (segment_pick(cam, p0, p1, px, s, depth, extra)) then
+                if (better(px, depth, best_px, best_depth)) then
+                    best_px = px
+                    best_depth = depth
+                    best_i = nd
+                    best_s = s * frac
+                    tail = .true.
+                end if
+            end if
+        end if
+        if (best_i == 0) return
+        h%kind = PICK_CURVE
+        h%frame => frame
+        h%artist => a
+        h%trajectory => a%traj
+        h%index = best_i
+        h%local = local_point(best_i)
+        h%time = a%traj%time(best_i)
+        if (best_i < a%traj%num_times() .and. (best_i < nd .or. tail)) then
+            h%local = h%local + best_s * (local_point(best_i + 1) - h%local)
+            h%time = h%time + best_s * (a%traj%time(best_i + 1) - h%time)
+        end if
+        h%position = matmul(m(1:3, 1:3), h%local) + m(1:3, 4)
+        h%distance = best_depth
+        h%pixels = best_px
+        call add_pick_hit(hits, n, h)
+
+    contains
+
+        function local_point(i) result(v)
+            integer, intent(in) :: i
+            real(wp) :: v(3)
+            if (xyz) then
+                v = pos(:, i)
+            else
+                v = a%traj%point(i, a%sources_)
+            end if
+        end function local_point
+
+        function root_point(i) result(v)
+            integer, intent(in) :: i
+            real(wp) :: v(3)
+            v = matmul(m(1:3, 1:3), local_point(i)) + m(1:3, 4)
+        end function root_point
+
+    end subroutine curve_pick
+
+    !> A segment artist's best hit: on the segments drawn (as drawn: relative
+    !> ends included; a segment of no length isn't drawn).
+    subroutine segment_artist_pick(a, frame, cam, m, hits, n)
+        class(SegmentArtist), intent(in), target :: a
+        class(ReferenceFrame), intent(in), target :: frame
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: m(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        real(wp) :: extra, a0(3), b0(3), px, s, depth, best_px, best_depth, best_s
+        integer :: k, best_k
+        type(PickHit) :: h
+        if (.not. associated(a%traj) .or. a%n_drawn < 1) return
+        extra = 0.5_wp * a%width_ * cam%pixel_ratio
+        best_px = huge(1.0_wp)
+        best_depth = huge(1.0_wp)
+        best_k = 0
+        best_s = 0.0_wp
+        do k = 1, a%n_drawn
+            call a%drawn_segment(k, a0, b0)
+            if (all(a0 == b0)) cycle
+            if (segment_pick(cam, matmul(m(1:3, 1:3), a0) + m(1:3, 4), matmul(m(1:3, 1:3), b0) + m(1:3, 4), &
+                             px, s, depth, extra)) then
+                if (better(px, depth, best_px, best_depth)) then
+                    best_px = px
+                    best_depth = depth
+                    best_k = k
+                    best_s = s
+                end if
+            end if
+        end do
+        if (best_k == 0) return
+        call a%drawn_segment(best_k, a0, b0)
+        h%kind = PICK_SEGMENT
+        h%frame => frame
+        h%artist => a
+        h%trajectory => a%traj
+        h%index = best_k
+        h%time = a%traj%time(min(a%traj%num_times(), 1 + (best_k - 1) * a%stride_))
+        h%local = a0 + best_s * (b0 - a0)
+        h%position = matmul(m(1:3, 1:3), h%local) + m(1:3, 4)
+        h%distance = best_depth
+        h%pixels = best_px
+        call add_pick_hit(hits, n, h)
+    end subroutine segment_artist_pick
+
+    !> A marker artist's best hit: its start, end and intermediate markers drawn.
+    subroutine marker_pick(a, frame, cam, m, hits, n)
+        class(MarkerArtist), intent(in), target :: a
+        class(ReferenceFrame), intent(in), target :: frame
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: m(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        real(wp) :: extra, v(3), px, depth, best_px, best_depth, best_v(3)
+        integer :: k, which, best_which, best_k, npts
+        type(PickHit) :: h
+        extra = 0.5_wp * a%size_ * cam%pixel_ratio
+        best_px = huge(1.0_wp)
+        best_depth = huge(1.0_wp)
+        best_which = 0
+        best_k = 0
+        best_v = 0.0_wp
+        do which = 1, 3                                         ! start, end, the intermediate ones
+            select case (which)
+            case (1)
+                if (a%drawn_marker(MARKER_START, v)) call consider(MARKER_START, 0)
+            case (2)
+                if (a%drawn_marker(MARKER_END, v)) call consider(MARKER_END, 0)
+            case (3)
+                do k = 1, a%n_inter_drawn
+                    if (a%drawn_marker(MARKER_INTERMEDIATE, v, k)) call consider(MARKER_INTERMEDIATE, k)
+                end do
+            end select
+        end do
+        if (best_which == 0) return
+        h%kind = PICK_MARKER
+        h%frame => frame
+        h%artist => a
+        h%marker = best_which
+        npts = 0
+        if (associated(a%traj)) then
+            h%trajectory => a%traj
+            npts = source_points(a%traj, a%sources_)
+        end if
+        select case (best_which)
+        case (MARKER_START)
+            h%index = min(1, npts)
+            if (npts > 0) h%time = a%traj%time(1)
+        case (MARKER_END)
+            h%index = npts
+            if (npts > 0) h%time = a%traj%time(npts)
+        case default
+            h%index = best_k
+            h%time = a%inter_t(best_k)
+        end select
+        h%local = best_v
+        h%position = matmul(m(1:3, 1:3), best_v) + m(1:3, 4)
+        h%distance = best_depth
+        h%pixels = best_px
+        call add_pick_hit(hits, n, h)
+
+    contains
+
+        subroutine consider(kind, k)
+            integer, intent(in) :: kind, k
+            if (.not. point_pick(cam, matmul(m(1:3, 1:3), v) + m(1:3, 4), px, depth, extra)) return
+            if (.not. better(px, depth, best_px, best_depth)) return
+            best_px = px
+            best_depth = depth
+            best_which = kind
+            best_k = k
+            best_v = v
+        end subroutine consider
+
+    end subroutine marker_pick
 
     function drawable_frame_info(self) result(info)
         class(DrawableTrajectory), intent(in) :: self

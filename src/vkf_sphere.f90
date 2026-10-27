@@ -40,8 +40,9 @@
 module vkf_sphere
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
-    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
-    use vkf_frames, only: ReferenceFrame
+    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, quat_to_matrix
+    use vkf_frames, only: ReferenceFrame, PickHit, pick_ellipsoid
+    use vkf_pick, only: PickCamera
     use vkf_layer, only: vkf_image_read, vkf_image_delete, vkf_transform_create, vkf_transform_set_matrix, &
                          vkf_node_add_child, vkf_node_delete, mesh_set_material, vkf_mesh_set_twilight, vkf_compile_node, &
                          vkf_sphere_lod_create, vkf_sphere_lod_add, vkf_sphere_lod_requested
@@ -95,6 +96,7 @@ module vkf_sphere
         procedure :: set_resolution
         procedure :: frame_info => sphere_frame_info
         procedure :: bound => sphere_bound
+        procedure :: pick => sphere_pick
         procedure :: build_contents => sphere_build_contents
         procedure :: update => sphere_update
         procedure :: num_lod_meshes
@@ -323,6 +325,22 @@ contains
         center = self%sphere_position_
         radius = maxval(self%radii())
     end subroutine sphere_bound
+
+    !> Picking: the ellipsoid (exact), with the geodetic latitude and longitude
+    !> of the point hit (in the body's axes: sphere_attitude); else the frame's
+    !> origin.
+    subroutine sphere_pick(self, cam, to_root, hits, n)
+        class(Sphere), intent(in), target :: self
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: to_root(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        if (self%contents_shown()) then
+            if (pick_ellipsoid(self, cam, to_root, self%sphere_position_, quat_to_matrix(self%sphere_attitude_), &
+                          self%radii(), .true., hits, n)) return
+        end if
+        call self%ReferenceFrame%pick(cam, to_root, hits, n)
+    end subroutine sphere_pick
 
     function sphere_frame_info(self) result(info)
         class(Sphere), intent(in) :: self

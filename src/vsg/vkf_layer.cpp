@@ -1491,6 +1491,13 @@ VKF_API int vkf_viewer_resize(void* viewer, int width, int height)
 // labels) are scaled by it; the host also resizes (vkf_viewer_resize) to the
 // new framebuffer size, which rebuilds the swapchain (on macOS VSG also takes
 // the layer's scale from its window then).
+// Framebuffer pixels per window unit (2 on Retina; a host's as given).
+VKF_API double vkf_viewer_pixel_ratio(void* viewer)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    return v ? static_cast<double>(v->pixelRatio) : 1.0;
+}
+
 VKF_API int vkf_viewer_set_pixel_ratio(void* viewer, double ratio)
 {
     auto v = static_cast<Viewer*>(viewer);

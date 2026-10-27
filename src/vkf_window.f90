@@ -49,12 +49,22 @@
 !> in and out, in the root frame (both views' frames as they move), over the
 !> wall-clock time given; a mouse press, `stop_transition` or another flight
 !> ends it.
+!>
+!> Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
+!> point of the window (x, y as the event handler's: -1 to 1, y up), nearest
+!> first, as drawn at the last frame: trajectory curves (the point and the
+!> time there), segments and markers (within a few pixels: `tolerance`, plus
+!> half a line's width or a marker's size), bodies (the point on the surface,
+!> with latitude and longitude) and frames' origins. Each frame of the scene
+!> tests its own contents (ReferenceFrame%pick, vkf_pick); nothing is done
+!> until `pick` is called.
 module vkf_window
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float
     use, intrinsic :: iso_fortran_env, only: int64
-    use vkf_math, only: wp, rigid_inverse
-    use vkf_frames, only: ReferenceFrame
+    use vkf_math, only: wp, rigid_inverse, identity_matrix
+    use vkf_frames, only: ReferenceFrame, PickHit
+    use vkf_pick, only: PickCamera, pick_camera
     use vkf_clock, only: SimulationClock
     use vkf_view, only: View, PERSPECTIVE, camera_between, transform_camera
     use vkf_hud, only: HUDText
@@ -67,7 +77,7 @@ module vkf_window
                          vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close, &
                          vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set, vkf_viewer_remove_node, &
                          vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio, &
-                         vkf_viewer_events, vkf_viewer_size
+                         vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
 
     implicit none
 
@@ -185,6 +195,8 @@ module vkf_window
         ! the camera (OpenFrames' trackball transformation), smooth transitions
         procedure :: get_camera, set_camera
         procedure :: set_view_transition, view_transition, in_transition, stop_transition
+        ! picking (see the module documentation)
+        procedure :: pick => window_pick
         ! HUD text (OpenFrames' RenderRectangle HUD)
         procedure :: add_hud_text, remove_hud_text
         procedure :: set_sky, sky
@@ -661,6 +673,74 @@ contains
         real(wp), intent(in), optional :: duration
         if (self%n_views > 0) call self%select_view(modulo(self%current - 2, self%n_views) + 1, duration)
     end subroutine previous_view
+
+    ! ==================================================================
+    ! picking
+
+    !> What is under point (x, y) of the window (-1 to 1 across it, y up: as
+    !> the event handler's positions), nearest first (see the module
+    !> documentation): none before the first frame. `tolerance`: how close
+    !> lines, markers and frames' origins must be, in window units (logical
+    !> pixels; default 4), beyond half a line's width or a marker's size.
+    subroutine window_pick(self, x, y, hits, tolerance)
+        class(WindowProxy), intent(in), target :: self
+        real(wp), intent(in) :: x, y
+        type(PickHit), allocatable, intent(out) :: hits(:)
+        real(wp), intent(in), optional :: tolerance
+        class(ReferenceFrame), pointer :: root
+        type(PickCamera) :: cam
+        type(PickHit) :: h
+        real(wp) :: eye(3), center(3), up(3), ratio, tol
+        integer(c_int) :: width, height
+        integer :: n, i, j
+        n = 0
+        allocate(hits(8))
+        if (.not. self%is_open() .or. .not. associated(self%shown) .or. .not. associated(self%scene)) then
+            hits = hits(1:0)
+            return
+        end if
+        root => self%scene%frame()
+        if (.not. associated(root) .or. vkf_viewer_size(self%viewer_, width, height) /= 0) then
+            hits = hits(1:0)
+            return
+        end if
+        call self%get_camera(eye, center, up, in_root=.true.)
+        ratio = vkf_viewer_pixel_ratio(self%viewer_)
+        tol = 4.0_wp
+        if (present(tolerance)) tol = tolerance
+        cam = pick_camera(eye, center, up, self%shown%projection_type() == PERSPECTIVE, self%shown%field_of_view(), &
+                          aspect_ratio(self), self%shown%orthographic_bounds(), int(width), int(height), x, y, tol * ratio)
+        cam%pixel_ratio = ratio
+        call pick_frame(root, identity_matrix())                  ! (the root frame's coordinates: the camera's)
+        do i = 2, n                                               ! nearest first
+            h = hits(i)
+            j = i - 1
+            do while (j >= 1)
+                if (hits(j)%distance <= h%distance) exit
+                hits(j + 1) = hits(j)
+                j = j - 1
+            end do
+            hits(j + 1) = h
+        end do
+        hits = hits(1:n)
+
+    contains
+
+        !> Frame f (at transform m to the root) and its children, under each of
+        !> their parents.
+        recursive subroutine pick_frame(f, m)
+            class(ReferenceFrame), intent(in), target :: f
+            real(wp), intent(in) :: m(4,4)
+            class(ReferenceFrame), pointer :: c
+            integer :: k
+            call f%pick(cam, m, hits, n)
+            do k = 1, f%num_children()
+                c => f%child(k)
+                call pick_frame(c, matmul(m, c%local_matrix()))
+            end do
+        end subroutine pick_frame
+
+    end subroutine window_pick
 
     ! ==================================================================
     ! the camera

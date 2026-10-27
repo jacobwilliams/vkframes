@@ -17,7 +17,7 @@ module vkf_layer
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
-    public :: vkf_viewer_events, vkf_viewer_size
+    public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
     public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_compile_node, vkf_viewer_any
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
@@ -97,6 +97,12 @@ module vkf_layer
             integer(c_int), intent(out) :: events(12, *)
             integer(c_int), value :: capacity
         end function vkf_viewer_events
+
+        real(c_double) function vkf_viewer_pixel_ratio(viewer) bind(C, name="vkf_viewer_pixel_ratio")
+            import :: c_ptr, c_double
+            implicit none
+            type(c_ptr), value :: viewer
+        end function vkf_viewer_pixel_ratio
 
         integer(c_int) function vkf_viewer_size(viewer, width, height) bind(C, name="vkf_viewer_size")
             import :: c_ptr, c_int

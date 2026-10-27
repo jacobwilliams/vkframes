@@ -34,8 +34,9 @@
 module vkf_terrain
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
-    use vkf_math, only: wp
-    use vkf_frames, only: ReferenceFrame
+    use vkf_math, only: wp, identity_matrix
+    use vkf_frames, only: ReferenceFrame, PickHit, pick_ellipsoid
+    use vkf_pick, only: PickCamera
     use vkf_layer, only: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_map_alive, &
                          vkf_rocky_add_image, vkf_rocky_add_elevation, vkf_rocky_elevation, vkf_node_add_child, &
                          vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_viewer_any
@@ -79,6 +80,7 @@ module vkf_terrain
         procedure :: profile, units_per_meter, body_radius, elevation
         procedure :: frame_info => terrain_frame_info
         procedure :: bound => terrain_bound
+        procedure :: pick => terrain_pick
         procedure :: build_contents => terrain_build_contents
         procedure :: update => terrain_update
     end type TerrainBody
@@ -320,5 +322,22 @@ contains
         end if
         if (status /= 0) write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not add layer '//layer%uri
     end subroutine apply_layer
+
+    !> Picking: a sphere of the body's radius (not the terrain's heights), with
+    !> the latitude and longitude of the point hit; else the frame's origin.
+    subroutine terrain_pick(self, cam, to_root, hits, n)
+        class(TerrainBody), intent(in), target :: self
+        type(PickCamera), intent(in) :: cam
+        real(wp), intent(in) :: to_root(4,4)
+        type(PickHit), allocatable, intent(inout) :: hits(:)
+        integer, intent(inout) :: n
+        real(wp) :: r, m(4,4)
+        r = self%body_radius()
+        if (self%contents_shown() .and. r > 0.0_wp) then
+            m = identity_matrix()
+            if (pick_ellipsoid(self, cam, to_root, [0.0_wp, 0.0_wp, 0.0_wp], m(1:3, 1:3), [r, r, r], .true., hits, n)) return
+        end if
+        call self%ReferenceFrame%pick(cam, to_root, hits, n)
+    end subroutine terrain_pick
 
 end module vkf_terrain

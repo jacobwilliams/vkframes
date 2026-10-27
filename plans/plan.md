@@ -924,11 +924,53 @@ yet planned in detail. Those marked **(first)** are the suggested order to
 start in: the most useful for the least new machinery.
 
 Interaction:
-- [ ] **(first)** Picking: a click on a trajectory, frame or body gives the
-      program what was hit (the frame, the trajectory point, its time and
-      position), through the WindowEventHandler (e.g. a `pick` procedure, or
-      `WindowProxy%pick(x, y)` from `button_press`). Built on the event
-      handler; e.g. click a point of an orbit to go to its time.
+- [x] Picking (`WindowProxy%pick(x, y, hits, tolerance)`, from the event
+      handler's positions): what is under a point of the window, nearest
+      first, as drawn at the last frame, as `PickHit`s (kind, frame, artist,
+      trajectory, index, time, position in the root and the frame, depth,
+      pixels from the cursor, latitude and longitude).
+      - All in Fortran (`src/vkf_pick.f90`: the PickCamera from the window's
+        camera and projection; points and segments on the screen, with
+        perspective-correct fractions; rays against ellipsoids; bounding
+        spheres). Each frame type picks its own contents
+        (`ReferenceFrame%pick`, overridden): curves (their chunks skipped by
+        the LineChain's bounding boxes; the point and the interpolated time;
+        trace mode: what is drawn, and the tail), segments (as drawn,
+        relative ends included), markers (start, end, intermediate, with
+        their times), Spheres (the ellipsoid, exact, with geodetic latitude
+        and longitude), TerrainBody (a sphere of the body's radius), Model
+        (its bounding sphere), and frames' origins (if they show axes or a
+        name label). Lines are reached within the tolerance plus half their
+        width, markers plus half their size. Nothing runs until `pick` is
+        called (no cost per frame).
+      - VSG's intersectors (LineSegmentIntersector, PolytopeIntersector)
+        can't see vkframes' trajectories (their points are in storage
+        buffers, read by the shaders, not vertex arrays), so they aren't
+        used; later, for models' triangles (below).
+      - Tested: `test/test_pick.f90` (in a window: a body with its latitude
+        and longitude, a curve with the interpolated time and the tolerance,
+        markers, segments, trace mode with the tail; the perspective-correct
+        fraction). Shown in `example/pick_trajectories.f90` (hover, select,
+        go to the time) and the Qt demo (a click shows what is picked).
+      - [ ] Later: models' triangles (VSG's LineSegmentIntersector on the
+            model's subgraph, through a thin C++ call), terrain's heights
+            (Rocky), RibbonArtist surfaces and CustomLineSegments, and labels
+            and HUD text.
+- [ ] Callouts from picks, with what exists: HUD text that can be moved,
+      resized and restyled after it is shown (position, size, font, color;
+      now only its text can change), and frame labels whose text and color
+      can change after they are shown. Then a pick can show a readout next to
+      what was clicked (e.g. kept at the object's projected screen position
+      each frame). Needs no new dependency.
+- [ ] A GUI in vkframes' own windows: Dear ImGui through vsgImGui (both on
+      conda-forge: `vsgimgui`, `imgui`) for panels, buttons, sliders and text
+      fields drawn in the Vulkan window, without Qt; e.g. a popup placed at a
+      picked object's projected position (a callout that follows it). Driven
+      from Fortran through a small set of widgets exposed as C functions (an
+      `on_gui` procedure in the WindowEventHandler, called each frame), to keep
+      the C++ layer thin; ImGui takes the mouse and keys it uses, so clicks on
+      a panel don't move the camera. (Panels placed in the 3D world, "Qt
+      widgets in 3D", stay deferred: mainly for VR.)
 - [ ] Built-in time controls: an optional time slider or HUD readout in a
       window of its own, with keys to play, pause and step; calendar times
       (UTC from a Julian date or MJD epoch) formatted for HUD text.
