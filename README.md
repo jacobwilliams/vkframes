@@ -26,7 +26,8 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
 - **Bodies**:
   - `Sphere`: a sphere or exact ellipsoid (such as WGS84) with day and night
     textures and a material. Its radius, color and material can change while
-    it's shown.
+    it's shown. Level of detail keeps its outline smooth however close the
+    view, with finer meshes only when needed.
   - `Model`: a 3D model file (`.3ds`, `.obj`, glTF, OSG formats through
     vsgXchange).
 - **Trajectories**:

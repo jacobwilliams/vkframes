@@ -33,6 +33,7 @@ module vkf_layer
     public :: vkf_rocky_available, vkf_rocky_map_create, vkf_rocky_map_settings, vkf_rocky_map_radius, vkf_rocky_map_alive
     public :: vkf_rocky_add_image, vkf_rocky_add_elevation, vkf_rocky_elevation
     public :: mesh_set_material
+    public :: vkf_sphere_lod_create, vkf_sphere_lod_add, vkf_sphere_lod_requested
 
     interface
 
@@ -248,6 +249,28 @@ module vkf_layer
             import :: c_ptr
             implicit none
         end function vkf_viewer_any
+
+        !> A sphere's level of detail for a body of `radius` (its largest semi-axis).
+        type(c_ptr) function vkf_sphere_lod_create(radius) bind(C, name="vkf_sphere_lod_create")
+            import :: c_ptr, c_double
+            implicit none
+            real(c_double), value :: radius
+        end function vkf_sphere_lod_create
+
+        !> Add a mesh of `segments` segments around the equator.
+        integer(c_int) function vkf_sphere_lod_add(lod, mesh, segments) bind(C, name="vkf_sphere_lod_add")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: lod, mesh
+            integer(c_int), value :: segments
+        end function vkf_sphere_lod_add
+
+        !> The most segments any view wanted since the last call (0 if not drawn).
+        integer(c_int) function vkf_sphere_lod_requested(lod) bind(C, name="vkf_sphere_lod_requested")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: lod
+        end function vkf_sphere_lod_requested
 
         integer(c_int) function vkf_line_set_range(line, first, n) bind(C, name="vkf_line_set_range")
             import :: c_ptr, c_int

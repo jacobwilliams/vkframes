@@ -623,6 +623,54 @@ namespace
         }
     };
 
+    // A sphere's level of detail: meshes of the same body at several
+    // resolutions (children, each with its segments around the equator), of
+    // which the record traversal draws, for the view being recorded, the
+    // coarsest whose facets stay within sphere_lod_tolerance pixels of the true
+    // outline: a sphere of radius r pixels on screen needs pi * sqrt(r / (2 *
+    // tolerance)) segments around (a facet of angle t departs from the circle
+    // by r t^2 / 8). Without such a mesh yet, it draws the finest it has, and
+    // records the segments wanted (`requested`, the most of any view), for
+    // Fortran to build that mesh (vkf_sphere_lod_requested). Meshes are built
+    // in Fortran (src/vkf_sphere.f90); this only chooses.
+    constexpr double sphere_lod_tolerance = 0.5;   // framebuffer pixels
+
+    class SphereLod : public vsg::Inherit<vsg::Group, SphereLod>
+    {
+    public:
+        double radius = 1.0;                       // the bounding sphere (local coordinates)
+        std::vector<int> segments;                 // of each child, increasing
+        mutable int requested = 0;                 // segments wanted since the last request read
+
+        void traverse(vsg::RecordTraversal& visitor) const override
+        {
+            if (children.empty()) return;
+            auto state = visitor.getState();
+            const vsg::dmat4 modelView = state->modelviewMatrixStack.top();
+            const vsg::dmat4 projection = state->projectionMatrixStack.top();
+            float viewport[4];
+            recorded_viewport(visitor, viewport);
+            const double f = 0.5 * std::max(std::abs(projection[0][0]) * viewport[0], std::abs(projection[1][1]) * viewport[1]);
+            double pixels;                         // the sphere's radius on screen
+            if (projection[3][3] == 1.0)           // orthographic
+            {
+                pixels = radius * f * vsg::length(vsg::dvec3(modelView[0][0], modelView[0][1], modelView[0][2]));
+            }
+            else
+            {
+                const vsg::dvec3 eye = vsg::inverse(modelView) * vsg::dvec3(0.0, 0.0, 0.0);
+                const double d2 = vsg::length2(eye) - radius * radius;
+                pixels = (d2 > 1.0e-12 * radius * radius) ? f * radius / std::sqrt(d2) : 1.0e12;   // (inside: the finest)
+            }
+            const int wanted = static_cast<int>(std::ceil(vsg::PI * std::sqrt(pixels / (2.0 * sphere_lod_tolerance))));
+            requested = std::max(requested, wanted);
+            std::size_t chosen = children.size() - 1;   // the finest, if none is fine enough
+            for (std::size_t i = 0; i < children.size(); ++i)
+                if (segments[i] >= wanted) { chosen = i; break; }
+            children[chosen]->accept(visitor);
+        }
+    };
+
     // The camera's view: OpenFrames' FollowingTrackball. The trackball keeps
     // eye, center and up in a view frame's coordinates (it only moves those),
     // and the view matrix is lookAt * worldToView, with worldToView (world to
@@ -1621,6 +1669,46 @@ VKF_API int vkf_node_bound(void* node, double* center, double* radius)
 }
 
 // A transform node (a group whose children are placed by a 4x4 matrix), initially identity.
+// A sphere's level of detail (SphereLod) for a body of `radius` (its largest
+// semi-axis) centered on the node's origin; meshes are added with
+// vkf_sphere_lod_add.
+VKF_API void* vkf_sphere_lod_create(double radius)
+{
+    return guarded("vkf_sphere_lod_create", static_cast<void*>(nullptr), [&]() -> void* {
+        auto lod = SphereLod::create();
+        lod->radius = radius;
+        auto n = std::make_unique<Node>();
+        n->node = lod;
+        return n.release();
+    });
+}
+
+// Add `mesh` (a node handle) of `segments` segments around the equator.
+VKF_API int vkf_sphere_lod_add(void* lod, void* mesh, int segments)
+{
+    auto l = static_cast<Node*>(lod);
+    auto m = static_cast<Node*>(mesh);
+    if (!l || !m) return -1;
+    auto s = l->node.cast<SphereLod>();
+    if (!s) return -1;
+    auto pos = std::upper_bound(s->segments.begin(), s->segments.end(), segments) - s->segments.begin();
+    s->segments.insert(s->segments.begin() + pos, segments);
+    s->children.insert(s->children.begin() + pos, m->node);
+    return 0;
+}
+
+// The most segments any view wanted since the last call (0 if not drawn).
+VKF_API int vkf_sphere_lod_requested(void* lod)
+{
+    auto l = static_cast<Node*>(lod);
+    if (!l) return -1;
+    auto s = l->node.cast<SphereLod>();
+    if (!s) return -1;
+    const int r = s->requested;
+    s->requested = 0;
+    return r;
+}
+
 VKF_API void* vkf_transform_create()
 {
     return guarded("vkf_transform_create", static_cast<void*>(nullptr), [&]() -> void* {

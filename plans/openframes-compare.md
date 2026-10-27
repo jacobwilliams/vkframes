@@ -351,6 +351,13 @@ uploading all the points. OpenGL uploads lazily.
   out points for distant views: it draws every point. Its only level of
   detail is for a `Sphere`'s mesh (`setAutoLOD`) and the spacing of
   `LatLonGrid` lines.
+  - Level of detail for other elements: OpenFrames has `Sphere::setAutoLOD`
+    (off by default; it rebuilds the mesh on the CPU as the distance
+    changes). vkframes now has it too, `Sphere%set_auto_lod`, on by default:
+    meshes of 32 to 1024 segments around, the coarsest within half a pixel
+    of the outline drawn per view, each built when first wanted, with no
+    rebuilds. Neither library thins out segments, markers or reference
+    shapes; those are listed in `plans/plan.md` as optional future upgrades.
   - [x] **Done (2026-10-27):** level of detail for curves
     (`CurveArtist%set_level_of_detail`, on by default).
     - Each chunk of a strip's points keeps its bounding sphere and, for

@@ -18,24 +18,37 @@
 !> VKFRAMES_DATA_PATH, e.g. data/'s 2k_earth_daymap.jpg and
 !> 2k_earth_nightmap.jpg). The textures and the mesh resolution are read when
 !> a window first shows the sphere: set them before that. The radius, scale,
-!> color and material can change at any time: the mesh is built once, then
-!> scaled by its transform (radii / the built radii), and the color is applied
+!> color and material can change at any time: the meshes are built once, then
+!> scaled by their transform (radii / the built radii), and the color is applied
 !> through the material (the shaders multiply the vertex color, white here, by
-!> the diffuse color). (Not done yet: automatic level of detail; its setting
-!> is kept.)
+!> the diffuse color).
+!>
+!> Level of detail (`set_auto_lod`, on by default; OpenFrames' setAutoLOD): the
+!> body has meshes of 32, 64, ... 1024 segments around (half as many from pole
+!> to pole), and each view draws the coarsest whose facets stay within half a
+!> pixel of the true outline (src/vsg/vkf_layer.cpp: SphereLod), so that the
+!> body isn't faceted however close the view. Meshes are built when a view
+!> first wants them (the 128-segment one at once), in the sphere's update.
+!> Off: one mesh of `set_resolution`'s segments (default 128 x 64).
 module vkf_sphere
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix
     use vkf_frames, only: ReferenceFrame
     use vkf_layer, only: vkf_image_read, vkf_image_delete, vkf_transform_create, vkf_transform_set_matrix, &
-                         vkf_node_add_child, vkf_node_delete, mesh_set_material
+                         vkf_node_add_child, vkf_node_delete, mesh_set_material, vkf_compile_node, &
+                         vkf_sphere_lod_create, vkf_sphere_lod_add, vkf_sphere_lod_requested
     use vkf_geometry, only: ellipsoid_create
     use vkf_files, only: find_data_file
 
     implicit none
 
     private
+
+    !> The level-of-detail meshes: segments around the equator (half as many
+    !> from pole to pole); the one built at once.
+    integer, parameter :: lod_segments(6) = [32, 64, 128, 256, 512, 1024]
+    integer, parameter :: lod_first = 3
 
     !> A sphere or ellipsoid (see the module documentation).
     type, extends(ReferenceFrame), public :: Sphere
@@ -47,14 +60,19 @@ module vkf_sphere
         real(wp) :: built_radii(3) = 1.0_wp                   !! the mesh's semi-axes
         logical :: textured = .false.                         !! (the color is not used)
         character(len=:), allocatable :: texture, night_texture
-        logical :: auto_lod_ = .false.
-        integer :: n_lon = 128, n_lat = 64
+        logical :: auto_lod_ = .true.
+        integer :: n_lon = 128, n_lat = 64                    !! without level of detail
         ! material (VSG's Phong; OpenGL's default: no specular reflection)
         real(wp) :: ambient_(4) = 1.0_wp, diffuse_(4) = 1.0_wp
         real(wp) :: specular_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], emission_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
         real(wp) :: shininess_ = 0.0_wp
         type(c_ptr) :: sphere_node = c_null_ptr              !! transform of the body within the frame
-        type(c_ptr) :: mesh = c_null_ptr
+        type(c_ptr) :: mesh = c_null_ptr                     !! without level of detail
+        ! level of detail
+        type(c_ptr) :: lod_node = c_null_ptr                 !! chooses among the meshes, per view
+        type(c_ptr) :: lod_mesh(size(lod_segments)) = c_null_ptr
+        type(c_ptr) :: image = c_null_ptr, night = c_null_ptr   !! the textures, for meshes built later
+        logical :: shown = .false.                            !! (meshes built later are compiled)
     contains
         procedure :: set_radius, radius
         procedure :: set_color => sphere_set_color
@@ -69,6 +87,8 @@ module vkf_sphere
         procedure :: frame_info => sphere_frame_info
         procedure :: bound => sphere_bound
         procedure :: build_contents => sphere_build_contents
+        procedure :: update => sphere_update
+        procedure :: num_lod_meshes
     end type Sphere
 
     interface Sphere
@@ -219,20 +239,33 @@ contains
     end subroutine material
 
     !> The material, with the diffuse color times the body's color (without a texture).
+    !> The material, with the diffuse color times the body's color (without a
+    !> texture), on every mesh built.
     subroutine apply_material(self)
         type(Sphere), intent(inout) :: self
+        integer :: k
+        call apply_material_to(self, self%mesh)
+        do k = 1, size(self%lod_mesh)
+            call apply_material_to(self, self%lod_mesh(k))
+        end do
+    end subroutine apply_material
+
+    subroutine apply_material_to(self, mesh)
+        type(Sphere), intent(in) :: self
+        type(c_ptr), intent(in) :: mesh
         real(wp) :: diffuse(4)
-        if (.not. c_associated(self%mesh)) return
+        if (.not. c_associated(mesh)) return
         diffuse = self%diffuse_
         if (.not. self%textured) diffuse = diffuse * self%color()
-        if (mesh_set_material(self%mesh, real(self%ambient_, c_float), real(diffuse, c_float), &
+        if (mesh_set_material(mesh, real(self%ambient_, c_float), real(diffuse, c_float), &
                               real(self%specular_, c_float), real(self%emission_, c_float), &
                               real(self%shininess_, c_float)) /= 0) &
             write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not set the material'
-    end subroutine apply_material
+    end subroutine apply_material_to
 
-    !> Adjust the detail to the viewing distance. Kept for later; the mesh has a
-    !> fixed resolution for now (`set_resolution`).
+    !> Level of detail (default on; see the module documentation): meshes of
+    !> several resolutions, the one drawn chosen per view. Off: one mesh of
+    !> `set_resolution`'s segments. Set it before a window shows the sphere.
     subroutine set_auto_lod(self, lod)
         class(Sphere), intent(inout) :: self
         logical, intent(in) :: lod
@@ -245,6 +278,8 @@ contains
     end function auto_lod
 
     !> The mesh resolution: segments in longitude and latitude (default 128 x 64).
+    !> The mesh resolution without level of detail: segments in longitude and
+    !> latitude (default 128 x 64).
     subroutine set_resolution(self, n_lon, n_lat)
         class(Sphere), intent(inout) :: self
         integer, intent(in) :: n_lon, n_lat
@@ -270,22 +305,81 @@ contains
     subroutine sphere_build_contents(self, viewer, group)
         class(Sphere), intent(inout) :: self
         type(c_ptr), intent(in) :: viewer, group
-        type(c_ptr) :: image, night
+        type(c_ptr) :: image, night, body
         image = read_texture(self, self%texture)
         night = read_texture(self, self%night_texture)
         self%textured = c_associated(image)
         self%built_radii = self%radii()
-        self%mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], image, &
-                                     self%n_lon, self%n_lat, night)
-        if (c_associated(image)) call vkf_image_delete(image)
-        if (c_associated(night)) call vkf_image_delete(night)
-        if (.not. c_associated(self%mesh)) return
+        if (self%auto_lod_) then                           ! meshes chosen per view, built when wanted
+            self%image = image                              ! (kept for those built later)
+            self%night = night
+            self%shown = c_associated(viewer)
+            self%lod_node = vkf_sphere_lod_create(maxval(self%built_radii))
+            call build_lod_mesh(self, lod_first, compile=.false.)    ! (compiled with the scene)
+            if (.not. c_associated(self%lod_mesh(lod_first))) return
+            body = self%lod_node
+        else
+            self%mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], image, &
+                                         self%n_lon, self%n_lat, night)
+            if (c_associated(image)) call vkf_image_delete(image)
+            if (c_associated(night)) call vkf_image_delete(night)
+            if (.not. c_associated(self%mesh)) return
+            body = self%mesh
+        end if
         call apply_material(self)
         self%sphere_node = vkf_transform_create()
         call update_sphere_transform(self)
-        if (vkf_node_add_child(self%sphere_node, self%mesh) /= 0 .or. vkf_node_add_child(group, self%sphere_node) /= 0) &
+        if (vkf_node_add_child(self%sphere_node, body) /= 0 .or. vkf_node_add_child(group, self%sphere_node) /= 0) &
             write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not build the scene'
     end subroutine sphere_build_contents
+
+    !> Build level-of-detail mesh k (lod_segments(k) segments around) and add it
+    !> to the level-of-detail node (compiled for the windows if `compile`).
+    subroutine build_lod_mesh(self, k, compile)
+        type(Sphere), intent(inout) :: self
+        integer, intent(in) :: k
+        logical, intent(in) :: compile
+        type(c_ptr) :: mesh
+        mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], self%image, &
+                                lod_segments(k), lod_segments(k) / 2, self%night)
+        if (.not. c_associated(mesh)) then
+            write(*, '(a,i0,a)') 'vkframes: Sphere '//self%name()//': could not build its ', lod_segments(k), '-segment mesh'
+            return
+        end if
+        self%lod_mesh(k) = mesh
+        call apply_material_to(self, mesh)
+        if (compile) then
+            if (vkf_compile_node(mesh) /= 0) write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not compile a mesh'
+        end if
+        if (vkf_sphere_lod_add(self%lod_node, mesh, int(lod_segments(k), c_int)) /= 0) &
+            write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not add a mesh'
+    end subroutine build_lod_mesh
+
+    !> Update the frame (followed trajectories, children) and, with level of
+    !> detail, build the mesh the views have wanted if it isn't built yet (the
+    !> coarsest with as many segments as wanted, or the finest).
+    recursive subroutine sphere_update(self, t)
+        class(Sphere), intent(inout) :: self
+        real(wp), intent(in) :: t
+        integer :: wanted, k
+        call self%ReferenceFrame%update(t)
+        if (.not. c_associated(self%lod_node)) return
+        wanted = vkf_sphere_lod_requested(self%lod_node)
+        if (wanted <= 0) return
+        k = findloc(lod_segments >= wanted, .true., 1)
+        if (k == 0) k = size(lod_segments)
+        if (.not. c_associated(self%lod_mesh(k))) call build_lod_mesh(self, k, compile=self%shown)
+    end subroutine sphere_update
+
+    !> Number of level-of-detail meshes built so far (0 without level of detail).
+    integer function num_lod_meshes(self) result(n)
+        class(Sphere), intent(in) :: self
+        integer :: k
+        n = 0
+        do k = 1, size(self%lod_mesh)
+            if (c_associated(self%lod_mesh(k))) n = n + 1
+        end do
+    end function num_lod_meshes
 
     !> An image handle for texture file `file` (null if none or unreadable).
     function read_texture(self, file) result(image)

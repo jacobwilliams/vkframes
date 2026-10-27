@@ -366,7 +366,8 @@ Decided so far:
   texture on the dark side (needs a Sun light and a custom shader), material
   control, and auto LOD (a fixed 128 x 64 mesh may be too coarse for close
   views of large bodies; levels of a `vsg::LOD` rather than CPU
-  retessellation).
+  retessellation). Auto LOD is done (2026-10-27): see the `Sphere` item
+  under Milestones.
 - **Models:** read through vsgXchange (`.3ds` from OpenFrames' demo data
   works, with textures); `vkf_node_bound` gives the bounding sphere for
   scaling and default view distances (as OpenFrames' `Model` uses it).
@@ -436,8 +437,20 @@ Decided so far:
     rasterizing; mitre joins (instead of square caps that overlapped) halved
     it (see openframes-compare.md).
   - Decimation/LOD for very long trajectories seen from far away: done for
-    curves (`CurveArtist%set_level_of_detail`; see openframes-compare.md).
-    Segment and marker artists still draw every point.
+    curves (`CurveArtist%set_level_of_detail`; see openframes-compare.md),
+    and for spheres (`Sphere%set_auto_lod`).
+  - Optional future upgrades to consider (level of detail for the other
+    elements; none is needed for speed so far):
+    - `SegmentArtist` and `MarkerArtist`: thin out segments and markers seen
+      from far away (they draw every one, as OpenFrames does).
+    - `LatLonGrid`, `RadialPlane` and the cones: their circles and arcs have
+      fixed point counts (as OpenFrames'), which could be too coarse up
+      close.
+    - `Model`: levels of detail for loaded models, if a model file provides
+      them (VSG's `vsg::LOD`).
+    - Spheres very close to the surface: past the finest mesh (1024
+      segments), a body shown from close by needs terrain tiles instead
+      (Rocky's `TerrainBody`).
 - **Precision:** OpenFrames' method, adapted to VSG.
   - Trajectory points are (high, low) float pairs, drawn relative to the eye
     (RTE): a node in the record traversal inverts VSG's double model-view to
@@ -462,10 +475,12 @@ Decided so far:
   - [x] `ReferenceFrame` (tree, position, attitude, color; axes, label and
         light settings stored, drawn later) — `src/vkf_frames.f90`;
   - [x] `Sphere` (radius, `set_sphere_scale` as an exact ellipsoid, sphere
-        position/attitude, texture; night texture and auto LOD stored, drawn
-        later; radius, scale, color and material can change while shown: the
-        mesh is scaled by its transform, the color goes through the
-        material) — `src/vkf_sphere.f90`; `Model` (file read at once so its
+        position/attitude, texture; night texture; radius, scale, color and
+        material can change while shown: the mesh is scaled by its
+        transform, the color goes through the material; auto LOD, on by
+        default: meshes of 32 to 1024 segments around, the coarsest within
+        half a pixel of the outline drawn per view (a `SphereLod` node), each
+        built when first wanted) — `src/vkf_sphere.f90`; `Model` (file read at once so its
         bound is known, `share_model`, model position/attitude/scale/pivot)
         — `src/vkf_model.f90`;
   - [x] `Trajectory` (time, position, attitude, optionals; data sources) —
