@@ -23,7 +23,7 @@ module vkf_sky
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
     use vkf_math, only: wp, pi, quat_to_matrix
     use vkf_files, only: find_data_file
-    use vkf_layer, only: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed, &
+    use vkf_layer, only: check_status, vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed, &
                          vkf_sky_style, vkf_sky_style_changed, vkf_image_read, vkf_image_delete, &
                          vkf_transform_create, vkf_switch_create, vkf_switch_set, vkf_node_add_child, &
                          vkf_node_remove_child, vkf_node_delete, vkf_compile_node
@@ -235,8 +235,8 @@ contains
             self%root = vkf_transform_create()
             self%texture_switch = vkf_switch_create()
             self%star_switch = vkf_switch_create()
-            call check(vkf_node_add_child(self%root, self%texture_switch))   ! the texture first, the stars over it
-            call check(vkf_node_add_child(self%root, self%star_switch))
+            call check_status(vkf_node_add_child(self%root, self%texture_switch), 'SkySphere')   ! the texture first
+            call check_status(vkf_node_add_child(self%root, self%star_switch), 'SkySphere')
             call make_texture_node(self)
             call make_star_node(self)
             self%shown = c_associated(viewer)          ! (the first nodes are compiled with the scene)
@@ -251,7 +251,7 @@ contains
     subroutine make_texture_node(self)
         type(SkySphere), intent(inout) :: self
         if (c_associated(self%texture_node)) then
-            call check(vkf_node_remove_child(self%texture_switch, self%texture_node))
+            call check_status(vkf_node_remove_child(self%texture_switch, self%texture_node), 'SkySphere')
             call vkf_node_delete(self%texture_node)
             self%texture_node = c_null_ptr
         end if
@@ -259,8 +259,8 @@ contains
             self%texture_node = vkf_sky_texture_create(self%image)
             if (c_associated(self%texture_node)) then
                 call apply_attitude(self, self%texture_node)
-                if (self%shown) call check(vkf_compile_node(self%texture_node))
-                call check(vkf_node_add_child(self%texture_switch, self%texture_node))
+                if (self%shown) call check_status(vkf_compile_node(self%texture_node), 'SkySphere')
+                call check_status(vkf_node_add_child(self%texture_switch, self%texture_node), 'SkySphere')
             end if
         end if
         call apply_mode(self)
@@ -273,7 +273,7 @@ contains
         integer(c_int) :: capacity
         type(c_ptr) :: data
         if (c_associated(self%star_node)) then
-            call check(vkf_node_remove_child(self%star_switch, self%star_node))
+            call check_status(vkf_node_remove_child(self%star_switch, self%star_node), 'SkySphere')
             call vkf_node_delete(self%star_node)
             self%star_node = c_null_ptr
         end if
@@ -284,11 +284,11 @@ contains
                 if (c_associated(data)) then
                     call c_f_pointer(data, p, [8, int(capacity)])
                     p(:, 1:self%n_stars) = self%stars(:, 1:self%n_stars)
-                    call check(vkf_sky_stars_changed(self%star_node, int(self%n_stars, c_int)))
+                    call check_status(vkf_sky_stars_changed(self%star_node, int(self%n_stars, c_int)), 'SkySphere')
                 end if
                 call apply_attitude(self, self%star_node)
-                if (self%shown) call check(vkf_compile_node(self%star_node))
-                call check(vkf_node_add_child(self%star_switch, self%star_node))
+                if (self%shown) call check_status(vkf_compile_node(self%star_node), 'SkySphere')
+                call check_status(vkf_node_add_child(self%star_switch, self%star_node), 'SkySphere')
             end if
         end if
         call apply_mode(self)
@@ -298,9 +298,11 @@ contains
     subroutine apply_mode(self)
         type(SkySphere), intent(in) :: self
         if (c_associated(self%texture_switch)) &
-            call check(vkf_switch_set(self%texture_switch, merge(1_c_int, 0_c_int, iand(self%mode, SKY_TEXTURE) /= 0)))
+            call check_status(vkf_switch_set(self%texture_switch, merge(1_c_int, 0_c_int, iand(self%mode, SKY_TEXTURE) /= 0)), &
+                              'SkySphere')
         if (c_associated(self%star_switch)) &
-            call check(vkf_switch_set(self%star_switch, merge(1_c_int, 0_c_int, iand(self%mode, SKY_STARS) /= 0)))
+            call check_status(vkf_switch_set(self%star_switch, merge(1_c_int, 0_c_int, iand(self%mode, SKY_STARS) /= 0)), &
+                              'SkySphere')
     end subroutine apply_mode
 
     !> The attitude matrix (column-major 4x4) into a sky node's style.
@@ -316,14 +318,8 @@ contains
         m = 0.0_c_float
         m(1:3, 1:3) = real(quat_to_matrix(self%attitude_), c_float)
         m(4, 4) = 1.0_c_float
-        call check(vkf_sky_style_changed(n))
+        call check_status(vkf_sky_style_changed(n), 'SkySphere')
     end subroutine apply_attitude
-
-    !> Report a failed rendering-layer call (status not 0).
-    subroutine check(status)
-        integer(c_int), intent(in) :: status
-        if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (SkySphere)'
-    end subroutine check
 
     ! ==================================================================
     ! the star catalog (OpenFrames' SkySphere::processStars)

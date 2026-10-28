@@ -37,7 +37,8 @@ module vkf_line_chain
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
     use vkf_math, only: wp
-    use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_marker_create, vkf_ribbon_create, &
+    use vkf_layer, only: check_status, &
+                         vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_marker_create, vkf_ribbon_create, &
                          vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
                          vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
@@ -58,7 +59,7 @@ module vkf_line_chain
     integer, parameter, public :: CHAIN_MARKERS = 2     !! a marker per point
     integer, parameter, public :: CHAIN_RIBBON = 3      !! a ribbon (a quad between each pair of points and the next)
 
-    public :: split_points, split_distances, line_buffer, check
+    public :: split_points, split_distances, line_buffer
 
     !> Error bounds of a strip's segments at one stride (level of detail).
     type :: LodLevel
@@ -140,7 +141,7 @@ contains
         class(LineChain), intent(inout) :: self
         integer :: j
         do j = 1, self%n_chunks
-            call check(vkf_node_remove_child(self%group, self%chunks(j)%line))
+            call check_status(vkf_node_remove_child(self%group, self%chunks(j)%line), 'trajectory artists')
         end do
         call self%release()
     end subroutine detach
@@ -208,10 +209,10 @@ contains
                 end if
             end if
             if (.not. c_associated(c%line)) return
-            if (self%kind == CHAIN_SEGMENTS) call check(line_set_segments(c%line, .true.))
+            if (self%kind == CHAIN_SEGMENTS) call check_status(line_set_segments(c%line, .true.), 'trajectory artists')
             call apply_style(self, c%line)
-            if (self%compile_new) call check(vkf_compile_node(c%line))
-            call check(vkf_node_add_child(self%group, c%line))
+            if (self%compile_new) call check_status(vkf_compile_node(c%line), 'trajectory artists')
+            call check_status(vkf_node_add_child(self%group, c%line), 'trajectory artists')
             if (.not. allocated(self%chunks)) allocate(self%chunks(4))
             if (self%n_chunks == size(self%chunks)) then
                 allocate(tmp(2 * self%n_chunks))
@@ -300,7 +301,7 @@ contains
                     call measure(self, j, lo, hi, x)
                     call update_lod(self, j, lo, hi, x)
                 end if
-                call check(vkf_line_points_changed(c%line, int(hi - c%first + 1, c_int)))
+                call check_status(vkf_line_points_changed(c%line, int(hi - c%first + 1, c_int)), 'trajectory artists')
             end associate
         end do
     end subroutine written
@@ -416,8 +417,8 @@ contains
         type(LineChain), intent(in) :: self
         integer, intent(in) :: j
         associate (c => self%chunks(j))
-            call check(vkf_line_set_lod(c%line, 0.5_wp * (c%box_lo + c%box_hi), 0.5_wp * norm2(c%box_hi - c%box_lo), &
-                                        self%lod_error(j), merge(int(lod_levels, c_int), 0_c_int, self%lod)))
+            call check_status(vkf_line_set_lod(c%line, 0.5_wp * (c%box_lo + c%box_hi), 0.5_wp * norm2(c%box_hi - c%box_lo), &
+                                        self%lod_error(j), merge(int(lod_levels, c_int), 0_c_int, self%lod)), 'trajectory artists')
         end associate
     end subroutine send_lod
 
@@ -472,7 +473,7 @@ contains
         integer :: j, m
         do j = 1, self%n_chunks
             m = max(0, min(self%chunks(j)%capacity, k - self%chunks(j)%first + 1))
-            call check(vkf_line_set_range(self%chunks(j)%line, 1_c_int, int(m, c_int)))
+            call check_status(vkf_line_set_range(self%chunks(j)%line, 1_c_int, int(m, c_int)), 'trajectory artists')
         end do
     end subroutine draw
 
@@ -525,10 +526,10 @@ contains
         type(LineChain), intent(in) :: self
         type(c_ptr), intent(in) :: line
         if (self%kind == CHAIN_MARKERS) then
-            call check(marker_set_style(line, self%color, self%width, self%shape, self%radius))
+            call check_status(marker_set_style(line, self%color, self%width, self%shape, self%radius), 'trajectory artists')
         else
-            call check(line_set_style(line, self%color, self%width))
-            call check(line_set_pattern(line, self%pattern_factor, self%pattern))
+            call check_status(line_set_style(line, self%color, self%width), 'trajectory artists')
+            call check_status(line_set_pattern(line, self%pattern_factor, self%pattern), 'trajectory artists')
         end if
     end subroutine apply_style
 
@@ -627,11 +628,5 @@ contains
         data = vkf_line_points(line, capacity)
         if (c_associated(data)) call c_f_pointer(data, p, [4, 2, int(capacity)])
     end subroutine line_buffer
-
-    !> Report a failed rendering-layer call (`status` /= 0).
-    subroutine check(status)
-        integer(c_int), intent(in) :: status
-        if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (trajectory artists)'
-    end subroutine check
 
 end module vkf_line_chain

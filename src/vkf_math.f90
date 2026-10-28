@@ -20,6 +20,7 @@ module vkf_math
     public :: quat_from_axis_angle, quat_multiply, quat_conjugate, quat_normalize
     public :: quat_rotate, quat_to_matrix, quat_from_matrix, quat_slerp, quat_from_vectors
     public :: identity_matrix, translation_matrix, frame_matrix, rigid_inverse, cross
+    public :: set_rgba
 
 contains
 
@@ -226,5 +227,14 @@ contains
         real(wp) :: c(3)
         c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
     end function cross
+
+    !> Set `rgba` from `color`: [r, g, b] (alpha unchanged) or [r, g, b, a].
+    pure subroutine set_rgba(rgba, color)
+        real(wp), intent(inout) :: rgba(4)                  !! [r, g, b, a]
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
+        integer :: n
+        n = min(4, size(color))
+        rgba(1:n) = color(1:n)
+    end subroutine set_rgba
 
 end module vkf_math

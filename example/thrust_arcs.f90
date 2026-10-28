@@ -133,17 +133,17 @@ program thrust_arcs
 
     ! the scene: the Earth, the orbits, the thrust vectors, the spacecraft
     root = ReferenceFrame('Inertial')
-    call hide_decorations(root)
+    call root%show_decorations(.false.)
     earth = Sphere('Earth', radius=re)
     call earth%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
-    call hide_decorations(earth)
+    call earth%show_decorations(.false.)
 
     initial_curve = CurveArtist(initial, color=[0.6_wp, 0.6_wp, 0.6_wp], width=1.0_wp)
     final_curve = CurveArtist(final, color=[0.6_wp, 0.6_wp, 0.6_wp], width=1.0_wp)
     call initial_curve%set_pattern(2, int(z'00FF'))
     call final_curve%set_pattern(2, int(z'00FF'))
     reference_frame = DrawableTrajectory('Reference orbits')
-    call hide_decorations(reference_frame)
+    call reference_frame%show_decorations(.false.)
     call reference_frame%add_artist(initial_curve)
     call reference_frame%add_artist(final_curve)
 
@@ -155,13 +155,13 @@ program thrust_arcs
     if (.not. ok) error stop 'thrust: data sources'
     call thrust%set_end_relative(.true.)
     orbit_frame = DrawableTrajectory('Transfer')
-    call hide_decorations(orbit_frame)
+    call orbit_frame%show_decorations(.false.)
     call orbit_frame%add_artist(thrust)
     call orbit_frame%add_artist(orbit_curve)
 
     marker = MarkerArtist(markers=MARKER_START, size=12.0_wp, color=[1.0_wp, 1.0_wp, 1.0_wp])
     craft = DrawableTrajectory('Spacecraft')
-    call hide_decorations(craft)
+    call craft%show_decorations(.false.)
     call craft%add_artist(marker)
     call craft%follow(orbit, data=FOLLOW_POSITION)
 
@@ -312,12 +312,5 @@ contains
         r = s(1:3) - dot_product(s(1:3), v) * v                      ! (away from the Earth, across the velocity)
         u = cos(pitch) * v + sin(pitch) * r / norm2(r)
     end function thrust_direction
-
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
 end program thrust_arcs

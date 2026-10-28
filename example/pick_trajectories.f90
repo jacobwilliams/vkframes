@@ -271,10 +271,10 @@ program pick_trajectories
     end do
 
     root = ReferenceFrame('Inertial')
-    call quiet(root)
+    call root%show_decorations(.false.)
     earth = Sphere('Earth', radius=re)
     call earth%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
-    call quiet(earth)
+    call earth%show_decorations(.false.)
     if (.not. root%add_child(earth)) error stop 'add_child failed'
 
     ! the orbits: a curve, start and end markers and markers every 15 minutes,
@@ -294,12 +294,12 @@ program pick_trajectories
         call markers(i)%set_intermediate_type(INTERMEDIATE_TIME)
         call markers(i)%set_intermediate_spacing(900.0_wp)
         frames(i) = DrawableTrajectory(trim(names(i)))
-        call quiet(frames(i))
+        call frames(i)%show_decorations(.false.)
         call frames(i)%add_artist(curves(i))
         call frames(i)%add_artist(markers(i))
         craft_markers(i) = MarkerArtist(markers=MARKER_START, size=14.0_wp, color=[1.0_wp, 1.0_wp, 1.0_wp])
         crafts(i) = DrawableTrajectory(trim(names(i))//' spacecraft')
-        call quiet(crafts(i))
+        call crafts(i)%show_decorations(.false.)
         call crafts(i)%add_artist(craft_markers(i))
         call crafts(i)%follow(orbits(i), data=FOLLOW_POSITION)
         if (.not. (root%add_child(frames(i)) .and. root%add_child(crafts(i)))) error stop 'add_child failed'
@@ -307,11 +307,11 @@ program pick_trajectories
 
     ! the selection: a ring (a marker at the frame's origin), moved to what is picked
     selection = ReferenceFrame('Selection')
-    call quiet(selection)
+    call selection%show_decorations(.false.)
     ring = MarkerArtist(markers=MARKER_START, size=26.0_wp, color=[1.0_wp, 1.0_wp, 1.0_wp])
     call ring%set_marker_shape(MARKER_CIRCLE)
     ring_frame = DrawableTrajectory('Ring')
-    call quiet(ring_frame)
+    call ring_frame%show_decorations(.false.)
     call ring_frame%add_artist(ring)
     call ring_frame%show_contents(.false.)
     call ring_frame%set_pickable(.false.)                             ! (the selection's own marks: not picked)
@@ -400,12 +400,5 @@ contains
         so = sin(e(4) * deg)
         r = [co * x - so * ci * y, so * x + co * ci * y, si * y]
     end function orbit_position
-
-    subroutine quiet(f)
-        class(ReferenceFrame), intent(inout) :: f
-        call f%show_axes(NO_AXES)
-        call f%show_axes_labels(NO_AXES)
-        call f%show_name_label(.false.)
-    end subroutine quiet
 
 end program pick_trajectories

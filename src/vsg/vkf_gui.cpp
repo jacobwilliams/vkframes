@@ -19,11 +19,9 @@
 
 #ifndef VKF_EXTERNAL_LAYER  // Windows: built into vkf.dll instead (see fpm_vsg.py)
 
-#if defined(_WIN32)
-#    define VKF_API __declspec(dllexport)
-#else
-#    define VKF_API
-#endif
+#include "vkf_common.h"
+
+using vkf::to_string;
 
 #include <vsg/all.h>
 #include <vsgImGui/RenderImGui.h>
@@ -48,11 +46,6 @@ namespace vkf
 
 namespace
 {
-    std::string to_string(const char* s, int len)
-    {
-        return (s && len > 0) ? std::string(s, static_cast<size_t>(len)) : std::string();
-    }
-
     enum Kind
     {
         BEGIN,

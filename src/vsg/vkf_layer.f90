@@ -23,6 +23,7 @@ module vkf_layer
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
     public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
     public :: vkf_viewer_frame_begin, vkf_viewer_frame_draw
+    public :: check_status
     public :: vkf_viewer_gui, vkf_gui_begin, vkf_gui_end, vkf_gui_text, vkf_gui_button, vkf_gui_checkbox, vkf_gui_slider, &
               vkf_gui_separator, vkf_gui_same_line
     public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_compile_node, vkf_viewer_any
@@ -1067,5 +1068,18 @@ contains
         call c_f_pointer(vkf_mesh_array(mesh, 3_c_int), uv, [2, n_vertices])
         call c_f_pointer(vkf_mesh_array(mesh, 4_c_int), indices, [n_indices])
     end subroutine mesh_arrays
+
+    !> Report a failed rendering-layer call (a status not 0), saying where
+    !> (`context`, e.g. 'shapes').
+    subroutine check_status(status, context)
+        integer(c_int), intent(in) :: status                !! a rendering-layer call's result (0: success)
+        character(len=*), intent(in), optional :: context  !! where the call was made
+        if (status == 0) return
+        if (present(context)) then
+            write(*, '(a)') 'vkframes: a rendering-layer call failed ('//context//')'
+        else
+            write(*, '(a)') 'vkframes: a rendering-layer call failed'
+        end if
+    end subroutine check_status
 
 end module vkf_layer

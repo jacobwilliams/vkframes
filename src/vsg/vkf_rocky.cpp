@@ -14,11 +14,9 @@
 
 #ifndef VKF_EXTERNAL_LAYER  // Windows: built into vkf.dll instead (see fpm_vsg.py)
 
-#if defined(_WIN32)
-#    define VKF_API __declspec(dllexport)
-#else
-#    define VKF_API
-#endif
+#include "vkf_common.h"
+
+using vkf::to_string;
 
 #include <vsg/all.h>
 
@@ -149,8 +147,6 @@ namespace
         if (!scale || scale->children.empty()) return nullptr;
         return scale->children[0]->cast<rocky::MapNode>();
     }
-
-    std::string to_string(const char* s, int n) { return std::string(s, static_cast<size_t>(n)); }
 
     // A tiled layer's source (see vkf_rocky_add_image): kind 0 a TMS service,
     // 2 a {z}/{x}/{y} template of geodetic tiles on the map's body (2 x 1 at

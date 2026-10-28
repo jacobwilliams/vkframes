@@ -38,9 +38,7 @@ program day_night
     if (command_argument_count() >= 2) call get_command_argument(2, capture_file)
 
     root = ReferenceFrame('Root')
-    call root%show_axes(NO_AXES)
-    call root%show_axes_labels(NO_AXES)
-    call root%show_name_label(.false.)
+    call root%show_decorations(.false.)
 
     ! textures found by name on VKFRAMES_DATA_PATH (data/)
     earth = Sphere('Earth', radius=re)

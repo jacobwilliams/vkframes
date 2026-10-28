@@ -28,9 +28,7 @@ program live_changes
     if (command_argument_count() >= 1) call get_command_argument(1, prefix)
 
     root = ReferenceFrame('Root')
-    call root%show_axes(NO_AXES)
-    call root%show_axes_labels(NO_AXES)
-    call root%show_name_label(.false.)
+    call root%show_decorations(.false.)
     earth = Sphere('Earth', radius=re, color=[0.6_wp, 0.8_wp, 1.0_wp])
     call earth%set_texture_map('2k_earth_daymap.jpg')
     moon = Sphere('Moon', radius=0.27_wp * re, color=[0.8_wp, 0.8_wp, 0.8_wp])

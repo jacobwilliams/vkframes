@@ -13,11 +13,12 @@
 // compiles it as an empty file (VKF_EXTERNAL_LAYER).
 #ifndef VKF_EXTERNAL_LAYER
 
+#include "vkf_common.h"
+
+using vkf::to_string;
+
 #if defined(_WIN32)
-#    define VKF_API __declspec(dllexport)
 #    include <windows.h>
-#else
-#    define VKF_API
 #endif
 #if defined(__APPLE__)
 #    define VK_USE_PLATFORM_METAL_EXT    // VK_EXT_metal_surface (see "macOS windows")
@@ -80,11 +81,6 @@ namespace vkf
 
 namespace
 {
-    std::string to_string(const char* s, int len)
-    {
-        return (s && len > 0) ? std::string(s, static_cast<size_t>(len)) : std::string();
-    }
-
     // Copy s into a Fortran character buffer (blank padded); returns the length of s.
     int to_fortran(const std::string& s, char* buf, int buflen)
     {

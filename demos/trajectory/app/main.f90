@@ -670,7 +670,7 @@ contains
         end if
         r = body_radius(s%frame_name, body_name)
         end associate
-        call hide_decorations(app%root)
+        call app%root%show_decorations(.false.)
         if (r > 0.0_wp) then
             app%has_central = .true.
             app%central = Sphere(body_name, radius=r, color=[0.5_wp, 0.5_wp, 0.55_wp])
@@ -698,7 +698,7 @@ contains
             call s%curve%set_trace_mode(s%trace)
             call s%markers%set_trace_mode(s%trace)
             s%frame = DrawableTrajectory(s%name)
-            call hide_decorations(s%frame)
+            call s%frame%show_decorations(.false.)
             call s%frame%add_artist(s%curve)
             call s%frame%add_artist(s%markers)
             s%body = Sphere(s%name, radius=s%radius, color=s%body_color)
@@ -750,13 +750,6 @@ contains
         round_2 = unit * anint(x / unit)
     end function round_2
 
-    !> No axes or labels.
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
     !> Which markers segment s shows, and where its intermediate ones are
     !> (at most 10000 of them, for a time interval).

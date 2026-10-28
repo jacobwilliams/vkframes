@@ -52,9 +52,7 @@ program rocky_map
     if (command_argument_count() >= 3) call get_command_argument(3, prefix)
 
     root = ReferenceFrame('Root')
-    call root%show_axes(NO_AXES)
-    call root%show_axes_labels(NO_AXES)
-    call root%show_name_label(.false.)
+    call root%show_decorations(.false.)
 
     ! the body, and a spot to look at closely (latitude, longitude, height in km)
     if (name == 'moon') then
@@ -75,9 +73,7 @@ program rocky_map
         lat = 46.5_wp; lon = 8.0_wp; h = 25.0_wp                    ! the Alps
         sun_lon = lon + 60.0_wp
     end if
-    call body%show_axes(NO_AXES)
-    call body%show_axes_labels(NO_AXES)
-    call body%show_name_label(.false.)
+    call body%show_decorations(.false.)
     r = body%body_radius()
 
     ! the Sun, in the body's equatorial plane
@@ -86,9 +82,7 @@ program rocky_map
     call sun%set_light_source_enabled(.true.)
     call sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
     call sun%set_light_ambient([0.03_wp, 0.03_wp, 0.03_wp])
-    call sun%show_axes(NO_AXES)
-    call sun%show_axes_labels(NO_AXES)
-    call sun%show_name_label(.false.)
+    call sun%show_decorations(.false.)
 
     if (.not. (root%add_child(body) .and. root%add_child(sun))) error stop 'add_child failed'
     scene = FrameManager(root)

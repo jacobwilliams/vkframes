@@ -42,7 +42,7 @@ module vkf_shadow
     use vkf_frames, only: ReferenceFrame, NO_AXES
     use vkf_sphere, only: Sphere
     use vkf_terrain, only: TerrainBody
-    use vkf_layer, only: vkf_mesh_create, vkf_mesh_vertices_changed, vkf_switch_create, vkf_switch_set, &
+    use vkf_layer, only: check_status, vkf_mesh_create, vkf_mesh_vertices_changed, vkf_switch_create, vkf_switch_set, &
                          vkf_node_add_child, mesh_arrays, mesh_set_material
 
     implicit none
@@ -376,9 +376,9 @@ contains
                 end do
                 call apply_color(g)
                 g%switch = vkf_switch_create()
-                call check(vkf_node_add_child(g%switch, g%mesh))
-                call check(vkf_switch_set(g%switch, 0_c_int))      ! (until shaped)
-                call check(vkf_node_add_child(group, g%switch))
+                call check_status(vkf_node_add_child(g%switch, g%mesh), 'shadow')
+                call check_status(vkf_switch_set(g%switch, 0_c_int), 'shadow')      ! (until shaped)
+                call check_status(vkf_node_add_child(group, g%switch), 'shadow')
             end associate
         end do
         self%shaped = -1.0_wp                               ! (shaped at the next update)
@@ -391,8 +391,8 @@ contains
         real(c_float) :: c(4)
         if (.not. c_associated(g%mesh)) return
         c = real(g%color, c_float)
-        call check(mesh_set_material(g%mesh, c, c, [0.0_c_float, 0.0_c_float, 0.0_c_float, 1.0_c_float], &
-                                     [0.0_c_float, 0.0_c_float, 0.0_c_float, 1.0_c_float], 0.0_c_float))
+        call check_status(mesh_set_material(g%mesh, c, c, [0.0_c_float, 0.0_c_float, 0.0_c_float, 1.0_c_float], &
+                                     [0.0_c_float, 0.0_c_float, 0.0_c_float, 1.0_c_float], 0.0_c_float), 'shadow')
     end subroutine apply_color
 
     !> After the tree's update for time t: the shadow moved to the body, turned
@@ -501,15 +501,9 @@ contains
                 v(:, i) = real([g%r0 * cos(a), g%r0 * sin(a), g%z0], c_float)
                 v(:, n + i) = real([g%r1 * cos(a), g%r1 * sin(a), g%z1], c_float)
             end do
-            call check(vkf_mesh_vertices_changed(g%mesh))
+            call check_status(vkf_mesh_vertices_changed(g%mesh), 'shadow')
         end if
-        call check(vkf_switch_set(g%switch, merge(1_c_int, 0_c_int, g%drawn)))
+        call check_status(vkf_switch_set(g%switch, merge(1_c_int, 0_c_int, g%drawn)), 'shadow')
     end subroutine write_region
-
-    !> Report a failed rendering-layer call (status not 0).
-    subroutine check(status)
-        integer(c_int), intent(in) :: status
-        if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (shadow)'
-    end subroutine check
 
 end module vkf_shadow

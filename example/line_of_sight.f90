@@ -137,10 +137,10 @@ program line_of_sight
     if (command_argument_count() >= 2) call get_command_argument(2, file)
 
     root = ReferenceFrame('Inertial')
-    call hide_decorations(root)
+    call root%show_decorations(.false.)
     earth = Sphere('Earth', radius=re, color=[0.3_wp, 0.5_wp, 1.0_wp])
     call earth%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
-    call hide_decorations(earth)
+    call earth%show_decorations(.false.)
     if (.not. root%add_child(earth)) error stop 'add_child failed'
 
     ! the spacecraft: an orbit (one period, drawn), and a marker at the current
@@ -155,7 +155,7 @@ program line_of_sight
         end do
         curves(i) = CurveArtist(orbits(i), color=[colors(:, i), 0.6_wp], width=1.5_wp)
         orbit_frames(i) = DrawableTrajectory(trim(names(i))//' orbit')
-        call hide_decorations(orbit_frames(i))
+        call orbit_frames(i)%show_decorations(.false.)
         call orbit_frames(i)%add_artist(curves(i))
         markers(i) = MarkerArtist(markers=MARKER_START, size=14.0_wp, color=colors(:, i))
         craft(i) = DrawableTrajectory(trim(names(i)), color=colors(:, i))
@@ -170,10 +170,10 @@ program line_of_sight
     call setup_links(visible_links, blocked=.false.)
     call setup_links(blocked_links, blocked=.true.)
     visible = CustomLineSegments('Visible links', width=2.0_wp)
-    call hide_decorations(visible)
+    call visible%show_decorations(.false.)
     call visible%set_callback(visible_links)
     blocked = CustomLineSegments('Blocked links', width=1.0_wp)
-    call hide_decorations(blocked)
+    call blocked%show_decorations(.false.)
     call blocked%set_pattern(2, int(z'0F0F'))
     call blocked%set_callback(blocked_links)
     if (.not. (root%add_child(visible) .and. root%add_child(blocked))) error stop 'add_child failed'
@@ -221,12 +221,6 @@ contains
         links%blocked = blocked
     end subroutine setup_links
 
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
     !> Position at time t (km) on the orbit of elements e: semi-major axis,
     !> eccentricity, inclination, ascending node, argument of perigee (degrees),

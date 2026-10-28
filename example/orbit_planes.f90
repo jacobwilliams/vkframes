@@ -55,10 +55,10 @@ program orbit_planes
     if (command_argument_count() >= 2) call get_command_argument(2, file)
 
     root = ReferenceFrame('Inertial')
-    call hide_decorations(root)
+    call root%show_decorations(.false.)
     earth = Sphere('Earth', radius=re)
     call earth%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
-    call hide_decorations(earth)
+    call earth%show_decorations(.false.)
     if (.not. root%add_child(earth)) error stop 'add_child failed'
 
     ! each orbit (one period): its line, and its plane from the Earth's center
@@ -73,7 +73,7 @@ program orbit_planes
         curves(i) = CurveArtist(orbits(i), color=colors(:, i), width=2.0_wp)
         planes(i) = RibbonArtist(orbits(i), color=[colors(:, i), 0.2_wp])
         orbit_frames(i) = DrawableTrajectory(trim(names(i)))
-        call hide_decorations(orbit_frames(i))
+        call orbit_frames(i)%show_decorations(.false.)
         call orbit_frames(i)%add_artist(planes(i))
         call orbit_frames(i)%add_artist(curves(i))
         if (.not. root%add_child(orbit_frames(i))) error stop 'add_child failed'
@@ -84,7 +84,7 @@ program orbit_planes
     call planes(3)%set_trace_mode(.true.)
     marker = MarkerArtist(markers=MARKER_START, size=14.0_wp, color=colors(:, 3))
     craft = DrawableTrajectory('Molniya spacecraft')
-    call hide_decorations(craft)
+    call craft%show_decorations(.false.)
     call craft%add_artist(marker)
     call craft%follow(orbits(3), data=FOLLOW_POSITION)
     if (.not. root%add_child(craft)) error stop 'add_child failed'
@@ -113,12 +113,6 @@ program orbit_planes
 
 contains
 
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
     !> Position at time t (km) on the orbit of elements e: semi-major axis,
     !> eccentricity, inclination, ascending node, argument of perigee (degrees),

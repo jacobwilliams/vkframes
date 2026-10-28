@@ -39,19 +39,19 @@
 module vkf_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
-    use vkf_math, only: wp
+    use vkf_math, only: wp, set_rgba
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, SOURCE_ZERO, SOURCE_POSOPT, &
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
     use vkf_frames, only: ReferenceFrame, PickHit, add_pick_hit, PICK_CURVE, PICK_SEGMENT, PICK_MARKER
     use vkf_pick, only: PickCamera, point_pick, segment_pick, sphere_near, wants
-    use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_line_points_changed, &
+    use vkf_layer, only: check_status, vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_line_points_changed, &
                          vkf_ribbon_create, &
                          vkf_line_set_range, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
                          vkf_compile_node, vkf_viewer_any, line_set_style, line_set_pattern, vkf_image_read, vkf_image_delete
     use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, CHAIN_RIBBON, split_points, &
                               split_distances, &
-                              line_buffer, check
+                              line_buffer
 
     implicit none
 
@@ -450,15 +450,6 @@ contains
         end do
     end function is_position_xyz
 
-    !> Color [r, g, b] (alpha unchanged) or [r, g, b, a] into rgba.
-    pure subroutine set_rgba(rgba, color)
-        real(wp), intent(inout) :: rgba(4)
-        real(wp), intent(in) :: color(:)
-        integer :: n
-        n = min(4, size(color))
-        rgba(1:n) = color(1:n)
-    end subroutine set_rgba
-
     ! ==================================================================
     ! CurveArtist
 
@@ -687,7 +678,7 @@ contains
         self%compile = c_associated(viewer)
         call self%chain%set_compile(self%compile)
         self%tail = vkf_line_create_colored(2_c_int)      ! (white unless the points' colors are drawn)
-        if (c_associated(self%tail)) call check(vkf_node_add_child(group, self%tail))
+        if (c_associated(self%tail)) call check_status(vkf_node_add_child(group, self%tail), 'trajectory artists')
         call curve_style(self)
         self%seen_generation = -1
     end subroutine curve_build
@@ -758,7 +749,7 @@ contains
         if (.not. self%trace) then
             self%n_drawn = self%n_written
             call self%chain%draw(self%n_drawn)
-            if (c_associated(self%tail)) call check(vkf_line_set_range(self%tail, 1_c_int, 0_c_int))
+            if (c_associated(self%tail)) call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             self%tail_shown = .false.
             self%tail_time = huge(1.0_wp)
             return
@@ -851,7 +842,7 @@ contains
         self%tail_shown = .false.
         if (.not. c_associated(self%tail)) return
         if (k < 1 .or. k >= self%n_written) then
-            call check(vkf_line_set_range(self%tail, 1_c_int, 0_c_int))
+            call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             return
         end if
         t0 = self%traj%time(k)
@@ -865,7 +856,7 @@ contains
         call split_points(xyz, p(:, :, 1:2))
         call split_distances(self%chain%distance(k) + [0.0_wp, norm2(xyz(:, 2) - xyz(:, 1))], p(4, :, 1:2))
         call tail_colors(self, k, frac)
-        call check(vkf_line_points_changed(self%tail, 2_c_int))
+        call check_status(vkf_line_points_changed(self%tail, 2_c_int), 'trajectory artists')
         self%tail_shown = .true.
     end subroutine update_tail
 
@@ -902,8 +893,8 @@ contains
         call self%chain%set_style(rgba, self%width_)
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
         if (c_associated(self%tail)) then
-            call check(line_set_style(self%tail, real(rgba, c_float), real(self%width_, c_float)))
-            call check(line_set_pattern(self%tail, self%pattern_factor, self%pattern_))
+            call check_status(line_set_style(self%tail, real(rgba, c_float), real(self%width_, c_float)), 'trajectory artists')
+            call check_status(line_set_pattern(self%tail, self%pattern_factor, self%pattern_), 'trajectory artists')
         end if
     end subroutine curve_style
 
@@ -1422,7 +1413,7 @@ contains
         self%compile = c_associated(viewer)
         call self%chain%set_compile(self%compile)
         self%tail = vkf_ribbon_create(4_c_int, 1_c_int)   ! (white unless the points' colors are drawn)
-        if (c_associated(self%tail)) call check(vkf_node_add_child(group, self%tail))
+        if (c_associated(self%tail)) call check_status(vkf_node_add_child(group, self%tail), 'trajectory artists')
         call ribbon_style(self)
         self%seen_generation = -1
     end subroutine ribbon_build
@@ -1494,7 +1485,7 @@ contains
         if (.not. self%trace) then
             self%n_drawn = self%n_written
             call self%chain%draw(2 * self%n_drawn)
-            if (c_associated(self%tail)) call check(vkf_line_set_range(self%tail, 1_c_int, 0_c_int))
+            if (c_associated(self%tail)) call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             self%tail_shown = .false.
             self%tail_time = huge(1.0_wp)
             return
@@ -1574,7 +1565,7 @@ contains
         self%tail_shown = .false.
         if (.not. c_associated(self%tail)) return
         if (k < 1 .or. k >= self%n_written) then
-            call check(vkf_line_set_range(self%tail, 1_c_int, 0_c_int))
+            call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             return
         end if
         t0 = self%traj%time(k)
@@ -1600,7 +1591,7 @@ contains
                 c = 1.0_c_float
             end if
         end if
-        call check(vkf_line_points_changed(self%tail, 4_c_int))
+        call check_status(vkf_line_points_changed(self%tail, 4_c_int), 'trajectory artists')
         self%tail_shown = .true.
     end subroutine update_ribbon_tail
 
@@ -1625,7 +1616,8 @@ contains
         rgba = self%color_
         if (self%chain%is_colored()) rgba(1:3) = 1.0_wp
         call self%chain%set_style(rgba, 1.0_wp)
-        if (c_associated(self%tail)) call check(line_set_style(self%tail, real(rgba, c_float), 1.0_c_float))
+        if (c_associated(self%tail)) &
+            call check_status(line_set_style(self%tail, real(rgba, c_float), 1.0_c_float), 'trajectory artists')
     end subroutine ribbon_style
 
     ! ==================================================================
@@ -2287,7 +2279,7 @@ contains
         do k = 1, self%n_artists
             if (associated(self%artists(k)%p, a)) then
                 if (c_associated(self%artists(k)%group)) then
-                    call check(vkf_node_remove_child(self%contents_group, self%artists(k)%group))
+                    call check_status(vkf_node_remove_child(self%contents_group, self%artists(k)%group), 'trajectory artists')
                     call vkf_node_delete(self%artists(k)%group)
                     call self%artists(k)%p%release()
                 end if
@@ -2624,8 +2616,8 @@ contains
         if (.not. c_associated(group)) return
         ! (built for a window that exists now, if shown; compiled for the windows running)
         call self%artists(k)%p%build(merge(vkf_viewer_any(), c_null_ptr, self%shown), group)
-        if (compile .and. self%shown) call check(vkf_compile_node(group))
-        call check(vkf_node_add_child(self%contents_group, group))
+        if (compile .and. self%shown) call check_status(vkf_compile_node(group), 'trajectory artists')
+        call check_status(vkf_node_add_child(self%contents_group, group), 'trajectory artists')
         self%artists(k)%group = group
     end subroutine build_artist
 

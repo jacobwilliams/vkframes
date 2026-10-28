@@ -78,14 +78,14 @@ program colored_orbits
     end do
 
     root = ReferenceFrame('Inertial')
-    call hide_decorations(root)
+    call root%show_decorations(.false.)
     earth = Sphere('Earth', radius=re)
     call earth%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
     call earth%set_night_texture_map('2k_earth_nightmap.jpg')
-    call hide_decorations(earth)
+    call earth%show_decorations(.false.)
     sun = ReferenceFrame('Sun')
     call sun%set_position(au * sun_dir)
-    call hide_decorations(sun)
+    call sun%show_decorations(.false.)
     call sun%set_light_source_enabled(.true.)
     call sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
     call sun%set_light_ambient([0.06_wp, 0.06_wp, 0.06_wp])
@@ -96,12 +96,12 @@ program colored_orbits
 
     molniya_curve = CurveArtist(molniya, width=3.0_wp)                    ! (the points' colors)
     molniya_frame = DrawableTrajectory('Molniya')
-    call hide_decorations(molniya_frame)
+    call molniya_frame%show_decorations(.false.)
     call molniya_frame%add_artist(molniya_curve)
     leo_curve = CurveArtist(leo, width=3.0_wp)
     call leo_curve%set_trace_mode(.true.)
     leo_frame = DrawableTrajectory('LEO')
-    call hide_decorations(leo_frame)
+    call leo_frame%show_decorations(.false.)
     call leo_frame%add_artist(leo_curve)
     if (.not. (root%add_child(earth) .and. root%add_child(sun) .and. earth%add_child(shadow) .and. &
                root%add_child(molniya_frame) .and. root%add_child(leo_frame))) error stop 'add_child failed'
@@ -134,12 +134,6 @@ program colored_orbits
 
 contains
 
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
     !> A color for x in [0, 1]: blue, cyan, green, yellow, red.
     pure function color_map(x) result(c)

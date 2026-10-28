@@ -338,7 +338,7 @@ contains
         app%grid = LatLonGrid('Grid', color=[0.6_wp, 0.8_wp, 1.0_wp, 0.4_wp])
         call app%grid%set_parameters(1.002_wp * re, 1.002_wp * re, 1.002_wp * (1.0_wp - flattening) * re, &
                                      15.0_wp * pi / 180.0_wp, 15.0_wp * pi / 180.0_wp)
-        call hide_decorations(app%grid)
+        call app%grid%show_decorations(.false.)
         call app%grid%show_contents(.false.)
         if (.not. app%earth%add_child(app%grid)) write(*, '(a)') 'vkframes: add_child failed'
 
@@ -348,7 +348,7 @@ contains
         app%ticks = CoordinateAxes('Ticks', color=[0.85_wp, 0.85_wp, 0.85_wp])
         call app%ticks%set_axis_length(2.0_wp * re)
         call app%ticks%set_tick_spacing(1000.0_wp, 250.0_wp)
-        call hide_decorations(app%ticks)
+        call app%ticks%show_decorations(.false.)
         call app%ticks%show_contents(.false.)
 
 
@@ -386,9 +386,7 @@ contains
         app%orbit_curve = CurveArtist(app%orbit, color=orbit_color, width=2.0_wp)
         call app%orbit_curve%set_point_colors(.false.)                   ! (its own color until chosen)
         app%orbit_frame = DrawableTrajectory('Orbit')
-        call app%orbit_frame%show_axes(NO_AXES)
-        call app%orbit_frame%show_axes_labels(NO_AXES)
-        call app%orbit_frame%show_name_label(.false.)
+        call app%orbit_frame%show_decorations(.false.)
         call app%orbit_frame%add_artist(app%orbit_curve)
         app%radius_vectors = SegmentArtist(app%orbit, color=[0.4_wp, 0.8_wp, 1.0_wp, 0.8_wp], stride=12)
         app%orbit_plane = RibbonArtist(app%orbit, color=[orbit_color(1:3), 0.2_wp])
@@ -417,9 +415,7 @@ contains
         call app%orbit2_markers%set_marker_color(MARKER_START, [0.2_wp, 1.0_wp, 0.3_wp])
         call app%orbit2_markers%set_marker_color(MARKER_END, [1.0_wp, 0.25_wp, 0.2_wp])
         app%orbit2_frame = DrawableTrajectory('Orbit 2')
-        call app%orbit2_frame%show_axes(NO_AXES)
-        call app%orbit2_frame%show_axes_labels(NO_AXES)
-        call app%orbit2_frame%show_name_label(.false.)
+        call app%orbit2_frame%show_decorations(.false.)
         call app%orbit2_frame%add_artist(app%orbit2_curve)
         call app%orbit2_frame%add_artist(app%orbit2_markers)
 
@@ -427,7 +423,7 @@ contains
         app%equator = RadialPlane('Equator')
         call app%equator%set_parameters(2.5_wp * re, re, 30.0_wp * pi / 180.0_wp)
         call app%equator%set_line_color([1.0_wp, 1.0_wp, 1.0_wp, 0.4_wp])
-        call hide_decorations(app%equator)
+        call app%equator%show_decorations(.false.)
         call app%equator%show_contents(.false.)
 
         ! spacecraft 1's sensor: its boresight (-z) along the body's -x (nadir)
@@ -435,7 +431,7 @@ contains
         call app%sensor%set_primary_angles(35.0_wp * pi / 180.0_wp, 20.0_wp * pi / 180.0_wp)
         call app%sensor%set_cone_length(0.6_wp * sma)
         call app%sensor%set_attitude(quat_from_axis_angle([0.0_wp, 1.0_wp, 0.0_wp], 0.5_wp * pi))
-        call hide_decorations(app%sensor)
+        call app%sensor%show_decorations(.false.)
         call app%sensor%show_contents(.false.)
         if (.not. app%spacecraft%add_child(app%sensor)) write(*, '(a)') 'vkframes: add_child failed'
 
@@ -449,14 +445,14 @@ contains
 
         ! the line of sight between the spacecraft (inertial; hidden at first)
         app%line_of_sight = CustomLineSegments('Line of sight', width=2.5_wp)
-        call hide_decorations(app%line_of_sight)
+        call app%line_of_sight%show_decorations(.false.)
         call app%line_of_sight%set_callback(app%line_of_sight_link)
         call app%line_of_sight%show_contents(.false.)
 
         ! the Sun: a light source an astronomical unit away (inertial)
         app%sun = ReferenceFrame('Sun')
         call app%sun%set_position(1.495978707e8_wp * [cos(0.4_wp), -sin(0.4_wp), 0.2_wp])
-        call hide_decorations(app%sun)
+        call app%sun%show_decorations(.false.)
         call app%sun%set_light_source_enabled(.true.)
         call app%sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
         call app%sun%set_light_ambient([0.08_wp, 0.08_wp, 0.08_wp])
@@ -472,9 +468,7 @@ contains
         ! the tree: an inertial root (no decorations of its own) with the
         ! rotating Earth, the spacecraft and their orbits (all inertial)
         app%inertial = ReferenceFrame('Inertial')
-        call app%inertial%show_axes(NO_AXES)
-        call app%inertial%show_axes_labels(NO_AXES)
-        call app%inertial%show_name_label(.false.)
+        call app%inertial%show_decorations(.false.)
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%spacecraft) .and. &
                    app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%spacecraft2) .and. &
                    app%inertial%add_child(app%orbit2_frame) .and. app%inertial%add_child(app%equator) .and. &
@@ -484,9 +478,7 @@ contains
         ! the readout of a click (a callout): a frame moved to the point picked,
         ! whose name label is the readout, on top of the scene
         app%picked = ReferenceFrame('Picked')
-        call app%picked%show_axes(NO_AXES)
-        call app%picked%show_axes_labels(NO_AXES)
-        call app%picked%show_name_label(.false.)
+        call app%picked%show_decorations(.false.)
         call app%picked%set_name_label_on_top(.true.)
         call app%picked%set_label_size(15)
         call app%picked%set_label_alignment(ALIGN_LEFT_CENTER)
@@ -513,7 +505,7 @@ contains
         real(wp), intent(in) :: color(3)
         marker = MarkerArtist(markers=MARKER_START, size=18.0_wp, color=color)
         frame = DrawableTrajectory(name)
-        call hide_decorations(frame)
+        call frame%show_decorations(.false.)
         call frame%add_artist(marker)
         call frame%show_contents(.false.)
     end subroutine position_marker_frame
@@ -551,13 +543,6 @@ contains
         call frame%move_z_axis(o, length, body_radius=0.015_wp * length, head_radius=0.04_wp * length)
     end subroutine axes_from_center
 
-    !> No axes or labels (for the reference shapes and the Sun).
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
     !> The Earth follows its rotation trajectory at a fixed time, which the demo
     !> advances itself: a speed change then changes the rotation rate without

@@ -13,11 +13,11 @@
 module vkf_shapes
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_int32_t, c_float, c_double
-    use vkf_math, only: wp, pi, quat_from_matrix, cross
+    use vkf_math, only: wp, set_rgba, pi, quat_from_matrix, cross
     use vkf_frames, only: ReferenceFrame, X_AXIS, Y_AXIS, Z_AXIS, ALL_AXES
     use vkf_artists, only: MARKER_DISK, MARKER_IMAGE
     use vkf_files, only: find_data_file
-    use vkf_layer, only: vkf_line_create, vkf_marker_create, vkf_mesh_create, vkf_switch_create, &
+    use vkf_layer, only: check_status, vkf_line_create, vkf_marker_create, vkf_mesh_create, vkf_switch_create, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_compile_node, &
                          vkf_image_read, vkf_image_delete, line_set_points, line_set_style, line_set_segments, &
                          marker_set_style, mesh_arrays
@@ -208,20 +208,20 @@ contains
             return
         end if
         if (c_associated(self%shape)) then
-            call check(vkf_node_remove_child(self%contents, self%shape))
+            call check_status(vkf_node_remove_child(self%contents, self%shape), 'shapes')
             call vkf_node_delete(self%shape)
         end if
         self%shape = new
         if (.not. c_associated(new)) return
-        if (self%shown) call check(vkf_compile_node(new))
-        call check(vkf_node_add_child(self%contents, new))
+        if (self%shown) call check_status(vkf_compile_node(new), 'shapes')
+        call check_status(vkf_node_add_child(self%contents, new), 'shapes')
     end subroutine replace
 
     !> Add `child` to `group` (its handle is not kept).
     subroutine add(group, child)
         type(c_ptr), intent(in) :: group, child             !! the group, and a node to add to it
         if (.not. c_associated(child)) return
-        call check(vkf_node_add_child(group, child))
+        call check_status(vkf_node_add_child(group, child), 'shapes')
         call vkf_node_delete(child)
     end subroutine add
 
@@ -237,9 +237,9 @@ contains
         if (size(xyz, 2) < 2) return
         node = vkf_line_create(int(size(xyz, 2), c_int))
         if (.not. c_associated(node)) return
-        if (segments) call check(line_set_segments(node, .true.))
-        call check(line_set_style(node, real(rgba, c_float), real(width, c_float)))
-        call check(line_set_points(node, real(xyz, c_double)))
+        if (segments) call check_status(line_set_segments(node, .true.), 'shapes')
+        call check_status(line_set_style(node, real(rgba, c_float), real(width, c_float)), 'shapes')
+        call check_status(line_set_points(node, real(xyz, c_double)), 'shapes')
     end function line_node
 
     !> A marker node at points xyz(3, n), `px` window units (MarkerArtist's
@@ -256,8 +256,8 @@ contains
         if (size(xyz, 2) < 1) return
         node = vkf_marker_create(int(size(xyz, 2), c_int), image)
         if (.not. c_associated(node)) return
-        call check(marker_set_style(node, real(rgba, c_float), real(px, c_float), shape, real(radius, c_float)))
-        call check(line_set_points(node, real(xyz, c_double)))
+        call check_status(marker_set_style(node, real(rgba, c_float), real(px, c_float), shape, real(radius, c_float)), 'shapes')
+        call check_status(line_set_points(node, real(xyz, c_double)), 'shapes')
     end function marker_node
 
     !> An unlit transparent surface of triangles idx(3, m) (1-based) through
@@ -318,21 +318,6 @@ contains
         tmp(:, size(a, 2)+1:) = b
         call move_alloc(tmp, a)
     end subroutine append
-
-    !> Report a failed rendering-layer call (status not 0).
-    subroutine check(status)
-        integer(c_int), intent(in) :: status
-        if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (shapes)'
-    end subroutine check
-
-    !> Color [r, g, b] (alpha unchanged) or [r, g, b, a] into rgba.
-    pure subroutine set_rgba(rgba, color)
-        real(wp), intent(inout) :: rgba(4)                  !! [r, g, b, a]
-        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
-        integer :: n
-        n = min(4, size(color))
-        rgba(1:n) = color(1:n)
-    end subroutine set_rgba
 
     ! ==================================================================
     ! CoordinateAxes

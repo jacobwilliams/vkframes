@@ -204,12 +204,6 @@ contains
         u = v / norm2(v)
     end function unit
 
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
     !> The scene: the Moon, the Sun, the spacecraft and its orbit, the sky.
     subroutine build_model()
@@ -219,7 +213,7 @@ contains
         real(wp), parameter :: o(3) = 0.0_wp
 
         app%inertial = ReferenceFrame('Inertial')
-        call hide_decorations(app%inertial)
+        call app%inertial%show_decorations(.false.)
 
         app%moon = TerrainBody('Moon', profile='moon', color=[0.45_wp, 0.45_wp, 0.45_wp])
         call app%moon%add_image_layer(moon_imagery, LAYER_GEODETIC)
@@ -230,13 +224,13 @@ contains
             exit
         end do
         if (k > size(moon_elevation)) write(*, '(a)') 'moon demo: no elevation (pixi run -e rocky moon-data)'
-        call hide_decorations(app%moon)
+        call app%moon%show_decorations(.false.)
 
         app%sun = ReferenceFrame('Sun')
         call app%sun%set_light_source_enabled(.true.)
         call app%sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
         call app%sun%set_light_ambient([0.02_wp, 0.02_wp, 0.02_wp])
-        call hide_decorations(app%sun)
+        call app%sun%show_decorations(.false.)
         call set_sun_longitude(app%start_sun)
 
         ! the orbit: one period of positions and attitudes
@@ -255,7 +249,7 @@ contains
 
         app%orbit_curve = CurveArtist(app%orbit, color=orbit_color, width=2.0_wp)
         app%orbit_frame = DrawableTrajectory('Orbit')
-        call hide_decorations(app%orbit_frame)
+        call app%orbit_frame%show_decorations(.false.)
         call app%orbit_frame%add_artist(app%orbit_curve)
 
         ! the lander: Moon-fixed, landing at the terrain's height at its site
@@ -282,13 +276,13 @@ contains
                                     head_radius=0.16_wp * lander_size)
         app%descent_curve = CurveArtist(app%descent, color=lander_color, width=2.0_wp)
         app%descent_frame = DrawableTrajectory('Descent')
-        call hide_decorations(app%descent_frame)
+        call app%descent_frame%show_decorations(.false.)
         call app%descent_frame%add_artist(app%descent_curve)
 
         ! an observer on the ground east of the site: local axes (x east, y north, z up)
         lon = site_lon + observer_east / ((rm + app%site_height) * cos(site_lat * deg)) / deg
         app%observer = ReferenceFrame('Observer')
-        call hide_decorations(app%observer)
+        call app%observer%show_decorations(.false.)
         call app%observer%set_position(surface(site_lat, lon, app%moon%elevation(site_lat, lon) + observer_height))
         call app%observer%set_attitude(quat_from_matrix(local_axes(site_lat, lon)))
         if (.not. (app%moon%add_child(app%lander) .and. app%moon%add_child(app%descent_frame) .and. &

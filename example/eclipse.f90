@@ -63,26 +63,26 @@ program eclipse
     end do
 
     root = ReferenceFrame('Heliocentric')
-    call hide_decorations(root)
+    call root%show_decorations(.false.)
     sun = Sphere('Sun', radius=rs, color=[1.0_wp, 0.85_wp, 0.4_wp])
     call sun%set_material(emission=[1.0_wp, 0.85_wp, 0.4_wp])
     call sun%set_light_source_enabled(.true.)
     call sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
     call sun%set_light_ambient([0.04_wp, 0.04_wp, 0.04_wp])
-    call hide_decorations(sun)
+    call sun%show_decorations(.false.)
 
     ! the Earth's center moves along its orbit; the Earth and the Moon's orbit around it
     earth_center = ReferenceFrame('Earth center')
-    call hide_decorations(earth_center)
+    call earth_center%show_decorations(.false.)
     call earth_center%follow(earth_orbit, data=FOLLOW_POSITION)
     earth = Sphere('Earth', radius=re)
     call earth%set_sphere_scale([1.0_wp, 1.0_wp, 1.0_wp - flattening])
     call earth%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
     call earth%set_night_texture_map('2k_earth_nightmap.jpg')
     call earth%set_attitude(quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], 1.2_wp))
-    call hide_decorations(earth)
+    call earth%show_decorations(.false.)
     moon = Sphere('Moon', radius=rm, color=[0.75_wp, 0.75_wp, 0.72_wp])
-    call hide_decorations(moon)
+    call moon%show_decorations(.false.)
     call moon%follow(moon_orbit, data=FOLLOW_POSITION)
 
     ! the shadows: each a child of its body, the radii from the Spheres
@@ -119,14 +119,5 @@ program eclipse
         if (window%capture(trim(file))) write(*, '(a)') 'captured '//trim(file)
     end if
     call window%close()
-
-contains
-
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
 end program eclipse

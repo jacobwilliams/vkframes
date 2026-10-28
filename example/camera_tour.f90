@@ -61,9 +61,7 @@ program camera_tour
     call craft%follow(orbit)
     orbit_line = CurveArtist(orbit, color=[1.0_wp, 0.8_wp, 0.2_wp], width=2.0_wp)
     orbit_frame = DrawableTrajectory('Orbit')
-    call orbit_frame%show_axes(NO_AXES)
-    call orbit_frame%show_axes_labels(NO_AXES)
-    call orbit_frame%show_name_label(.false.)
+    call orbit_frame%show_decorations(.false.)
     call orbit_frame%add_artist(orbit_line)
     if (.not. (earth%add_child(craft) .and. earth%add_child(orbit_frame))) error stop 'add_child failed'
     scene = FrameManager(earth)

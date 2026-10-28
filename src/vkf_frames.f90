@@ -37,7 +37,7 @@
 module vkf_frames
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double
-    use vkf_layer, only: vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
+    use vkf_layer, only: check_status, vkf_transform_create, vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_viewer_any, &
                          vkf_light_create, vkf_light_set, vkf_label_set_text, vkf_label_set_color, vkf_label_set_on_top
     use vkf_geometry, only: arrow_create
@@ -152,6 +152,7 @@ module vkf_frames
         procedure :: show_axes, axes_shown
         procedure :: show_axes_labels, axes_labels_shown
         procedure :: show_name_label, name_label_shown
+        procedure :: show_decorations
         procedure :: set_name_label_on_top, name_label_on_top
         procedure :: set_x_label, set_y_label, set_z_label, axis_label
         procedure :: set_label_font, label_font
@@ -200,7 +201,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: name
         self%name_ = name
-        if (c_associated(self%name_text)) call check(vkf_label_set_text(self%name_text, name, len(name, kind=c_int)))
+        if (c_associated(self%name_text)) call check_status(vkf_label_set_text(self%name_text, name, len(name, kind=c_int)))
     end subroutine set_name
 
     !> The frame's name ('' if none).
@@ -222,7 +223,7 @@ contains
         n = min(4, size(color))
         self%color_(1:n) = color(1:n)
         if (.not. self%realized) return
-        if (c_associated(self%name_text)) call check(vkf_label_set_color(self%name_text, real(self%color_, c_float)))
+        if (c_associated(self%name_text)) call check_status(vkf_label_set_color(self%name_text, real(self%color_, c_float)))
         call remake_axes(self)
     end subroutine set_color
 
@@ -328,6 +329,17 @@ contains
         call update_switches(self)
     end subroutine show_name_label
 
+    !> Show (true) or hide all the frame's decorations at once: its axes,
+    !> their labels and its name label (show_axes, show_axes_labels,
+    !> show_name_label).
+    subroutine show_decorations(self, show)
+        class(ReferenceFrame), intent(inout) :: self
+        logical, intent(in) :: show                         !! true: all axes, axes labels and the name label
+        call self%show_axes(merge(ALL_AXES, NO_AXES, show))
+        call self%show_axes_labels(merge(ALL_AXES, NO_AXES, show))
+        call self%show_name_label(show)
+    end subroutine show_decorations
+
     !> Draw the name label on top of the scene (true: not hidden by bodies in
     !> front of it, as HUD text; e.g. a readout) or depth-tested (false, the
     !> default, as OpenFrames').
@@ -336,7 +348,7 @@ contains
         logical, intent(in) :: on_top
         self%name_on_top = on_top
         if (c_associated(self%name_text)) &
-            call check(vkf_label_set_on_top(self%name_text, merge(1_c_int, 0_c_int, on_top)))
+            call check_status(vkf_label_set_on_top(self%name_text, merge(1_c_int, 0_c_int, on_top)))
     end subroutine set_name_label_on_top
 
     !> Whether the name label is drawn on top of the scene (`set_name_label_on_top`).
@@ -457,7 +469,7 @@ contains
         self%light_source = enable
         if (self%realized .and. enable .and. .not. c_associated(self%light_node)) call build_light(self)
         if (c_associated(self%light_switch)) &
-            call check(vkf_switch_set(self%light_switch, merge(1_c_int, 0_c_int, enable)))
+            call check_status(vkf_switch_set(self%light_switch, merge(1_c_int, 0_c_int, enable)))
     end subroutine set_light_source_enabled
 
     !> Whether this frame carries a light source.
@@ -529,8 +541,8 @@ contains
         self%light_node = vkf_light_create()
         if (.not. c_associated(self%light_node)) return
         self%light_switch = vkf_switch_create()
-        call check(vkf_node_add_child(self%light_switch, self%light_node))
-        call check(vkf_node_add_child(self%node_, self%light_switch))
+        call check_status(vkf_node_add_child(self%light_switch, self%light_node))
+        call check_status(vkf_node_add_child(self%node_, self%light_switch))
         call apply_light(self)
     end subroutine build_light
 
@@ -538,7 +550,7 @@ contains
     subroutine apply_light(self)
         class(ReferenceFrame), intent(inout) :: self
         if (.not. c_associated(self%light_node)) return
-        call check(vkf_light_set(self%light_node, real(self%light_ambient_, c_float), real(self%light_diffuse_, c_float), &
+        call check_status(vkf_light_set(self%light_node, real(self%light_ambient_, c_float), real(self%light_diffuse_, c_float), &
                                  real(self%light_specular_, c_float), [0.0_c_double, 0.0_c_double, 0.0_c_double, 1.0_c_double]))
     end subroutine apply_light
 
@@ -548,7 +560,7 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         logical, intent(in) :: show
         self%contents = show
-        if (c_associated(self%contents_node)) call check(vkf_switch_set(self%contents_node, merge(1_c_int, 0_c_int, show)))
+        if (c_associated(self%contents_node)) call check_status(vkf_switch_set(self%contents_node, merge(1_c_int, 0_c_int, show)))
     end subroutine show_contents
 
     !> Whether what the frame draws is shown (`show_contents`).
@@ -744,12 +756,12 @@ contains
             if (.not. child%realized) then
                 if (self%shown_) then                   ! (for a window that exists now)
                     call child%realize(vkf_viewer_any())
-                    call check(vkf_compile_node(child%node_))
+                    call check_status(vkf_compile_node(child%node_))
                 else
                     call child%realize(c_null_ptr)
                 end if
             end if
-            call check(vkf_node_add_child(self%node_, child%node_))
+            call check_status(vkf_node_add_child(self%node_, child%node_))
         end if
     end function add_child
 
@@ -759,7 +771,7 @@ contains
         class(ReferenceFrame), intent(inout), target :: child
         ok = remove(self%children, self%n_children, child)
         if (ok) ok = remove(child%parents, child%n_parents, self)
-        if (ok .and. self%realized .and. child%realized) call check(vkf_node_remove_child(self%node_, child%node_))
+        if (ok .and. self%realized .and. child%realized) call check_status(vkf_node_remove_child(self%node_, child%node_))
     end function remove_child
 
     !> Remove this frame from all its parents and children (before it goes out
@@ -928,15 +940,15 @@ contains
         self%node_ = vkf_transform_create()
         self%synced = .false.
         self%contents_node = vkf_switch_create()
-        call check(vkf_node_add_child(self%node_, self%contents_node))
+        call check_status(vkf_node_add_child(self%node_, self%contents_node))
         call self%build_contents(viewer, self%contents_node)
         call build_decorations(self)
         if (self%light_source) call build_light(self)
-        if (.not. self%contents) call check(vkf_switch_set(self%contents_node, 0_c_int))
+        if (.not. self%contents) call check_status(vkf_switch_set(self%contents_node, 0_c_int))
         call self%sync()
         do k = 1, self%n_children
             call self%children(k)%p%realize(viewer)
-            call check(vkf_node_add_child(self%node_, self%children(k)%p%node_))
+            call check_status(vkf_node_add_child(self%node_, self%children(k)%p%node_))
         end do
     end subroutine realize
 
@@ -956,7 +968,7 @@ contains
         if (.not. self%realized) return
         if (.not. (self%synced .and. all(self%position_ == self%synced_position) .and. &
                    all(self%attitude_ == self%synced_attitude))) then
-            call check(vkf_transform_set_matrix(self%node_, self%local_matrix()))
+            call check_status(vkf_transform_set_matrix(self%node_, self%local_matrix()))
             self%synced_position = self%position_
             self%synced_attitude = self%attitude_
             self%synced = .true.
@@ -973,12 +985,6 @@ contains
         n = self%node_
     end function node
 
-    !> Report a failed rendering-layer call (status not 0).
-    subroutine check(status)
-        integer(c_int), intent(in) :: status                !! a rendering-layer call's result (0: success)
-        if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed'
-    end subroutine check
-
     !> The axes (arrows), axes labels and name label, each under a switch, in
     !> the frame's color (OpenFrames' ReferenceFrame decorations).
     subroutine build_decorations(self)
@@ -989,13 +995,13 @@ contains
             self%axis_node(k) = vkf_switch_create()
             self%axis_label_node(k) = vkf_switch_create()
             call make_axis(self, k)
-            call check(vkf_node_add_child(self%node_, self%axis_node(k)))
-            call check(vkf_node_add_child(self%node_, self%axis_label_node(k)))
+            call check_status(vkf_node_add_child(self%node_, self%axis_node(k)))
+            call check_status(vkf_node_add_child(self%node_, self%axis_label_node(k)))
         end do
         ! the name label at the origin, label_size pixels tall
         self%name_label_node = vkf_switch_create()
         call make_name_label(self)
-        call check(vkf_node_add_child(self%node_, self%name_label_node))
+        call check_status(vkf_node_add_child(self%node_, self%name_label_node))
         call update_switches(self)
     end subroutine build_decorations
 
@@ -1005,7 +1011,7 @@ contains
         call replace_child(self, self%name_label_node, self%name_text, &
                            label_create(self%name(), [0.0_wp, 0.0_wp, 0.0_wp], self%color_, &
                                         real(self%label_size_, wp), 0.0_wp, self%label_alignment_, self%label_font()))
-        if (self%name_on_top .and. c_associated(self%name_text)) call check(vkf_label_set_on_top(self%name_text, 1_c_int))
+        if (self%name_on_top .and. c_associated(self%name_text)) call check_status(vkf_label_set_on_top(self%name_text, 1_c_int))
         call update_switches(self)                              ! (a node added to a switch is shown)
     end subroutine make_name_label
 
@@ -1026,7 +1032,7 @@ contains
         if (.not. self%realized) return
         if (c_associated(self%name_text)) then
             if (.not. label_set_layout(self%name_text, [0.0_wp, 0.0_wp, 0.0_wp], real(self%label_size_, wp), 0.0_wp, &
-                                       self%label_alignment_)) call check(-1_c_int)
+                                       self%label_alignment_)) call check_status(-1_c_int)
         end if
         call remake_axes(self)
     end subroutine relayout_labels
@@ -1063,13 +1069,13 @@ contains
         type(c_ptr), intent(in) :: switch, new
         type(c_ptr), intent(inout) :: old
         if (c_associated(old)) then
-            call check(vkf_node_remove_child(switch, old))
+            call check_status(vkf_node_remove_child(switch, old))
             call vkf_node_delete(old)
         end if
         old = new
         if (.not. c_associated(new)) return
-        if (self%shown_) call check(vkf_compile_node(new))
-        call check(vkf_node_add_child(switch, new))
+        if (self%shown_) call check_status(vkf_compile_node(new))
+        call check_status(vkf_node_add_child(switch, new))
     end subroutine replace_child
 
     !> Show or hide the decorations' switches as set.
@@ -1079,13 +1085,13 @@ contains
         if (.not. self%realized) return
         do k = 1, 3
             if (c_associated(self%axis_node(k))) &
-                call check(vkf_switch_set(self%axis_node(k), merge(1_c_int, 0_c_int, iand(self%axes, 2**(k-1)) /= 0)))
+                call check_status(vkf_switch_set(self%axis_node(k), merge(1_c_int, 0_c_int, iand(self%axes, 2**(k-1)) /= 0)))
             if (c_associated(self%axis_label_node(k))) &
-                call check(vkf_switch_set(self%axis_label_node(k), &
+                call check_status(vkf_switch_set(self%axis_label_node(k), &
                                           merge(1_c_int, 0_c_int, iand(self%axes_labels, 2**(k-1)) /= 0)))
         end do
         if (c_associated(self%name_label_node)) &
-            call check(vkf_switch_set(self%name_label_node, merge(1_c_int, 0_c_int, self%name_label)))
+            call check_status(vkf_switch_set(self%name_label_node, merge(1_c_int, 0_c_int, self%name_label)))
     end subroutine update_switches
 
     ! ==================================================================

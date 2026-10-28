@@ -97,7 +97,7 @@ program earth_moon_frames
 
     ! scene 1: the Earth at the origin, the Moon on its orbit, the trajectory
     inertial = ReferenceFrame('Inertial')
-    call hide_decorations(inertial)
+    call inertial%show_decorations(.false.)
     earth1 = Sphere('Earth', radius=re)
     call earth1%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
     moon1 = Sphere('Moon', radius=rm, color=moon_color)
@@ -121,13 +121,13 @@ program earth_moon_frames
     moon_mark = MarkerArtist(markers=MARKER_START, size=10.0_wp, color=moon_color)
     moon_mark_frame = DrawableTrajectory('Moon marker')
     call moon_mark_frame%add_artist(moon_mark)
-    call hide_decorations(moon_mark_frame)
+    call moon_mark_frame%show_decorations(.false.)
     if (.not. moon1%add_child(moon_mark_frame)) error stop 'add_child failed'
     call hide_axes(earth1)
     call hide_axes(moon1)
-    call hide_decorations(path_frame)
-    call hide_decorations(moon_orbit_frame)
-    call hide_decorations(craft1)
+    call path_frame%show_decorations(.false.)
+    call moon_orbit_frame%show_decorations(.false.)
+    call craft1%show_decorations(.false.)
     ok = inertial%add_child(earth1) .and. inertial%add_child(moon1) .and. inertial%add_child(path_frame) .and. &
          inertial%add_child(moon_orbit_frame) .and. inertial%add_child(craft1)
     if (.not. ok) error stop 'add_child failed'
@@ -136,7 +136,7 @@ program earth_moon_frames
     ! scene 2: the Moon at the origin (not turning: the frame is its own), the
     ! Earth where it is seen from the Moon, the transformed trajectory
     moon_fixed = ReferenceFrame('Moon-fixed')
-    call hide_decorations(moon_fixed)
+    call moon_fixed%show_decorations(.false.)
     moon2 = Sphere('Moon', radius=rm, color=moon_color)
     earth2 = Sphere('Earth', radius=re)
     call earth2%set_texture_map('2k_earth_daymap.jpg')
@@ -150,8 +150,8 @@ program earth_moon_frames
     call craft2%follow(path_mf, data=FOLLOW_POSITION)
     call hide_axes(moon2)
     call hide_axes(earth2)
-    call hide_decorations(path_mf_frame)
-    call hide_decorations(craft2)
+    call path_mf_frame%show_decorations(.false.)
+    call craft2%show_decorations(.false.)
     ok = moon_fixed%add_child(moon2) .and. moon_fixed%add_child(earth2) .and. moon_fixed%add_child(path_mf_frame) .and. &
          moon_fixed%add_child(craft2)
     if (.not. ok) error stop 'add_child failed'
@@ -276,12 +276,6 @@ contains
         dx(4:6) = -mu_earth * x(1:3) / norm2(x(1:3))**3 - mu_moon * dm / norm2(dm)**3
     end function deriv
 
-    subroutine hide_decorations(frame)
-        class(ReferenceFrame), intent(inout) :: frame
-        call frame%show_axes(NO_AXES)
-        call frame%show_axes_labels(NO_AXES)
-        call frame%show_name_label(.false.)
-    end subroutine hide_decorations
 
     !> No axes (the name label kept).
     subroutine hide_axes(frame)

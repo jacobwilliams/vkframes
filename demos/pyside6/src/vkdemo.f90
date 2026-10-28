@@ -103,24 +103,18 @@ contains
         app%grid = LatLonGrid('Grid', color=[0.6_wp, 0.8_wp, 1.0_wp, 0.4_wp])
         call app%grid%set_parameters(1.002_wp * re, 1.002_wp * re, 1.002_wp * (1.0_wp - flattening) * re, &
                                      15.0_wp * pi / 180.0_wp, 15.0_wp * pi / 180.0_wp)
-        call app%grid%show_axes(NO_AXES)
-        call app%grid%show_axes_labels(NO_AXES)
-        call app%grid%show_name_label(.false.)
+        call app%grid%show_decorations(.false.)
         call app%grid%show_contents(.false.)
         if (.not. app%earth%add_child(app%grid)) status = -1
         app%ticks = CoordinateAxes('Ticks', color=[0.85_wp, 0.85_wp, 0.85_wp])
         call app%ticks%set_axis_length(2.0_wp * re)
         call app%ticks%set_tick_spacing(1000.0_wp, 250.0_wp)
-        call app%ticks%show_axes(NO_AXES)
-        call app%ticks%show_axes_labels(NO_AXES)
-        call app%ticks%show_name_label(.false.)
+        call app%ticks%show_decorations(.false.)
         call app%ticks%show_contents(.false.)
 
         app%sun = ReferenceFrame('Sun')
         call app%sun%set_position(1.495978707e8_wp * [cos(0.4_wp), -sin(0.4_wp), 0.2_wp])
-        call app%sun%show_axes(NO_AXES)
-        call app%sun%show_axes_labels(NO_AXES)
-        call app%sun%show_name_label(.false.)
+        call app%sun%show_decorations(.false.)
         call app%sun%set_light_source_enabled(.true.)
         call app%sun%set_light_diffuse([1.0_wp, 1.0_wp, 1.0_wp])
         call app%sun%set_light_ambient([0.08_wp, 0.08_wp, 0.08_wp])
@@ -143,16 +137,12 @@ contains
         call app%orbit_markers%set_intermediate_type(INTERMEDIATE_TIME)
         call app%orbit_markers%set_intermediate_spacing(600.0_wp)
         app%orbit_frame = DrawableTrajectory('Orbit')
-        call app%orbit_frame%show_axes(NO_AXES)
-        call app%orbit_frame%show_axes_labels(NO_AXES)
-        call app%orbit_frame%show_name_label(.false.)
+        call app%orbit_frame%show_decorations(.false.)
         call app%orbit_frame%add_artist(app%orbit_curve)
         call app%orbit_frame%add_artist(app%orbit_markers)
 
         app%inertial = ReferenceFrame('Inertial')
-        call app%inertial%show_axes(NO_AXES)
-        call app%inertial%show_axes_labels(NO_AXES)
-        call app%inertial%show_name_label(.false.)
+        call app%inertial%show_decorations(.false.)
         if (.not. (app%inertial%add_child(app%earth) .and. app%inertial%add_child(app%craft) .and. &
                    app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%sun) .and. &
                    app%inertial%add_child(app%ticks))) status = -1

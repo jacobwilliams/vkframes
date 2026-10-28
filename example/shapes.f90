@@ -46,9 +46,7 @@ program shapes
     if (command_argument_count() >= 2) call get_command_argument(2, capture_file)
 
     root = ReferenceFrame('Root')
-    call root%show_axes(NO_AXES)
-    call root%show_axes_labels(NO_AXES)
-    call root%show_name_label(.false.)
+    call root%show_decorations(.false.)
 
     earth = Sphere('Earth', radius=re, color=[0.6_wp, 0.8_wp, 1.0_wp])     ! (the color of its axes)
     call earth%set_sphere_scale([1.0_wp, 1.0_wp, 1.0_wp - flattening])
@@ -59,9 +57,7 @@ program shapes
     ! a grid just above the surface (every 15 degrees), in the Earth's frame
     grid = LatLonGrid('Grid', color=[0.6_wp, 0.8_wp, 1.0_wp, 0.5_wp])
     call grid%set_parameters(1.003_wp * re, 1.003_wp * re, 1.003_wp * (1.0_wp - flattening) * re, 15.0_wp * deg, 15.0_wp * deg)
-    call grid%show_axes(NO_AXES)
-    call grid%show_axes_labels(NO_AXES)
-    call grid%show_name_label(.false.)
+    call grid%show_decorations(.false.)
     if (.not. earth%add_child(grid)) error stop 'add_child failed'
 
     ! the inertial frame's axes: from its center out 2 Earth radii, ticks every
@@ -79,9 +75,7 @@ program shapes
     plane = RadialPlane('Equator')
     call plane%set_parameters(3.0_wp * re, re, 30.0_wp * deg)
     call plane%set_line_color([1.0_wp, 1.0_wp, 1.0_wp, 0.5_wp])
-    call plane%show_axes(NO_AXES)
-    call plane%show_axes_labels(NO_AXES)
-    call plane%show_name_label(.false.)
+    call plane%show_decorations(.false.)
 
     ! a spacecraft above the plane, its sensors pointed at the Earth's center
     craft_pos = 2.2_wp * re * [cos(0.3_wp), -sin(0.3_wp), 0.5_wp]
@@ -92,17 +86,13 @@ program shapes
     call sensor%set_primary_angles(12.0_wp * deg, 6.0_wp * deg)
     call sensor%set_cone_length(norm2(craft_pos) - re)
     call sensor%make_cone_look_at([0.0_wp, 0.0_wp, 0.0_wp], -craft_pos, [0.0_wp, 0.0_wp, 1.0_wp])
-    call sensor%show_axes(NO_AXES)
-    call sensor%show_axes_labels(NO_AXES)
-    call sensor%show_name_label(.false.)
+    call sensor%show_decorations(.false.)
     camera = RectangularCone('Camera', color=[1.0_wp, 0.6_wp, 0.2_wp, 0.25_wp])
     call camera%set_primary_angles(4.0_wp * deg, 3.0_wp * deg)
     call camera%set_cone_length(norm2(craft_pos) - re)
     call camera%make_cone_look_at([0.0_wp, 0.0_wp, 0.0_wp], -craft_pos + [0.0_wp, 0.0_wp, 0.4_wp * re], &
                                   [0.0_wp, 0.0_wp, 1.0_wp])
-    call camera%show_axes(NO_AXES)
-    call camera%show_axes_labels(NO_AXES)
-    call camera%show_name_label(.false.)
+    call camera%show_decorations(.false.)
     if (.not. (craft%add_child(sensor) .and. craft%add_child(camera))) error stop 'add_child failed'
 
     ! the Sun lights the scene

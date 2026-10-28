@@ -43,9 +43,9 @@ program test_pick
     ! the scene: a body at the origin, and a straight trajectory above it
     ! (x = -2000 to 2000, z = 1500; a point every 100, t = 0 to 400)
     root = ReferenceFrame('Root')
-    call quiet(root)
+    call root%show_decorations(.false.)
     earth = Sphere('Earth', radius=1000.0_wp)
-    call quiet(earth)
+    call earth%show_decorations(.false.)
     traj = Trajectory()
     do k = 1, n_points
         call traj%add(10.0_wp * (k - 1), pos=[-2000.0_wp + 100.0_wp * (k - 1), 0.0_wp, 1500.0_wp])
@@ -54,7 +54,7 @@ program test_pick
     markers = MarkerArtist(traj, markers=ior(MARKER_START, MARKER_END), size=10.0_wp)
     spokes = SegmentArtist(traj, stride=10)                        ! (from the origin to every 10th point)
     path = DrawableTrajectory('Path')
-    call quiet(path)
+    call path%show_decorations(.false.)
     call path%add_artist(curve)
     call path%add_artist(markers)
     call path%add_artist(spokes)
@@ -244,12 +244,6 @@ contains
                    'geometry: perspective-correct fraction and depth')
     end subroutine check_geometry
 
-    subroutine quiet(f)
-        class(ReferenceFrame), intent(inout) :: f
-        call f%show_axes(NO_AXES)
-        call f%show_axes_labels(NO_AXES)
-        call f%show_name_label(.false.)
-    end subroutine quiet
 
     subroutine frame()
         if (.not. window%frame()) then

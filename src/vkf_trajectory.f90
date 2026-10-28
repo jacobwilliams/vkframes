@@ -369,20 +369,20 @@ contains
         if (self%n_col >= self%n_times) return
         call grow_colors(self, self%n_col + 1)
         self%n_col = self%n_col + 1
-        call set_rgba(self%col(:, self%n_col), color)
+        call to_float_rgba(self%col(:, self%n_col), color)
         self%revision_ = self%revision_ + 1
         if (present(ok)) ok = .true.
     end subroutine add_color
 
     !> rgba from [r, g, b] (alpha 1) or [r, g, b, a].
-    pure subroutine set_rgba(rgba, color)
+    pure subroutine to_float_rgba(rgba, color)
         real(c_float), intent(out) :: rgba(4)   !! [r, g, b, a]
         real(wp), intent(in) :: color(:)        !! [r, g, b] or [r, g, b, a] (0 to 1)
         integer :: n
         n = min(4, size(color))
         rgba = 1.0_c_float
         rgba(1:n) = real(color(1:n), c_float)
-    end subroutine set_rgba
+    end subroutine to_float_rgba
 
     !> Set optional vector `index` (1 to num_optionals) of the most recently
     !> added position. `ok` is false if there is no position or no such optional.
