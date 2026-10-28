@@ -409,6 +409,12 @@ Decided so far:
     pixel_ratio=)`. The demos check the ratio each frame, because moving a
     window to a screen of another scale needn't send a resize.
     - Retina (2x) is tested on macOS.
+    - Windows of no size: Metal has no drawables of no size (building the
+      swapchain asserts, and acquiring an image never returns), so VSG's own
+      macOS windows have a minimum content size (64 x 48, against a window
+      dragged to no height), and a host's window of no width or height
+      (`resize`, e.g. a collapsed splitter) isn't drawn until it has a size
+      again (tested in test_events).
     - **Untested:** moving a window between screens of different scales,
       changing the display's scaling while running, and non-integer ratios
       (Windows 125% and 150%, fractional scaling on Linux).

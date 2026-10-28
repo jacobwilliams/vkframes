@@ -202,6 +202,13 @@ program test_events
     call check(rec%draws == 2 .and. rec%draw_time == 12.5_wp, 'before_draw: each frame, at its time')
     call check(rec%on_screen .and. all(abs(rec%at - 0.5_wp) < 1.0e-6_wp), 'before_draw: screen_position, camera placed')
 
+    ! a host's window of no height (e.g. a collapsed splitter): frames go on,
+    ! not drawn (no swapchain of no size), until it has a size again
+    call window%resize(320, 0)
+    call check(window%frame() .and. window%frame(), 'no height: frames go on')
+    call window%resize(320, 240)
+    call check(window%frame() .and. window%frame(), 'a size again: drawn')
+
     ! the handler closes the window: the frame reports it closed
     call window%set_event_handler(rec)
     rec%close_on = KEY_ESCAPE

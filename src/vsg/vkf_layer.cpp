@@ -280,6 +280,29 @@ namespace
     // The CAMetalLayer of the VSG window just made: the layer of the view it
     // renders into, `childView` (an embedded window), or of the content view of
     // the window VSG made (the one with a VSG view whose layer is not taken yet).
+    // A minimum content size for the VSG window whose view's layer is
+    // `layer`: a window dragged to no height (its bottom edge to the title bar)
+    // would make the layer's drawables empty, and Metal neither makes nor
+    // gives them (the swapchain can't be built, and acquiring an image never
+    // returns).
+    void limit_window_size(void* layer)
+    {
+        auto send = [](id object, const char* selector) {
+            return reinterpret_cast<id (*)(id, SEL)>(objc_msgSend)(object, sel_registerName(selector));
+        };
+        id app = send(reinterpret_cast<id>(objc_getClass("NSApplication")), "sharedApplication");
+        id windows = send(app, "windows");
+        auto count = reinterpret_cast<unsigned long (*)(id, SEL)>(objc_msgSend)(windows, sel_registerName("count"));
+        for (unsigned long i = 0; i < count; ++i)
+        {
+            id window = reinterpret_cast<id (*)(id, SEL, unsigned long)>(objc_msgSend)(windows, sel_registerName("objectAtIndex:"), i);
+            id view = send(window, "contentView");
+            if (!view || send(view, "layer") != static_cast<id>(layer)) continue;
+            reinterpret_cast<void (*)(id, SEL, CGSize)>(objc_msgSend)(window, sel_registerName("setContentMinSize:"), CGSizeMake(64.0, 48.0));
+            return;
+        }
+    }
+
     void* new_window_layer(void* childView)
     {
         auto send = [](id object, const char* selector) {
@@ -770,6 +793,8 @@ namespace
         bool resizePending = false;            // resized before the first frame (no swapchain yet)
         bool resizeDeferred = false;           // macOS, embedded: the swapchain to rebuild once settled
         bool resizeOwn = false;                // macOS, VSG's own window: resized (see vkf_viewer_frame)
+        bool empty = false;                    // a host's window of no width or height: not drawn
+        bool skipped = false;                  // this frame not drawn (vkf_viewer_frame_draw does nothing)
         vsg::clock::time_point lastResize;     // (see resize_settle)
         std::vector<std::array<int32_t, 12>> events;   // keyboard and mouse events for Fortran (EventRecorder)
         vkf::Gui* gui = nullptr;               // GUI panels (vkf_gui.cpp), once used
@@ -1324,6 +1349,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
             v->window->setInstance(metal_instance(*traits));
         v->metalLayer = new_window_layer(childView);
         if (childView) disable_layer_animations(v->metalLayer);      // (see disable_layer_animations)
+        if (!childView) limit_window_size(v->metalLayer);            // (never empty: see limit_window_size)
         v->window->setSurface(vsg::ref_ptr<vsg::Surface>(new MetalSurface(v->window->getOrCreateInstance(), v->metalLayer)));
         if (existing) WindowSetup::init_formats(*v->window);
 #endif
@@ -1476,6 +1502,11 @@ VKF_API int vkf_viewer_resize(void* viewer, int width, int height)
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
     return guarded("vkf_viewer_resize", -1, [&]() {
+        // no width or height (e.g. a collapsed splitter): not drawn (Metal has
+        // no drawables of no size, and a swapchain can't be built for it) until
+        // it has a size again
+        v->empty = width <= 0 || height <= 0;
+        if (v->empty) return 0;
         v->window->bufferedEvents.push_back(vsg::ConfigureWindowEvent::create(
             v->window, vsg::clock::now(), 0, 0, static_cast<uint32_t>(width), static_cast<uint32_t>(height)));
         if (!v->compiled)
@@ -1651,6 +1682,11 @@ VKF_API int vkf_viewer_frame_begin(void* viewer)
     ++frames_drawn;
     while (!retired.empty() && retired.front().first <= frames_drawn) retired.pop_front();
     return guarded("vkf_viewer_frame", -1, [&]() {
+        if (v->empty)                                   // (a host's window of no size: not drawn, see vkf_viewer_resize)
+        {
+            v->skipped = true;
+            return 1;
+        }
         if (!v->compiled)
         {
             // (no VSG headlight: the window's light is vkframes', v->headlight)
@@ -1702,6 +1738,7 @@ VKF_API int vkf_viewer_frame_begin(void* viewer)
             const auto extent = v->window->extent2D();
             for (auto& event : v->viewer->getEvents())
                 if (auto configure = event.cast<vsg::ConfigureWindowEvent>(); configure && configure->window.ref_ptr() == v->window &&
+                    configure->width > 0 && configure->height > 0 &&       // (never empty: see limit_window_size)
                     (configure->width != extent.width || configure->height != extent.height))
                     v->resizeOwn = true;
         }
@@ -1718,6 +1755,11 @@ VKF_API int vkf_viewer_frame_draw(void* viewer)
     auto v = static_cast<Viewer*>(viewer);
     if (!v) return -1;
     return guarded("vkf_viewer_frame_draw", -1, [&]() {
+        if (v->skipped)                                 // (not begun: vkf_viewer_frame_begin)
+        {
+            v->skipped = false;
+            return 1;
+        }
         v->viewer->update();
         v->viewer->recordAndSubmit();
         v->viewer->present();
