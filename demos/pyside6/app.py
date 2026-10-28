@@ -7,7 +7,9 @@ handle (winId) the library opens a vkframes WindowProxy. VSG renders into that
 window; Qt keeps its events, which are forwarded in VSG's conventions
 (framebuffer pixels, VSG mouse buttons and key symbols). Each window renders
 a frame on Qt's UpdateRequest and asks for the next one, so frames follow the
-display's refresh; everything runs on the GUI thread.
+display's refresh; everything runs on the GUI thread. "Record video..."
+records the main window to a video file (frames piped to ffmpeg), at the
+video's pace (the time steps by a frame's time per frame drawn).
 
 Run with `pixi run pyside6-demo` (from the vkframes root; see demo.py, which
 builds the library and sets VKDEMO_LIB). Options:
@@ -31,7 +33,7 @@ import sys
 
 from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QWindow
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDockWidget, QDoubleSpinBox,
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDockWidget, QDoubleSpinBox, QFileDialog,
                                QFormLayout, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget)
 
 MAX_WINDOWS = 4
@@ -57,6 +59,7 @@ def load_library():
         "vkdemo_window_set_view": (None, [c_int, c_int]),
         "vkdemo_window_reset_view": (None, [c_int]),
         "vkdemo_window_capture": (c_int, [c_int, c_char_p, c_int]),
+        "vkdemo_window_record": (c_int, [c_int, c_int, c_char_p, c_int]),
         "vkdemo_num_views": (c_int, []),
         "vkdemo_view_name": (c_int, [c_int, ctypes.c_char_p, c_int]),
         "vkdemo_time": (c_double, []),
@@ -282,6 +285,10 @@ class MainWindow(QMainWindow):
         reset_time = QPushButton("Reset time")
         reset_time.clicked.connect(lib.vkdemo_reset_time)
         form.addRow("", reset_time)
+        self.record = QPushButton("Record video...")
+        self.record.setCheckable(True)
+        self.record.toggled.connect(self.toggle_record)
+        form.addRow("", self.record)
 
         self.trace = QCheckBox("Trace orbit")
         self.trace.toggled.connect(lambda checked: lib.vkdemo_set_trace(int(checked)))
@@ -324,6 +331,23 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.LeftDockWidgetArea, dock)
         self.sky.setCurrentIndex(options.sky)
         self.trace.setChecked(options.trace)
+
+    def toggle_record(self, on):
+        """Record the main window to a video (WindowProxy%start_recording), or stop."""
+        lib = self.app.lib
+        if on:
+            file, _ = QFileDialog.getSaveFileName(self, "Record video", "vkframes.mp4", "Videos (*.mp4 *.mov *.webm)")
+            name = file.encode()
+            if not file or lib.vkdemo_window_record(self.view.id, 1, name, len(name)) != 0:
+                self.record.blockSignals(True)
+                self.record.setChecked(False)
+                self.record.blockSignals(False)
+                return
+            self.record.setText("Stop recording")
+        else:
+            if lib.vkdemo_window_record(self.view.id, 0, b"", 0) != 0:
+                print("vkframes: the recording failed (see ffmpeg's messages)")
+            self.record.setText("Record video...")
 
     def closeEvent(self, event):
         for w in list(self.app.extra):

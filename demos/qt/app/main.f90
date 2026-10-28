@@ -64,7 +64,9 @@
 !> there and the altitude; g goes to that time) or a body (the latitude and
 !> longitude), shown in the dock and in a GUI panel at the point picked
 !> (vkf_gui: Dear ImGui, kept there each frame in the handler's before_draw),
-!> with buttons to go to the time there and to close it. An orbit picked is
+!> with buttons to go to the time there and to close it. "Record video..."
+!> records the main window to a video file (frames piped to ffmpeg), at the
+!> video's pace. An orbit picked is
 !> highlighted (DrawableTrajectory%set_highlight: it pulses, with arrows
 !> moving along it), until the next click.
 !>
@@ -172,6 +174,7 @@ module vkdemo
         type(QDoubleSpinBox) :: time_scale
         type(QDoubleSpinBox) :: view_transition                !! seconds to fly between views (0: a cut)
         type(QCheckBox) :: pause_time
+        type(QPushButton) :: record                            !! records the main window to a video, or stops
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors, show_plane_swept
@@ -1073,6 +1076,22 @@ contains
         call app%windows(1)%proxy%set_time(0.0_wp)
     end subroutine on_reset_time
 
+    !> Record the main window to a video file chosen (WindowProxy%start_recording,
+    !> at 60 frames per second: the display's pace), or stop recording.
+    subroutine on_record(data)
+        class(*), intent(inout), optional :: data
+        character(len=:), allocatable :: file
+        if (app%windows(1)%proxy%is_recording()) then
+            if (.not. app%windows(1)%proxy%stop_recording()) &
+                write(*, '(a)') 'vkframes: the recording failed (see ffmpeg''s messages)'
+            call app%record%setText('Record video...')
+            return
+        end if
+        file = QFileDialog_getSaveFileName('Record video', 'vkframes.mp4', 'Videos (*.mp4 *.mov *.webm)', app%main)
+        if (len(file) == 0) return
+        if (app%windows(1)%proxy%start_recording(file, fps=60.0_wp)) call app%record%setText('Stop recording')
+    end subroutine on_record
+
     !> The time slider moved (dragged, clicked or with the keys): set the time.
     !> (Not when the demo moves it to follow the time.)
     subroutine on_time_slider(value, data)
@@ -1430,6 +1449,9 @@ contains
         reset = QPushButton('Reset time')
         call reset%clicked%connect(on_reset_time)
         call form%addRow('', reset)
+        app%record = QPushButton('Record video...')
+        call app%record%clicked%connect(on_record)
+        call form%addRow('', app%record)
         app%follow_mode = QComboBox()
         call app%follow_mode%addItems([character(len=23) :: 'Loop the orbit', 'Stop at the end (limit)'])
         call app%follow_mode%currentIndexChanged%connect(on_follow_mode)

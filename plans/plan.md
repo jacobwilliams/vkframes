@@ -760,16 +760,44 @@ Decided so far:
       the window that first shows it), Linux and Windows (untested), a
       conda-forge recipe, submitting the two bug reports (plans/upstream),
       removing layers, a vertical exaggeration.
-- [ ] Video recording (OpenFrames has only screenshots): `WindowProxy%
-      start_recording(file, fps)` / `stop_recording`, frames sent as raw
-      pixels to an `ffmpeg` process's stdin (`popen`, `_popen` on Windows;
-      ffmpeg from conda-forge in `pixi.toml`, path and codec/quality
-      options), no image files and no FFmpeg libraries linked. The frame is
-      copied to one persistent readback buffer in the frame's own commands
-      (no `deviceWaitIdle` per frame), the previous frame written while the
-      current one renders. While recording the simulation time advances by
-      exactly scale/fps per frame (Fortran drives the clock), so the video
-      is smooth however long a frame takes. A Record toggle in both demos.
+- [x] Video recording (OpenFrames has only screenshots): `WindowProxy%
+      start_recording(file, fps, quality, codec, scale, options, ffmpeg)` /
+      `stop_recording(frames)` / `is_recording` / `recorded_frames`.
+      - Frames are piped as raw pixels (bgra or rgba, as the swapchain) to an
+        `ffmpeg` process's stdin (`popen`, `_popen` on Windows): no image
+        files, no FFmpeg libraries linked. ffmpeg from conda-forge in
+        `pixi.toml` (a GPL build: libx264, libx265, VP9, ProRes, ...);
+        default H.264 at CRF 18, yuv420p, the size made even (`scale`
+        too); `options` replaces the encoder options; the program from
+        `ffmpeg`, VKFRAMES_FFMPEG or the path. ffmpeg starts at the first
+        frame (its size and byte order known then); its errors end the
+        recording (`frame()` notices, `stop_recording` returns false).
+      - C++ (`src/vsg/vkf_layer.cpp`: Recorder, GrabFrame): a command after
+        the render graph, in the frame's own commands, copies the swapchain
+        image (present -> transfer -> present layout) into one of two
+        persistently mapped host buffers; after the next frame is submitted
+        the frame's fence is waited for and its pixels written straight from
+        the mapped memory (no `deviceWaitIdle` per frame, no copy). The
+        video's size is the first frame's: a resized window is cropped or
+        padded with black. Clean under the validation layer.
+      - Time: while recording the window's wall time is the video's (start +
+        frames/fps): the simulation time advances by exactly scale/fps per
+        frame (the clock is given that wall time; set_time, pause and
+        set_time_scale through the window use it too), camera flights by
+        1/fps, and animated shaders (pulsing markers, highlighted lines) get
+        the video's time per view (animation_time_key). Stopping re-bases the
+        clock and a flight on the wall clock, from where the video was.
+      - Tested: `test_record` (frames written and counted by ffprobe, an even
+        size, the time stepping exactly, a second start refused, a failing
+        ffmpeg ending the recording; in CI on Linux and macOS). Shown in
+        `example/record_video.f90` (also run in CI, the video uploaded with
+        the captures) and both demos (Record video... / Stop recording, at 60
+        fps: the display's pace).
+      - [ ] Untested: Windows (`_popen` and its quoting of the command).
+      - [ ] Later: `capture` could use the same copy (in the frame's commands)
+            instead of reading the swapchain image after it is presented
+            (see the item above).
+      - [ ] Later: offscreen recording (no window; with offscreen rendering).
 - [ ] Specular light on PBR models (glTF): ignored for now (PBR has no
       separate specular light color).
 - [x] `CustomLineSegments` (OpenFrames' class of that name;

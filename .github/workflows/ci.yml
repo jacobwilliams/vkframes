@@ -48,6 +48,8 @@ jobs:
           mkdir -p captures
           xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example orbit -- 30 "$PWD/captures/orbit.png"
           xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example precision -- 10 "$PWD/captures/precision.png"
+          xvfb-run -a -s "-screen 0 1280x1024x24" pixi run test test_record
+          xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example record_video -- "$PWD/captures/record_video.mp4" 2
 
       - name: Render examples (macOS)
         if: runner.os == 'macOS'
@@ -56,6 +58,8 @@ jobs:
           mkdir -p captures
           pixi run example orbit -- 30 "$PWD/captures/orbit.png"
           pixi run example precision -- 10 "$PWD/captures/precision.png"
+          pixi run test test_record
+          pixi run example record_video -- "$PWD/captures/record_video.mp4" 2
 
       # The Qt demo (separate fpm project; vkframes embedded in a qt-fortran window).
       - name: Build the Qt demo

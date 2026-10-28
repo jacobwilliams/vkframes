@@ -39,11 +39,14 @@ using vkf::to_string;
 #include <array>
 #include <chrono>
 #include <cmath>
+#include <csignal>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <deque>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -463,6 +466,21 @@ namespace
         return static_cast<float>(std::fmod(std::chrono::duration<double>(clock::now() - start).count(), 3600.0));
     }
 
+    // The time of animated shaders (pulsing markers, highlighted lines), stored
+    // on each vsg::View while its window records a video (vkf_viewer_record_start):
+    // the video's time, so that they play at its speed however long a frame
+    // takes; negative (or not set): frame_time().
+    constexpr const char* animation_time_key = "vkf_animation_time";
+
+    // The animation time for the view being recorded (see animation_time_key).
+    float animation_time(vsg::RecordTraversal& visitor)
+    {
+        float t = -1.0f;
+        if (visitor.viewDependentState && visitor.viewDependentState->view)
+            visitor.viewDependentState->view->getValue(animation_time_key, t);
+        return (t >= 0.0f) ? t : frame_time();
+    }
+
     // Framebuffer pixels per window unit, stored on each vsg::View (2 on Retina).
     constexpr const char* pixel_ratio_key = "vkf_pixel_ratio";
     // A view's size as displayed when it differs from its render area: while
@@ -681,7 +699,7 @@ namespace
             float constants[16] = {};
             for (int i = 0; i < 3; ++i) split(eye[i], constants[i], constants[4 + i]);
             recorded_viewport(visitor, constants + 8);
-            constants[11] = frame_time();
+            constants[11] = animation_time(visitor);
             uint32_t stride = 1, drawn = 0;
             if (lod)
             {
@@ -772,6 +790,134 @@ namespace
         }
     };
 
+    // Video recording (vkf_viewer_record_start): each frame drawn is copied, in
+    // the frame's own commands after its render pass (GrabFrame, the window's
+    // command graph's last command), from the swapchain image into one of two
+    // persistently mapped host buffers; once the next frame has been
+    // submitted, the frame's fence is waited for and its pixels are written
+    // from the mapped buffer to an ffmpeg process's standard input (popen) as
+    // raw video. So a frame is written while the next one renders, without
+    // waiting for the whole device and without copies or image files. The
+    // video's size is its first frame's: frames of another size (the window
+    // resized) are cropped or padded with black.
+    struct Recorder
+    {
+        struct Slot
+        {
+            vsg::ref_ptr<vsg::Buffer> buffer;      // (width x height x 4 bytes, host visible and coherent)
+            void* mapped = nullptr;
+            vsg::ref_ptr<vsg::Fence> fence;        // the frame's, once submitted
+            bool pending = false;                  // copied to, not written yet
+        };
+        bool active = false;
+        bool failed = false;                       // (an error: frames are no longer copied or written)
+        std::string ffmpeg, output;                // the ffmpeg command, its output options (and file)
+        double fps = 30.0;
+        FILE* pipe = nullptr;                      // ffmpeg's standard input (opened at the first frame written)
+        uint32_t width = 0, height = 0;            // the video's size (its first frame's)
+        bool bgra = true;                          // the swapchain's byte order (else rgba)
+        Slot slots[2];
+        int current = -1;                          // the slot copied to in this frame (-1: none)
+        int previous = -1;                         // the slot copied to in the frame before
+        uint64_t copied = 0, written = 0;          // frames
+        float animationStart = 0.0f;               // frame_time() at the start
+    };
+
+    // Copies the frame drawn to the recorder's next slot (see Recorder): the
+    // swapchain image from presentation to transfer layout and back.
+    class GrabFrame : public vsg::Inherit<vsg::Command, GrabFrame>
+    {
+    public:
+        GrabFrame(vsg::ref_ptr<vsg::Window> w, Recorder* r) :
+            window(w), recorder(r) {}
+
+        vsg::observer_ptr<vsg::Window> window;
+        Recorder* recorder;
+
+        void record(vsg::CommandBuffer& commandBuffer) const override
+        {
+            auto& rec = *recorder;
+            rec.current = -1;
+            vsg::ref_ptr<vsg::Window> w = window;
+            if (!rec.active || rec.failed || !w) return;
+            auto swapchain = w->getSwapchain();
+            const size_t index = w->imageIndex();
+            if (!swapchain || index >= swapchain->getImageViews().size()) return;
+            const VkFormat format = swapchain->getImageFormat();
+            const bool bgra = (format == VK_FORMAT_B8G8R8A8_UNORM || format == VK_FORMAT_B8G8R8A8_SRGB);
+            const bool rgba = (format == VK_FORMAT_R8G8B8A8_UNORM || format == VK_FORMAT_R8G8B8A8_SRGB);
+            if (!bgra && !rgba)
+            {
+                std::cerr << "vkframes: recording: unsupported swapchain format " << format << std::endl;
+                rec.failed = true;
+                return;
+            }
+            const VkExtent2D extent = swapchain->getExtent();
+            if (rec.width == 0)
+            {
+                rec.width = extent.width;
+                rec.height = extent.height;
+                rec.bgra = bgra;
+            }
+            const int s = (rec.previous == 0) ? 1 : 0;
+            auto& slot = rec.slots[s];
+            auto device = vsg::ref_ptr<vsg::Device>(commandBuffer.getDevice());
+            const uint32_t deviceID = commandBuffer.deviceID;
+            const VkDeviceSize size = VkDeviceSize(rec.width) * rec.height * 4;
+            if (!slot.buffer)
+            {
+                slot.buffer = vsg::createBufferAndMemory(device, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_SHARING_MODE_EXCLUSIVE,
+                                                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                auto memory = slot.buffer->getDeviceMemory(deviceID);
+                if (!memory || memory->map(slot.buffer->getMemoryOffset(deviceID), size, 0, &slot.mapped) != VK_SUCCESS)
+                {
+                    std::cerr << "vkframes: recording: could not map a readback buffer" << std::endl;
+                    rec.failed = true;
+                    return;
+                }
+                std::memset(slot.mapped, 0, static_cast<size_t>(size));
+            }
+            const uint32_t width = std::min(extent.width, rec.width), height = std::min(extent.height, rec.height);
+            if (width != rec.width || height != rec.height)        // (the rest black)
+                std::memset(slot.mapped, 0, static_cast<size_t>(size));
+
+            VkImage image = swapchain->getImageViews()[index]->image->vk(deviceID);
+            VkImageMemoryBarrier barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER};
+            barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;     // (the render pass's final layout)
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = image;
+            barrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                                 0, nullptr, 0, nullptr, 1, &barrier);
+            VkBufferImageCopy region{};
+            region.bufferRowLength = rec.width;
+            region.bufferImageHeight = rec.height;
+            region.imageSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+            region.imageExtent = {width, height, 1};
+            vkCmdCopyImageToBuffer(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, slot.buffer->vk(deviceID), 1, &region);
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.dstAccessMask = 0;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            VkBufferMemoryBarrier toHost{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER};
+            toHost.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            toHost.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+            toHost.srcQueueFamilyIndex = toHost.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            toHost.buffer = slot.buffer->vk(deviceID);
+            toHost.size = VK_WHOLE_SIZE;
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                                 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT | VK_PIPELINE_STAGE_HOST_BIT, 0,
+                                 0, nullptr, 1, &toHost, 1, &barrier);
+            slot.pending = true;
+            slot.fence = nullptr;
+            rec.current = s;
+            ++rec.copied;
+        }
+    };
+
     struct Viewer
     {
         vsg::ref_ptr<vsg::Viewer> viewer;
@@ -794,6 +940,7 @@ namespace
         vsg::clock::time_point lastResize;     // (see resize_settle)
         std::vector<std::array<int32_t, 12>> events;   // keyboard and mouse events for Fortran (EventRecorder)
         vkf::Gui* gui = nullptr;               // GUI panels (vkf_gui.cpp), once used
+        Recorder recorder;                     // video recording (vkf_viewer_record_start)
     };
 
     // Records the window's keyboard and mouse events for Fortran (its event
@@ -1163,6 +1310,83 @@ namespace
         return mat;
     }
 
+    // Store the animation time on the views of a command graph (see
+    // animation_time_key; negative: frame_time()).
+    void set_animation_time(vsg::CommandGraph& commandGraph, float t)
+    {
+        for (auto& child : commandGraph.children)
+            if (auto renderGraph = child.cast<vsg::RenderGraph>())
+                for (auto& grandchild : renderGraph->children)
+                    if (auto view = grandchild.cast<vsg::View>()) view->setValue(animation_time_key, t);
+    }
+
+    // Write a recorder's slot to ffmpeg (see Recorder), once its frame is done:
+    // ffmpeg is started at the first frame (the video's size and byte order
+    // known then). False on failure (the recorder then fails).
+    bool write_slot(Recorder& rec, Recorder::Slot& slot)
+    {
+        if (!slot.pending || rec.failed) return !rec.failed;
+        slot.pending = false;
+        if (slot.fence && slot.fence->wait(std::numeric_limits<uint64_t>::max()) != VK_SUCCESS) rec.failed = true;
+        if (!rec.failed && !rec.pipe)
+        {
+            char size[32];
+            std::snprintf(size, sizeof(size), "%ux%u", rec.width, rec.height);
+            std::string command = rec.ffmpeg + " -hide_banner -loglevel error -y -f rawvideo -pix_fmt " +
+                                  (rec.bgra ? "bgra" : "rgba") + " -s " + size + " -r " + std::to_string(rec.fps) +
+                                  " -i - " + rec.output;
+#if defined(_WIN32)
+            command = "\"" + command + "\"";       // (cmd.exe strips the outer quotes)
+            rec.pipe = _popen(command.c_str(), "wb");
+#else
+            rec.pipe = popen(command.c_str(), "w");
+#endif
+            if (!rec.pipe)
+            {
+                std::cerr << "vkframes: recording: could not start " << command << std::endl;
+                rec.failed = true;
+            }
+        }
+        if (rec.failed) return false;
+        const size_t size = size_t(rec.width) * rec.height * 4;
+        if (std::fwrite(slot.mapped, 1, size, rec.pipe) != size)
+        {
+            std::cerr << "vkframes: recording: ffmpeg stopped (see its messages above)" << std::endl;
+            rec.failed = true;
+            return false;
+        }
+        ++rec.written;
+        return true;
+    }
+
+    // Stop a viewer's recording: the frames copied written, ffmpeg's input
+    // closed (it finishes the file) and the buffers released. Returns the
+    // frames written, or -1 on failure.
+    long long finish_recording(Viewer& v)
+    {
+        auto& rec = v.recorder;
+        if (!rec.active) return -1;
+        if (v.compiled) v.viewer->deviceWaitIdle();
+        if (rec.previous >= 0) write_slot(rec, rec.slots[rec.previous]);   // (the older first)
+        for (auto& slot : rec.slots) write_slot(rec, slot);
+        bool ok = !rec.failed;
+        if (rec.pipe)
+        {
+#if defined(_WIN32)
+            ok = _pclose(rec.pipe) == 0 && ok;
+#else
+            ok = pclose(rec.pipe) == 0 && ok;
+#endif
+        }
+        const long long written = static_cast<long long>(rec.written);
+        for (auto& slot : rec.slots)
+            if (slot.buffer && slot.mapped)
+                if (auto memory = slot.buffer->getDeviceMemory(v.window->getDevice()->deviceID)) memory->unmap();
+        rec = Recorder{};
+        if (v.commandGraph) set_animation_time(*v.commandGraph, -1.0f);
+        return ok ? written : -1;
+    }
+
     // Store the pixel ratio on the views of a command graph (read by EyeRelative).
     void set_pixel_ratio(vsg::CommandGraph& commandGraph, float ratio)
     {
@@ -1397,6 +1621,7 @@ VKF_API void vkf_viewer_delete(void* viewer)
 {
     auto v = static_cast<Viewer*>(viewer);
     guarded("vkf_viewer_delete", 0, [&]() {
+        if (v && v->recorder.active) finish_recording(*v);
         if (v && v->compiled) v->viewer->deviceWaitIdle();
         if (v && v->gui) vkf::gui_delete(v->gui, *v->viewer);
         if (v) delete static_cast<Node*>(v->headlightHandle);
@@ -1698,6 +1923,7 @@ VKF_API int vkf_viewer_frame_begin(void* viewer)
             }
             set_pixel_ratio(*v->commandGraph, v->pixelRatio);
             if (v->gui) vkf::gui_attach(v->gui, v->window, *v->viewer, *v->commandGraph);   // (on top of the HUD)
+            v->commandGraph->addChild(GrabFrame::create(v->window, &v->recorder));      // (after the render pass)
             v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
             prepare_views(*v);                                  // (compiled with the scene)
             v->viewer->compile();
@@ -1756,9 +1982,19 @@ VKF_API int vkf_viewer_frame_draw(void* viewer)
             v->skipped = false;
             return 1;
         }
+        auto& rec = v->recorder;
+        if (rec.active)        // (animations at the video's time)
+            set_animation_time(*v->commandGraph, rec.animationStart + static_cast<float>(double(rec.copied) / rec.fps));
         v->viewer->update();
         v->viewer->recordAndSubmit();
+        if (rec.active && rec.current >= 0 && !v->viewer->recordAndSubmitTasks.empty())
+            rec.slots[rec.current].fence = v->viewer->recordAndSubmitTasks.front()->fence();   // (this frame's)
         v->viewer->present();
+        if (rec.active)        // the frame before (done, or nearly), while this one renders
+        {
+            if (rec.previous >= 0 && rec.previous != rec.current) write_slot(rec, rec.slots[rec.previous]);
+            rec.previous = rec.current;
+        }
         vkf::gui_frame_done(v->gui);                   // (the panels are described again for the next frame)
         return 1;
     });
@@ -1785,6 +2021,53 @@ VKF_API int vkf_viewer_frame(void* viewer)
 {
     const int status = vkf_viewer_frame_begin(viewer);
     return status == 1 ? vkf_viewer_frame_draw(viewer) : status;
+}
+
+// Start recording the frames drawn to a video, `fps` frames per second of
+// it: piped to `ffmpeg` (its command: the program, quoted if need be) as raw
+// video, encoded with `output` (ffmpeg's output options and the file, quoted;
+// e.g. -c:v libx264 -crf 18 -pix_fmt yuv420p "orbit.mp4"). See Recorder.
+// ffmpeg starts at the first frame drawn. Returns 0, or -1 if already
+// recording. (POSIX: SIGPIPE is ignored from then on, so that a failed ffmpeg
+// is reported instead of ending the program.)
+VKF_API int vkf_viewer_record_start(void* viewer, const char* ffmpeg, int ffmpeg_len, const char* output, int output_len,
+                                    double fps)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || v->recorder.active || fps <= 0.0) return -1;
+    return guarded("vkf_viewer_record_start", -1, [&]() {
+#if !defined(_WIN32)
+        std::signal(SIGPIPE, SIG_IGN);
+#endif
+        auto& rec = v->recorder;
+        rec = Recorder{};
+        rec.ffmpeg = to_string(ffmpeg, ffmpeg_len);
+        rec.output = to_string(output, output_len);
+        rec.fps = fps;
+        rec.animationStart = frame_time();
+        rec.active = true;
+        return 0;
+    });
+}
+
+// Stop recording (vkf_viewer_record_start): the last frames written, and
+// ffmpeg's input closed, so that it finishes the file. Returns the number of
+// frames written, or -1 if not recording or on failure (ffmpeg's messages
+// are on the standard error).
+VKF_API long long vkf_viewer_record_stop(void* viewer)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    return guarded("vkf_viewer_record_stop", -1LL, [&]() { return finish_recording(*v); });
+}
+
+// Frames recorded so far (copied: written, or to be written), or -1 if not
+// recording or recording failed.
+VKF_API long long vkf_viewer_record_frames(void* viewer)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || !v->recorder.active || v->recorder.failed) return -1;
+    return static_cast<long long>(v->recorder.copied);
 }
 
 // Write the last presented frame to an image file (format from the extension,

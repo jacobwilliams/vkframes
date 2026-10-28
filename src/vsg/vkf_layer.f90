@@ -20,6 +20,7 @@ module vkf_layer
     public :: vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
+    public :: vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
     public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
     public :: vkf_viewer_frame_begin, vkf_viewer_frame_draw
@@ -440,6 +441,36 @@ module vkf_layer
             character(kind=c_char), dimension(*), intent(in) :: filename
             integer(c_int), value :: filename_len                         !! the length of `filename`
         end function vkf_viewer_capture
+
+        !> Start recording the frames drawn to a video of `fps` frames per second: piped as raw video to
+        !> `ffmpeg` (the program), encoded with `output` (ffmpeg's output options, then the file, quoted).
+        !> Returns 0, or -1 if already recording.
+        integer(c_int) function vkf_viewer_record_start(viewer, ffmpeg, ffmpeg_len, output, output_len, fps) &
+                bind(C, name="vkf_viewer_record_start")
+            import :: c_ptr, c_int, c_char, c_double
+            implicit none
+            type(c_ptr), value :: viewer                                  !! viewer handle (vkf_viewer_create)
+            character(kind=c_char), dimension(*), intent(in) :: ffmpeg    !! the ffmpeg command (quoted if need be)
+            integer(c_int), value :: ffmpeg_len                           !! the length of `ffmpeg`
+            character(kind=c_char), dimension(*), intent(in) :: output    !! ffmpeg's output options and file
+            integer(c_int), value :: output_len                           !! the length of `output`
+            real(c_double), value :: fps                                  !! frames per second of the video
+        end function vkf_viewer_record_start
+
+        !> Stop recording: the last frames written and ffmpeg's input closed (it finishes the file).
+        !> Returns the frames written, or -1 if not recording or on failure.
+        integer(c_long_long) function vkf_viewer_record_stop(viewer) bind(C, name="vkf_viewer_record_stop")
+            import :: c_ptr, c_long_long
+            implicit none
+            type(c_ptr), value :: viewer                                  !! viewer handle (vkf_viewer_create)
+        end function vkf_viewer_record_stop
+
+        !> Frames recorded so far, or -1 if not recording or recording failed.
+        integer(c_long_long) function vkf_viewer_record_frames(viewer) bind(C, name="vkf_viewer_record_frames")
+            import :: c_ptr, c_long_long
+            implicit none
+            type(c_ptr), value :: viewer                                  !! viewer handle (vkf_viewer_create)
+        end function vkf_viewer_record_frames
 
         !> Add a child to a group node (a transform or a switch); while running, compile the child first
         !> (vkf_compile_node). Returns 0, or -1 on failure.

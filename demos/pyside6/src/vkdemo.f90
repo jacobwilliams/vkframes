@@ -334,6 +334,21 @@ contains
         if (app%windows(id)%proxy%capture(to_string(file, file_len))) status = 0
     end function vkdemo_window_capture
 
+    !> Start (on /= 0) recording window `id` to the video `file`, or stop.
+    !> Returns 0, or -1 on failure.
+    integer(c_int) function vkdemo_window_record(id, on, file, file_len) bind(C, name="vkdemo_window_record") &
+            result(status)
+        integer(c_int), value :: id, on, file_len
+        character(kind=c_char), intent(in) :: file(*)
+        status = -1
+        if (.not. valid(id)) return
+        if (on /= 0) then
+            if (app%windows(id)%proxy%start_recording(to_string(file, file_len), fps=60.0_wp)) status = 0   ! (the display's pace)
+        else
+            if (app%windows(id)%proxy%stop_recording()) status = 0
+        end if
+    end function vkdemo_window_record
+
     logical function valid(id)
         integer(c_int), intent(in) :: id
         valid = .false.

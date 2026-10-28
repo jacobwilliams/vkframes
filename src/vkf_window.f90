@@ -54,8 +54,21 @@
 !> shown to the new one. A flight moves the center along a straight line, the
 !> distance geometrically and the orientation by the shortest rotation, eased
 !> in and out, in the root frame (both views' frames as they move), over the
-!> wall-clock time given; a mouse press, `stop_transition` or another flight
+!> wall-clock time given (the video's while recording); a mouse press, `stop_transition` or another flight
 !> ends it.
+!>
+!> Video recording (not in OpenFrames, which has only screenshots):
+!> `start_recording(file, fps)` ... `stop_recording()` records the frames
+!> drawn to a video file, encoded by ffmpeg (conda-forge's, in the pixi
+!> environment; or `ffmpeg`, or VKFRAMES_FFMPEG): the frames are piped to it
+!> as raw pixels (no image files; see vkf_viewer_record_start in
+!> src/vsg/vkf_layer.cpp). While recording, the window's time is the video's:
+!> each frame advances the simulation time by exactly scale/fps, and camera
+!> flights and animated shaders (pulsing markers, highlighted lines) by
+!> 1/fps s, so the video plays smoothly at its own speed however long a
+!> frame takes to draw (or to encode). Stopping goes back to the wall clock
+!> from where the video was. The video's size is its first frame's (a window
+!> resized while recording is cropped or padded).
 !>
 !> Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
 !> point of the window (x, y as the event handler's: -1 to 1, y up), nearest
@@ -72,7 +85,7 @@ module vkf_window
     use vkf_math, only: wp, rigid_inverse, identity_matrix
     use vkf_frames, only: ReferenceFrame, PickHit
     use vkf_pick, only: PickCamera, pick_camera, project
-    use vkf_clock, only: SimulationClock
+    use vkf_clock, only: SimulationClock, wall_time
     use vkf_view, only: View, PERSPECTIVE, camera_between, transform_camera
     use vkf_hud, only: HUDText
     use vkf_sky, only: SkySphere
@@ -86,7 +99,8 @@ module vkf_window
                          vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set, vkf_viewer_remove_node, &
                          vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio, &
                          vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, &
-                         vkf_viewer_frame_begin, vkf_viewer_frame_draw, vkf_viewer_gui
+                         vkf_viewer_frame_begin, vkf_viewer_frame_draw, vkf_viewer_gui, &
+                         vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames
 
     implicit none
 
@@ -143,7 +157,7 @@ module vkf_window
         logical :: active = .false.                         !! flying
         type(View), pointer :: from => null(), to => null()  !! the views flown from and to
         real(wp) :: start(3,3) = 0.0_wp, finish(3,3) = 0.0_wp   !! (columns: eye, center, up)
-        integer(int64) :: started = 0_int64                 !! system_clock count
+        real(wp) :: started = 0.0_wp                        !! the window's wall time at the start (s; window_wall)
         real(wp) :: duration = 0.0_wp                       !! s
     end type CameraFlight
 
@@ -193,11 +207,18 @@ module vkf_window
         real(wp) :: transition_ = 0.0_wp                    !! s, for view changes and resets
         real(wp) :: switch_duration = -1.0_wp               !! s, for the next view change (< 0: transition_)
         type(CameraFlight) :: flight                        !! the camera flight (when active)
+        ! video recording
+        logical :: recording_ = .false.                     !! recording (start_recording)
+        real(wp) :: record_fps = 30.0_wp                    !! the video's frames per second
+        real(wp) :: record_wall = 0.0_wp                    !! the wall time at the start (s)
+        integer(int64) :: record_frames = 0_int64           !! frames drawn while recording
     contains
         procedure :: open, close, is_open, pixel_ratio
         procedure :: set_scene
         procedure :: frame, run
         procedure :: capture
+        ! video recording (see the module documentation)
+        procedure :: start_recording, stop_recording, is_recording, recorded_frames
         procedure :: set_background_color, background_color
         ! views (OpenFrames' RenderRectangle)
         procedure :: add_view, remove_view, remove_all_views
@@ -326,6 +347,8 @@ contains
     !> shown again in another window.
     subroutine close(self)
         class(WindowProxy), intent(inout) :: self
+        logical :: ok
+        if (self%recording_) ok = self%stop_recording()
         if (c_associated(self%viewer_)) call vkf_viewer_delete(self%viewer_)
         self%viewer_ = c_null_ptr
         self%running = .false.
@@ -361,6 +384,7 @@ contains
         class(ReferenceFrame), pointer :: root
         real(wp) :: t
         integer(c_int) :: status
+        integer(c_long_long) :: frames
         running = .false.
         if (.not. self%is_open()) return
         root => null()
@@ -377,7 +401,7 @@ contains
             call create_huds(self)
             self%scene_added = .true.
         end if
-        t = self%clock_%update()
+        t = self%clock_%update(window_wall(self))
         if (associated(root)) call self%scene%update(t, self%scene_seen)     ! (once per time across windows)
         call update_window_light(self, root)
         call place_camera(self)
@@ -390,6 +414,14 @@ contains
         if (self%running .and. self%is_open()) then
             call update_huds(self)
             self%running = vkf_viewer_frame_draw(self%viewer_) == 1
+        end if
+        if (self%recording_ .and. self%running) then
+            frames = vkf_viewer_record_frames(self%viewer_)                 ! (frames not drawn don't count)
+            if (frames >= 0) then
+                self%record_frames = frames
+            else                                                            ! (ffmpeg failed: see its messages)
+                if (.not. self%stop_recording()) write(*, '(a)') 'vkframes: recording failed'
+            end if
         end if
         if (self%running) call dispatch_events(self)
         running = self%running .and. self%is_open()
@@ -418,6 +450,125 @@ contains
         if (.not. self%is_open()) return
         ok = vkf_viewer_capture(self%viewer_, file, len(file, kind=c_int)) == 0
     end function capture
+
+    !> Start recording the frames drawn to the video `file` (see the module
+    !> documentation), `fps` frames per second (default 30). Encoded by
+    !> `codec` (an ffmpeg encoder; default libx264, H.264) at `quality` (for
+    !> libx264, libx265 and libvpx-vp9 the CRF: 0 lossless to 51, default 18,
+    !> visually lossless), scaled by `scale` (default 1; e.g. 0.5 for half the
+    !> size of a Retina window's pixels), the size made even. `options`
+    !> replaces all of those ffmpeg output options (e.g. '-c:v prores_ks
+    !> -profile:v 3'). `ffmpeg`: the program (default: VKFRAMES_FFMPEG, else
+    !> ffmpeg on the path). Returns false if the window isn't open or is
+    !> already recording; ffmpeg's errors (e.g. an unknown encoder) show when
+    !> it starts, at the next frame, and end the recording.
+    logical function start_recording(self, file, fps, quality, codec, scale, options, ffmpeg) result(ok)
+        class(WindowProxy), intent(inout) :: self
+        character(len=*), intent(in) :: file                !! the video file (e.g. .mp4, .mov, .webm)
+        real(wp), intent(in), optional :: fps               !! frames per second of the video (default 30)
+        integer, intent(in), optional :: quality            !! the CRF (default 18; lower is better)
+        character(len=*), intent(in), optional :: codec     !! an ffmpeg encoder (default libx264)
+        real(wp), intent(in), optional :: scale             !! of the window's pixels (default 1)
+        character(len=*), intent(in), optional :: options   !! ffmpeg's output options, instead of those above
+        character(len=*), intent(in), optional :: ffmpeg    !! the ffmpeg program
+        character(len=:), allocatable :: output, program
+        character(len=1024) :: env
+        integer :: n, status
+        ok = .false.
+        if (.not. self%is_open() .or. self%recording_) return
+        if (present(options)) then
+            output = trim(options)
+        else
+            output = encoder_options(codec, quality, scale)
+        end if
+        output = output//' "'//trim(file)//'"'
+        if (present(ffmpeg)) then
+            program = '"'//trim(ffmpeg)//'"'
+        else
+            call get_environment_variable('VKFRAMES_FFMPEG', env, n, status)
+            program = 'ffmpeg'
+            if (status == 0 .and. n > 0) program = '"'//trim(env)//'"'
+        end if
+        self%record_fps = 30.0_wp
+        if (present(fps)) self%record_fps = fps
+        if (self%record_fps <= 0.0_wp) return
+        if (vkf_viewer_record_start(self%viewer_, program, len(program, kind=c_int), output, len(output, kind=c_int), &
+                                    real(self%record_fps, c_double)) /= 0) return
+        self%record_wall = wall_time()               ! (the window's time goes on from now, at the video's pace)
+        self%record_frames = 0_int64
+        self%recording_ = .true.
+        ok = .true.
+    end function start_recording
+
+    !> ffmpeg's output options for `codec`, `quality` and `scale` (see start_recording).
+    function encoder_options(codec, quality, scale) result(args)
+        character(len=*), intent(in), optional :: codec
+        integer, intent(in), optional :: quality
+        real(wp), intent(in), optional :: scale
+        character(len=:), allocatable :: args, c
+        character(len=32) :: q, f
+        c = 'libx264'
+        if (present(codec)) c = trim(codec)
+        write(q, '(i0)') 18
+        if (present(quality)) write(q, '(i0)') max(0, min(63, quality))
+        write(f, '(g0)') 1.0_wp
+        if (present(scale)) write(f, '(g0)') max(scale, 0.01_wp)
+        args = '-c:v '//c
+        select case (c)
+        case ('libx264')
+            args = args//' -preset medium -crf '//trim(q)//' -pix_fmt yuv420p'
+        case ('libx265')
+            args = args//' -preset medium -crf '//trim(q)//' -pix_fmt yuv420p -tag:v hvc1'     ! (hvc1: QuickTime)
+        case ('libvpx-vp9')
+            args = args//' -crf '//trim(q)//' -b:v 0 -pix_fmt yuv420p'
+        end select
+        args = args//' -vf "scale=trunc(iw*'//trim(f)//'/2)*2:trunc(ih*'//trim(f)//'/2)*2"'
+    end function encoder_options
+
+    !> Stop recording: ffmpeg finishes the file. The window's time goes on
+    !> from where the video was, on the wall clock again. `frames`: the
+    !> frames written. Returns false if not recording or if the recording
+    !> failed (ffmpeg's messages are on the standard error).
+    logical function stop_recording(self, frames) result(ok)
+        class(WindowProxy), intent(inout) :: self
+        integer(int64), intent(out), optional :: frames     !! frames written to the video
+        integer(c_long_long) :: n
+        real(wp) :: shift
+        ok = .false.
+        if (present(frames)) frames = 0_int64
+        if (.not. self%recording_) return
+        n = -1
+        if (c_associated(self%viewer_)) n = vkf_viewer_record_stop(self%viewer_)
+        shift = wall_time() - window_wall(self)
+        self%recording_ = .false.
+        if (.not. associated(self%clock_%synchronized_to())) call self%clock_%set_time(self%clock_%time())
+        if (self%flight%active) self%flight%started = self%flight%started + shift
+        ok = n >= 0
+        if (present(frames)) frames = max(0_c_long_long, n)
+    end function stop_recording
+
+    !> Whether the window is recording a video.
+    pure logical function is_recording(self)
+        class(WindowProxy), intent(in) :: self
+        is_recording = self%recording_
+    end function is_recording
+
+    !> Frames recorded since recording started (the video's length: frames / fps).
+    pure integer(int64) function recorded_frames(self)
+        class(WindowProxy), intent(in) :: self
+        recorded_frames = self%record_frames
+    end function recorded_frames
+
+    !> The window's wall time (s): the wall clock's, or while recording the
+    !> video's (its start, plus a frame's time per frame drawn).
+    real(wp) function window_wall(self)
+        type(WindowProxy), intent(in) :: self
+        if (self%recording_) then
+            window_wall = self%record_wall + real(self%record_frames, wp) / self%record_fps
+        else
+            window_wall = wall_time()
+        end if
+    end function window_wall
 
     !> The background color [r, g, b] (0 to 1; default black).
     subroutine set_background_color(self, rgb)
@@ -1047,7 +1198,7 @@ contains
         self%flight%start = start
         self%flight%finish = finish
         self%flight%duration = duration
-        call system_clock(self%flight%started)
+        self%flight%started = window_wall(self)
         self%flight%active = .true.
     end subroutine start_flight
 
@@ -1057,15 +1208,13 @@ contains
     subroutine fly(self, v)
         type(WindowProxy), intent(inout) :: self
         type(View), intent(in), target :: v
-        integer(int64) :: count, rate
         real(wp) :: s, from(3,3), to(3,3), m(4,4)
         if (.not. self%flight%active) return
         if (.not. associated(self%flight%to, v)) then             ! (another view since)
             self%flight%active = .false.
             return
         end if
-        call system_clock(count, rate)
-        s = real(count - self%flight%started, wp) / (real(rate, wp) * self%flight%duration)
+        s = (window_wall(self) - self%flight%started) / self%flight%duration
         if (s >= 1.0_wp) then
             self%flight%active = .false.
             call put_camera(self, self%flight%finish)
@@ -1085,7 +1234,7 @@ contains
     subroutine set_time(self, t)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: t                           !! simulation time
-        call self%clock_%set_time(t)
+        call self%clock_%set_time(t, window_wall(self))
     end subroutine set_time
 
     !> The simulation time (at the last frame).
@@ -1098,7 +1247,7 @@ contains
     subroutine pause_time(self, paused)
         class(WindowProxy), intent(inout) :: self
         logical, intent(in) :: paused
-        call self%clock_%pause(paused)
+        call self%clock_%pause(paused, window_wall(self))
     end subroutine pause_time
 
     !> Whether the simulation time is paused.
@@ -1111,7 +1260,7 @@ contains
     subroutine set_time_scale(self, scale)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: scale
-        call self%clock_%set_time_scale(scale)
+        call self%clock_%set_time_scale(scale, window_wall(self))
     end subroutine set_time_scale
 
     !> Simulation seconds per wall-clock second.
