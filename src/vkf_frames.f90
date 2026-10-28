@@ -51,24 +51,24 @@ module vkf_frames
 
     private
 
-    ! which axes to show (OpenFrames' AxesType), combined with ior
-    integer, parameter, public :: NO_AXES = 0
-    integer, parameter, public :: X_AXIS = 1
-    integer, parameter, public :: Y_AXIS = 2
-    integer, parameter, public :: Z_AXIS = 4
-    integer, parameter, public :: ALL_AXES = 7
+    !> which axes to show (OpenFrames' AxesType), combined with ior
+    integer, parameter, public :: NO_AXES = 0               !! none
+    integer, parameter, public :: X_AXIS = 1                !! the x axis
+    integer, parameter, public :: Y_AXIS = 2                !! the y axis
+    integer, parameter, public :: Z_AXIS = 4                !! the z axis
+    integer, parameter, public :: ALL_AXES = 7              !! all three
 
-    ! text alignment of labels (osgText's AlignmentType, as OpenFrames uses)
+    !> text alignment of labels (osgText's AlignmentType, as OpenFrames uses)
     integer, parameter, public :: ALIGN_LEFT_TOP = 0, ALIGN_LEFT_CENTER = 1, ALIGN_LEFT_BOTTOM = 2
     integer, parameter, public :: ALIGN_CENTER_TOP = 3, ALIGN_CENTER_CENTER = 4, ALIGN_CENTER_BOTTOM = 5
     integer, parameter, public :: ALIGN_RIGHT_TOP = 6, ALIGN_RIGHT_CENTER = 7, ALIGN_RIGHT_BOTTOM = 8
     integer, parameter, public :: ALIGN_LEFT_BASE_LINE = 9, ALIGN_CENTER_BASE_LINE = 10, ALIGN_RIGHT_BASE_LINE = 11
 
     type :: FramePointer
-        class(ReferenceFrame), pointer :: p => null()
+        class(ReferenceFrame), pointer :: p => null()       !! the frame (not owned)
     end type FramePointer
 
-    ! what a pick hit (PickHit%kind)
+    !> what a pick hit (PickHit%kind)
     integer, parameter, public :: PICK_FRAME = 1        !! a frame's origin (its axes or name label shown)
     integer, parameter, public :: PICK_BODY = 2         !! a body's surface (Sphere, Model, TerrainBody)
     integer, parameter, public :: PICK_CURVE = 3        !! a trajectory's curve (CurveArtist)
@@ -79,21 +79,21 @@ module vkf_frames
     !> trajectories, the artist (select type to use it) and the trajectory.
     type, public :: PickHit
         integer :: kind = 0                                 !! PICK_*
-        class(ReferenceFrame), pointer :: frame => null()
+        class(ReferenceFrame), pointer :: frame => null()   !! the frame hit (what it draws, or its origin)
         class(*), pointer :: artist => null()               !! the trajectory artist (curves, segments, markers)
-        type(Trajectory), pointer :: trajectory => null()
-        !> curves: the trajectory point the hit is after (on the segment from it
+        type(Trajectory), pointer :: trajectory => null()   !! (trajectories: the artist's trajectory)
+        !> For curves, the trajectory point the hit is after (on the segment from it
         !> to the next); segments: the segment (from point 1 + (index - 1) *
         !> stride); markers: the point (start, end) or the intermediate
         !> marker's number
         integer :: index = 0
-        integer :: marker = 0                               !! markers: MARKER_START, MARKER_END or MARKER_INTERMEDIATE
-        real(wp) :: time = 0.0_wp                           !! trajectories: the time there (interpolated on curves)
+        integer :: marker = 0                               !! (markers: MARKER_START, MARKER_END or MARKER_INTERMEDIATE)
+        real(wp) :: time = 0.0_wp                           !! (trajectories: the time there (interpolated on curves))
         real(wp) :: position(3) = 0.0_wp                    !! the point hit, in the root frame
         real(wp) :: local(3) = 0.0_wp                       !! the point hit, in the frame's coordinates
         real(wp) :: distance = 0.0_wp                       !! its depth from the eye (nearest first)
         real(wp) :: pixels = 0.0_wp                         !! its distance from the cursor (framebuffer pixels; 0 on a body)
-        real(wp) :: latitude = 0.0_wp, longitude = 0.0_wp   !! bodies: geodetic, radians (Sphere, TerrainBody)
+        real(wp) :: latitude = 0.0_wp, longitude = 0.0_wp   !! (bodies: geodetic, radians (Sphere, TerrainBody))
     end type PickHit
 
     public :: add_pick_hit, pick_ellipsoid
@@ -101,47 +101,47 @@ module vkf_frames
     !> A reference frame (see the module documentation).
     type, public :: ReferenceFrame
         private
-        character(len=:), allocatable :: name_
-        real(wp) :: color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.9_wp]
-        real(wp) :: position_(3) = 0.0_wp
-        real(wp) :: attitude_(4) = quat_identity
-        type(FramePointer), allocatable :: children(:), parents(:)
-        integer :: n_children = 0, n_parents = 0
-        type(TrajectoryFollower) :: follower_
-        logical :: following = .false.
+        character(len=:), allocatable :: name_              !! the name (shown by the name label)
+        real(wp) :: color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.9_wp]  !! decorations' color [r, g, b, a] (0 to 1)
+        real(wp) :: position_(3) = 0.0_wp                   !! relative to the parent
+        real(wp) :: attitude_(4) = quat_identity            !! relative to the parent: quaternion [x, y, z, w]
+        type(FramePointer), allocatable :: children(:), parents(:)  !! not owned (first n_children, n_parents used)
+        integer :: n_children = 0, n_parents = 0            !! number of children and parents
+        type(TrajectoryFollower) :: follower_               !! sets position and attitude from followed trajectories
+        logical :: following = .false.                      !! following trajectories (`follow`, until `unfollow`)
         ! decorations (drawn by the renderer)
         integer :: axes = ALL_AXES                          !! OpenFrames' defaults: all shown
-        integer :: axes_labels = ALL_AXES
-        logical :: name_label = .true.
+        integer :: axes_labels = ALL_AXES                   !! axes labels shown (as axes)
+        logical :: name_label = .true.                      !! the name label shown
         logical :: name_on_top = .false.                    !! the name label drawn on top of the scene
-        character(len=:), allocatable :: x_label_, y_label_, z_label_
-        character(len=:), allocatable :: label_font_
-        integer :: label_size_ = 20
-        integer :: label_alignment_ = ALIGN_LEFT_BASE_LINE
-        logical :: light_source = .false.
+        character(len=:), allocatable :: x_label_, y_label_, z_label_  !! axes labels (unallocated: 'X', 'Y', 'Z')
+        character(len=:), allocatable :: label_font_        !! labels' font (unallocated: the renderer's default)
+        integer :: label_size_ = 20                         !! labels' size (pixels)
+        integer :: label_alignment_ = ALIGN_LEFT_BASE_LINE  !! labels' alignment (ALIGN_*)
+        logical :: light_source = .false.                   !! carries a light source (set_light_source_enabled)
         ! the light source's colors (OSG's default light, as OpenFrames')
-        real(wp) :: light_ambient_(3) = 0.05_wp, light_diffuse_(3) = 0.8_wp, light_specular_(3) = 0.05_wp
-        type(c_ptr) :: light_node = c_null_ptr, light_switch = c_null_ptr
-        logical :: contents = .true.
+        real(wp) :: light_ambient_(3) = 0.05_wp, light_diffuse_(3) = 0.8_wp, light_specular_(3) = 0.05_wp  !! [r, g, b]
+        type(c_ptr) :: light_node = c_null_ptr, light_switch = c_null_ptr  !! light and switch (made when enabled)
+        logical :: contents = .true.                        !! what the frame draws shown (show_contents)
         logical :: pickable_ = .true.                       !! picked (WindowProxy%pick); its children aside
         ! rendering
         type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
         type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
         logical :: shown_ = .false.                         !! realized for a window (not headless): later nodes are compiled
-        logical :: realized = .false.
+        logical :: realized = .false.                       !! render nodes made (realize)
         logical :: synced = .false.                         !! the node has synced_position/attitude
-        real(wp) :: synced_position(3) = 0.0_wp, synced_attitude(4) = 0.0_wp
+        real(wp) :: synced_position(3) = 0.0_wp, synced_attitude(4) = 0.0_wp  !! last copied to the node
         ! axes (OpenFrames' moveXAxis/...: base, length, head ratio, radii; 0 radius: auto)
-        real(wp) :: axis_base(3,3) = 0.0_wp
-        real(wp) :: axis_len(3) = 1.0_wp
-        real(wp) :: axis_head_ratio(3) = 0.3_wp
-        real(wp) :: axis_body_radius(3) = 0.0_wp, axis_head_radius(3) = 0.0_wp
+        real(wp) :: axis_base(3,3) = 0.0_wp                 !! each axis's base (columns; frame coordinates)
+        real(wp) :: axis_len(3) = 1.0_wp                    !! each axis's length
+        real(wp) :: axis_head_ratio(3) = 0.3_wp             !! each axis's head, as a fraction of its length
+        real(wp) :: axis_body_radius(3) = 0.0_wp, axis_head_radius(3) = 0.0_wp  !! (0: 0.05 and 0.1 of the length)
         logical :: axes_moved = .false.                     !! set by move_*_axis (else reposition_axes places them)
-        type(c_ptr) :: axis_node(3) = c_null_ptr            !! switches: axis arrows, axis labels, name label
-        type(c_ptr) :: axis_label_node(3) = c_null_ptr
-        type(c_ptr) :: axis_arrow(3) = c_null_ptr           !! their contents (made again when an axis moves)
-        type(c_ptr) :: axis_text(3) = c_null_ptr
-        type(c_ptr) :: name_label_node = c_null_ptr
+        type(c_ptr) :: axis_node(3) = c_null_ptr            !! the axes arrows' switches
+        type(c_ptr) :: axis_label_node(3) = c_null_ptr      !! the axes labels' switches
+        type(c_ptr) :: axis_arrow(3) = c_null_ptr           !! the axes arrows (in axis_node; made again when an axis moves)
+        type(c_ptr) :: axis_text(3) = c_null_ptr            !! the axes labels (in axis_label_node)
+        type(c_ptr) :: name_label_node = c_null_ptr         !! the name label's switch
         type(c_ptr) :: name_text = c_null_ptr               !! the name label (in name_label_node)
     contains
         procedure :: set_name, name
@@ -203,6 +203,7 @@ contains
         if (c_associated(self%name_text)) call check(vkf_label_set_text(self%name_text, name, len(name, kind=c_int)))
     end subroutine set_name
 
+    !> The frame's name ('' if none).
     function name(self) result(n)
         class(ReferenceFrame), intent(in) :: self
         character(len=:), allocatable :: n
@@ -225,6 +226,7 @@ contains
         call remake_axes(self)
     end subroutine set_color
 
+    !> The color of the frame's decorations, [r, g, b, a] (0 to 1).
     pure function color(self) result(c)
         class(ReferenceFrame), intent(in) :: self
         real(wp) :: c(4)
@@ -234,10 +236,11 @@ contains
     !> Position relative to the parent frame (overridden by a followed trajectory).
     subroutine set_position(self, position)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: position(3)
+        real(wp), intent(in) :: position(3)                 !! parent frame's coordinates
         self%position_ = position
     end subroutine set_position
 
+    !> Position relative to the parent frame.
     pure function position(self) result(p)
         class(ReferenceFrame), intent(in) :: self
         real(wp) :: p(3)
@@ -252,6 +255,7 @@ contains
         self%attitude_ = quat_normalize(q)
     end subroutine set_attitude
 
+    !> Attitude relative to the parent frame, a quaternion [x, y, z, w].
     pure function attitude(self) result(q)
         class(ReferenceFrame), intent(in) :: self
         real(wp) :: q(4)
@@ -296,6 +300,7 @@ contains
         call update_switches(self)
     end subroutine show_axes
 
+    !> Which axes vectors are shown (NO_AXES, or X_AXIS, Y_AXIS, Z_AXIS combined).
     pure integer function axes_shown(self)
         class(ReferenceFrame), intent(in) :: self
         axes_shown = self%axes
@@ -309,14 +314,16 @@ contains
         call update_switches(self)
     end subroutine show_axes_labels
 
+    !> Which axes labels are shown (as `axes_shown`).
     pure integer function axes_labels_shown(self)
         class(ReferenceFrame), intent(in) :: self
         axes_labels_shown = self%axes_labels
     end function axes_labels_shown
 
+    !> Show or hide the name label (at the frame's origin; default shown).
     subroutine show_name_label(self, show)
         class(ReferenceFrame), intent(inout) :: self
-        logical, intent(in) :: show
+        logical, intent(in) :: show                         !! (true: shown)
         self%name_label = show
         call update_switches(self)
     end subroutine show_name_label
@@ -332,11 +339,13 @@ contains
             call check(vkf_label_set_on_top(self%name_text, merge(1_c_int, 0_c_int, on_top)))
     end subroutine set_name_label_on_top
 
+    !> Whether the name label is drawn on top of the scene (`set_name_label_on_top`).
     pure logical function name_label_on_top(self)
         class(ReferenceFrame), intent(in) :: self
         name_label_on_top = self%name_on_top
     end function name_label_on_top
 
+    !> Whether the name label is shown.
     pure logical function name_label_shown(self)
         class(ReferenceFrame), intent(in) :: self
         name_label_shown = self%name_label
@@ -350,6 +359,7 @@ contains
         if (self%realized) call make_axis(self, 1)
     end subroutine set_x_label
 
+    !> The text of the y-axis label (default 'Y').
     subroutine set_y_label(self, text)
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: text
@@ -357,6 +367,7 @@ contains
         if (self%realized) call make_axis(self, 2)
     end subroutine set_y_label
 
+    !> The text of the z-axis label (default 'Z').
     subroutine set_z_label(self, text)
         class(ReferenceFrame), intent(inout) :: self
         character(len=*), intent(in) :: text
@@ -395,6 +406,7 @@ contains
         call remake_axes(self)
     end subroutine set_label_font
 
+    !> The labels' font as set ('' for the renderer's default).
     function label_font(self) result(font)
         class(ReferenceFrame), intent(in) :: self
         character(len=:), allocatable :: font
@@ -414,6 +426,7 @@ contains
         call relayout_labels(self)
     end subroutine set_label_size
 
+    !> The labels' size in pixels.
     pure integer function label_size(self)
         class(ReferenceFrame), intent(in) :: self
         label_size = self%label_size_
@@ -428,6 +441,7 @@ contains
         call relayout_labels(self)
     end subroutine set_label_alignment
 
+    !> The labels' alignment (ALIGN_*).
     pure integer function label_alignment(self)
         class(ReferenceFrame), intent(in) :: self
         label_alignment = self%label_alignment_
@@ -446,6 +460,7 @@ contains
             call check(vkf_switch_set(self%light_switch, merge(1_c_int, 0_c_int, enable)))
     end subroutine set_light_source_enabled
 
+    !> Whether this frame carries a light source.
     pure logical function light_source_enabled(self)
         class(ReferenceFrame), intent(in) :: self
         light_source_enabled = self%light_source
@@ -471,6 +486,7 @@ contains
         call apply_light(self)
     end subroutine set_light_ambient
 
+    !> The light source's diffuse color (see `set_light_ambient`).
     subroutine set_light_diffuse(self, rgb)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)
@@ -478,6 +494,7 @@ contains
         call apply_light(self)
     end subroutine set_light_diffuse
 
+    !> The light source's specular color (see `set_light_ambient`).
     subroutine set_light_specular(self, rgb)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)
@@ -485,18 +502,21 @@ contains
         call apply_light(self)
     end subroutine set_light_specular
 
+    !> The light source's ambient color [r, g, b].
     pure function light_ambient(self) result(rgb)
         class(ReferenceFrame), intent(in) :: self
         real(wp) :: rgb(3)
         rgb = self%light_ambient_
     end function light_ambient
 
+    !> The light source's diffuse color [r, g, b].
     pure function light_diffuse(self) result(rgb)
         class(ReferenceFrame), intent(in) :: self
         real(wp) :: rgb(3)
         rgb = self%light_diffuse_
     end function light_diffuse
 
+    !> The light source's specular color [r, g, b].
     pure function light_specular(self) result(rgb)
         class(ReferenceFrame), intent(in) :: self
         real(wp) :: rgb(3)
@@ -514,6 +534,7 @@ contains
         call apply_light(self)
     end subroutine build_light
 
+    !> Give the light source's node its colors (if it has been made).
     subroutine apply_light(self)
         class(ReferenceFrame), intent(inout) :: self
         if (.not. c_associated(self%light_node)) return
@@ -530,6 +551,7 @@ contains
         if (c_associated(self%contents_node)) call check(vkf_switch_set(self%contents_node, merge(1_c_int, 0_c_int, show)))
     end subroutine show_contents
 
+    !> Whether what the frame draws is shown (`show_contents`).
     pure logical function contents_shown(self)
         class(ReferenceFrame), intent(in) :: self
         contents_shown = self%contents
@@ -544,6 +566,7 @@ contains
         self%pickable_ = pickable
     end subroutine set_pickable
 
+    !> Whether `pick` tests what this frame draws (`set_pickable`).
     pure logical function pickable(self)
         class(ReferenceFrame), intent(in) :: self
         pickable = self%pickable_
@@ -554,10 +577,10 @@ contains
     !> plain frame: its origin, if it shows axes or its name label.
     subroutine pick(self, cam, to_root, hits, n)
         class(ReferenceFrame), intent(in), target :: self
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: to_root(4,4)
-        type(PickHit), allocatable, intent(inout) :: hits(:)
-        integer, intent(inout) :: n
+        type(PickCamera), intent(in) :: cam                 !! the cursor's ray and the pick's settings
+        real(wp), intent(in) :: to_root(4,4)                !! the frame's transform to the root frame
+        type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits so far (grown as needed)
+        integer, intent(inout) :: n                         !! number of hits in hits
         type(PickHit) :: h
         if (self%axes == NO_AXES .and. .not. self%name_label) return
         if (.not. wants(cam, PICK_FRAME)) return
@@ -576,10 +599,10 @@ contains
     logical function pick_ellipsoid(self, cam, to_root, center, axes, radii, geodetic, hits, n) result(hit)
         class(ReferenceFrame), intent(in), target :: self
         type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: to_root(4,4), center(3), axes(3,3), radii(3)
+        real(wp), intent(in) :: to_root(4,4), center(3), axes(3,3), radii(3)  !! center, axes: frame coordinates
         logical, intent(in) :: geodetic
-        type(PickHit), allocatable, intent(inout) :: hits(:)
-        integer, intent(inout) :: n
+        type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits so far (grown as needed)
+        integer, intent(inout) :: n                         !! number of hits in hits
         type(PickHit) :: h
         real(wp) :: origin(3), dir(3), along, local(3), normal(3)
         hit = .false.
@@ -604,8 +627,8 @@ contains
 
     !> Add `hit` to hits(1:n) (growing the array).
     subroutine add_pick_hit(hits, n, hit)
-        type(PickHit), allocatable, intent(inout) :: hits(:)
-        integer, intent(inout) :: n
+        type(PickHit), allocatable, intent(inout) :: hits(:)  !! grown as needed
+        integer, intent(inout) :: n                         !! number of hits in hits
         type(PickHit), intent(in) :: hit
         type(PickHit), allocatable :: more(:)
         if (.not. allocated(hits)) allocate(hits(8))
@@ -623,7 +646,7 @@ contains
     !> their default distance.
     subroutine bound(self, center, radius)
         class(ReferenceFrame), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! frame's coordinates
         center = 0.0_wp
         radius = 0.0_wp
     end subroutine bound
@@ -635,11 +658,12 @@ contains
     !> the frame is first shown.
     subroutine move_x_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: base(3), length
+        real(wp), intent(in) :: base(3), length             !! (base: frame's coordinates)
         real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
         call move_axis(self, 1, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_x_axis
 
+    !> Place the y axis vector (as `move_x_axis`; OpenFrames' moveYAxis).
     subroutine move_y_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: base(3), length
@@ -647,6 +671,7 @@ contains
         call move_axis(self, 2, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_y_axis
 
+    !> Place the z axis vector (as `move_x_axis`; OpenFrames' moveZAxis).
     subroutine move_z_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: base(3), length
@@ -654,9 +679,10 @@ contains
         call move_axis(self, 3, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_z_axis
 
+    !> Place axis k (as `move_x_axis`), made again if the frame is shown.
     subroutine move_axis(self, k, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
-        integer, intent(in) :: k
+        integer, intent(in) :: k                            !! the axis: 1 (x), 2 (y) or 3 (z)
         real(wp), intent(in) :: base(3), length
         real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
         self%axis_base(:, k) = base
@@ -749,6 +775,7 @@ contains
         end do
     end subroutine detach
 
+    !> Number of children.
     pure integer function num_children(self)
         class(ReferenceFrame), intent(in) :: self
         num_children = self%n_children
@@ -769,6 +796,7 @@ contains
         child_index = find(self%children, self%n_children, frame)
     end function child_index
 
+    !> Number of parents.
     pure integer function num_parents(self)
         class(ReferenceFrame), intent(in) :: self
         num_parents = self%n_parents
@@ -793,7 +821,7 @@ contains
     !> OpenFrames' createFrameString format: children are prefixed "|-->".
     recursive function frame_string(self, prefix) result(str)
         class(ReferenceFrame), intent(in) :: self
-        character(len=*), intent(in), optional :: prefix
+        character(len=*), intent(in), optional :: prefix    !! before this frame's line (default ' ')
         character(len=:), allocatable :: str, pre
         integer :: k
         pre = ' '
@@ -815,9 +843,9 @@ contains
     !> default, or FOLLOW_LIMIT). `traj` must stay alive while followed.
     subroutine follow(self, traj, data, mode, add)
         class(ReferenceFrame), intent(inout) :: self
-        type(Trajectory), intent(in), target :: traj
-        integer, intent(in), optional :: data, mode
-        logical, intent(in), optional :: add
+        type(Trajectory), intent(in), target :: traj        !! the trajectory to follow (not owned)
+        integer, intent(in), optional :: data, mode         !! FOLLOW_POSITION/FOLLOW_ATTITUDE; FOLLOW_LOOP/FOLLOW_LIMIT
+        logical, intent(in), optional :: add                !! (true: in addition to those followed (default false))
         type(Trajectory), pointer :: p
         integer :: d, m
         logical :: adding
@@ -852,6 +880,7 @@ contains
         f => self%follower_
     end function follower
 
+    !> Whether the frame follows trajectories (at least one, since `follow`).
     pure logical function is_following(self)
         class(ReferenceFrame), intent(in) :: self
         is_following = self%following .and. self%follower_%num_trajectories() > 0
@@ -861,7 +890,7 @@ contains
     !> trajectories set positions and attitudes).
     recursive subroutine update(self, t)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! simulation time
         logical :: has_position, has_attitude
         integer :: k
         if (self%following) &
@@ -876,7 +905,7 @@ contains
     !> CustomLineSegments between spacecraft. Here, only the descendants'.
     recursive subroutine late_update(self, t)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! simulation time
         integer :: k
         do k = 1, self%n_children
             call self%children(k)%p%late_update(t)
@@ -891,7 +920,7 @@ contains
     !> are built (not kept); null: headless).
     recursive subroutine realize(self, viewer)
         class(ReferenceFrame), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer handle (null: headless)
         integer :: k
         if (self%realized) return
         self%realized = .true.
@@ -916,7 +945,7 @@ contains
     !> Sphere and Model override this.
     subroutine build_contents(self, viewer, group)
         class(ReferenceFrame), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer, group            !! (viewer: as `realize`'s)
     end subroutine build_contents
 
     !> Copy the positions and attitudes of this frame and its descendants to
@@ -944,8 +973,9 @@ contains
         n = self%node_
     end function node
 
+    !> Report a failed rendering-layer call (status not 0).
     subroutine check(status)
-        integer(c_int), intent(in) :: status
+        integer(c_int), intent(in) :: status                !! a rendering-layer call's result (0: success)
         if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed'
     end subroutine check
 
@@ -1005,7 +1035,7 @@ contains
     !> compiled first if the window already runs).
     subroutine make_axis(self, k)
         class(ReferenceFrame), intent(inout) :: self
-        integer, intent(in) :: k
+        integer, intent(in) :: k                            !! the axis: 1 (x), 2 (y) or 3 (z)
         real(wp) :: e(3), len, head, rb, rh, tip(3)
         e = 0.0_wp
         e(k) = 1.0_wp
@@ -1061,6 +1091,7 @@ contains
     ! ==================================================================
     ! helpers
 
+    !> True if `a` and `b` are the same frame (object).
     logical function same_frame(a, b)
         class(ReferenceFrame), intent(in), target :: a, b
         class(ReferenceFrame), pointer :: pa
@@ -1079,8 +1110,9 @@ contains
         end do
     end function is_descendant
 
+    !> Index of `frame` in list(1:n), or 0.
     integer function find(list, n, frame)
-        type(FramePointer), allocatable, intent(in) :: list(:)
+        type(FramePointer), allocatable, intent(in) :: list(:)  !! first n used
         integer, intent(in) :: n
         class(ReferenceFrame), intent(in), target :: frame
         integer :: k
@@ -1093,8 +1125,9 @@ contains
         end do
     end function find
 
+    !> Add `frame` to list(1:n) (growing the array).
     subroutine append(list, n, frame)
-        type(FramePointer), allocatable, intent(inout) :: list(:)
+        type(FramePointer), allocatable, intent(inout) :: list(:)  !! first n used (grown as needed)
         integer, intent(inout) :: n
         class(ReferenceFrame), intent(in), target :: frame
         type(FramePointer), allocatable :: tmp(:)
@@ -1108,8 +1141,9 @@ contains
         list(n)%p => frame
     end subroutine append
 
+    !> Remove `frame` from list(1:n); false if it is not in it.
     logical function remove(list, n, frame)
-        type(FramePointer), allocatable, intent(inout) :: list(:)
+        type(FramePointer), allocatable, intent(inout) :: list(:)  !! first n used
         integer, intent(inout) :: n
         class(ReferenceFrame), intent(in), target :: frame
         integer :: k

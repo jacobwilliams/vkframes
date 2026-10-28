@@ -1,4 +1,4 @@
-!> Trajectories: times with positions, attitudes and optional data vectors, as
+!> Trajectory data: times with positions, attitudes and optional data vectors, as
 !> in OpenFrames' Trajectory.
 !>
 !> Data are appended: each time may get one position (with `num_optionals`
@@ -30,13 +30,13 @@ module vkf_trajectory
 
     private
 
-    ! where a component of a DataSource comes from (OpenFrames' SourceType)
+    !> where a component of a DataSource comes from (OpenFrames' SourceType)
     integer, parameter, public :: SOURCE_ZERO = 0       !! 0
     integer, parameter, public :: SOURCE_TIME = 1       !! the time
     integer, parameter, public :: SOURCE_POSOPT = 2     !! an element of the position or of an optional
     integer, parameter, public :: SOURCE_ATTITUDE = 3   !! an element of the attitude quaternion
 
-    ! results of Trajectory%time_index (as OpenFrames' getTimeIndex)
+    !> results of Trajectory%time_index (as OpenFrames' getTimeIndex)
     integer, parameter, public :: TIME_NOT_FOUND = -2   !! the search did not converge
     integer, parameter, public :: TIME_OUT_OF_RANGE = -1 !! index = 0 (before the first time) or num_times + 1 (after the last)
     integer, parameter, public :: TIME_AT_BOUND = 0     !! index = 1 or num_times (at the first or last time)
@@ -48,10 +48,10 @@ module vkf_trajectory
     !> for SOURCE_ATTITUDE, `element` (1 to 4) of the quaternion. The value is
     !> multiplied by `scale`.
     type, public :: DataSource
-        integer :: src = SOURCE_ZERO
-        integer :: element = 1
-        integer :: opt = 0
-        real(wp) :: scale = 1.0_wp
+        integer :: src = SOURCE_ZERO        !! where the component comes from: a SOURCE_* constant
+        integer :: element = 1              !! element (1 to dof, or 1 to 4 for SOURCE_ATTITUDE)
+        integer :: opt = 0                  !! (0: the position, k: optional k (SOURCE_POSOPT))
+        real(wp) :: scale = 1.0_wp          !! factor the value is multiplied by
     end type DataSource
 
     !> A trajectory (see the module documentation).
@@ -59,8 +59,11 @@ module vkf_trajectory
         private
         integer :: dof_ = 3                                 !! degrees of freedom of positions and optionals (2 or 3)
         integer :: nopt_ = 0                                !! optionals per position
-        integer :: n_times = 0, n_pos = 0, n_att = 0, n_col = 0
-        real(wp), allocatable :: t(:)                       !! (capacity)
+        integer :: n_times = 0                              !! number of times
+        integer :: n_pos = 0                                !! number of positions (<= n_times)
+        integer :: n_att = 0                                !! number of attitudes (<= n_times)
+        integer :: n_col = 0                                !! number of colors (<= n_times)
+        real(wp), allocatable :: t(:)                       !! (capacity): times
         real(wp), allocatable :: posopt(:,:,:)              !! (3, 0:nopt, capacity): position, then optionals
         real(wp), allocatable :: att(:,:)                   !! (4, capacity): quaternions [x, y, z, w]
         real(c_float), allocatable :: col(:,:)              !! (4, capacity): colors [r, g, b, a] (as drawn)
@@ -100,7 +103,8 @@ contains
     !> A trajectory with `dof` (2 or 3, default 3) degrees of freedom and
     !> `nopt` (default 0) optional vectors per position.
     function new_trajectory(dof, nopt) result(traj)
-        integer, intent(in), optional :: dof, nopt
+        integer, intent(in), optional :: dof    !! degrees of freedom (2 or 3, default 3)
+        integer, intent(in), optional :: nopt   !! optional vectors per position (default 0)
         type(Trajectory) :: traj
         if (present(dof)) traj%dof_ = max(2, min(3, dof))
         if (present(nopt)) traj%nopt_ = max(0, nopt)
@@ -109,8 +113,9 @@ contains
     !> A data source (see `DataSource`); `element` defaults to 1, `opt` to 0,
     !> `scale` to 1.
     pure function new_data_source(src, element, opt, scale) result(s)
-        integer, intent(in) :: src
-        integer, intent(in), optional :: element, opt
+        integer, intent(in) :: src                      !! a SOURCE_* constant
+        integer, intent(in), optional :: element        !! element (1 to dof, or 1 to 4 for an attitude; default 1)
+        integer, intent(in), optional :: opt            !! (0: the position (default), k: optional k)
         real(wp), intent(in), optional :: scale
         type(DataSource) :: s
         s%src = src
@@ -122,7 +127,7 @@ contains
     !> The sources of a trajectory's positions: x, y, (z) of the position, and
     !> zero for components beyond `dof`.
     pure function position_sources(dof) result(s)
-        integer, intent(in) :: dof
+        integer, intent(in) :: dof      !! degrees of freedom (2 or 3)
         type(DataSource) :: s(3)
         integer :: k
         do k = 1, 3
@@ -134,7 +139,7 @@ contains
     !> 3), each times `scale` (default 1): e.g. a thrust vector stored per
     !> point, for SegmentArtist%set_end_data with relative ends.
     pure function optional_sources(opt, dof, scale) result(s)
-        integer, intent(in) :: opt
+        integer, intent(in) :: opt      !! the optional (1 to num_optionals)
         integer, intent(in), optional :: dof
         real(wp), intent(in), optional :: scale
         type(DataSource) :: s(3)
@@ -153,8 +158,10 @@ contains
     !> storage (see `compact`).
     subroutine reserve(self, n, positions, attitudes, colors)
         class(Trajectory), intent(inout) :: self
-        integer, intent(in) :: n
-        logical, intent(in), optional :: positions, attitudes, colors
+        integer, intent(in) :: n                            !! number of points
+        logical, intent(in), optional :: positions          !! reserve positions (default true)
+        logical, intent(in), optional :: attitudes          !! reserve attitudes (default false)
+        logical, intent(in), optional :: colors             !! reserve colors (default false)
         logical :: pos, att, col
         pos = .true.
         att = .false.
@@ -242,6 +249,7 @@ contains
         call self%clear()
     end subroutine set_dof
 
+    !> Degrees of freedom (2 or 3) of positions and optionals.
     pure integer function dof(self)
         class(Trajectory), intent(in) :: self
         dof = self%dof_
@@ -256,31 +264,37 @@ contains
         call self%clear()
     end subroutine set_num_optionals
 
+    !> Number of optional vectors per position.
     pure integer function num_optionals(self)
         class(Trajectory), intent(in) :: self
         num_optionals = self%nopt_
     end function num_optionals
 
+    !> Number of times.
     pure integer function num_times(self)
         class(Trajectory), intent(in) :: self
         num_times = self%n_times
     end function num_times
 
+    !> Number of positions (at most num_times).
     pure integer function num_positions(self)
         class(Trajectory), intent(in) :: self
         num_positions = self%n_pos
     end function num_positions
 
+    !> Number of attitudes (at most num_times).
     pure integer function num_attitudes(self)
         class(Trajectory), intent(in) :: self
         num_attitudes = self%n_att
     end function num_attitudes
 
+    !> Number of colors (at most num_times).
     pure integer function num_colors(self)
         class(Trajectory), intent(in) :: self
         num_colors = self%n_col
     end function num_colors
 
+    !> True if the trajectory has no times.
     pure logical function is_empty(self)
         class(Trajectory), intent(in) :: self
         is_empty = self%n_times == 0
@@ -317,7 +331,7 @@ contains
     subroutine add_position(self, pos, ok)
         class(Trajectory), intent(inout) :: self
         real(wp), intent(in) :: pos(:)
-        logical, intent(out), optional :: ok
+        logical, intent(out), optional :: ok    !! false if not added
         integer :: d
         if (present(ok)) ok = .false.
         if (self%n_pos >= self%n_times) return
@@ -334,8 +348,8 @@ contains
     !> `ok` is false if every time already has an attitude.
     subroutine add_attitude(self, q, ok)
         class(Trajectory), intent(inout) :: self
-        real(wp), intent(in) :: q(4)
-        logical, intent(out), optional :: ok
+        real(wp), intent(in) :: q(4)            !! quaternion [x, y, z, w]
+        logical, intent(out), optional :: ok    !! false if not added
         if (present(ok)) ok = .false.
         if (self%n_att >= self%n_times) return
         call grow_attitudes(self, self%n_att + 1)
@@ -349,8 +363,8 @@ contains
     !> time that has none. `ok` is false if every time already has a color.
     subroutine add_color(self, color, ok)
         class(Trajectory), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
-        logical, intent(out), optional :: ok
+        real(wp), intent(in) :: color(:)        !! [r, g, b] or [r, g, b, a] (0 to 1)
+        logical, intent(out), optional :: ok    !! false if not added
         if (present(ok)) ok = .false.
         if (self%n_col >= self%n_times) return
         call grow_colors(self, self%n_col + 1)
@@ -362,8 +376,8 @@ contains
 
     !> rgba from [r, g, b] (alpha 1) or [r, g, b, a].
     pure subroutine set_rgba(rgba, color)
-        real(c_float), intent(out) :: rgba(4)
-        real(wp), intent(in) :: color(:)
+        real(c_float), intent(out) :: rgba(4)   !! [r, g, b, a]
+        real(wp), intent(in) :: color(:)        !! [r, g, b] or [r, g, b, a] (0 to 1)
         integer :: n
         n = min(4, size(color))
         rgba = 1.0_c_float
@@ -374,9 +388,9 @@ contains
     !> added position. `ok` is false if there is no position or no such optional.
     subroutine set_optional(self, index, v, ok)
         class(Trajectory), intent(inout) :: self
-        integer, intent(in) :: index
-        real(wp), intent(in) :: v(:)
-        logical, intent(out), optional :: ok
+        integer, intent(in) :: index            !! the optional (1 to num_optionals)
+        real(wp), intent(in) :: v(:)            !! the vector (its first `dof` elements are used)
+        logical, intent(out), optional :: ok    !! false if not set
         integer :: d
         if (present(ok)) ok = .false.
         if (index < 1 .or. index > self%nopt_ .or. self%n_pos == 0) return
@@ -390,8 +404,10 @@ contains
     !> ([r, g, b] or [r, g, b, a]).
     subroutine add_point(self, t, pos, att, color)
         class(Trajectory), intent(inout) :: self
-        real(wp), intent(in) :: t
-        real(wp), intent(in), optional :: pos(:), att(4), color(:)
+        real(wp), intent(in) :: t                       !! time
+        real(wp), intent(in), optional :: pos(:)        !! position (first `dof` elements used)
+        real(wp), intent(in), optional :: att(4)        !! attitude quaternion [x, y, z, w]
+        real(wp), intent(in), optional :: color(:)      !! [r, g, b] or [r, g, b, a] (0 to 1)
         call self%add_time(t)
         if (present(pos)) call self%add_position(pos)
         if (present(att)) call self%add_attitude(att)
@@ -404,8 +420,10 @@ contains
     !> as times) for the given ones to line up with `t`.
     subroutine add_points(self, t, pos, att, color)
         class(Trajectory), intent(inout) :: self
-        real(wp), intent(in) :: t(:)
-        real(wp), intent(in), optional :: pos(:,:), att(:,:), color(:,:)
+        real(wp), intent(in) :: t(:)                    !! (n): times
+        real(wp), intent(in), optional :: pos(:,:)      !! (dof, n): positions
+        real(wp), intent(in), optional :: att(:,:)      !! (4, n): attitude quaternions [x, y, z, w]
+        real(wp), intent(in), optional :: color(:,:)    !! (3 or 4, n): colors [r, g, b(, a)] (0 to 1)
         integer :: n, i0, d
         n = size(t)
         i0 = self%n_times
@@ -440,6 +458,7 @@ contains
     ! ==================================================================
     ! reading data
 
+    !> Time i.
     pure real(wp) function time(self, i)
         class(Trajectory), intent(in) :: self
         integer, intent(in) :: i
@@ -454,6 +473,7 @@ contains
         p = self%posopt(:, 0, i)
     end function position
 
+    !> Attitude i (quaternion [x, y, z, w]).
     pure function attitude(self, i) result(q)
         class(Trajectory), intent(in) :: self
         integer, intent(in) :: i
@@ -566,7 +586,7 @@ contains
     integer function time_index(self, t, index) result(status)
         class(Trajectory), intent(in) :: self
         real(wp), intent(in) :: t
-        integer, intent(out) :: index
+        integer, intent(out) :: index                   !! the interval's first index (see the TIME_* constants)
         integer :: low, high, mid, iter, n
         real(wp) :: dir, dist
         n = self%n_times
@@ -634,8 +654,8 @@ contains
         class(Trajectory), intent(in) :: self
         integer, intent(in) :: i1, i2
         type(DataSource), intent(in) :: sources(3)
-        real(wp), intent(out) :: v(:,:)
-        integer, intent(in), optional :: stride
+        real(wp), intent(out) :: v(:,:)                 !! (3, number of points)
+        integer, intent(in), optional :: stride         !! step between points (default 1)
         integer :: k, s
         s = 1
         if (present(stride)) s = stride
@@ -700,7 +720,8 @@ contains
     !> needed and a quarter more (so that appending after a large bulk add
     !> doesn't copy everything at once); `exact` (reserve): what is needed.
     pure integer function new_capacity(current, needed, exact)
-        integer, intent(in) :: current, needed
+        integer, intent(in) :: current                  !! current capacity
+        integer, intent(in) :: needed                   !! points needed
         logical, intent(in), optional :: exact
         new_capacity = max(needed + needed / 4, 2 * current, 16)
         if (present(exact)) then
@@ -708,6 +729,7 @@ contains
         end if
     end function new_capacity
 
+    !> Grow the times' storage to hold at least `n` (see `new_capacity`).
     subroutine grow_times(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
@@ -722,6 +744,7 @@ contains
         call move_alloc(tmp, self%t)
     end subroutine grow_times
 
+    !> Grow the positions' (and optionals') storage to hold at least `n`.
     subroutine grow_positions(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
@@ -736,6 +759,7 @@ contains
         call move_alloc(tmp, self%posopt)
     end subroutine grow_positions
 
+    !> Grow the attitudes' storage to hold at least `n`.
     subroutine grow_attitudes(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n
@@ -750,6 +774,7 @@ contains
         call move_alloc(tmp, self%att)
     end subroutine grow_attitudes
 
+    !> Grow the colors' storage to hold at least `n`.
     subroutine grow_colors(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n

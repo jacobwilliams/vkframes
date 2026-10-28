@@ -56,30 +56,33 @@ module vkf_sphere
     !> The level-of-detail meshes: segments around the equator (half as many
     !> from pole to pole); the one built at once.
     integer, parameter :: lod_segments(6) = [32, 64, 128, 256, 512, 1024]
-    integer, parameter :: lod_first = 3
+    integer, parameter :: lod_first = 3                     !! the index of the mesh built at once (128 segments)
 
     !> A sphere or ellipsoid (see the module documentation).
     type, extends(ReferenceFrame), public :: Sphere
         private
-        real(wp) :: radius_ = 1.0_wp
-        real(wp) :: scale_(3) = 1.0_wp
-        real(wp) :: sphere_position_(3) = 0.0_wp
-        real(wp) :: sphere_attitude_(4) = quat_identity
+        real(wp) :: radius_ = 1.0_wp                          !! radius (scene units; default 1)
+        real(wp) :: scale_(3) = 1.0_wp                        !! scale along x, y and z: semi-axes radius * scale
+        real(wp) :: sphere_position_(3) = 0.0_wp              !! the body's center in the frame (scene units)
+        real(wp) :: sphere_attitude_(4) = quat_identity       !! the body's attitude in the frame ([x, y, z, w])
         real(wp) :: built_radii(3) = 1.0_wp                   !! the mesh's semi-axes
         logical :: textured = .false.                         !! (the color is not used)
-        character(len=:), allocatable :: texture, night_texture
-        logical :: auto_lod_ = .true.
+        character(len=:), allocatable :: texture              !! texture file (unallocated or '': none)
+        character(len=:), allocatable :: night_texture        !! night texture file (unallocated or '': none)
+        logical :: auto_lod_ = .true.                         !! level of detail (default on)
         integer :: n_lon = 128, n_lat = 64                    !! without level of detail
         ! material (VSG's Phong; OpenGL's default: no specular reflection)
-        real(wp) :: ambient_(4) = 1.0_wp, diffuse_(4) = 1.0_wp
-        real(wp) :: specular_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], emission_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
-        real(wp) :: shininess_ = 0.0_wp
+        real(wp) :: ambient_(4) = 1.0_wp                      !! ambient color [r, g, b, a]
+        real(wp) :: diffuse_(4) = 1.0_wp                      !! diffuse [r, g, b, a] (times the color if no texture)
+        real(wp) :: specular_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]  !! specular color [r, g, b, a]
+        real(wp) :: emission_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]  !! emission color [r, g, b, a]
+        real(wp) :: shininess_ = 0.0_wp                       !! 0 to 128 (0: no specular highlight)
         real(wp) :: twilight_ = 0.0_wp                        !! radians below the horizon (0: none)
         type(c_ptr) :: sphere_node = c_null_ptr              !! transform of the body within the frame
         type(c_ptr) :: mesh = c_null_ptr                     !! without level of detail
         ! level of detail
         type(c_ptr) :: lod_node = c_null_ptr                 !! chooses among the meshes, per view
-        type(c_ptr) :: lod_mesh(size(lod_segments)) = c_null_ptr
+        type(c_ptr) :: lod_mesh(size(lod_segments)) = c_null_ptr  !! the level-of-detail meshes (null: not built yet)
         type(c_ptr) :: image = c_null_ptr, night = c_null_ptr   !! the textures, for meshes built later
         logical :: shown = .false.                            !! (meshes built later are compiled)
     contains
@@ -112,16 +115,17 @@ contains
     !> ([r, g, b] or [r, g, b, a]; default white, 90% opaque).
     function new_sphere(name, radius, color) result(s)
         character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: radius
-        real(wp), intent(in), optional :: color(:)
+        real(wp), intent(in), optional :: radius            !! scene units (default 1)
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(Sphere) :: s
         s%ReferenceFrame = ReferenceFrame(name, color)
         if (present(radius)) s%radius_ = radius
     end function new_sphere
 
+    !> The sphere's radius (scene units, > 0; default 1); can change at any time.
     subroutine set_radius(self, radius)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in) :: radius
+        real(wp), intent(in) :: radius                      !! scene units (<= 0: ignored)
         if (radius <= 0.0_wp) return
         self%radius_ = radius
         call update_sphere_transform(self)
@@ -130,11 +134,12 @@ contains
     !> The body's color (used without a texture); [r, g, b] or [r, g, b, a].
     subroutine sphere_set_color(self, color)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call self%ReferenceFrame%set_color(color)
         call apply_material(self)
     end subroutine sphere_set_color
 
+    !> The sphere's radius (scene units).
     pure real(wp) function radius(self)
         class(Sphere), intent(in) :: self
         radius = self%radius_
@@ -144,12 +149,13 @@ contains
     !> ellipsoid with semi-axes radius * scale.
     subroutine set_sphere_scale(self, scale)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in) :: scale(3)
+        real(wp), intent(in) :: scale(3)                    !! along x, y and z (all > 0, else ignored)
         if (any(scale <= 0.0_wp)) return
         self%scale_ = scale
         call update_sphere_transform(self)
     end subroutine set_sphere_scale
 
+    !> The scale along the sphere's x, y and z axes.
     pure function sphere_scale(self) result(s)
         class(Sphere), intent(in) :: self
         real(wp) :: s(3)
@@ -166,11 +172,12 @@ contains
     !> Position of the body's center in its frame.
     subroutine set_sphere_position(self, position)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in) :: position(3)
+        real(wp), intent(in) :: position(3)                 !! scene units
         self%sphere_position_ = position
         call update_sphere_transform(self)
     end subroutine set_sphere_position
 
+    !> Position of the body's center in its frame (scene units).
     pure function sphere_position(self) result(p)
         class(Sphere), intent(in) :: self
         real(wp) :: p(3)
@@ -181,11 +188,12 @@ contains
     !> orient its texture.
     subroutine set_sphere_attitude(self, q)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in) :: q(4)
+        real(wp), intent(in) :: q(4)                        !! quaternion [x, y, z, w] (normalized here)
         self%sphere_attitude_ = quat_normalize(q)
         call update_sphere_transform(self)
     end subroutine set_sphere_attitude
 
+    !> Attitude of the body in its frame (quaternion [x, y, z, w]).
     pure function sphere_attitude(self) result(q)
         class(Sphere), intent(in) :: self
         real(wp) :: q(4)
@@ -195,10 +203,11 @@ contains
     !> The texture: an equirectangular image file ('' for none).
     subroutine set_texture_map(self, file)
         class(Sphere), intent(inout) :: self
-        character(len=*), intent(in) :: file
+        character(len=*), intent(in) :: file                !! found with find_data_file; '' for none
         self%texture = file
     end subroutine set_texture_map
 
+    !> The texture file ('' for none).
     function texture_map(self) result(file)
         class(Sphere), intent(in) :: self
         character(len=:), allocatable :: file
@@ -211,10 +220,11 @@ contains
     !> diffuse light is weak.
     subroutine set_night_texture_map(self, file)
         class(Sphere), intent(inout) :: self
-        character(len=*), intent(in) :: file
+        character(len=*), intent(in) :: file                !! found with find_data_file; '' for none
         self%night_texture = file
     end subroutine set_night_texture_map
 
+    !> The night texture file ('' for none).
     function night_texture_map(self) result(file)
         class(Sphere), intent(in) :: self
         character(len=:), allocatable :: file
@@ -230,7 +240,8 @@ contains
     !> Defaults: ambient and diffuse white, no specular reflection or emission.
     subroutine set_material(self, ambient, diffuse, specular, emission, shininess)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in), optional :: ambient(:), diffuse(:), specular(:), emission(:), shininess
+        real(wp), intent(in), optional :: ambient(:), diffuse(:), specular(:), emission(:)  !! [r, g, b(, a)], 0 to 1
+        real(wp), intent(in), optional :: shininess         !! 0 to 128 (< 0: 0)
         if (present(ambient)) self%ambient_(1:min(4, size(ambient))) = ambient(1:min(4, size(ambient)))
         if (present(diffuse)) self%diffuse_(1:min(4, size(diffuse))) = diffuse(1:min(4, size(diffuse)))
         if (present(specular)) self%specular_(1:min(4, size(specular))) = specular(1:min(4, size(specular)))
@@ -239,9 +250,12 @@ contains
         call apply_material(self)
     end subroutine set_material
 
+    !> The material (each optional): ambient, diffuse, specular and emission colors
+    !> and shininess.
     pure subroutine material(self, ambient, diffuse, specular, emission, shininess)
         class(Sphere), intent(in) :: self
-        real(wp), intent(out), optional :: ambient(4), diffuse(4), specular(4), emission(4), shininess
+        real(wp), intent(out), optional :: ambient(4), diffuse(4), specular(4), emission(4)  !! [r, g, b, a]
+        real(wp), intent(out), optional :: shininess        !! 0 to 128
         if (present(ambient)) ambient = self%ambient_
         if (present(diffuse)) diffuse = self%diffuse_
         if (present(specular)) specular = self%specular_
@@ -249,9 +263,6 @@ contains
         if (present(shininess)) shininess = self%shininess_
     end subroutine material
 
-    !> The material, with the diffuse color times the body's color (without a texture).
-    !> The material, with the diffuse color times the body's color (without a
-    !> texture), on every mesh built.
     !> The twilight: the diffuse light extended past the terminator to where
     !> the light is `angle` (radians, 0 to 1.5) below the horizon, fading out
     !> smoothly (where it meets the light on the day side: the same brightness
@@ -260,16 +271,19 @@ contains
     !> body). Not in OpenFrames. Can change at any time.
     subroutine set_twilight(self, angle)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in) :: angle
+        real(wp), intent(in) :: angle                       !! radians below the horizon (clamped to 0 to 1.5)
         self%twilight_ = max(0.0_wp, min(1.5_wp, angle))
         call apply_material(self)
     end subroutine set_twilight
 
+    !> The twilight angle (radians below the horizon; 0: none).
     pure real(wp) function twilight(self)
         class(Sphere), intent(in) :: self
         twilight = self%twilight_
     end function twilight
 
+    !> The material, with the diffuse color times the body's color (without a
+    !> texture), and the twilight, on every mesh built.
     subroutine apply_material(self)
         type(Sphere), intent(inout) :: self
         integer :: k
@@ -279,9 +293,11 @@ contains
         end do
     end subroutine apply_material
 
+    !> The material, with the diffuse color times the body's color (without a
+    !> texture), and the twilight, on mesh `mesh` (if not null).
     subroutine apply_material_to(self, mesh)
         type(Sphere), intent(in) :: self
-        type(c_ptr), intent(in) :: mesh
+        type(c_ptr), intent(in) :: mesh                     !! a mesh handle (null: nothing done)
         real(wp) :: diffuse(4)
         if (.not. c_associated(mesh)) return
         diffuse = self%diffuse_
@@ -303,17 +319,18 @@ contains
         self%auto_lod_ = lod
     end subroutine set_auto_lod
 
+    !> Whether level of detail is on.
     pure logical function auto_lod(self)
         class(Sphere), intent(in) :: self
         auto_lod = self%auto_lod_
     end function auto_lod
 
-    !> The mesh resolution: segments in longitude and latitude (default 128 x 64).
     !> The mesh resolution without level of detail: segments in longitude and
     !> latitude (default 128 x 64).
     subroutine set_resolution(self, n_lon, n_lat)
         class(Sphere), intent(inout) :: self
-        integer, intent(in) :: n_lon, n_lat
+        integer, intent(in) :: n_lon                        !! segments in longitude (at least 3)
+        integer, intent(in) :: n_lat                        !! segments in latitude (at least 2)
         self%n_lon = max(3, n_lon)
         self%n_lat = max(2, n_lat)
     end subroutine set_resolution
@@ -321,20 +338,20 @@ contains
     !> The body's bounding sphere: its center, and its largest semi-axis.
     subroutine sphere_bound(self, center, radius)
         class(Sphere), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         center = self%sphere_position_
         radius = maxval(self%radii())
     end subroutine sphere_bound
 
-    !> Picking: the ellipsoid (exact), with the geodetic latitude and longitude
+    !> Picked on the ellipsoid (exact), with the geodetic latitude and longitude
     !> of the point hit (in the body's axes: sphere_attitude); else the frame's
     !> origin.
     subroutine sphere_pick(self, cam, to_root, hits, n)
         class(Sphere), intent(in), target :: self
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: to_root(4,4)
-        type(PickHit), allocatable, intent(inout) :: hits(:)
-        integer, intent(inout) :: n
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
+        real(wp), intent(in) :: to_root(4,4)                !! the frame's transform to the root frame
+        type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits so far, in hits(1:n); added to
+        integer, intent(inout) :: n                         !! number of hits
         if (self%contents_shown()) then
             if (pick_ellipsoid(self, cam, to_root, self%sphere_position_, quat_to_matrix(self%sphere_attitude_), &
                           self%radii(), .true., hits, n)) return
@@ -342,6 +359,7 @@ contains
         call self%ReferenceFrame%pick(cam, to_root, hits, n)
     end subroutine sphere_pick
 
+    !> What kind of frame this is: 'Sphere'.
     function sphere_frame_info(self) result(info)
         class(Sphere), intent(in) :: self
         character(len=:), allocatable :: info
@@ -351,7 +369,8 @@ contains
     !> The body: an ellipsoid mesh under the sphere's transform.
     subroutine sphere_build_contents(self, viewer, group)
         class(Sphere), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
         type(c_ptr) :: image, night, body
         image = read_texture(self, self%texture)
         night = read_texture(self, self%night_texture)
@@ -384,7 +403,7 @@ contains
     !> to the level-of-detail node (compiled for the windows if `compile`).
     subroutine build_lod_mesh(self, k, compile)
         type(Sphere), intent(inout) :: self
-        integer, intent(in) :: k
+        integer, intent(in) :: k                            !! index into lod_segments
         logical, intent(in) :: compile
         type(c_ptr) :: mesh
         mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], self%image, &
@@ -407,7 +426,7 @@ contains
     !> coarsest with as many segments as wanted, or the finest).
     recursive subroutine sphere_update(self, t)
         class(Sphere), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the scene time
         integer :: wanted, k
         call self%ReferenceFrame%update(t)
         if (.not. c_associated(self%lod_node)) return
@@ -431,7 +450,7 @@ contains
     !> An image handle for texture file `file` (null if none or unreadable).
     function read_texture(self, file) result(image)
         type(Sphere), intent(in) :: self
-        character(len=:), allocatable, intent(in) :: file
+        character(len=:), allocatable, intent(in) :: file   !! found with find_data_file (unallocated or '': none)
         type(c_ptr) :: image
         character(len=:), allocatable :: path
         image = c_null_ptr
@@ -442,6 +461,8 @@ contains
         if (.not. c_associated(image)) write(*, '(a)') 'vkframes: Sphere '//self%name()//': could not read texture '//file
     end function read_texture
 
+    !> The body's transform: its position, attitude and scale (radii / the built
+    !> radii); nothing before it is built.
     subroutine update_sphere_transform(self)
         type(Sphere), intent(inout) :: self
         if (.not. c_associated(self%sphere_node)) return

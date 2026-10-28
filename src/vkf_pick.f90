@@ -25,13 +25,14 @@ module vkf_pick
 
     !> The camera and cursor of a pick (see the module documentation).
     type, public :: PickCamera
-        real(wp) :: eye(3) = 0.0_wp
-        real(wp) :: right(3) = [1.0_wp, 0.0_wp, 0.0_wp], up(3) = [0.0_wp, 0.0_wp, 1.0_wp], &
-                    forward(3) = [0.0_wp, 1.0_wp, 0.0_wp]
-        logical :: perspective = .true.
+        real(wp) :: eye(3) = 0.0_wp                         !! the eye (root frame)
+        real(wp) :: right(3) = [1.0_wp, 0.0_wp, 0.0_wp]     !! the camera's right axis (unit vector, root frame)
+        real(wp) :: up(3) = [0.0_wp, 0.0_wp, 1.0_wp]        !! the camera's up axis (unit vector, root frame)
+        real(wp) :: forward(3) = [0.0_wp, 1.0_wp, 0.0_wp]   !! the view direction (unit vector, root frame)
+        logical :: perspective = .true.                     !! (true: perspective; false: orthographic)
         real(wp) :: tan_y = 0.0_wp                          !! tan(vertical field of view / 2)
         real(wp) :: aspect = 1.0_wp                         !! width / height
-        real(wp) :: ortho(4) = [-1.0_wp, 1.0_wp, -1.0_wp, 1.0_wp]   !! orthographic: left, right, bottom, top
+        real(wp) :: ortho(4) = [-1.0_wp, 1.0_wp, -1.0_wp, 1.0_wp]   !! (orthographic: left, right, bottom, top)
         real(wp) :: half_w = 1.0_wp, half_h = 1.0_wp        !! half the viewport (framebuffer pixels)
         real(wp) :: x = 0.0_wp, y = 0.0_wp                  !! the cursor (-1 to 1, y up)
         real(wp) :: tolerance = 6.0_wp                      !! framebuffer pixels
@@ -52,9 +53,14 @@ contains
     !> (framebuffer pixels).
     pure function pick_camera(eye, center, up, perspective, fovy, aspect, ortho, width, height, x, y, tolerance) &
             result(cam)
-        real(wp), intent(in) :: eye(3), center(3), up(3), fovy, aspect, ortho(4), x, y, tolerance
-        logical, intent(in) :: perspective
-        integer, intent(in) :: width, height
+        real(wp), intent(in) :: eye(3), center(3), up(3)    !! the camera (root frame)
+        real(wp), intent(in) :: fovy                        !! vertical field of view (degrees; perspective)
+        real(wp), intent(in) :: aspect                      !! width / height (perspective)
+        real(wp), intent(in) :: ortho(4)                    !! left, right, bottom, top (orthographic)
+        real(wp), intent(in) :: x, y                        !! the cursor (-1 to 1, y up)
+        real(wp), intent(in) :: tolerance                   !! (framebuffer pixels)
+        logical, intent(in) :: perspective                  !! (true: perspective; false: orthographic)
+        integer, intent(in) :: width, height                !! the viewport (framebuffer pixels)
         type(PickCamera) :: cam
         real(wp) :: f(3), r(3), d
         f = center - eye
@@ -81,7 +87,7 @@ contains
     !> Hits of `kind` (vkf_frames' PICK_*) are wanted.
     pure logical function wants(cam, kind)
         type(PickCamera), intent(in) :: cam
-        integer, intent(in) :: kind
+        integer, intent(in) :: kind                         !! a PICK_* constant of vkf_frames
         wants = btest(cam%kinds, kind)
     end function wants
 
@@ -90,7 +96,8 @@ contains
     logical function project(cam, p, sx, sy, depth) result(visible)
         type(PickCamera), intent(in) :: cam
         real(wp), intent(in) :: p(3)
-        real(wp), intent(out) :: sx, sy, depth
+        real(wp), intent(out) :: sx, sy                     !! offset from the cursor (framebuffer pixels, y up)
+        real(wp), intent(out) :: depth                      !! (scene units)
         real(wp) :: v(3), nx, ny
         v = p - cam%eye
         depth = dot_product(v, cam%forward)
@@ -116,8 +123,9 @@ contains
     logical function point_pick(cam, p, pixels, depth, extra) result(hit)
         type(PickCamera), intent(in) :: cam
         real(wp), intent(in) :: p(3)
-        real(wp), intent(out) :: pixels, depth
-        real(wp), intent(in), optional :: extra
+        real(wp), intent(out) :: pixels                     !! distance from the cursor (framebuffer pixels)
+        real(wp), intent(out) :: depth                      !! (scene units)
+        real(wp), intent(in), optional :: extra             !! added to the tolerance (framebuffer pixels)
         real(wp) :: sx, sy, reach
         hit = .false.
         pixels = huge(1.0_wp)
@@ -136,8 +144,10 @@ contains
     logical function segment_pick(cam, a, b, pixels, s, depth, extra) result(hit)
         type(PickCamera), intent(in) :: cam
         real(wp), intent(in) :: a(3), b(3)
-        real(wp), intent(out) :: pixels, s, depth
-        real(wp), intent(in), optional :: extra
+        real(wp), intent(out) :: pixels                     !! distance from the cursor (framebuffer pixels)
+        real(wp), intent(out) :: s                          !! fraction of the way from a to b (0 to 1)
+        real(wp), intent(out) :: depth                      !! (scene units)
+        real(wp), intent(in), optional :: extra             !! added to the tolerance (framebuffer pixels)
         real(wp) :: da, db, s0, s1, p0(3), p1(3), x0, y0, x1, y1, z0, z1, dx, dy, t, len2, u
         hit = .false.
         pixels = huge(1.0_wp)
@@ -180,7 +190,7 @@ contains
     logical function sphere_near(cam, c, r, extra) result(near)
         type(PickCamera), intent(in) :: cam
         real(wp), intent(in) :: c(3), r
-        real(wp), intent(in), optional :: extra
+        real(wp), intent(in), optional :: extra             !! added to the tolerance (framebuffer pixels)
         real(wp) :: sx, sy, depth, scale, reach
         near = .true.
         if (dot_product(c - cam%eye, cam%forward) - r > cam%max_depth) then   ! (all deeper than a hit already found)
@@ -225,8 +235,13 @@ contains
     !> ellipsoid's axes (from its center). False if it misses (or the
     !> ellipsoid is behind).
     logical function ray_ellipsoid(origin, dir, center, axes, radii, distance, point, local) result(hit)
-        real(wp), intent(in) :: origin(3), dir(3), center(3), axes(3,3), radii(3)
-        real(wp), intent(out) :: distance, point(3), local(3)
+        real(wp), intent(in) :: origin(3), dir(3)           !! the ray (dir: a unit vector)
+        real(wp), intent(in) :: center(3)                   !! the ellipsoid's center
+        real(wp), intent(in) :: axes(3,3)                   !! its axes (columns: unit vectors)
+        real(wp), intent(in) :: radii(3)                    !! its semi-axes along them
+        real(wp), intent(out) :: distance                   !! along the ray (huge() if missed)
+        real(wp), intent(out) :: point(3)                   !! the point met
+        real(wp), intent(out) :: local(3)                   !! the point in the ellipsoid's axes, from its center
         real(wp) :: o(3), d(3), qa, qb, qc, disc, t
         hit = .false.
         distance = huge(1.0_wp)

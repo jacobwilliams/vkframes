@@ -30,7 +30,7 @@ module vkf_gui
 
     !> A window's GUI panels (see the module documentation).
     type, public :: Gui
-        type(c_ptr) :: handle = c_null_ptr
+        type(c_ptr) :: handle = c_null_ptr      !! the window's GUI in the C++ layer (null: none)
     contains
         procedure :: begin_panel, end_panel
         procedure :: text, button, checkbox, slider, separator, same_line
@@ -53,8 +53,9 @@ contains
     subroutine begin_panel(self, title, position, pivot, follow)
         class(Gui), intent(inout) :: self
         character(len=*), intent(in) :: title
-        real(wp), intent(in), optional :: position(2), pivot(2)
-        logical, intent(in), optional :: follow
+        real(wp), intent(in), optional :: position(2)   !! [x, y] (0 to 1 across the window, y up)
+        real(wp), intent(in), optional :: pivot(2)      !! the panel's point at `position` (0 to 1, from its top left)
+        logical, intent(in), optional :: follow         !! place it every frame (default false: at first)
         real(wp) :: p(2), q(2)
         integer(c_int) :: f
         p = -1.0_wp
@@ -67,11 +68,13 @@ contains
                            real(q(1), c_double), real(q(2), c_double), f)
     end subroutine begin_panel
 
+    !> End the panel started by `begin_panel`.
     subroutine end_panel(self)
         class(Gui), intent(inout) :: self
         call vkf_gui_end(self%handle)
     end subroutine end_panel
 
+    !> A line of text.
     subroutine text(self, line)
         class(Gui), intent(inout) :: self
         character(len=*), intent(in) :: line
@@ -111,6 +114,7 @@ contains
         value = v
     end function slider
 
+    !> A horizontal separator line.
     subroutine separator(self)
         class(Gui), intent(inout) :: self
         call vkf_gui_separator(self%handle)

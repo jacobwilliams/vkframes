@@ -13,7 +13,8 @@ contains
     !> The path dir/name of the first directory in `dirs` (separated by ';' or
     !> ':', except a ':' after a drive letter) that has `name`, or ''.
     function find_in_dirs(name, dirs) result(path)
-        character(len=*), intent(in) :: name, dirs
+        character(len=*), intent(in) :: name        !! file name
+        character(len=*), intent(in) :: dirs        !! directories, separated by ';' or ':'
         character(len=:), allocatable :: path
         integer :: i, j
         logical :: exists

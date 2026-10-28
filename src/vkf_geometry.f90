@@ -18,7 +18,8 @@ contains
     pure subroutine ellipsoid_size(n_lon, n_lat, n_vertices, n_indices)
         integer, intent(in) :: n_lon  !! segments in longitude
         integer, intent(in) :: n_lat  !! segments in latitude
-        integer, intent(out) :: n_vertices, n_indices
+        integer, intent(out) :: n_vertices  !! number of vertices
+        integer, intent(out) :: n_indices   !! number of triangle indices (3 per triangle)
         n_vertices = (n_lon + 1) * (n_lat + 1)
         n_indices = 6 * n_lon * (n_lat - 1)
     end subroutine ellipsoid_size
@@ -40,7 +41,7 @@ contains
     !> the degenerate triangles at the poles are left out. Indices are 0-based.
     !> Sizes are given by `ellipsoid_size`.
     pure subroutine ellipsoid(radii, n_lon, n_lat, xyz, normals, uv, indices)
-        real(c_double), dimension(3), intent(in) :: radii
+        real(c_double), dimension(3), intent(in) :: radii   !! semi-axes along x, y, z
         integer, intent(in) :: n_lon  !! segments in longitude (>= 3)
         integer, intent(in) :: n_lat  !! segments in latitude (>= 2)
         real(c_float), dimension(:,:), intent(out) :: xyz      !! (3, n_vertices)
@@ -95,10 +96,12 @@ contains
     !> is weak). `n_lon` and `n_lat` default to 128 and 64 segments. Null on
     !> failure.
     function ellipsoid_create(radii, rgba, texture, n_lon, n_lat, night_texture) result(mesh)
-        real(c_double), dimension(3), intent(in) :: radii
-        real(c_float), dimension(4), intent(in) :: rgba
-        type(c_ptr), intent(in), optional :: texture, night_texture
-        integer, intent(in), optional :: n_lon, n_lat
+        real(c_double), dimension(3), intent(in) :: radii   !! semi-axes along x, y, z
+        real(c_float), dimension(4), intent(in) :: rgba     !! color [r, g, b, a] (0 to 1)
+        type(c_ptr), intent(in), optional :: texture        !! image handle of the (day) texture
+        type(c_ptr), intent(in), optional :: night_texture  !! image handle of the night texture
+        integer, intent(in), optional :: n_lon              !! segments in longitude (default 128)
+        integer, intent(in), optional :: n_lat              !! segments in latitude (default 64)
         type(c_ptr) :: mesh
         real(c_float), dimension(:,:), pointer :: xyz, normals, uv
         integer(c_int32_t), dimension(:), pointer :: indices
@@ -122,17 +125,19 @@ contains
     !> A sphere mesh node: `ellipsoid_create` with equal semi-axes.
     function sphere_create(radius, rgba, texture, n_lon, n_lat) result(mesh)
         real(c_double), intent(in) :: radius
-        real(c_float), dimension(4), intent(in) :: rgba
-        type(c_ptr), intent(in), optional :: texture
-        integer, intent(in), optional :: n_lon, n_lat
+        real(c_float), dimension(4), intent(in) :: rgba     !! color [r, g, b, a] (0 to 1)
+        type(c_ptr), intent(in), optional :: texture        !! image handle of the texture
+        integer, intent(in), optional :: n_lon              !! segments in longitude (default 128)
+        integer, intent(in), optional :: n_lat              !! segments in latitude (default 64)
         type(c_ptr) :: mesh
         mesh = ellipsoid_create([radius, radius, radius], rgba, texture, n_lon, n_lat)
     end function sphere_create
 
     !> Number of vertices and triangle indices of `arrow(..., n_segments, ...)`.
     pure subroutine arrow_size(n_segments, n_vertices, n_indices)
-        integer, intent(in) :: n_segments
-        integer, intent(out) :: n_vertices, n_indices
+        integer, intent(in) :: n_segments   !! segments around
+        integer, intent(out) :: n_vertices  !! number of vertices
+        integer, intent(out) :: n_indices   !! number of triangle indices (3 per triangle)
         n_vertices = 6 * (n_segments + 1) + 2
         n_indices = 15 * n_segments
     end subroutine arrow_size
@@ -145,11 +150,14 @@ contains
     !> indices are 0-based; uv is zero. Sizes are given by `arrow_size`.
     subroutine arrow(base, direction, body_length, head_length, body_radius, head_radius, n_segments, &
                           xyz, normals, uv, indices)
-        real(c_double), intent(in) :: base(3), direction(3)
+        real(c_double), intent(in) :: base(3)
+        real(c_double), intent(in) :: direction(3)      !! the arrow's axis (need not be unit length)
         real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius
         integer, intent(in) :: n_segments
-        real(c_float), dimension(:,:), intent(out) :: xyz, normals, uv
-        integer(c_int32_t), dimension(:), intent(out) :: indices
+        real(c_float), dimension(:,:), intent(out) :: xyz       !! (3, n_vertices)
+        real(c_float), dimension(:,:), intent(out) :: normals   !! (3, n_vertices)
+        real(c_float), dimension(:,:), intent(out) :: uv        !! (2, n_vertices): zero
+        integer(c_int32_t), dimension(:), intent(out) :: indices    !! (n_indices)
         real(c_double), parameter :: pi = acos(-1.0_c_double)
         real(c_double) :: w(3), u(3), v(3), r(3), a, cone_normal(3)
         integer :: i, n, nv, ni, body0, cap0, head0, apex0, disk0
@@ -211,6 +219,7 @@ contains
 
     contains
 
+        !> The unit vector at angle 2 pi k / n around the arrow's axis.
         pure function radial(k) result(rad)
             integer, intent(in) :: k
             real(c_double) :: rad(3), ang
@@ -218,6 +227,7 @@ contains
             rad = cos(ang) * u + sin(ang) * v
         end function radial
 
+        !> Append a vertex at `p` with normal `nrm`.
         subroutine put(p, nrm)
             real(c_double), intent(in) :: p(3), nrm(3)
             nv = nv + 1
@@ -225,6 +235,7 @@ contains
             normals(:, nv) = real(nrm, c_float)
         end subroutine put
 
+        !> Append a triangle of (0-based) vertex indices i1, i2, i3.
         subroutine tri(i1, i2, i3)
             integer, intent(in) :: i1, i2, i3
             indices(ni+1:ni+3) = int([i1, i2, i3], c_int32_t)
@@ -239,8 +250,8 @@ contains
             result(mesh)
         real(c_double), intent(in) :: base(3), direction(3)
         real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius
-        real(c_float), dimension(4), intent(in) :: rgba
-        integer, intent(in), optional :: n_segments
+        real(c_float), dimension(4), intent(in) :: rgba     !! color [r, g, b, a] (0 to 1)
+        integer, intent(in), optional :: n_segments         !! segments around (default 24, at least 3)
         type(c_ptr) :: mesh
         real(c_float), dimension(:,:), pointer :: xyz, normals, uv
         integer(c_int32_t), dimension(:), pointer :: indices
@@ -255,6 +266,7 @@ contains
         call arrow(base, direction, body_length, head_length, body_radius, head_radius, n, xyz, normals, uv, indices)
     end function arrow_create
 
+    !> The cross product a x b.
     pure function cross(a, b) result(c)
         real(c_double), intent(in) :: a(3), b(3)
         real(c_double) :: c(3)

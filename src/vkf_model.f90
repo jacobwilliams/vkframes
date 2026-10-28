@@ -1,4 +1,4 @@
-!> Models: a 3D model file (3ds, obj, glTF, ... through vsgXchange) in a
+!> 3D models: a model file (3ds, obj, glTF, ... through vsgXchange) in a
 !> frame, as OpenFrames' Model.
 !>
 !> The model is placed in its frame by its own transform:
@@ -21,13 +21,14 @@ module vkf_model
     !> A model (see the module documentation).
     type, extends(ReferenceFrame), public :: Model
         private
-        character(len=:), allocatable :: file
+        character(len=:), allocatable :: file               !! the model file (unallocated: none)
         type(c_ptr) :: model_ = c_null_ptr                  !! the loaded model's node
-        real(wp) :: model_position_(3) = 0.0_wp
-        real(wp) :: model_attitude_(4) = quat_identity
-        real(wp) :: scale_(3) = 1.0_wp
-        real(wp) :: pivot_(3) = 0.0_wp
-        real(wp) :: bound_center(3) = 0.0_wp, bound_radius = 0.0_wp
+        real(wp) :: model_position_(3) = 0.0_wp             !! where the pivot is in the frame
+        real(wp) :: model_attitude_(4) = quat_identity      !! attitude in the frame (quaternion [x, y, z, w])
+        real(wp) :: scale_(3) = 1.0_wp                      !! scale along the model's x, y, z
+        real(wp) :: pivot_(3) = 0.0_wp                      !! the model's point at model_position_ (model coordinates)
+        real(wp) :: bound_center(3) = 0.0_wp                !! the model's bounding sphere: center (model coordinates)
+        real(wp) :: bound_radius = 0.0_wp                   !! the model's bounding sphere: radius (0: unknown)
         type(c_ptr) :: model_node = c_null_ptr               !! transform of the model within the frame
     contains
         procedure :: set_model, share_model, model_file, has_model, model_bound
@@ -52,7 +53,7 @@ contains
     function new_model(name, file, color) result(m)
         character(len=*), intent(in) :: name
         character(len=*), intent(in), optional :: file
-        real(wp), intent(in), optional :: color(:)
+        real(wp), intent(in), optional :: color(:)      !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(Model) :: m
         logical :: ok
         m%ReferenceFrame = ReferenceFrame(name, color)
@@ -88,6 +89,7 @@ contains
         self%bound_radius = other%bound_radius
     end function share_model
 
+    !> The model file ('' if none).
     function model_file(self) result(file)
         class(Model), intent(in) :: self
         character(len=:), allocatable :: file
@@ -95,6 +97,7 @@ contains
         if (allocated(self%file)) file = self%file
     end function model_file
 
+    !> True if a model was read (or shared).
     pure logical function has_model(self)
         class(Model), intent(in) :: self
         has_model = c_associated(self%model_)
@@ -108,6 +111,7 @@ contains
         radius = self%bound_radius
     end subroutine model_bound
 
+    !> Where the model's pivot is placed in its frame (frame coordinates).
     subroutine set_model_position(self, position)
         class(Model), intent(inout) :: self
         real(wp), intent(in) :: position(3)
@@ -115,6 +119,7 @@ contains
         call update_model_transform(self)
     end subroutine set_model_position
 
+    !> Where the model's pivot is placed in its frame (frame coordinates).
     pure function model_position(self) result(p)
         class(Model), intent(in) :: self
         real(wp) :: p(3)
@@ -129,6 +134,7 @@ contains
         call update_model_transform(self)
     end subroutine set_model_attitude
 
+    !> Attitude of the model in its frame (quaternion [x, y, z, w]).
     pure function model_attitude(self) result(q)
         class(Model), intent(in) :: self
         real(wp) :: q(4)
@@ -143,6 +149,7 @@ contains
         call update_model_transform(self)
     end subroutine set_model_scale
 
+    !> Scale along the model's x, y and z axes.
     pure function model_scale(self) result(s)
         class(Model), intent(in) :: self
         real(wp) :: s(3)
@@ -153,11 +160,12 @@ contains
     !> about which it is rotated and scaled.
     subroutine set_model_pivot(self, pivot)
         class(Model), intent(inout) :: self
-        real(wp), intent(in) :: pivot(3)
+        real(wp), intent(in) :: pivot(3)    !! (model coordinates)
         self%pivot_ = pivot
         call update_model_transform(self)
     end subroutine set_model_pivot
 
+    !> The model's pivot, in its own coordinates (see `set_model_pivot`).
     pure function model_pivot(self) result(p)
         class(Model), intent(in) :: self
         real(wp) :: p(3)
@@ -174,6 +182,7 @@ contains
         radius = self%bound_radius * maxval(abs(self%scale_))
     end subroutine model_frame_bound
 
+    !> The kind of frame: 'Model'.
     function model_frame_info(self) result(info)
         class(Model), intent(in) :: self
         character(len=:), allocatable :: info
@@ -183,7 +192,8 @@ contains
     !> The model under the model transform.
     subroutine model_build_contents(self, viewer, group)
         class(Model), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer   !! a window's viewer handle (null: headless)
+        type(c_ptr), intent(in) :: group    !! the group node to build under
         if (.not. c_associated(self%model_)) return
         self%model_node = vkf_transform_create()
         call update_model_transform(self)
@@ -191,6 +201,7 @@ contains
             write(*, '(a)') 'vkframes: Model '//self%name()//': could not build the scene'
     end subroutine model_build_contents
 
+    !> Give the model transform to its node (once built).
     subroutine update_model_transform(self)
         type(Model), intent(inout) :: self
         if (.not. c_associated(self%model_node)) return
@@ -199,14 +210,14 @@ contains
             write(*, '(a)') 'vkframes: Model '//self%name()//': transform failed'
     end subroutine update_model_transform
 
-    !> Picking: the model's bounding sphere (not its triangles); else the
+    !> Picked on the model's bounding sphere (not its triangles); else at the
     !> frame's origin.
     subroutine model_pick(self, cam, to_root, hits, n)
         class(Model), intent(in), target :: self
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: to_root(4,4)
-        type(PickHit), allocatable, intent(inout) :: hits(:)
-        integer, intent(inout) :: n
+        type(PickCamera), intent(in) :: cam                 !! the cursor's ray and the pick's settings
+        real(wp), intent(in) :: to_root(4,4)                !! the frame's transform to the root frame
+        type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits so far (grown as needed)
+        integer, intent(inout) :: n                         !! number of hits in hits
         real(wp) :: c(3), r, m(4,4)
         call self%bound(c, r)
         if (self%contents_shown() .and. r > 0.0_wp) then

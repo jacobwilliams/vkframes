@@ -19,31 +19,32 @@ module vkf_follower
 
     private
 
-    ! follow modes (OpenFrames' FollowMode)
+    !> follow modes (OpenFrames' FollowMode)
     integer, parameter, public :: FOLLOW_LOOP = 0      !! wrap the time into the trajectories' time range
     integer, parameter, public :: FOLLOW_LIMIT = 1     !! hold the first/last point outside the time range
 
-    ! what to follow (OpenFrames' FollowData), combined with ior
-    integer, parameter, public :: FOLLOW_POSITION = 1
-    integer, parameter, public :: FOLLOW_ATTITUDE = 2
+    !> what to follow (OpenFrames' FollowData), combined with ior
+    integer, parameter, public :: FOLLOW_POSITION = 1  !! follow the position
+    integer, parameter, public :: FOLLOW_ATTITUDE = 2  !! follow the attitude
 
+    !> A pointer to a followed trajectory (for an array of them).
     type :: TrajectoryPointer
-        type(Trajectory), pointer :: p => null()
+        type(Trajectory), pointer :: p => null()    !! the trajectory (not owned)
     end type TrajectoryPointer
 
     !> Follows trajectories (see the module documentation).
     type, public :: TrajectoryFollower
         private
-        type(TrajectoryPointer), allocatable :: trajs(:)
-        integer :: n = 0
+        type(TrajectoryPointer), allocatable :: trajs(:)    !! (capacity): the followed trajectories
+        integer :: n = 0                            !! number of followed trajectories
         integer :: current = 0                      !! index (in trajs) of the trajectory last followed
-        integer :: mode_ = FOLLOW_LOOP
-        integer :: data_ = FOLLOW_POSITION + FOLLOW_ATTITUDE
-        type(DataSource) :: sources_(3)
-        logical :: default_data = .true.
-        logical :: follow_time = .true.             !! true: simulation time + time_value; false: time_value
-        real(wp) :: time_value = 0.0_wp
-        real(wp) :: last_time_ = 0.0_wp
+        integer :: mode_ = FOLLOW_LOOP              !! FOLLOW_LOOP or FOLLOW_LIMIT
+        integer :: data_ = FOLLOW_POSITION + FOLLOW_ATTITUDE    !! what is followed (FOLLOW_* combined with ior)
+        type(DataSource) :: sources_(3)             !! where the followed position's x, y, z come from
+        logical :: default_data = .true.            !! (true: sources_ are the trajectories' positions)
+        logical :: follow_time = .true.             !! (true: simulation time + time_value; false: time_value)
+        real(wp) :: time_value = 0.0_wp             !! time offset or fixed time (s)
+        real(wp) :: last_time_ = 0.0_wp             !! time (after looping) at the last update (s)
     contains
         procedure :: set_trajectory, add_trajectory, remove_trajectory, remove_all
         procedure :: num_trajectories
@@ -116,6 +117,7 @@ contains
         self%current = 0
     end subroutine remove_all
 
+    !> Number of trajectories followed.
     pure integer function num_trajectories(self)
         class(TrajectoryFollower), intent(in) :: self
         num_trajectories = self%n
@@ -128,16 +130,19 @@ contains
     !> ior) and how (FOLLOW_LOOP or FOLLOW_LIMIT).
     subroutine set_follow_type(self, data, mode)
         class(TrajectoryFollower), intent(inout) :: self
-        integer, intent(in) :: data, mode
+        integer, intent(in) :: data     !! FOLLOW_POSITION and/or FOLLOW_ATTITUDE (ior)
+        integer, intent(in) :: mode     !! FOLLOW_LOOP or FOLLOW_LIMIT
         self%data_ = data
         self%mode_ = mode
     end subroutine set_follow_type
 
+    !> How time outside the trajectories is handled: FOLLOW_LOOP or FOLLOW_LIMIT.
     pure integer function follow_mode(self)
         class(TrajectoryFollower), intent(in) :: self
         follow_mode = self%mode_
     end function follow_mode
 
+    !> What is followed: FOLLOW_POSITION and/or FOLLOW_ATTITUDE (combined with ior).
     pure integer function follow_data(self)
         class(TrajectoryFollower), intent(in) :: self
         follow_data = self%data_
@@ -154,6 +159,7 @@ contains
         valid = self%data_valid()
     end function set_x_data
 
+    !> Where the y of the followed position comes from (see `set_x_data`).
     logical function set_y_data(self, src) result(valid)
         class(TrajectoryFollower), intent(inout) :: self
         type(DataSource), intent(in) :: src
@@ -162,6 +168,7 @@ contains
         valid = self%data_valid()
     end function set_y_data
 
+    !> Where the z of the followed position comes from (see `set_x_data`).
     logical function set_z_data(self, src) result(valid)
         class(TrajectoryFollower), intent(inout) :: self
         type(DataSource), intent(in) :: src
@@ -170,6 +177,7 @@ contains
         valid = self%data_valid()
     end function set_z_data
 
+    !> Where the followed position's x, y and z come from.
     pure function data_sources(self) result(s)
         class(TrajectoryFollower), intent(in) :: self
         type(DataSource) :: s(3)
@@ -187,6 +195,7 @@ contains
         self%default_data = .true.
     end subroutine set_default_data
 
+    !> True if the followed position is the trajectories' positions (`set_default_data`).
     pure logical function using_default_data(self)
         class(TrajectoryFollower), intent(in) :: self
         using_default_data = self%default_data
@@ -205,7 +214,7 @@ contains
     !> Follow at a fixed time (independent of the simulation time).
     subroutine set_time(self, t)
         class(TrajectoryFollower), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t           !! the time (s)
         self%time_value = t
         self%follow_time = .false.
     end subroutine set_time
@@ -213,11 +222,12 @@ contains
     !> Follow at the simulation time plus `offset` (the default, offset 0).
     subroutine set_offset_time(self, offset)
         class(TrajectoryFollower), intent(inout) :: self
-        real(wp), intent(in) :: offset
+        real(wp), intent(in) :: offset      !! added to the simulation time (s)
         self%time_value = offset
         self%follow_time = .true.
     end subroutine set_offset_time
 
+    !> True if following the simulation time plus an offset, false for a fixed time.
     pure logical function is_following_time(self)
         class(TrajectoryFollower), intent(in) :: self
         is_following_time = self%follow_time
@@ -245,8 +255,9 @@ contains
     !> followed); otherwise `position` / `attitude` are left unchanged.
     subroutine update(self, sim_time, position, attitude, has_position, has_attitude)
         class(TrajectoryFollower), intent(inout) :: self
-        real(wp), intent(in) :: sim_time
-        real(wp), intent(inout) :: position(3), attitude(4)
+        real(wp), intent(in) :: sim_time            !! simulation time (s)
+        real(wp), intent(inout) :: position(3)      !! the followed position (in the trajectories' frame)
+        real(wp), intent(inout) :: attitude(4)      !! the followed attitude (quaternion [x, y, z, w])
         logical, intent(out) :: has_position, has_attitude
         type(Trajectory), pointer :: traj
         real(wp) :: t
@@ -270,7 +281,7 @@ contains
             call interpolate_attitude(traj, t, status, i, attitude, has_attitude)
     end subroutine update
 
-    !> FOLLOW_LOOP: t wrapped into the combined time range of the trajectories.
+    !> For FOLLOW_LOOP, t wrapped into the combined time range of the trajectories.
     real(wp) function wrapped_time(self, t) result(tw)
         type(TrajectoryFollower), intent(in) :: self
         real(wp), intent(in) :: t
@@ -330,7 +341,7 @@ contains
         real(wp), intent(in) :: t
         integer, intent(in) :: status, index
         real(wp), intent(inout) :: position(3)
-        logical, intent(out) :: ok
+        logical, intent(out) :: ok                  !! false if there is no position (position unchanged)
         integer :: n, i
         real(wp) :: frac
         ok = .false.
@@ -366,8 +377,8 @@ contains
         type(Trajectory), intent(in) :: traj
         real(wp), intent(in) :: t
         integer, intent(in) :: status, index
-        real(wp), intent(inout) :: attitude(4)
-        logical, intent(out) :: ok
+        real(wp), intent(inout) :: attitude(4)      !! quaternion [x, y, z, w]
+        logical, intent(out) :: ok                  !! false if there is no attitude (attitude unchanged)
         integer :: n, i
         real(wp) :: frac
         ok = .false.

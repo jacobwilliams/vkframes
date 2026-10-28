@@ -1,5 +1,11 @@
-!> vkframes: a modern Fortran library for visualizing spacecraft trajectories,
+!> The vkframes library, a modern Fortran library for visualizing spacecraft trajectories,
 !> rendering with VulkanSceneGraph. `use vkframes` gives the whole public API.
+!>
+!> This umbrella module only re-exports the public types, procedures and
+!> constants of the vkf_* modules (math, trajectories and followers, the
+!> clock, reference frames and what extends them, windows and views, HUD text
+!> and GUI panels, the sky, shapes, artists, line segments, shadows, terrain,
+!> file search); see each module for its documentation.
 module vkframes
 
     use vkf_math, only: wp, pi, quat_identity, quat_from_axis_angle, quat_multiply, quat_conjugate, quat_from_matrix, &

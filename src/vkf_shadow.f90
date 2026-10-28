@@ -49,11 +49,11 @@ module vkf_shadow
 
     private
 
-    ! the regions (combine with ior)
+    !> The regions (combine with ior).
     integer, parameter, public :: SHADOW_UMBRA = 1, SHADOW_PENUMBRA = 2, SHADOW_ANTUMBRA = 4
-    integer, parameter, public :: SHADOW_ALL = 7
+    integer, parameter, public :: SHADOW_ALL = 7            !! SHADOW_UMBRA + SHADOW_PENUMBRA + SHADOW_ANTUMBRA
 
-    integer, parameter :: n_regions = 3
+    integer, parameter :: n_regions = 3                     !! umbra, penumbra and antumbra
     integer, parameter :: umbra = 1, penumbra = 2, antumbra = 3     !! region indices
     integer, parameter :: n_around = 128                            !! segments around each cone
 
@@ -61,21 +61,27 @@ module vkf_shadow
     !> (radius r1), in the shadow frame's coordinates.
     type :: ShadowRegion
         logical :: drawn = .false.                          !! has a surface (and is to be drawn)
-        real(wp) :: z0 = 0.0_wp, r0 = 0.0_wp, z1 = 0.0_wp, r1 = 0.0_wp
-        real(wp) :: color(4) = 1.0_wp
-        type(c_ptr) :: switch = c_null_ptr, mesh = c_null_ptr
+        real(wp) :: z0 = 0.0_wp                             !! start along z (scene units)
+        real(wp) :: r0 = 0.0_wp                             !! radius at z0 (scene units)
+        real(wp) :: z1 = 0.0_wp                             !! end along z (scene units)
+        real(wp) :: r1 = 0.0_wp                             !! radius at z1 (scene units)
+        real(wp) :: color(4) = 1.0_wp                       !! [r, g, b, a] (0 to 1)
+        type(c_ptr) :: switch = c_null_ptr                  !! shows or hides the mesh (null until built)
+        type(c_ptr) :: mesh = c_null_ptr                    !! the surface: rings of vertices at z0 and z1
     end type ShadowRegion
 
     !> A body's shadow cones (see the module documentation).
     type, extends(ReferenceFrame), public :: ShadowCones
         private
-        class(ReferenceFrame), pointer :: body_ => null(), light_ => null()
-        real(wp) :: body_radius_ = 0.0_wp, light_radius_ = 0.0_wp   !! 0: the frames' own
-        real(wp) :: length_ = 0.0_wp                                !! 0: automatic
-        integer :: regions_ = SHADOW_ALL
-        type(ShadowRegion) :: region(n_regions)
+        class(ReferenceFrame), pointer :: body_ => null()   !! the body casting the shadow (not owned)
+        class(ReferenceFrame), pointer :: light_ => null()  !! the light (not owned)
+        real(wp) :: body_radius_ = 0.0_wp, light_radius_ = 0.0_wp   !! (0: the frames' own)
+        real(wp) :: length_ = 0.0_wp                                !! (0: automatic)
+        integer :: regions_ = SHADOW_ALL                    !! an ior of SHADOW_UMBRA, SHADOW_PENUMBRA, SHADOW_ANTUMBRA
+        type(ShadowRegion) :: region(n_regions)             !! umbra, penumbra and antumbra
         real(wp) :: shaped(4) = -1.0_wp                     !! R, Rs, d and length the cones have now
-        real(wp) :: distance_ = 0.0_wp, drawn_length_ = 0.0_wp
+        real(wp) :: distance_ = 0.0_wp                      !! body to light at the last update (scene units)
+        real(wp) :: drawn_length_ = 0.0_wp                  !! the length drawn at the last update (scene units)
     contains
         procedure :: set_body, body, set_light, light
         procedure :: set_body_radius, set_light_radius, body_radius, light_radius
@@ -102,7 +108,7 @@ contains
     function new_shadow_cones(name, body, light, body_radius, light_radius) result(s)
         character(len=*), intent(in) :: name
         class(ReferenceFrame), intent(in), target, optional :: body, light
-        real(wp), intent(in), optional :: body_radius, light_radius
+        real(wp), intent(in), optional :: body_radius, light_radius  !! scene units (default: the frames' own)
         type(ShadowCones) :: s
         s%ReferenceFrame = ReferenceFrame(name)
         call s%show_axes(NO_AXES)
@@ -122,11 +128,12 @@ contains
     subroutine set_body(self, body, radius)
         class(ShadowCones), intent(inout) :: self
         class(ReferenceFrame), intent(in), target :: body
-        real(wp), intent(in), optional :: radius
+        real(wp), intent(in), optional :: radius            !! scene units (see set_body_radius)
         self%body_ => body
         if (present(radius)) call self%set_body_radius(radius)
     end subroutine set_body
 
+    !> The body casting the shadow (null if not set).
     function body(self) result(p)
         class(ShadowCones), intent(in) :: self
         class(ReferenceFrame), pointer :: p
@@ -138,11 +145,12 @@ contains
     subroutine set_light(self, light, radius)
         class(ShadowCones), intent(inout) :: self
         class(ReferenceFrame), intent(in), target :: light
-        real(wp), intent(in), optional :: radius
+        real(wp), intent(in), optional :: radius            !! scene units (see set_light_radius)
         self%light_ => light
         if (present(radius)) call self%set_light_radius(radius)
     end subroutine set_light
 
+    !> The light (null if not set).
     function light(self) result(p)
         class(ShadowCones), intent(in) :: self
         class(ReferenceFrame), pointer :: p
@@ -153,14 +161,14 @@ contains
     !> equatorial radius or a TerrainBody's).
     subroutine set_body_radius(self, radius)
         class(ShadowCones), intent(inout) :: self
-        real(wp), intent(in) :: radius
+        real(wp), intent(in) :: radius                      !! scene units (0: the body's own)
         self%body_radius_ = max(0.0_wp, radius)
     end subroutine set_body_radius
 
     !> The light's radius (scene units; 0: the light's own, if a Sphere).
     subroutine set_light_radius(self, radius)
         class(ShadowCones), intent(inout) :: self
-        real(wp), intent(in) :: radius
+        real(wp), intent(in) :: radius                      !! scene units (0: the light's own)
         self%light_radius_ = max(0.0_wp, radius)
     end subroutine set_light_radius
 
@@ -198,7 +206,7 @@ contains
     !> automatic, twice the umbra's length).
     subroutine set_length(self, length)
         class(ShadowCones), intent(inout) :: self
-        real(wp), intent(in) :: length
+        real(wp), intent(in) :: length                      !! scene units (0: automatic)
         self%length_ = max(0.0_wp, length)
     end subroutine set_length
 
@@ -224,11 +232,13 @@ contains
     !> SHADOW_ANTUMBRA (default SHADOW_ALL).
     subroutine set_regions(self, regions)
         class(ShadowCones), intent(inout) :: self
-        integer, intent(in) :: regions
+        integer, intent(in) :: regions                      !! an ior of SHADOW_UMBRA, SHADOW_PENUMBRA, SHADOW_ANTUMBRA
         self%regions_ = iand(regions, SHADOW_ALL)
         self%shaped = -1.0_wp                               ! (redrawn at the next update)
     end subroutine set_regions
 
+    !> The regions drawn: an ior of SHADOW_UMBRA, SHADOW_PENUMBRA and
+    !> SHADOW_ANTUMBRA.
     pure integer function regions(self)
         class(ShadowCones), intent(in) :: self
         regions = self%regions_
@@ -238,8 +248,8 @@ contains
     !> SHADOW_ANTUMBRA; [r, g, b], alpha unchanged, or [r, g, b, a]).
     subroutine set_region_color(self, region, color)
         class(ShadowCones), intent(inout) :: self
-        integer, intent(in) :: region
-        real(wp), intent(in) :: color(:)
+        integer, intent(in) :: region                       !! SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1
         integer :: k, n
         k = region_index(region)
         if (k == 0) return
@@ -248,9 +258,10 @@ contains
         call apply_color(self%region(k))
     end subroutine set_region_color
 
+    !> A region's color [r, g, b, a] (0 for an unknown region).
     function region_color(self, region) result(c)
         class(ShadowCones), intent(in) :: self
-        integer, intent(in) :: region
+        integer, intent(in) :: region                       !! SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA
         real(wp) :: c(4)
         integer :: k
         c = 0.0_wp
@@ -258,8 +269,10 @@ contains
         if (k > 0) c = self%region(k)%color
     end function region_color
 
+    !> The index in self%region of SHADOW_UMBRA, SHADOW_PENUMBRA or
+    !> SHADOW_ANTUMBRA (0 for anything else).
     pure integer function region_index(region) result(k)
-        integer, intent(in) :: region
+        integer, intent(in) :: region                       !! SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA
         select case (region)
         case (SHADOW_UMBRA)
             k = umbra
@@ -277,9 +290,9 @@ contains
     !> (radius r0) to z1 (radius r1).
     subroutine region_extent(self, region, drawn, z0, r0, z1, r1)
         class(ShadowCones), intent(in) :: self
-        integer, intent(in) :: region
-        logical, intent(out) :: drawn
-        real(wp), intent(out), optional :: z0, r0, z1, r1
+        integer, intent(in) :: region                       !! SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA
+        logical, intent(out) :: drawn                       !! it has a surface and is drawn
+        real(wp), intent(out), optional :: z0, r0, z1, r1   !! scene units
         type(ShadowRegion) :: g
         integer :: k
         k = region_index(region)
@@ -308,6 +321,7 @@ contains
         end if
     end function umbra_length
 
+    !> What kind of frame this is: 'ShadowCones'.
     function shadow_frame_info(self) result(info)
         class(ShadowCones), intent(in) :: self
         character(len=:), allocatable :: info
@@ -317,7 +331,7 @@ contains
     !> The drawn regions' bounding sphere (frame coordinates).
     subroutine shadow_bound(self, center, radius)
         class(ShadowCones), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         real(wp) :: lo, hi, r
         integer :: k
         center = 0.0_wp
@@ -340,7 +354,8 @@ contains
     !> of shape), under `group`.
     subroutine shadow_build_contents(self, viewer, group)
         class(ShadowCones), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
         real(c_float), dimension(:,:), pointer :: v, normals, uv
         integer(c_int32_t), dimension(:), pointer :: indices
         integer :: k, i, j, n
@@ -384,11 +399,14 @@ contains
     !> away from the light, and reshaped if the distance or a setting changed.
     recursive subroutine shadow_late_update(self, t)
         class(ShadowCones), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the scene time
         if (associated(self%body_) .and. associated(self%light_) .and. self%contents_shown()) call place(self)
         call self%ReferenceFrame%late_update(t)
     end subroutine shadow_late_update
 
+    !> Move the shadow to the body's center (in the parent's coordinates) with its
+    !> +z axis away from the light, and reshape the cones if the radii, the
+    !> distance or the length set changed.
     subroutine place(self)
         type(ShadowCones), intent(inout) :: self
         real(wp) :: to_parent(4,4), m(4,4), b(3), s(3), u(3), d, now(4)
@@ -413,7 +431,7 @@ contains
     !> (see the module documentation), written to their meshes.
     subroutine shape_regions(self, r, rs, d)
         type(ShadowCones), intent(inout) :: self
-        real(wp), intent(in) :: r, rs, d
+        real(wp), intent(in) :: r, rs, d                    !! scene units
         real(wp) :: sa, ca, ta, sb, cb, tb, apex, len
         integer :: k
         self%region%drawn = .false.
@@ -488,6 +506,7 @@ contains
         call check(vkf_switch_set(g%switch, merge(1_c_int, 0_c_int, g%drawn)))
     end subroutine write_region
 
+    !> Report a failed rendering-layer call (status not 0).
     subroutine check(status)
         integer(c_int), intent(in) :: status
         if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (shadow)'

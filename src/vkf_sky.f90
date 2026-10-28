@@ -32,25 +32,30 @@ module vkf_sky
 
     private
 
-    ! what a sky draws (OpenFrames' SkySphere::DrawMode; add them)
+    !> What a sky draws (OpenFrames' SkySphere::DrawMode; add them).
     integer, parameter, public :: SKY_NONE = 0, SKY_TEXTURE = 1, SKY_STARS = 2
 
+    !> The sky behind a scene (OpenFrames' SkySphere; see the module documentation).
     type, public :: SkySphere
         private
-        character(len=:), allocatable :: texture_file, catalog
+        character(len=:), allocatable :: texture_file       !! texture image file (unallocated or '': none)
+        character(len=:), allocatable :: catalog            !! star catalog file (unallocated or '': none)
         real(wp) :: min_mag = -2.0_wp, max_mag = 8.0_wp     !! OpenFrames' SkySphere defaults
-        integer :: max_stars = 10000
+        integer :: max_stars = 10000                        !! the most stars drawn
         real(wp) :: min_size = 1.0_wp, max_size = 10.0_wp   !! window units
-        real(wp) :: min_dim = 0.5_wp
-        integer :: mode = SKY_TEXTURE + SKY_STARS
-        real(wp) :: attitude_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]
+        real(wp) :: min_dim = 0.5_wp                        !! the smallest stars' color scale (0 to 1)
+        integer :: mode = SKY_TEXTURE + SKY_STARS           !! SKY_NONE, or a sum of SKY_TEXTURE and SKY_STARS
+        real(wp) :: attitude_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]  !! in the root frame (quaternion [x, y, z, w])
         real(c_float), allocatable :: stars(:,:)            !! (8, n): direction, size, rgb, -
-        integer :: n_stars = 0
+        integer :: n_stars = 0                              !! stars read: columns of stars used
         real(wp) :: mag_range(2) = 0.0_wp                   !! of the stars read
         ! rendering
-        type(c_ptr) :: image = c_null_ptr
-        type(c_ptr) :: root = c_null_ptr, texture_switch = c_null_ptr, star_switch = c_null_ptr
-        type(c_ptr) :: texture_node = c_null_ptr, star_node = c_null_ptr
+        type(c_ptr) :: image = c_null_ptr                   !! the texture image (null: none)
+        type(c_ptr) :: root = c_null_ptr                    !! the sky's node, a transform (null until made)
+        type(c_ptr) :: texture_switch = c_null_ptr          !! shows or hides the texture (draw mode)
+        type(c_ptr) :: star_switch = c_null_ptr             !! shows or hides the stars (draw mode)
+        type(c_ptr) :: texture_node = c_null_ptr            !! the texture drawing (null: none)
+        type(c_ptr) :: star_node = c_null_ptr               !! the stars drawing (null: none)
         logical :: shown = .false.                          !! made for a window: nodes made later are compiled
     contains
         procedure :: set_texture_map, texture_map
@@ -67,7 +72,7 @@ contains
     !> Returns false if it cannot be read (the sky is then unchanged).
     logical function set_texture_map(self, file) result(ok)
         class(SkySphere), intent(inout) :: self
-        character(len=*), intent(in) :: file
+        character(len=*), intent(in) :: file                !! image file; '' for none
         type(c_ptr) :: image
         character(len=:), allocatable :: path
         ok = .true.
@@ -88,6 +93,7 @@ contains
         if (c_associated(self%root)) call make_texture_node(self)
     end function set_texture_map
 
+    !> The texture file ('' for none).
     function texture_map(self) result(file)
         class(SkySphere), intent(in) :: self
         character(len=:), allocatable :: file
@@ -106,8 +112,10 @@ contains
     logical function set_star_data(self, catalog, min_mag, max_mag, max_stars, min_size, max_size, min_dim_ratio) &
             result(ok)
         class(SkySphere), intent(inout) :: self
-        character(len=*), intent(in) :: catalog
-        real(wp), intent(in), optional :: min_mag, max_mag, min_size, max_size, min_dim_ratio
+        character(len=*), intent(in) :: catalog             !! star catalog file; '' for none
+        real(wp), intent(in), optional :: min_mag, max_mag  !! apparent magnitudes
+        real(wp), intent(in), optional :: min_size, max_size  !! window units
+        real(wp), intent(in), optional :: min_dim_ratio     !! 0 to 1
         integer, intent(in), optional :: max_stars
         real(wp) :: mags(2), sizes(2), dim
         integer :: n
@@ -135,6 +143,7 @@ contains
         if (c_associated(self%root)) call make_star_node(self)
     end function set_star_data
 
+    !> The star catalog file ('' for none).
     function star_catalog(self) result(file)
         class(SkySphere), intent(in) :: self
         character(len=:), allocatable :: file
@@ -173,8 +182,10 @@ contains
     !> (rgb, dimmed) and size (window units).
     pure subroutine star(self, i, direction, rgb, size)
         class(SkySphere), intent(in) :: self
-        integer, intent(in) :: i
-        real(wp), intent(out) :: direction(3), rgb(3), size
+        integer, intent(in) :: i                            !! 1 to num_stars
+        real(wp), intent(out) :: direction(3)               !! unit vector, sky frame
+        real(wp), intent(out) :: rgb(3)                     !! color, dimmed (0 to 1)
+        real(wp), intent(out) :: size                       !! window units
         direction = real(self%stars(1:3, i), wp)
         size = real(self%stars(4, i), wp)
         rgb = real(self%stars(5:7, i), wp)
@@ -184,11 +195,12 @@ contains
     !> if given).
     subroutine set_draw_mode(self, mode)
         class(SkySphere), intent(inout) :: self
-        integer, intent(in) :: mode
+        integer, intent(in) :: mode                         !! SKY_NONE, or a sum of SKY_TEXTURE and SKY_STARS
         self%mode = mode
         call apply_mode(self)
     end subroutine set_draw_mode
 
+    !> What is drawn: SKY_NONE, or a sum of SKY_TEXTURE and SKY_STARS.
     pure integer function draw_mode(self)
         class(SkySphere), intent(in) :: self
         draw_mode = self%mode
@@ -198,13 +210,14 @@ contains
     !> turn an equatorial catalog into an ecliptic root frame.
     subroutine set_attitude(self, q)
         class(SkySphere), intent(inout) :: self
-        real(wp), intent(in) :: q(4)
+        real(wp), intent(in) :: q(4)                        !! quaternion [x, y, z, w] (any length > 0)
         if (norm2(q) <= 0.0_wp) return
         self%attitude_ = q / norm2(q)
         call apply_attitude(self, self%texture_node)
         call apply_attitude(self, self%star_node)
     end subroutine set_attitude
 
+    !> The sky's attitude in the root frame (quaternion [x, y, z, w]).
     pure function attitude(self) result(q)
         class(SkySphere), intent(in) :: self
         real(wp) :: q(4)
@@ -216,7 +229,7 @@ contains
     !> or catalog) are compiled for the windows running.
     function node(self, viewer) result(n)
         class(SkySphere), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
         type(c_ptr) :: n
         if (.not. c_associated(self%root)) then
             self%root = vkf_transform_create()
@@ -281,6 +294,7 @@ contains
         call apply_mode(self)
     end subroutine make_star_node
 
+    !> Show or hide the texture and the stars, as the draw mode says.
     subroutine apply_mode(self)
         type(SkySphere), intent(in) :: self
         if (c_associated(self%texture_switch)) &
@@ -292,7 +306,7 @@ contains
     !> The attitude matrix (column-major 4x4) into a sky node's style.
     subroutine apply_attitude(self, n)
         type(SkySphere), intent(in) :: self
-        type(c_ptr), intent(in) :: n
+        type(c_ptr), intent(in) :: n                        !! a sky node, texture or stars (null: nothing done)
         real(c_float), dimension(:,:), pointer :: m
         type(c_ptr) :: style
         if (.not. c_associated(n)) return
@@ -305,6 +319,7 @@ contains
         call check(vkf_sky_style_changed(n))
     end subroutine apply_attitude
 
+    !> Report a failed rendering-layer call (status not 0).
     subroutine check(status)
         integer(c_int), intent(in) :: status
         if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (SkySphere)'
@@ -388,6 +403,7 @@ contains
         ok = .true.
     end function read_stars
 
+    !> The number of columns of a (the stars' capacity).
     pure integer function size_of(a)
         real(c_float), intent(in) :: a(:,:)
         size_of = size(a, 2)
@@ -396,7 +412,7 @@ contains
     !> A star's pixel diameter from its apparent magnitude, from its brightness
     !> and luminance (OpenFrames' getStarPixelSizeFromMagnitude).
     pure real(wp) function raw_size(mag)
-        real(wp), intent(in) :: mag
+        real(wp), intent(in) :: mag                         !! apparent magnitude
         real(wp) :: la, l
         la = 100.0_wp**(-2.0_wp / 5.0_wp)                ! transition luminance
         l = 100.0_wp**(-mag / 5.0_wp)                    ! relative luminance
@@ -407,8 +423,11 @@ contains
     !> temperature, then Tanner Helland's temperature to RGB) and raw size
     !> (OpenFrames' SkySphere::StarToPoint).
     pure subroutine star_to_point(ra, dec, mag, ci, dir, rgb, size)
-        real(wp), intent(in) :: ra, dec, mag, ci
-        real(wp), intent(out) :: dir(3), rgb(3), size
+        real(wp), intent(in) :: ra, dec                     !! right ascension and declination (radians)
+        real(wp), intent(in) :: mag, ci                     !! apparent magnitude and B-V color index
+        real(wp), intent(out) :: dir(3)                     !! unit vector
+        real(wp), intent(out) :: rgb(3)                     !! color (0 to 1)
+        real(wp), intent(out) :: size                       !! raw size (as raw_size)
         real(wp) :: t
         dir = [cos(ra) * cos(dec), sin(ra) * cos(dec), sin(dec)]
         size = raw_size(mag)

@@ -26,16 +26,16 @@ module vkf_shapes
 
     private
 
-    ! what a cone draws (OpenFrames' PolyhedralCone::DrawMode; combine with ior)
+    !> What a cone draws (OpenFrames' PolyhedralCone::DrawMode; combine with ior).
     integer, parameter, public :: CONE_NONE = 0, CONE_SIDES = 1, CONE_EDGES = 2, CONE_BASE_OUTLINE = 4
-    integer, parameter, public :: CONE_ALL = 7
+    integer, parameter, public :: CONE_ALL = 7              !! CONE_SIDES + CONE_EDGES + CONE_BASE_OUTLINE
 
     !> A shape's nodes: made under the frame's contents, replaced when the
     !> shape changes.
     type :: ShapeNodes
-        type(c_ptr) :: contents = c_null_ptr
+        type(c_ptr) :: contents = c_null_ptr                !! the frame's contents group (null until built)
         logical :: shown = .false.                          !! built for a window: rebuilt nodes are compiled
-        type(c_ptr) :: shape = c_null_ptr
+        type(c_ptr) :: shape = c_null_ptr                   !! the switch now shown (null: none)
     contains
         procedure :: replace
     end type ShapeNodes
@@ -50,15 +50,17 @@ module vkf_shapes
     !> start at its surface.
     type, extends(ReferenceFrame), public :: CoordinateAxes
         private
-        real(wp) :: length_ = 1.0_wp
-        integer :: drawn = ALL_AXES
-        real(wp) :: width_ = 1.0_wp
-        real(wp) :: major = 0.5_wp, minor = 0.25_wp
-        real(wp) :: major_size = 8.0_wp, minor_size = 4.0_wp
-        integer :: shape_ = MARKER_DISK
-        character(len=:), allocatable :: image_file
-        type(c_ptr) :: image = c_null_ptr
-        type(ShapeNodes) :: nodes
+        real(wp) :: length_ = 1.0_wp                        !! axis length (scene units; default 1)
+        integer :: drawn = ALL_AXES                         !! axes drawn: an ior of X_AXIS, Y_AXIS, Z_AXIS
+        real(wp) :: width_ = 1.0_wp                         !! axis lines' width (window units; default 1)
+        real(wp) :: major = 0.5_wp                          !! major tick spacing (scene units; 0: none)
+        real(wp) :: minor = 0.25_wp                         !! minor tick spacing (scene units; 0: none)
+        real(wp) :: major_size = 8.0_wp                     !! major tick size (window units)
+        real(wp) :: minor_size = 4.0_wp                     !! minor tick size (window units)
+        integer :: shape_ = MARKER_DISK                     !! tick shape: a MARKER_* shape
+        character(len=:), allocatable :: image_file         !! tick image file ('' for none)
+        type(c_ptr) :: image = c_null_ptr                   !! tick image handle (null: none)
+        type(ShapeNodes) :: nodes                           !! the drawing
     contains
         procedure :: set_axis_length, axis_length
         procedure :: set_draw_axes, draw_axes
@@ -83,10 +85,12 @@ module vkf_shapes
     !> equator and prime meridian thicker), in the frame's color.
     type, extends(ReferenceFrame), public :: LatLonGrid
         private
-        real(wp) :: radii_(3) = 1.0_wp
-        real(wp) :: lat_spacing = 30.0_wp * pi / 180.0_wp, lon_spacing = 30.0_wp * pi / 180.0_wp
-        real(wp) :: width_ = 1.0_wp, main_width = 3.0_wp
-        type(ShapeNodes) :: nodes
+        real(wp) :: radii_(3) = 1.0_wp                      !! the ellipsoid's semi-axes (scene units)
+        real(wp) :: lat_spacing = 30.0_wp * pi / 180.0_wp   !! between latitude lines (radians; 0: none)
+        real(wp) :: lon_spacing = 30.0_wp * pi / 180.0_wp   !! between meridians (radians; 0: none)
+        real(wp) :: width_ = 1.0_wp                         !! grid lines' width (window units)
+        real(wp) :: main_width = 3.0_wp                     !! equator's and prime meridian's width (window units)
+        type(ShapeNodes) :: nodes                           !! the drawing
     contains
         procedure :: set_parameters => grid_set_parameters, parameters => grid_parameters
         procedure :: set_line_widths, line_widths
@@ -105,10 +109,12 @@ module vkf_shapes
     !> one along +x thicker).
     type, extends(ReferenceFrame), public :: RadialPlane
         private
-        real(wp) :: radius_ = 1.0_wp, radial_spacing = 0.5_wp, lon_spacing = 30.0_wp * pi / 180.0_wp
-        real(wp) :: plane_color_(4) = [0.8_wp, 0.8_wp, 0.8_wp, 0.2_wp]
-        real(wp) :: line_color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.2_wp]
-        type(ShapeNodes) :: nodes
+        real(wp) :: radius_ = 1.0_wp                        !! the disk's radius (scene units)
+        real(wp) :: radial_spacing = 0.5_wp                 !! between circles (scene units; 0: none)
+        real(wp) :: lon_spacing = 30.0_wp * pi / 180.0_wp   !! between radial lines (radians; 0: none)
+        real(wp) :: plane_color_(4) = [0.8_wp, 0.8_wp, 0.8_wp, 0.2_wp]  !! the disk's color [r, g, b, a]
+        real(wp) :: line_color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.2_wp]  !! circles' and radial lines' color [r, g, b, a]
+        type(ShapeNodes) :: nodes                           !! the drawing
     contains
         procedure :: set_parameters => plane_set_parameters, parameters => plane_parameters
         procedure :: set_plane_color, plane_color
@@ -129,12 +135,14 @@ module vkf_shapes
     !> edges from the apex and the base outline (`set_draw_mode`).
     type, extends(ReferenceFrame), public :: PolyhedralCone
         private
-        real(wp), allocatable :: clock(:), cone(:)
-        real(wp) :: length_ = 1.0_wp
-        real(wp) :: cone_color_(4) = 1.0_wp, line_color_(4) = 1.0_wp
-        integer :: mode = CONE_ALL
-        real(wp) :: width_ = 1.0_wp
-        type(ShapeNodes) :: nodes
+        real(wp), allocatable :: clock(:)                   !! vertices' clock angles (radians, from +x toward +y)
+        real(wp), allocatable :: cone(:)                    !! vertices' cone angles (radians, from the boresight)
+        real(wp) :: length_ = 1.0_wp                        !! length along the boresight (scene units)
+        real(wp) :: cone_color_(4) = 1.0_wp                 !! sides' color [r, g, b, a]
+        real(wp) :: line_color_(4) = 1.0_wp                 !! edges' and base outline's color [r, g, b, a]
+        integer :: mode = CONE_ALL                          !! an ior of CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE
+        real(wp) :: width_ = 1.0_wp                         !! edges' and base outline's width (window units)
+        type(ShapeNodes) :: nodes                           !! the drawing
     contains
         procedure :: set_vertex_angles, clock_angles, cone_angles
         procedure :: set_cone_length, cone_length
@@ -156,7 +164,8 @@ module vkf_shapes
     !> along y (`set_primary_angles`; default 60 and 30 degrees).
     type, extends(PolyhedralCone), public :: EllipticCone
         private
-        real(wp) :: a = 60.0_wp * pi / 180.0_wp, b = 30.0_wp * pi / 180.0_wp
+        real(wp) :: a = 60.0_wp * pi / 180.0_wp             !! half-angle along x (radians)
+        real(wp) :: b = 30.0_wp * pi / 180.0_wp             !! half-angle along y (radians)
     contains
         procedure :: set_primary_angles => elliptic_set_primary_angles
         procedure :: primary_angles => elliptic_primary_angles
@@ -172,7 +181,8 @@ module vkf_shapes
     !> (`set_primary_angles`; default 60 and 30 degrees).
     type, extends(PolyhedralCone), public :: RectangularCone
         private
-        real(wp) :: x = 60.0_wp * pi / 180.0_wp, y = 30.0_wp * pi / 180.0_wp
+        real(wp) :: x = 60.0_wp * pi / 180.0_wp             !! half-angle along x (radians)
+        real(wp) :: y = 30.0_wp * pi / 180.0_wp             !! half-angle along y (radians)
     contains
         procedure :: set_primary_angles => rect_set_primary_angles
         procedure :: primary_angles => rect_primary_angles
@@ -192,7 +202,7 @@ contains
     !> nodes; compiled first if the window already runs.
     subroutine replace(self, new)
         class(ShapeNodes), intent(inout) :: self
-        type(c_ptr), intent(in) :: new
+        type(c_ptr), intent(in) :: new                      !! a switch made by the shape (null: none)
         if (.not. c_associated(self%contents)) then          ! not shown yet
             if (c_associated(new)) call vkf_node_delete(new)
             return
@@ -209,7 +219,7 @@ contains
 
     !> Add `child` to `group` (its handle is not kept).
     subroutine add(group, child)
-        type(c_ptr), intent(in) :: group, child
+        type(c_ptr), intent(in) :: group, child             !! the group, and a node to add to it
         if (.not. c_associated(child)) return
         call check(vkf_node_add_child(group, child))
         call vkf_node_delete(child)
@@ -218,8 +228,10 @@ contains
     !> A line node through points xyz(3, n): a strip, or separate segments
     !> (points 1-2, 3-4, ...).
     function line_node(xyz, rgba, width, segments) result(node)
-        real(wp), intent(in) :: xyz(:,:), rgba(4), width
-        logical, intent(in) :: segments
+        real(wp), intent(in) :: xyz(:,:)
+        real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
+        real(wp), intent(in) :: width                       !! line width (window units)
+        logical, intent(in) :: segments                     !! separate segments (else a strip)
         type(c_ptr) :: node
         node = c_null_ptr
         if (size(xyz, 2) < 2) return
@@ -233,9 +245,12 @@ contains
     !> A marker node at points xyz(3, n), `px` window units (MarkerArtist's
     !> shapes and attenuation).
     function marker_node(xyz, rgba, px, shape, radius, image) result(node)
-        real(wp), intent(in) :: xyz(:,:), rgba(4), px, radius
-        integer, intent(in) :: shape
-        type(c_ptr), intent(in) :: image
+        real(wp), intent(in) :: xyz(:,:)
+        real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
+        real(wp), intent(in) :: px                          !! marker size (window units)
+        real(wp), intent(in) :: radius                      !! markers shrink beyond this camera distance (scene units)
+        integer, intent(in) :: shape                        !! a MARKER_* shape
+        type(c_ptr), intent(in) :: image                    !! image for MARKER_IMAGE (null: none)
         type(c_ptr) :: node
         node = c_null_ptr
         if (size(xyz, 2) < 1) return
@@ -248,7 +263,8 @@ contains
     !> An unlit transparent surface of triangles idx(3, m) (1-based) through
     !> points xyz(3, n).
     function surface_node(xyz, idx, rgba) result(node)
-        real(wp), intent(in) :: xyz(:,:), rgba(4)
+        real(wp), intent(in) :: xyz(:,:)
+        real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
         integer, intent(in) :: idx(:,:)
         type(c_ptr) :: node
         real(c_float), dimension(:,:), pointer :: v, normals, uv
@@ -303,6 +319,7 @@ contains
         call move_alloc(tmp, a)
     end subroutine append
 
+    !> Report a failed rendering-layer call (status not 0).
     subroutine check(status)
         integer(c_int), intent(in) :: status
         if (status /= 0) write(*, '(a)') 'vkframes: a rendering-layer call failed (shapes)'
@@ -310,8 +327,8 @@ contains
 
     !> Color [r, g, b] (alpha unchanged) or [r, g, b, a] into rgba.
     pure subroutine set_rgba(rgba, color)
-        real(wp), intent(inout) :: rgba(4)
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(inout) :: rgba(4)                  !! [r, g, b, a]
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         integer :: n
         n = min(4, size(color))
         rgba(1:n) = color(1:n)
@@ -335,21 +352,24 @@ contains
     !> The frame's own axes (arrows) at `length` along x, y and z, half as long.
     subroutine place_axes(self, length)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: length
+        real(wp), intent(in) :: length                      !! scene units
         call self%move_x_axis([length, 0.0_wp, 0.0_wp], 0.5_wp * length)
         call self%move_y_axis([0.0_wp, length, 0.0_wp], 0.5_wp * length)
         call self%move_z_axis([0.0_wp, 0.0_wp, length], 0.5_wp * length)
     end subroutine place_axes
 
+    !> The axes' length (scene units, >= 0; default 1); the frame's own axes are
+    !> moved to the lines' ends.
     subroutine set_axis_length(self, length)
         class(CoordinateAxes), intent(inout) :: self
-        real(wp), intent(in) :: length
+        real(wp), intent(in) :: length                      !! scene units (< 0: ignored)
         if (length < 0.0_wp) return
         self%length_ = length
         call place_axes(self, length)
         call make_axes(self)
     end subroutine set_axis_length
 
+    !> The axes' length (scene units).
     pure real(wp) function axis_length(self)
         class(CoordinateAxes), intent(in) :: self
         axis_length = self%length_
@@ -363,6 +383,7 @@ contains
         call make_axes(self)
     end subroutine set_draw_axes
 
+    !> Which axes are drawn: an ior of X_AXIS, Y_AXIS, Z_AXIS.
     pure integer function draw_axes(self)
         class(CoordinateAxes), intent(in) :: self
         draw_axes = self%drawn
@@ -371,12 +392,13 @@ contains
     !> The axis lines' width (window units; default 1).
     subroutine set_axis_width(self, width)
         class(CoordinateAxes), intent(inout) :: self
-        real(wp), intent(in) :: width
+        real(wp), intent(in) :: width                       !! window units (<= 0: ignored)
         if (width <= 0.0_wp) return
         self%width_ = width
         call make_axes(self)
     end subroutine set_axis_width
 
+    !> The axis lines' width (window units).
     pure real(wp) function axis_width(self)
         class(CoordinateAxes), intent(in) :: self
         axis_width = self%width_
@@ -385,15 +407,16 @@ contains
     !> Major and minor tick spacings (>= 0; 0 for none).
     subroutine set_tick_spacing(self, major, minor)
         class(CoordinateAxes), intent(inout) :: self
-        real(wp), intent(in) :: major, minor
+        real(wp), intent(in) :: major, minor                !! scene units (< 0: unchanged)
         if (major >= 0.0_wp) self%major = major
         if (minor >= 0.0_wp) self%minor = minor
         call make_axes(self)
     end subroutine set_tick_spacing
 
+    !> Major and minor tick spacings.
     pure subroutine tick_spacing(self, major, minor)
         class(CoordinateAxes), intent(in) :: self
-        real(wp), intent(out) :: major, minor
+        real(wp), intent(out) :: major, minor               !! scene units
         major = self%major
         minor = self%minor
     end subroutine tick_spacing
@@ -401,15 +424,16 @@ contains
     !> Major and minor tick sizes (window units; default 8 and 4).
     subroutine set_tick_size(self, major, minor)
         class(CoordinateAxes), intent(inout) :: self
-        real(wp), intent(in) :: major, minor
+        real(wp), intent(in) :: major, minor                !! window units (<= 0: unchanged)
         if (major > 0.0_wp) self%major_size = major
         if (minor > 0.0_wp) self%minor_size = minor
         call make_axes(self)
     end subroutine set_tick_size
 
+    !> Major and minor tick sizes (window units).
     pure subroutine tick_size(self, major, minor)
         class(CoordinateAxes), intent(in) :: self
-        real(wp), intent(out) :: major, minor
+        real(wp), intent(out) :: major, minor               !! window units
         major = self%major_size
         minor = self%minor_size
     end subroutine tick_size
@@ -418,11 +442,12 @@ contains
     !> setTickShader with its marker shaders).
     subroutine set_tick_shape(self, shape)
         class(CoordinateAxes), intent(inout) :: self
-        integer, intent(in) :: shape
+        integer, intent(in) :: shape                        !! a MARKER_* shape
         self%shape_ = shape
         call make_axes(self)
     end subroutine set_tick_shape
 
+    !> Tick shape: a MARKER_* shape.
     pure integer function tick_shape(self)
         class(CoordinateAxes), intent(in) :: self
         tick_shape = self%shape_
@@ -432,7 +457,7 @@ contains
     !> find_data_file; '' for disks again). False if it cannot be read.
     logical function set_tick_image(self, file) result(ok)
         class(CoordinateAxes), intent(inout) :: self
-        character(len=*), intent(in) :: file
+        character(len=*), intent(in) :: file                !! image file ('' for disks)
         character(len=:), allocatable :: path
         type(c_ptr) :: image
         ok = .true.
@@ -450,40 +475,49 @@ contains
         call make_axes(self)
     end function set_tick_image
 
+    !> The tick image file ('' for none).
     function tick_image(self) result(file)
         class(CoordinateAxes), intent(in) :: self
         character(len=:), allocatable :: file
         file = self%image_file
     end function tick_image
 
+    !> The axes' color (lines and ticks).
     subroutine axes_set_color(self, color)
         class(CoordinateAxes), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call self%ReferenceFrame%set_color(color)
         call make_axes(self)
     end subroutine axes_set_color
 
+    !> What kind of frame this is: 'CoordinateAxes'.
     function axes_frame_info(self) result(info)
         class(CoordinateAxes), intent(in) :: self
         character(len=:), allocatable :: info
         info = 'CoordinateAxes'
     end function axes_frame_info
 
+    !> The bounding sphere: the origin, radius the axis length.
     subroutine axes_bound(self, center, radius)
         class(CoordinateAxes), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         center = 0.0_wp
         radius = self%length_
     end subroutine axes_bound
 
+    !> Draw the axes under `group` (the contents); with a window's `viewer`, later
+    !> drawings are compiled.
     subroutine axes_build_contents(self, viewer, group)
         class(CoordinateAxes), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
         self%nodes%contents = group
         call make_axes(self)
         self%nodes%shown = c_associated(viewer)
     end subroutine axes_build_contents
 
+    !> Make the axes' lines and tick marks, in place of the old (nothing before
+    !> build_contents).
     subroutine make_axes(self)
         class(CoordinateAxes), intent(inout) :: self
         real(wp), allocatable :: lines(:,:), major(:,:), minor(:,:)
@@ -533,6 +567,7 @@ contains
         call place_grid_axes(g)
     end function new_lat_lon_grid
 
+    !> The frame's own axes (arrows) at the ellipsoid's semi-axes, half as long.
     subroutine place_grid_axes(self)
         type(LatLonGrid), intent(inout) :: self
         call self%move_x_axis([self%radii_(1), 0.0_wp, 0.0_wp], 0.5_wp * self%radii_(1))
@@ -545,7 +580,8 @@ contains
     !> latitude or longitude lines), as OpenFrames' setParameters.
     subroutine grid_set_parameters(self, radius_x, radius_y, radius_z, lat_spacing, lon_spacing)
         class(LatLonGrid), intent(inout) :: self
-        real(wp), intent(in) :: radius_x, radius_y, radius_z, lat_spacing, lon_spacing
+        real(wp), intent(in) :: radius_x, radius_y, radius_z  !! scene units (<= 0: unchanged)
+        real(wp), intent(in) :: lat_spacing, lon_spacing    !! radians (< 0: unchanged)
         if (radius_x > 0.0_wp) self%radii_(1) = radius_x
         if (radius_y > 0.0_wp) self%radii_(2) = radius_y
         if (radius_z > 0.0_wp) self%radii_(3) = radius_z
@@ -555,9 +591,11 @@ contains
         call make_grid(self)
     end subroutine grid_set_parameters
 
+    !> The ellipsoid's semi-axes and the line spacings, as OpenFrames' getParameters.
     pure subroutine grid_parameters(self, radius_x, radius_y, radius_z, lat_spacing, lon_spacing)
         class(LatLonGrid), intent(in) :: self
-        real(wp), intent(out) :: radius_x, radius_y, radius_z, lat_spacing, lon_spacing
+        real(wp), intent(out) :: radius_x, radius_y, radius_z  !! scene units
+        real(wp), intent(out) :: lat_spacing, lon_spacing   !! radians
         radius_x = self%radii_(1)
         radius_y = self%radii_(2)
         radius_z = self%radii_(3)
@@ -569,42 +607,50 @@ contains
     !> units; defaults 1 and 3).
     subroutine set_line_widths(self, width, main_width)
         class(LatLonGrid), intent(inout) :: self
-        real(wp), intent(in) :: width, main_width
+        real(wp), intent(in) :: width, main_width           !! window units (<= 0: unchanged)
         if (width > 0.0_wp) self%width_ = width
         if (main_width > 0.0_wp) self%main_width = main_width
         call make_grid(self)
     end subroutine set_line_widths
 
+    !> Widths of the grid lines and of the equator and prime meridian (window
+    !> units).
     pure subroutine line_widths(self, width, main_width)
         class(LatLonGrid), intent(in) :: self
-        real(wp), intent(out) :: width, main_width
+        real(wp), intent(out) :: width, main_width          !! window units
         width = self%width_
         main_width = self%main_width
     end subroutine line_widths
 
+    !> The lines' color.
     subroutine grid_set_color(self, color)
         class(LatLonGrid), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call self%ReferenceFrame%set_color(color)
         call make_grid(self)
     end subroutine grid_set_color
 
+    !> What kind of frame this is: 'LatLonGrid'.
     function grid_frame_info(self) result(info)
         class(LatLonGrid), intent(in) :: self
         character(len=:), allocatable :: info
         info = 'LatLonGrid'
     end function grid_frame_info
 
+    !> The bounding sphere: the origin, radius the largest semi-axis.
     subroutine grid_bound(self, center, radius)
         class(LatLonGrid), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         center = 0.0_wp
         radius = maxval(self%radii_)
     end subroutine grid_bound
 
+    !> Draw the grid under `group` (the contents); with a window's `viewer`, later
+    !> drawings are compiled.
     subroutine grid_build_contents(self, viewer, group)
         class(LatLonGrid), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
         self%nodes%contents = group
         call make_grid(self)
         self%nodes%shown = c_associated(viewer)
@@ -614,13 +660,16 @@ contains
     !> (OpenFrames' LatLonGrid formula: the surface point whose normal has
     !> those angles).
     pure function surface_point(r, lat, lon) result(p)
-        real(wp), intent(in) :: r(3), lat, lon
+        real(wp), intent(in) :: r(3)                        !! semi-axes (scene units)
+        real(wp), intent(in) :: lat, lon                    !! radians
         real(wp) :: p(3), n(3), r2(3)
         n = [cos(lat) * cos(lon), cos(lat) * sin(lon), sin(lat)]
         r2 = r**2
         p = r2 * n / sqrt(dot_product(r2, n**2))
     end function surface_point
 
+    !> Make the grid's lines (circles in 1 degree steps, meridians in 0.5 degree
+    !> steps), in place of the old.
     subroutine make_grid(self)
         type(LatLonGrid), intent(inout) :: self
         integer, parameter :: n_around = 360, n_meridian = 360          ! 1 and 0.5 degree steps
@@ -686,7 +735,9 @@ contains
     !> (radians; 0 for none), as OpenFrames' setParameters.
     subroutine plane_set_parameters(self, radius, radial_spacing, lon_spacing)
         class(RadialPlane), intent(inout) :: self
-        real(wp), intent(in) :: radius, radial_spacing, lon_spacing
+        real(wp), intent(in) :: radius                      !! scene units (<= 0: unchanged)
+        real(wp), intent(in) :: radial_spacing              !! scene units (< 0: unchanged)
+        real(wp), intent(in) :: lon_spacing                 !! radians (< 0: unchanged)
         if (radius > 0.0_wp) self%radius_ = radius
         if (radial_spacing >= 0.0_wp) self%radial_spacing = radial_spacing
         if (lon_spacing >= 0.0_wp) self%lon_spacing = lon_spacing
@@ -694,9 +745,12 @@ contains
         call make_plane(self)
     end subroutine plane_set_parameters
 
+    !> The plane's radius, circle spacing and radial line spacing, as OpenFrames'
+    !> getParameters.
     pure subroutine plane_parameters(self, radius, radial_spacing, lon_spacing)
         class(RadialPlane), intent(in) :: self
-        real(wp), intent(out) :: radius, radial_spacing, lon_spacing
+        real(wp), intent(out) :: radius, radial_spacing     !! scene units
+        real(wp), intent(out) :: lon_spacing                !! radians
         radius = self%radius_
         radial_spacing = self%radial_spacing
         lon_spacing = self%lon_spacing
@@ -705,11 +759,12 @@ contains
     !> The plane's color ([r, g, b] or [r, g, b, a]; default 0.8 gray, 0.2 opaque).
     subroutine set_plane_color(self, color)
         class(RadialPlane), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call set_rgba(self%plane_color_, color)
         call make_plane(self)
     end subroutine set_plane_color
 
+    !> The plane's color [r, g, b, a].
     pure function plane_color(self) result(c)
         class(RadialPlane), intent(in) :: self
         real(wp) :: c(4)
@@ -719,38 +774,46 @@ contains
     !> The lines' color (default white, 0.2 opaque).
     subroutine plane_set_line_color(self, color)
         class(RadialPlane), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call set_rgba(self%line_color_, color)
         call make_plane(self)
     end subroutine plane_set_line_color
 
+    !> The lines' color [r, g, b, a].
     pure function plane_line_color(self) result(c)
         class(RadialPlane), intent(in) :: self
         real(wp) :: c(4)
         c = self%line_color_
     end function plane_line_color
 
+    !> What kind of frame this is: 'RadialPlane'.
     function plane_frame_info(self) result(info)
         class(RadialPlane), intent(in) :: self
         character(len=:), allocatable :: info
         info = 'RadialPlane'
     end function plane_frame_info
 
+    !> The bounding sphere: the origin, radius the plane's radius.
     subroutine plane_bound(self, center, radius)
         class(RadialPlane), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         center = 0.0_wp
         radius = self%radius_
     end subroutine plane_bound
 
+    !> Draw the plane under `group` (the contents); with a window's `viewer`, later
+    !> drawings are compiled.
     subroutine plane_build_contents(self, viewer, group)
         class(RadialPlane), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
         self%nodes%contents = group
         call make_plane(self)
         self%nodes%shown = c_associated(viewer)
     end subroutine plane_build_contents
 
+    !> Make the disk, its circles and its radial lines (1 degree steps), in place of
+    !> the old.
     subroutine make_plane(self)
         type(RadialPlane), intent(inout) :: self
         integer, parameter :: n = 360                          ! points around a circle (1 degree)
@@ -819,19 +882,21 @@ contains
     !> boresight, -z; below 90 degrees), radians, the same number of each (>= 3).
     subroutine set_vertex_angles(self, clock, cone)
         class(PolyhedralCone), intent(inout) :: self
-        real(wp), intent(in) :: clock(:), cone(:)
+        real(wp), intent(in) :: clock(:), cone(:)           !! radians
         if (size(clock) /= size(cone) .or. size(clock) < 3) return
         self%clock = clock
         self%cone = cone
         call make_cone(self)
     end subroutine set_vertex_angles
 
+    !> The vertices' clock angles (radians).
     pure function clock_angles(self) result(a)
         class(PolyhedralCone), intent(in) :: self
         real(wp), allocatable :: a(:)
         a = self%clock
     end function clock_angles
 
+    !> The vertices' cone angles (radians).
     pure function cone_angles(self) result(a)
         class(PolyhedralCone), intent(in) :: self
         real(wp), allocatable :: a(:)
@@ -841,12 +906,13 @@ contains
     !> The cone's length along the boresight (> 0; default 1).
     subroutine set_cone_length(self, length)
         class(PolyhedralCone), intent(inout) :: self
-        real(wp), intent(in) :: length
+        real(wp), intent(in) :: length                      !! scene units (<= 0: ignored)
         if (length <= 0.0_wp) return
         self%length_ = length
         call make_cone(self)
     end subroutine set_cone_length
 
+    !> The cone's length along the boresight (scene units).
     pure real(wp) function cone_length(self)
         class(PolyhedralCone), intent(in) :: self
         cone_length = self%length_
@@ -856,11 +922,12 @@ contains
     !> transparent).
     subroutine set_cone_color(self, color)
         class(PolyhedralCone), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call set_rgba(self%cone_color_, color)
         call make_cone(self)
     end subroutine set_cone_color
 
+    !> The sides' color [r, g, b, a].
     pure function cone_color(self) result(c)
         class(PolyhedralCone), intent(in) :: self
         real(wp) :: c(4)
@@ -870,11 +937,12 @@ contains
     !> The edges' and base outline's color.
     subroutine cone_set_line_color(self, color)
         class(PolyhedralCone), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call set_rgba(self%line_color_, color)
         call make_cone(self)
     end subroutine cone_set_line_color
 
+    !> The edges' and base outline's color [r, g, b, a].
     pure function cone_line_color(self) result(c)
         class(PolyhedralCone), intent(in) :: self
         real(wp) :: c(4)
@@ -889,6 +957,7 @@ contains
         call make_cone(self)
     end subroutine set_draw_mode
 
+    !> What is drawn: an ior of CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE.
     pure integer function draw_mode(self)
         class(PolyhedralCone), intent(in) :: self
         draw_mode = self%mode
@@ -898,7 +967,9 @@ contains
     !> along `dir` and its +y axis toward `up` (OpenFrames' makeConeLookAt).
     subroutine make_cone_look_at(self, apex, dir, up)
         class(PolyhedralCone), intent(inout) :: self
-        real(wp), intent(in) :: apex(3), dir(3), up(3)
+        real(wp), intent(in) :: apex(3)                     !! parent frame coordinates (scene units)
+        real(wp), intent(in) :: dir(3)                      !! boresight direction (any length > 0)
+        real(wp), intent(in) :: up(3)                       !! toward the cone's +y axis (any length)
         real(wp) :: f(3), s(3), u(3), m(3,3)
         if (norm2(dir) <= 0.0_wp) return
         f = dir / norm2(dir)
@@ -920,8 +991,8 @@ contains
     !> (OpenFrames' isVisible; its PolyhedralCone always answers false).
     logical function cone_is_visible(self, point, min_distance, max_distance) result(visible)
         class(PolyhedralCone), intent(in) :: self
-        real(wp), intent(in) :: point(3)
-        real(wp), intent(in), optional :: min_distance, max_distance
+        real(wp), intent(in) :: point(3)                    !! in the cone's frame (scene units)
+        real(wp), intent(in), optional :: min_distance, max_distance  !! along the boresight (scene units)
         real(wp) :: q(2), a(2), b(2)
         integer :: i, n, winding
         visible = in_range(point, min_distance, max_distance)
@@ -943,8 +1014,8 @@ contains
 
     !> Along the boresight (-z) between the distances (a point ahead of the apex).
     pure logical function in_range(point, min_distance, max_distance)
-        real(wp), intent(in) :: point(3)
-        real(wp), intent(in), optional :: min_distance, max_distance
+        real(wp), intent(in) :: point(3)                    !! in the cone's frame (scene units)
+        real(wp), intent(in), optional :: min_distance, max_distance  !! along the boresight (scene units)
         real(wp) :: d
         d = -point(3)
         in_range = d >= 0.0_wp
@@ -952,17 +1023,21 @@ contains
         if (present(max_distance)) in_range = in_range .and. d <= max_distance
     end function in_range
 
+    !> Which side of the line from a to b q is on: > 0 left, < 0 right, 0 on it
+    !> (twice the signed area of the triangle a, b, q).
     pure real(wp) function side(a, b, q)
         real(wp), intent(in) :: a(2), b(2), q(2)
         side = (b(1) - a(1)) * (q(2) - a(2)) - (q(1) - a(1)) * (b(2) - a(2))
     end function side
 
+    !> The cross product a x b.
     pure function cross(a, b) result(c)
         real(wp), intent(in) :: a(3), b(3)
         real(wp) :: c(3)
         c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
     end function cross
 
+    !> What kind of frame this is: 'PolyhedralCone'.
     function cone_frame_info(self) result(info)
         class(PolyhedralCone), intent(in) :: self
         character(len=:), allocatable :: info
@@ -972,21 +1047,26 @@ contains
     !> The bound of the apex and the base.
     subroutine cone_bound(self, center, radius)
         class(PolyhedralCone), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         real(wp) :: r
         r = self%length_ * maxval(tan(self%cone))
         center = [0.0_wp, 0.0_wp, -0.5_wp * self%length_]
         radius = sqrt((0.5_wp * self%length_)**2 + r**2)
     end subroutine cone_bound
 
+    !> Draw the cone under `group` (the contents); with a window's `viewer`, later
+    !> drawings are compiled.
     subroutine cone_build_contents(self, viewer, group)
         class(PolyhedralCone), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
         self%nodes%contents = group
         call make_cone(self)
         self%nodes%shown = c_associated(viewer)
     end subroutine cone_build_contents
 
+    !> Make the sides, edges and base outline (those the draw mode says), in place
+    !> of the old.
     subroutine make_cone(self)
         class(PolyhedralCone), intent(inout) :: self
         real(wp), allocatable :: v(:,:), edges(:,:)
@@ -1027,16 +1107,17 @@ contains
     !> The half-angles along x (a) and y (b), radians (0 to 90 degrees).
     subroutine elliptic_set_primary_angles(self, a, b)
         class(EllipticCone), intent(inout) :: self
-        real(wp), intent(in) :: a, b
+        real(wp), intent(in) :: a, b                        !! radians
         self%a = a
         self%b = b
         call elliptic_vertices(self)
         call make_cone(self)
     end subroutine elliptic_set_primary_angles
 
+    !> The half-angles along x (a) and y (b), radians.
     pure subroutine elliptic_primary_angles(self, a, b)
         class(EllipticCone), intent(in) :: self
-        real(wp), intent(out) :: a, b
+        real(wp), intent(out) :: a, b                       !! radians
         a = self%a
         b = self%b
     end subroutine elliptic_primary_angles
@@ -1060,8 +1141,8 @@ contains
     !> Inside the elliptic cone (exactly; OpenFrames' EllipticCone::isVisible).
     logical function elliptic_is_visible(self, point, min_distance, max_distance) result(visible)
         class(EllipticCone), intent(in) :: self
-        real(wp), intent(in) :: point(3)
-        real(wp), intent(in), optional :: min_distance, max_distance
+        real(wp), intent(in) :: point(3)                    !! in the cone's frame (scene units)
+        real(wp), intent(in), optional :: min_distance, max_distance  !! along the boresight (scene units)
         real(wp) :: p(3), cone, clock
         visible = in_range(point, min_distance, max_distance)
         if (.not. visible .or. norm2(point) == 0.0_wp) return
@@ -1071,6 +1152,7 @@ contains
         visible = cone <= self%a * self%b / sqrt(self%b**2 * cos(clock)**2 + self%a**2 * sin(clock)**2)
     end function elliptic_is_visible
 
+    !> What kind of frame this is: 'EllipticCone'.
     function elliptic_frame_info(self) result(info)
         class(EllipticCone), intent(in) :: self
         character(len=:), allocatable :: info
@@ -1089,16 +1171,17 @@ contains
     !> The half-angles along x and y, radians (0 to 90 degrees).
     subroutine rect_set_primary_angles(self, x, y)
         class(RectangularCone), intent(inout) :: self
-        real(wp), intent(in) :: x, y
+        real(wp), intent(in) :: x, y                        !! radians
         self%x = x
         self%y = y
         call rect_vertices(self)
         call make_cone(self)
     end subroutine rect_set_primary_angles
 
+    !> The half-angles along x and y, radians.
     pure subroutine rect_primary_angles(self, x, y)
         class(RectangularCone), intent(in) :: self
-        real(wp), intent(out) :: x, y
+        real(wp), intent(out) :: x, y                       !! radians
         x = self%x
         y = self%y
     end subroutine rect_primary_angles
@@ -1115,6 +1198,7 @@ contains
         self%cone = [cone, cone, cone, cone]
     end subroutine rect_vertices
 
+    !> What kind of frame this is: 'RectangularCone'.
     function rect_frame_info(self) result(info)
         class(RectangularCone), intent(in) :: self
         character(len=:), allocatable :: info

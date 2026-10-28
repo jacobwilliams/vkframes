@@ -17,14 +17,20 @@ module vkf_text
 
     private
 
-    character(len=*), parameter, public :: default_font = 'DejaVuSans.ttf'
+    character(len=*), parameter, public :: default_font = 'DejaVuSans.ttf'     !! the font used when none is given
 
     ! vsg::StandardLayout's alignments
-    integer, parameter :: VSG_BASELINE = 0, VSG_LEFT = 1, VSG_TOP = 1, VSG_CENTER = 2, VSG_RIGHT = 3, VSG_BOTTOM = 3
+    integer, parameter :: VSG_BASELINE = 0  !! (vertical: the base line)
+    integer, parameter :: VSG_LEFT = 1      !! (horizontal: left)
+    integer, parameter :: VSG_TOP = 1       !! (vertical: top)
+    integer, parameter :: VSG_CENTER = 2    !! horizontal or vertical: center
+    integer, parameter :: VSG_RIGHT = 3     !! (horizontal: right)
+    integer, parameter :: VSG_BOTTOM = 3    !! (vertical: bottom)
 
+    !> A font read (or looked for) by name.
     type :: font_entry
-        character(len=:), allocatable :: name
-        type(c_ptr) :: font = c_null_ptr
+        character(len=:), allocatable :: name       !! the font's name as given ('' replaced by default_font)
+        type(c_ptr) :: font = c_null_ptr            !! its handle (null: not found or not read)
     end type font_entry
 
     !> Fonts read so far (each is read once; kept for the whole run).
@@ -105,9 +111,12 @@ contains
     !> the font is missing.
     function label_create(text, position, rgba, size, max_size, alignment, font_name) result(node)
         character(len=*), intent(in) :: text
-        real(wp), intent(in) :: position(3), rgba(4), size, max_size
-        integer, intent(in) :: alignment
-        character(len=*), intent(in) :: font_name
+        real(wp), intent(in) :: position(3)         !! (the coordinates of the node it is put under)
+        real(wp), intent(in) :: rgba(4)             !! color [r, g, b, a] (0 to 1)
+        real(wp), intent(in) :: size                !! > 0: height in window units; < 0: -height in scene units
+        real(wp), intent(in) :: max_size            !! for size < 0: the largest height on screen (window units)
+        integer, intent(in) :: alignment            !! an ALIGN_* constant of vkf_frames
+        character(len=*), intent(in) :: font_name   !! font file ('' for the default)
         type(c_ptr) :: node
         type(c_ptr) :: font
         integer :: h, v
@@ -122,20 +131,20 @@ contains
     !> Change label `node`'s position, size, maximum size and alignment (as
     !> label_create's), in place. False on failure.
     logical function label_set_layout(node, position, size, max_size, alignment) result(ok)
-        type(c_ptr), intent(in) :: node
+        type(c_ptr), intent(in) :: node             !! a label_create node
         real(wp), intent(in) :: position(3), size, max_size
-        integer, intent(in) :: alignment
+        integer, intent(in) :: alignment            !! an ALIGN_* constant of vkf_frames
         integer :: h, v
         call vsg_alignment(alignment, h, v)
         ok = vkf_label_set_layout(node, real(position, c_double), real(size, c_float), real(max_size, c_float), &
                                   int(h, c_int), int(v, c_int)) == 0
     end function label_set_layout
 
-    !> vsg::StandardLayout's horizontal and vertical alignments for an ALIGN_*
+    !> The horizontal and vertical alignments of vsg::StandardLayout for an ALIGN_*
     !> constant (vkf_frames: 0 left-top ... 8 right-bottom, 9 to 11 base line).
     pure subroutine vsg_alignment(alignment, h, v)
-        integer, intent(in) :: alignment
-        integer, intent(out) :: h, v
+        integer, intent(in) :: alignment            !! an ALIGN_* constant of vkf_frames
+        integer, intent(out) :: h, v                !! VSG_* horizontal and vertical alignments
         integer, parameter :: horizontal(0:11) = [VSG_LEFT, VSG_LEFT, VSG_LEFT, VSG_CENTER, VSG_CENTER, VSG_CENTER, &
                                                   VSG_RIGHT, VSG_RIGHT, VSG_RIGHT, VSG_LEFT, VSG_CENTER, VSG_RIGHT]
         integer, parameter :: vertical(0:11) = [VSG_TOP, VSG_CENTER, VSG_BOTTOM, VSG_TOP, VSG_CENTER, VSG_BOTTOM, &

@@ -21,14 +21,15 @@ module vkf_clock
     !> A simulation clock (see the module documentation).
     type, public :: SimulationClock
         private
-        real(wp) :: time_ = 0.0_wp          !! the current simulation time
-        real(wp) :: offset = 0.0_wp         !! simulation time at wall_ref
+        real(wp) :: time_ = 0.0_wp          !! the current simulation time (s)
+        real(wp) :: offset = 0.0_wp         !! simulation time at wall_ref (s)
         real(wp) :: wall_ref = 0.0_wp       !! wall time (s) at which counting restarted
         real(wp) :: scale_ = 1.0_wp         !! simulation seconds per wall second
-        real(wp) :: t_min = -huge(1.0_wp), t_max = huge(1.0_wp)
-        logical :: paused_ = .false.
-        logical :: started = .false.
-        type(SimulationClock), pointer :: sync => null()
+        real(wp) :: t_min = -huge(1.0_wp)   !! start of the time range (s; default unlimited)
+        real(wp) :: t_max = huge(1.0_wp)    !! end of the time range (s; default unlimited)
+        logical :: paused_ = .false.        !! true while paused
+        logical :: started = .false.        !! false until counting first started (set_time or update)
+        type(SimulationClock), pointer :: sync => null()    !! the clock this one is synchronized to (not owned)
     contains
         procedure :: update
         procedure :: time, set_time
@@ -49,8 +50,9 @@ contains
         wall_time = real(count, wp) / real(rate, wp)
     end function wall_time
 
+    !> The wall time (s): `wall` if present, else `wall_time()`.
     real(wp) function now(wall)
-        real(wp), intent(in), optional :: wall
+        real(wp), intent(in), optional :: wall      !! wall time (s)
         if (present(wall)) then
             now = wall
         else
@@ -62,7 +64,7 @@ contains
     !> return the simulation time.
     real(wp) function update(self, wall) result(t)
         class(SimulationClock), intent(inout) :: self
-        real(wp), intent(in), optional :: wall
+        real(wp), intent(in), optional :: wall      !! wall time (s; default: wall_time())
         if (associated(self%sync)) then
             self%time_ = self%sync%time()
         else
@@ -86,8 +88,8 @@ contains
     !> Set the simulation time (limited to the time range) and restart counting from it.
     recursive subroutine set_time(self, t, wall)
         class(SimulationClock), intent(inout) :: self
-        real(wp), intent(in) :: t
-        real(wp), intent(in), optional :: wall
+        real(wp), intent(in) :: t                   !! simulation time (s)
+        real(wp), intent(in), optional :: wall      !! wall time (s; default: wall_time())
         if (associated(self%sync)) then
             call self%sync%set_time(t, wall)
             return
@@ -101,7 +103,7 @@ contains
     !> Limit the simulation time to [t_min, t_max] (ignored if t_max < t_min).
     recursive subroutine set_time_range(self, t_min, t_max)
         class(SimulationClock), intent(inout) :: self
-        real(wp), intent(in) :: t_min, t_max
+        real(wp), intent(in) :: t_min, t_max        !! the time range (s)
         if (associated(self%sync)) then
             call self%sync%set_time_range(t_min, t_max)
         else if (t_max >= t_min) then
@@ -110,9 +112,10 @@ contains
         end if
     end subroutine set_time_range
 
+    !> The time range the simulation time is limited to (s; +-huge() if unlimited).
     recursive subroutine time_range(self, t_min, t_max)
         class(SimulationClock), intent(in) :: self
-        real(wp), intent(out) :: t_min, t_max
+        real(wp), intent(out) :: t_min, t_max       !! the time range (s)
         if (associated(self%sync)) then
             call self%sync%time_range(t_min, t_max)
         else
@@ -125,7 +128,7 @@ contains
     recursive subroutine pause(self, paused, wall)
         class(SimulationClock), intent(inout) :: self
         logical, intent(in) :: paused
-        real(wp), intent(in), optional :: wall
+        real(wp), intent(in), optional :: wall      !! wall time (s; default: wall_time())
         if (associated(self%sync)) then
             call self%sync%pause(paused, wall)
             return
@@ -134,6 +137,7 @@ contains
         call self%set_time(self%time_, wall)
     end subroutine pause
 
+    !> True if the simulation time is paused.
     recursive logical function is_paused(self)
         class(SimulationClock), intent(in) :: self
         if (associated(self%sync)) then
@@ -146,8 +150,8 @@ contains
     !> Simulation seconds per wall-clock second (may be 0 or negative).
     recursive subroutine set_time_scale(self, scale, wall)
         class(SimulationClock), intent(inout) :: self
-        real(wp), intent(in) :: scale
-        real(wp), intent(in), optional :: wall
+        real(wp), intent(in) :: scale               !! simulation seconds per wall-clock second
+        real(wp), intent(in), optional :: wall      !! wall time (s; default: wall_time())
         if (associated(self%sync)) then
             call self%sync%set_time_scale(scale, wall)
             return
@@ -156,6 +160,7 @@ contains
         call self%set_time(self%time_, wall)
     end subroutine set_time_scale
 
+    !> Simulation seconds per wall-clock second.
     recursive real(wp) function time_scale(self)
         class(SimulationClock), intent(in) :: self
         if (associated(self%sync)) then
@@ -171,8 +176,8 @@ contains
     !> if this would make a cycle.
     recursive logical function synchronize(self, master, wall) result(ok)
         class(SimulationClock), intent(inout), target :: self
-        type(SimulationClock), pointer, intent(in) :: master
-        real(wp), intent(in), optional :: wall
+        type(SimulationClock), pointer, intent(in) :: master    !! the clock to follow (null: stop following)
+        real(wp), intent(in), optional :: wall      !! wall time (s; default: wall_time())
         type(SimulationClock), pointer :: c
         real(wp) :: t
         ok = .true.
@@ -209,6 +214,7 @@ contains
         master => self%sync
     end function synchronized_to
 
+    !> True if `a` points to the clock `b`.
     logical function same_clock(a, b)
         type(SimulationClock), pointer, intent(in) :: a
         class(SimulationClock), intent(in), target :: b

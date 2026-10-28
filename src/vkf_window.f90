@@ -1,4 +1,4 @@
-!> Windows: showing a scene of frames, with its simulation time, as OpenFrames'
+!> Windows showing a scene of frames, with its simulation time, as OpenFrames'
 !> FrameManager and WindowProxy (for now with a single viewport, which holds
 !> the views as OpenFrames' RenderRectangle does; OpenFrames' grid of
 !> viewports comes later).
@@ -92,27 +92,27 @@ module vkf_window
 
     private
 
-    ! mouse event kinds for WindowProxy%mouse
-    integer, parameter, public :: MOUSE_MOVE = 1, MOUSE_PRESS = 2, MOUSE_RELEASE = 3
-    ! mouse buttons (WindowEventHandler, WindowProxy%mouse)
-    integer, parameter, public :: MOUSE_LEFT = 1, MOUSE_MIDDLE = 2, MOUSE_RIGHT = 3
-    ! keys (WindowEventHandler): printable keys are their characters,
-    ! iachar('a'), iachar('A') with shift; the others (VSG's key symbols):
+    !> mouse event kinds for WindowProxy%mouse
+    integer, parameter, public :: MOUSE_MOVE = 1, MOUSE_PRESS = 2, MOUSE_RELEASE = 3  !! WindowProxy%mouse kind
+    !> mouse buttons (WindowEventHandler, WindowProxy%mouse)
+    integer, parameter, public :: MOUSE_LEFT = 1, MOUSE_MIDDLE = 2, MOUSE_RIGHT = 3  !! button numbers
+    !> keys (WindowEventHandler): printable keys are their characters,
+    !> iachar('a'), iachar('A') with shift; the others (VSG's key symbols):
     integer, parameter, public :: KEY_SPACE = 32, KEY_BACKSPACE = int(z'FF08'), KEY_TAB = int(z'FF09'), &
                                   KEY_RETURN = int(z'FF0D'), KEY_ESCAPE = int(z'FF1B'), KEY_DELETE = int(z'FFFF'), &
                                   KEY_HOME = int(z'FF50'), KEY_LEFT = int(z'FF51'), KEY_UP = int(z'FF52'), &
                                   KEY_RIGHT = int(z'FF53'), KEY_DOWN = int(z'FF54'), KEY_PAGE_UP = int(z'FF55'), &
                                   KEY_PAGE_DOWN = int(z'FF56'), KEY_END = int(z'FF57'), KEY_INSERT = int(z'FF63'), &
                                   KEY_F1 = int(z'FFBE')                             !! F2 to F12: KEY_F1 + 1 to 11
-    ! modifier keys held (bits of `modifiers`: iand(modifiers, MOD_SHIFT) /= 0)
+    !> modifier keys held (bits of `modifiers`: iand(modifiers, MOD_SHIFT) /= 0)
     integer, parameter, public :: MOD_SHIFT = 1, MOD_CAPS_LOCK = 2, MOD_CONTROL = 4, MOD_ALT = 8, &
-                                  MOD_NUM_LOCK = 16, MOD_META = 128
+                                  MOD_NUM_LOCK = 16, MOD_META = 128  !! bits of `modifiers`
 
     !> The root frame of a scene (OpenFrames' FrameManager). The frame is not
     !> owned: it must stay alive while managed.
     type, public :: FrameManager
         private
-        class(ReferenceFrame), pointer :: root => null()
+        class(ReferenceFrame), pointer :: root => null()    !! the scene's root frame (not owned)
         integer :: updates = 0                              !! scene updates so far
         real(wp) :: updated_time = 0.0_wp                   !! the time of the last one
     contains
@@ -126,13 +126,13 @@ module vkf_window
     end interface FrameManager
 
     type :: ViewPointer
-        type(View), pointer :: p => null()
+        type(View), pointer :: p => null()                  !! the view (not owned)
     end type ViewPointer
 
     !> A HUD text shown in a window, with the window's node for it.
     type :: HUDEntry
-        type(HUDText), pointer :: p => null()
-        type(c_ptr) :: node = c_null_ptr
+        type(HUDText), pointer :: p => null()               !! the HUD text (not owned)
+        type(c_ptr) :: node = c_null_ptr                    !! the window's label node for it (null until made)
         integer :: revision = -1                    !! the text's revision last shown
         character(len=:), allocatable :: font       !! the font its node was made with
     end type HUDEntry
@@ -140,8 +140,8 @@ module vkf_window
     !> A camera flight (see the module documentation): from camera `start`
     !> (in view `from`'s frame) to camera `finish` (in view `to`'s).
     type :: CameraFlight
-        logical :: active = .false.
-        type(View), pointer :: from => null(), to => null()
+        logical :: active = .false.                         !! flying
+        type(View), pointer :: from => null(), to => null()  !! the views flown from and to
         real(wp) :: start(3,3) = 0.0_wp, finish(3,3) = 0.0_wp   !! (columns: eye, center, up)
         integer(int64) :: started = 0_int64                 !! system_clock count
         real(wp) :: duration = 0.0_wp                       !! s
@@ -163,36 +163,36 @@ module vkf_window
     !> A window showing a scene (see the module documentation).
     type, public :: WindowProxy
         private
-        type(c_ptr) :: viewer_ = c_null_ptr
-        type(FrameManager), pointer :: scene => null()
+        type(c_ptr) :: viewer_ = c_null_ptr                 !! the rendering layer's viewer (null while closed)
+        type(FrameManager), pointer :: scene => null()      !! the scene shown (not owned)
         integer :: scene_seen = -1                          !! the scene's updates at this window's last frame
-        type(SimulationClock) :: clock_
-        logical :: scene_added = .false.
-        real(wp) :: background(3) = [0.0_wp, 0.0_wp, 0.0_wp]
-        logical :: running = .false.
+        type(SimulationClock) :: clock_                     !! the window's simulation clock
+        logical :: scene_added = .false.                    !! scene, sky, HUD texts given to the viewer
+        real(wp) :: background(3) = [0.0_wp, 0.0_wp, 0.0_wp]  !! background color [r, g, b] (0 to 1)
+        logical :: running = .false.                        !! open, and not closed by the user
         integer :: width_ = 1, height_ = 1                  !! logical size (for the views' aspect ratio)
         real(wp) :: pixel_ratio_ = 1.0_wp                   !! framebuffer pixels per window unit (a host's window)
         ! views
-        type(ViewPointer), allocatable :: views(:)
-        integer :: n_views = 0, current = 0
+        type(ViewPointer), allocatable :: views(:)          !! not owned (first n_views used)
+        integer :: n_views = 0, current = 0                 !! number of views; the current one (0: none)
         type(View) :: default_view                          !! used when there are no views
         type(View), pointer :: shown => null()              !! the view whose camera is in the renderer
         ! HUD text
-        type(HUDEntry), allocatable :: huds(:)
-        integer :: n_huds = 0
+        type(HUDEntry), allocatable :: huds(:)              !! the HUD texts shown (first n_huds used)
+        integer :: n_huds = 0                               !! number of HUD texts
         type(SkySphere), pointer :: sky_ => null()          !! the background sky
         ! the window's light (OpenFrames' default: a headlight)
-        real(wp) :: light_ambient_(3) = 0.2_wp, light_diffuse_(3) = 1.0_wp, light_specular_(3) = 0.0_wp
-        real(wp) :: light_position_(4) = [0.0_wp, 0.0_wp, 1.0_wp, 0.0_wp]
-        logical :: light_on = .true.
+        real(wp) :: light_ambient_(3) = 0.2_wp, light_diffuse_(3) = 1.0_wp, light_specular_(3) = 0.0_wp  !! [r, g, b]
+        real(wp) :: light_position_(4) = [0.0_wp, 0.0_wp, 1.0_wp, 0.0_wp]  !! eye coordinates (w 0: directional)
+        logical :: light_on = .true.                        !! the window's light enabled (no frame's light source)
         ! keyboard and mouse
-        class(WindowEventHandler), pointer :: handler => null()
-        logical :: default_keys_ = .true.
+        class(WindowEventHandler), pointer :: handler => null()  !! the program's event handler (not owned)
+        logical :: default_keys_ = .true.                   !! the built-in keys on
         logical :: hosted = .false.                         !! in a host's window (its size from `resize`)
         ! camera transitions
         real(wp) :: transition_ = 0.0_wp                    !! s, for view changes and resets
         real(wp) :: switch_duration = -1.0_wp               !! s, for the next view change (< 0: transition_)
-        type(CameraFlight) :: flight
+        type(CameraFlight) :: flight                        !! the camera flight (when active)
     contains
         procedure :: open, close, is_open, pixel_ratio
         procedure :: set_scene
@@ -235,14 +235,15 @@ contains
 
     !> A frame manager for the scene with root `frame` (optional).
     function new_frame_manager(frame) result(fm)
-        class(ReferenceFrame), intent(in), target, optional :: frame
+        class(ReferenceFrame), intent(in), target, optional :: frame  !! the root frame (not owned)
         type(FrameManager) :: fm
         if (present(frame)) fm%root => frame
     end function new_frame_manager
 
+    !> Set the root frame of the scene (not owned: it must stay alive while managed).
     subroutine fm_set_frame(self, frame)
         class(FrameManager), intent(inout) :: self
-        class(ReferenceFrame), intent(in), target :: frame
+        class(ReferenceFrame), intent(in), target :: frame  !! the root frame (not owned)
         self%root => frame
     end subroutine fm_set_frame
 
@@ -259,7 +260,7 @@ contains
     !> `seen` is the window's own: the number of updates at its last frame.
     subroutine fm_update(self, t, seen)
         class(FrameManager), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! simulation time
         integer, intent(inout) :: seen
         if (.not. associated(self%root)) return
         if (.not. (self%updates > 0 .and. t == self%updated_time .and. seen /= self%updates)) then
@@ -289,10 +290,10 @@ contains
     !> on failure.
     logical function open(self, width, height, title, native_window, pixel_ratio, vsync) result(ok)
         class(WindowProxy), intent(inout) :: self
-        integer, intent(in) :: width, height
-        character(len=*), intent(in), optional :: title
-        integer(c_long_long), intent(in), optional :: native_window
-        real(wp), intent(in), optional :: pixel_ratio
+        integer, intent(in) :: width, height                !! window units (logical pixels)
+        character(len=*), intent(in), optional :: title     !! default 'vkframes'
+        integer(c_long_long), intent(in), optional :: native_window  !! host window's handle (0: own window)
+        real(wp), intent(in), optional :: pixel_ratio       !! framebuffer pixels per window unit (default 1)
         logical, intent(in), optional :: vsync
         character(len=:), allocatable :: t
         integer(c_long_long) :: handle
@@ -337,6 +338,7 @@ contains
         pixel_ratio = self%pixel_ratio_
     end function pixel_ratio
 
+    !> Whether the window is open (not closed, by the program or the user).
     pure logical function is_open(self)
         class(WindowProxy), intent(in) :: self
         is_open = c_associated(self%viewer_) .and. self%running
@@ -411,7 +413,7 @@ contains
     !> .png). Returns false on failure.
     logical function capture(self, file) result(ok)
         class(WindowProxy), intent(inout) :: self
-        character(len=*), intent(in) :: file
+        character(len=*), intent(in) :: file                !! image file name (e.g. .png)
         ok = .false.
         if (.not. self%is_open()) return
         ok = vkf_viewer_capture(self%viewer_, file, len(file, kind=c_int)) == 0
@@ -428,6 +430,7 @@ contains
         end if
     end subroutine set_background_color
 
+    !> The background color [r, g, b].
     pure function background_color(self) result(rgb)
         class(WindowProxy), intent(in) :: self
         real(wp) :: rgb(3)
@@ -448,6 +451,7 @@ contains
         call apply_window_light(self)
     end subroutine set_light_ambient
 
+    !> The diffuse color of the window's light (see `set_light_ambient`).
     subroutine set_light_diffuse(self, rgb)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)
@@ -455,6 +459,7 @@ contains
         call apply_window_light(self)
     end subroutine set_light_diffuse
 
+    !> The specular color of the window's light (see `set_light_ambient`).
     subroutine set_light_specular(self, rgb)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)
@@ -468,36 +473,41 @@ contains
     !> [0, 0, 1, 0], a headlight).
     subroutine set_light_position(self, position)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: position(4)
+        real(wp), intent(in) :: position(4)                 !! [x, y, z, w], eye coordinates (not all 0)
         if (all(position(1:3) == 0.0_wp) .and. position(4) == 0.0_wp) return
         self%light_position_ = position
         call apply_window_light(self)
     end subroutine set_light_position
 
+    !> The ambient color of the window's light [r, g, b].
     pure function light_ambient(self) result(rgb)
         class(WindowProxy), intent(in) :: self
         real(wp) :: rgb(3)
         rgb = self%light_ambient_
     end function light_ambient
 
+    !> The diffuse color of the window's light [r, g, b].
     pure function light_diffuse(self) result(rgb)
         class(WindowProxy), intent(in) :: self
         real(wp) :: rgb(3)
         rgb = self%light_diffuse_
     end function light_diffuse
 
+    !> The specular color of the window's light [r, g, b].
     pure function light_specular(self) result(rgb)
         class(WindowProxy), intent(in) :: self
         real(wp) :: rgb(3)
         rgb = self%light_specular_
     end function light_specular
 
+    !> The position of the window's light (see `set_light_position`).
     pure function light_position(self) result(p)
         class(WindowProxy), intent(in) :: self
         real(wp) :: p(4)
         p = self%light_position_
     end function light_position
 
+    !> Give the renderer's window light its colors and position (if open).
     subroutine apply_window_light(self)
         type(WindowProxy), intent(inout) :: self
         type(c_ptr) :: light
@@ -512,7 +522,7 @@ contains
     !> The window's light on while no frame of the scene has a light source.
     subroutine update_window_light(self, root)
         type(WindowProxy), intent(inout) :: self
-        class(ReferenceFrame), pointer, intent(in) :: root
+        class(ReferenceFrame), pointer, intent(in) :: root  !! the scene's root (may be null)
         logical :: on
         on = .true.
         if (associated(root)) on = .not. root%has_light_source()
@@ -540,6 +550,7 @@ contains
         self%sky_ => sky
     end subroutine set_sky
 
+    !> The sky drawn behind the scene (null if none).
     function sky(self) result(s)
         class(WindowProxy), intent(in) :: self
         type(SkySphere), pointer :: s
@@ -598,7 +609,7 @@ contains
     !> The node of HUD text k, added to the window (compiled if it runs).
     subroutine create_hud(self, k)
         type(WindowProxy), intent(inout) :: self
-        integer, intent(in) :: k
+        integer, intent(in) :: k                            !! index in huds
         type(HUDText), pointer :: h
         h => self%huds(k)%p
         self%huds(k)%node = label_create(h%text(), [h%position(), 0.0_wp], h%color(), h%size(), 0.0_wp, &
@@ -674,6 +685,7 @@ contains
         if (associated(self%shown, v)) self%shown => null()
     end subroutine remove_view
 
+    !> Remove all the window's views (the default view is then used).
     subroutine remove_all_views(self)
         class(WindowProxy), intent(inout) :: self
         self%n_views = 0
@@ -719,11 +731,11 @@ contains
     !> artists can be left out (`set_pickable(.false.)`).
     subroutine window_pick(self, x, y, hits, tolerance, kinds, nearest)
         class(WindowProxy), intent(in), target :: self
-        real(wp), intent(in) :: x, y
-        type(PickHit), allocatable, intent(out) :: hits(:)
-        real(wp), intent(in), optional :: tolerance
-        integer, intent(in), optional :: kinds(:)
-        logical, intent(in), optional :: nearest
+        real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
+        type(PickHit), allocatable, intent(out) :: hits(:)  !! what is there, nearest first
+        real(wp), intent(in), optional :: tolerance         !! window units (default 4)
+        integer, intent(in), optional :: kinds(:)           !! PICK_* (default: all)
+        logical, intent(in), optional :: nearest            !! default false
         class(ReferenceFrame), pointer :: root
         type(PickCamera) :: cam
         type(PickHit) :: h
@@ -799,8 +811,8 @@ contains
     !> window units (default 15), which apply then. Not valid unless open.
     function window_gui(self, font, size) result(g)
         class(WindowProxy), intent(in) :: self
-        character(len=*), intent(in), optional :: font
-        real(wp), intent(in), optional :: size
+        character(len=*), intent(in), optional :: font      !! file name or path (default DejaVu Sans)
+        real(wp), intent(in), optional :: size              !! window units (default 15)
         type(Gui) :: g
         character(len=:), allocatable :: path
         real(c_double) :: s
@@ -818,8 +830,8 @@ contains
     !> E.g. to keep HUD text next to a moving object, each frame: a callout.
     logical function screen_position(self, p, position) result(visible)
         class(WindowProxy), intent(in) :: self
-        real(wp), intent(in) :: p(3)
-        real(wp), intent(out) :: position(2)
+        real(wp), intent(in) :: p(3)                        !! root frame
+        real(wp), intent(out) :: position(2)                !! (x, y), 0 to 1 from the bottom left
         type(PickCamera) :: cam
         real(wp) :: eye(3), center(3), up(3), sx, sy, depth
         integer(c_int) :: width, height
@@ -845,7 +857,7 @@ contains
     !> the window's first frame.
     subroutine get_camera(self, eye, center, up, in_root)
         class(WindowProxy), intent(in) :: self
-        real(wp), intent(out) :: eye(3), center(3), up(3)
+        real(wp), intent(out) :: eye(3), center(3), up(3)   !! view frame's coordinates (or root's)
         logical, intent(in), optional :: in_root
         real(wp) :: cam(3,3)
         eye = 0.0_wp
@@ -868,8 +880,8 @@ contains
     !> camera when it is (View%set_camera).
     subroutine set_camera(self, eye, center, up, duration, in_root)
         class(WindowProxy), intent(inout), target :: self
-        real(wp), intent(in) :: eye(3), center(3), up(3)
-        real(wp), intent(in), optional :: duration
+        real(wp), intent(in) :: eye(3), center(3), up(3)    !! view frame's coordinates (or root's)
+        real(wp), intent(in), optional :: duration          !! s (default: at once)
         logical, intent(in), optional :: in_root
         type(View), pointer :: v
         real(wp) :: cam(3,3), now(3,3)
@@ -897,10 +909,11 @@ contains
     !> other (default 0: a cut, as OpenFrames).
     subroutine set_view_transition(self, seconds)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: seconds
+        real(wp), intent(in) :: seconds                     !! wall-clock s (0: a cut)
         self%transition_ = max(0.0_wp, seconds)
     end subroutine set_view_transition
 
+    !> The time (s) a change of view or a reset flies (`set_view_transition`).
     pure real(wp) function view_transition(self)
         class(WindowProxy), intent(in) :: self
         view_transition = self%transition_
@@ -937,6 +950,7 @@ contains
         v => self%views(i)%p
     end function window_view
 
+    !> Number of views added.
     pure integer function num_views(self)
         class(WindowProxy), intent(in) :: self
         num_views = self%n_views
@@ -1017,7 +1031,7 @@ contains
     !> The renderer's camera (columns: eye, center, up; the shown view's frame).
     subroutine put_camera(self, cam)
         type(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: cam(3,3)
+        real(wp), intent(in) :: cam(3,3)                    !! (columns: eye, center, up)
         if (vkf_viewer_look_at(self%viewer_, cam(:, 1), cam(:, 2), cam(:, 3)) /= 0) &
             write(*, '(a)') 'vkframes: could not set the camera'
     end subroutine put_camera
@@ -1027,7 +1041,7 @@ contains
     subroutine start_flight(self, from, start, to, finish, duration)
         type(WindowProxy), intent(inout) :: self
         type(View), intent(in), target :: from, to
-        real(wp), intent(in) :: start(3,3), finish(3,3), duration
+        real(wp), intent(in) :: start(3,3), finish(3,3), duration  !! (columns: eye, center, up; duration: s)
         self%flight%from => from
         self%flight%to => to
         self%flight%start = start
@@ -1067,45 +1081,53 @@ contains
     ! ==================================================================
     ! simulation time
 
+    !> Set the simulation time (limited to the time range).
     subroutine set_time(self, t)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! simulation time
         call self%clock_%set_time(t)
     end subroutine set_time
 
+    !> The simulation time (at the last frame).
     real(wp) function time(self)
         class(WindowProxy), intent(in) :: self
         time = self%clock_%time()
     end function time
 
+    !> Pause (true) or resume (false) the simulation time.
     subroutine pause_time(self, paused)
         class(WindowProxy), intent(inout) :: self
         logical, intent(in) :: paused
         call self%clock_%pause(paused)
     end subroutine pause_time
 
+    !> Whether the simulation time is paused.
     logical function is_time_paused(self)
         class(WindowProxy), intent(in) :: self
         is_time_paused = self%clock_%is_paused()
     end function is_time_paused
 
+    !> Simulation seconds per wall-clock second (may be 0 or negative).
     subroutine set_time_scale(self, scale)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: scale
         call self%clock_%set_time_scale(scale)
     end subroutine set_time_scale
 
+    !> Simulation seconds per wall-clock second.
     real(wp) function time_scale(self)
         class(WindowProxy), intent(in) :: self
         time_scale = self%clock_%time_scale()
     end function time_scale
 
+    !> Limit the simulation time to [t_min, t_max] (ignored if t_max < t_min).
     subroutine set_time_range(self, t_min, t_max)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: t_min, t_max
+        real(wp), intent(in) :: t_min, t_max                !! simulation times
         call self%clock_%set_time_range(t_min, t_max)
     end subroutine set_time_range
 
+    !> The simulation time range (`set_time_range`).
     subroutine time_range(self, t_min, t_max)
         class(WindowProxy), intent(in) :: self
         real(wp), intent(out) :: t_min, t_max
@@ -1135,7 +1157,10 @@ contains
     !> A mouse event: kind MOUSE_MOVE, MOUSE_PRESS or MOUSE_RELEASE.
     subroutine mouse(self, kind, x, y, mask, button)
         class(WindowProxy), intent(inout) :: self
-        integer, intent(in) :: kind, x, y, mask, button
+        integer, intent(in) :: kind                         !! MOUSE_MOVE, MOUSE_PRESS or MOUSE_RELEASE
+        integer, intent(in) :: x, y                         !! framebuffer pixels from the top left
+        integer, intent(in) :: mask                         !! buttons held (ior: 256 left, 512 middle, 1024 right)
+        integer, intent(in) :: button                       !! button pressed or released (1 left, 2 middle, 3 right)
         if (.not. c_associated(self%viewer_)) return
         if (vkf_viewer_mouse(self%viewer_, int(kind, c_int), int(x, c_int), int(y, c_int), int(mask, c_int), &
                              int(button, c_int)) /= 0) write(*, '(a)') 'vkframes: mouse event failed'
@@ -1144,7 +1169,7 @@ contains
     !> The scroll wheel: dy > 0 away from the user.
     subroutine scroll(self, dy)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: dy
+        real(wp), intent(in) :: dy                          !! wheel steps (> 0: away from the user)
         if (.not. c_associated(self%viewer_)) return
         if (vkf_viewer_scroll(self%viewer_, real(dy, c_float)) /= 0) write(*, '(a)') 'vkframes: scroll event failed'
     end subroutine scroll
@@ -1154,7 +1179,9 @@ contains
     subroutine key(self, pressed, symbol, modified_symbol, modifier)
         class(WindowProxy), intent(inout) :: self
         logical, intent(in) :: pressed
-        integer, intent(in) :: symbol, modified_symbol, modifier
+        integer, intent(in) :: symbol                       !! the key without modifiers (VSG's keyBase)
+        integer, intent(in) :: modified_symbol              !! the key with the modifiers (VSG's keyModified, e.g. 'A')
+        integer, intent(in) :: modifier                     !! the modifier keys held (MOD_* bits)
         if (.not. c_associated(self%viewer_)) return
         if (vkf_viewer_key(self%viewer_, merge(1_c_int, 0_c_int, pressed), int(symbol, c_int), &
                            int(modified_symbol, c_int), int(modifier, c_int)) /= 0) &
@@ -1171,8 +1198,8 @@ contains
     !> resized.
     subroutine resize(self, width, height, pixel_ratio)
         class(WindowProxy), intent(inout) :: self
-        integer, intent(in) :: width, height
-        real(wp), intent(in), optional :: pixel_ratio
+        integer, intent(in) :: width, height                !! framebuffer pixels
+        real(wp), intent(in), optional :: pixel_ratio       !! framebuffer pixels per window unit
         if (.not. c_associated(self%viewer_)) return
         if (present(pixel_ratio)) then
             if (pixel_ratio > 0.0_wp .and. pixel_ratio /= self%pixel_ratio_) then
@@ -1199,10 +1226,11 @@ contains
     !> must stay alive while set), in place of any handler set before.
     subroutine set_event_handler(self, handler)
         class(WindowProxy), intent(inout) :: self
-        class(WindowEventHandler), intent(in), target :: handler
+        class(WindowEventHandler), intent(in), target :: handler  !! not owned
         self%handler => handler
     end subroutine set_event_handler
 
+    !> Give the events to no handler (the built-in keys remain).
     subroutine clear_event_handler(self)
         class(WindowProxy), intent(inout) :: self
         self%handler => null()
@@ -1223,6 +1251,7 @@ contains
         self%default_keys_ = on
     end subroutine set_default_keys
 
+    !> Whether the built-in keys are on (`set_default_keys`).
     pure logical function default_keys(self)
         class(WindowProxy), intent(in) :: self
         default_keys = self%default_keys_
@@ -1233,16 +1262,16 @@ contains
     !> to skip the built-in key's action.
     subroutine handler_key_press(self, window, key, modifiers, handled)
         class(WindowEventHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        integer, intent(in) :: key, modifiers
-        logical, intent(inout) :: handled
+        class(WindowProxy), intent(inout) :: window         !! the window of the event
+        integer, intent(in) :: key, modifiers               !! a character code or KEY_*; MOD_* bits
+        logical, intent(inout) :: handled                   !! (true: skip the built-in key)
     end subroutine handler_key_press
 
     !> A key was released (see `key_press`).
     subroutine handler_key_release(self, window, key, modifiers)
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
-        integer, intent(in) :: key, modifiers
+        integer, intent(in) :: key, modifiers               !! as key_press's
     end subroutine handler_key_release
 
     !> The mouse moved to (x, y) (-1 to 1 across the window, y up), with the
@@ -1251,8 +1280,8 @@ contains
     subroutine handler_mouse_motion(self, window, x, y, buttons)
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: x, y
-        logical, intent(in) :: buttons(3)
+        real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
+        logical, intent(in) :: buttons(3)                   !! (held: left, middle, right)
     end subroutine handler_mouse_motion
 
     !> A mouse button (MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT) was pressed at
@@ -1261,7 +1290,7 @@ contains
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
         real(wp), intent(in) :: x, y
-        integer, intent(in) :: button
+        integer, intent(in) :: button                       !! MOUSE_LEFT, MOUSE_MIDDLE or MOUSE_RIGHT
     end subroutine handler_button_press
 
     !> A mouse button was released at (x, y) (see `button_press`).
@@ -1269,7 +1298,7 @@ contains
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
         real(wp), intent(in) :: x, y
-        integer, intent(in) :: button
+        integer, intent(in) :: button                       !! as button_press's
     end subroutine handler_button_release
 
     !> Called each frame just before drawing, the scene at time `t` and the
@@ -1278,7 +1307,7 @@ contains
     subroutine handler_before_draw(self, window, t)
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! simulation time
     end subroutine handler_before_draw
 
     !> The keyboard and mouse events of the last frame, to the handler and the
@@ -1304,7 +1333,7 @@ contains
     !> render area (x, y, width, height).
     subroutine dispatch_event(self, e)
         class(WindowProxy), intent(inout), target :: self
-        integer, intent(in) :: e(12)
+        integer, intent(in) :: e(12)                        !! the event (see above)
         integer, parameter :: KEY_PRESS = 1, KEY_RELEASE = 2, MOVE = 3, BUTTON_PRESS = 4, BUTTON_RELEASE = 5
         integer, parameter :: BUTTON_MASKS(3) = [256, 512, 1024]            ! (VSG's BUTTON_MASK_1/2/3)
         integer :: key
@@ -1337,7 +1366,7 @@ contains
     !> one, the space bar resets the view; not with control, alt or meta held.
     subroutine default_key(self, key, modifiers)
         class(WindowProxy), intent(inout), target :: self
-        integer, intent(in) :: key, modifiers
+        integer, intent(in) :: key, modifiers               !! a character code or KEY_*; MOD_* bits
         type(View), pointer :: v
         if (iand(modifiers, MOD_CONTROL + MOD_ALT + MOD_META) /= 0) return
         if (key == iachar('v')) then

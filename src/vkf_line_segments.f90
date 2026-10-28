@@ -46,11 +46,12 @@ module vkf_line_segments
         real(wp), allocatable :: a(:,:), b(:,:)             !! (3, n): their endpoints (frame coordinates)
         real(c_float), allocatable :: color_a(:,:), color_b(:,:)   !! (4, n), or not allocated: the frame's color
         real(wp) :: width_ = 1.0_wp                         !! line width (window units)
-        integer :: pattern_factor = 1, pattern_ = int(z'FFFF')
-        class(LineSegmentsCallback), pointer :: callback => null()
+        integer :: pattern_factor = 1                       !! window units per bit of the dash pattern
+        integer :: pattern_ = int(z'FFFF')                  !! 16-bit dash pattern (z'FFFF': solid)
+        class(LineSegmentsCallback), pointer :: callback => null()  !! computes the segments each frame (not owned)
         logical :: changed = .true.                         !! to write and upload at the next update
-        integer :: n_drawn = 0
-        type(LineChain) :: chain
+        integer :: n_drawn = 0                              !! segments written to the chain (drawn)
+        type(LineChain) :: chain                            !! draws the segments (separate, colored)
     contains
         procedure :: set_segments, num_segments, segment, clear_segments, drawn_segment, num_drawn
         procedure :: set_callback, clear_callback
@@ -70,7 +71,7 @@ module vkf_line_segments
             implicit none
             class(LineSegmentsCallback), intent(inout) :: self
             class(CustomLineSegments), intent(inout) :: segments
-            real(wp), intent(in) :: t
+            real(wp), intent(in) :: t           !! simulation time (s)
         end subroutine segments_compute
     end interface
 
@@ -84,7 +85,8 @@ contains
     !> colors; default white) and `width` (window units; default 1).
     function new_custom_line_segments(name, color, width) result(s)
         character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:), width
+        real(wp), intent(in), optional :: color(:)      !! [r, g, b] or [r, g, b, a] (0 to 1)
+        real(wp), intent(in), optional :: width         !! line width (window units)
         type(CustomLineSegments) :: s
         s%ReferenceFrame = ReferenceFrame(name, color)
         if (present(width)) s%width_ = max(0.0_wp, width)
@@ -97,8 +99,10 @@ contains
     !> the same segments again changes nothing (no upload).
     subroutine set_segments(self, a, b, color_a, color_b)
         class(CustomLineSegments), intent(inout) :: self
-        real(wp), intent(in) :: a(:,:), b(:,:)
-        real(wp), intent(in), optional :: color_a(:,:), color_b(:,:)
+        real(wp), intent(in) :: a(:,:)                  !! (3, n): first endpoints (frame coordinates)
+        real(wp), intent(in) :: b(:,:)                  !! (3, n): second endpoints (frame coordinates)
+        real(wp), intent(in), optional :: color_a(:,:)  !! (3 or 4, n): colors at a, [r, g, b(, a)] (0 to 1)
+        real(wp), intent(in), optional :: color_b(:,:)  !! (3 or 4, n): colors at b, [r, g, b(, a)] (0 to 1)
         real(c_float), allocatable :: ca(:,:), cb(:,:)
         integer :: n
         n = min(size(a, 2), size(b, 2))
@@ -133,6 +137,7 @@ contains
 
     contains
 
+        !> True if x(1:3, :) and y have the same points.
         pure logical function same(x, y)
             real(wp), intent(in) :: x(:,:), y(:,:)
             same = size(x, 2) == size(y, 2)
@@ -143,8 +148,8 @@ contains
 
     !> Colors c (3 or 4 rows) into rgba(4, n) (alpha 1 if not given).
     pure subroutine rgba(c, out)
-        real(wp), intent(in) :: c(:,:)
-        real(c_float), intent(out) :: out(:,:)
+        real(wp), intent(in) :: c(:,:)              !! (3 or 4, n): [r, g, b(, a)] (0 to 1)
+        real(c_float), intent(out) :: out(:,:)      !! (4, n): [r, g, b, a]
         integer :: n, m
         n = min(size(c, 2), size(out, 2))
         m = min(4, size(c, 1))
@@ -152,6 +157,7 @@ contains
         out(1:m, 1:n) = real(c(1:m, 1:n), c_float)
     end subroutine rgba
 
+    !> Number of segments set.
     pure integer function num_segments(self)
         class(CustomLineSegments), intent(in) :: self
         num_segments = self%n
@@ -161,17 +167,19 @@ contains
     subroutine segment(self, i, a, b, color_a, color_b)
         class(CustomLineSegments), intent(in) :: self
         integer, intent(in) :: i
-        real(wp), intent(out) :: a(3), b(3)
-        real(wp), intent(out), optional :: color_a(4), color_b(4)
+        real(wp), intent(out) :: a(3), b(3)                 !! endpoints (frame coordinates)
+        real(wp), intent(out), optional :: color_a(4)       !! color at a: [r, g, b, a]
+        real(wp), intent(out), optional :: color_b(4)       !! color at b: [r, g, b, a]
         a = self%a(:, i)
         b = self%b(:, i)
         if (present(color_a)) color_a = segment_color(self, self%color_a, i)
         if (present(color_b)) color_b = segment_color(self, self%color_b, i)
     end subroutine segment
 
+    !> Color i of `c` (color_a or color_b), or the frame's color if `c` is not allocated.
     function segment_color(self, c, i) result(rgba4)
         type(CustomLineSegments), intent(in) :: self
-        real(c_float), allocatable, intent(in) :: c(:,:)
+        real(c_float), allocatable, intent(in) :: c(:,:)    !! (4, n): [r, g, b, a]
         integer, intent(in) :: i
         real(wp) :: rgba4(4)
         if (allocated(c)) then
@@ -186,8 +194,9 @@ contains
     subroutine drawn_segment(self, i, a, b, color_a, color_b)
         class(CustomLineSegments), intent(in) :: self
         integer, intent(in) :: i
-        real(wp), intent(out) :: a(3), b(3)
-        real(wp), intent(out), optional :: color_a(4), color_b(4)
+        real(wp), intent(out) :: a(3), b(3)                 !! endpoints (frame coordinates)
+        real(wp), intent(out), optional :: color_a(4)       !! color at a: [r, g, b, a]
+        real(wp), intent(out), optional :: color_b(4)       !! color at b: [r, g, b, a]
         a = self%chain%point(2 * i - 1)
         b = self%chain%point(2 * i)
         if (present(color_a)) color_a = self%chain%point_color(2 * i - 1)
@@ -200,6 +209,7 @@ contains
         num_drawn = self%n_drawn
     end function num_drawn
 
+    !> Remove all segments.
     subroutine clear_segments(self)
         class(CustomLineSegments), intent(inout) :: self
         real(wp) :: none(3, 0)
@@ -214,6 +224,7 @@ contains
         self%callback => callback
     end subroutine set_callback
 
+    !> Stop computing the segments with a callback (they stay as last set).
     subroutine clear_callback(self)
         class(CustomLineSegments), intent(inout) :: self
         self%callback => null()
@@ -222,11 +233,12 @@ contains
     !> Line width (window units: logical pixels).
     subroutine set_line_width(self, width)
         class(CustomLineSegments), intent(inout) :: self
-        real(wp), intent(in) :: width
+        real(wp), intent(in) :: width       !! (window units; >= 0)
         self%width_ = max(0.0_wp, width)
         call apply_style(self)
     end subroutine set_line_width
 
+    !> Line width (window units).
     pure real(wp) function line_width(self)
         class(CustomLineSegments), intent(in) :: self
         line_width = self%width_
@@ -236,15 +248,18 @@ contains
     !> window units; 65535: solid), as CurveArtist%set_pattern.
     subroutine set_pattern(self, factor, pattern)
         class(CustomLineSegments), intent(inout) :: self
-        integer, intent(in) :: factor, pattern
+        integer, intent(in) :: factor       !! window units per bit (>= 1)
+        integer, intent(in) :: pattern      !! 16 bits, bit 0 first (65535: solid)
         self%pattern_factor = max(1, factor)
         self%pattern_ = iand(pattern, int(z'FFFF'))
         call apply_style(self)
     end subroutine set_pattern
 
+    !> The dash pattern (see `set_pattern`).
     pure subroutine pattern(self, factor, bits)
         class(CustomLineSegments), intent(in) :: self
-        integer, intent(out) :: factor, bits
+        integer, intent(out) :: factor      !! window units per bit
+        integer, intent(out) :: bits        !! 16 bits, bit 0 first (65535: solid)
         factor = self%pattern_factor
         bits = self%pattern_
     end subroutine pattern
@@ -252,11 +267,12 @@ contains
     !> The frame's color: also that of segments set without colors.
     subroutine segments_set_color(self, color)
         class(CustomLineSegments), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call self%ReferenceFrame%set_color(color)
         if (.not. allocated(self%color_a)) self%changed = .true.
     end subroutine segments_set_color
 
+    !> The kind of frame: 'CustomLineSegments'.
     function segments_frame_info(self) result(info)
         class(CustomLineSegments), intent(in) :: self
         character(len=:), allocatable :: info
@@ -280,7 +296,8 @@ contains
     !> The chain of separate segments with a color per point, under `group`.
     subroutine segments_build_contents(self, viewer, group)
         class(CustomLineSegments), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer   !! a window's viewer handle (null: headless)
+        type(c_ptr), intent(in) :: group    !! the group node to draw under
         call self%chain%init(group, CHAIN_SEGMENTS, colored=.true.)
         call apply_style(self)
         call self%chain%reserve(max(2, 2 * self%n))          ! (compiled with the scene)
@@ -288,6 +305,7 @@ contains
         self%changed = .true.
     end subroutine segments_build_contents
 
+    !> Give the line width and dash pattern to the chain (if built).
     subroutine apply_style(self)
         type(CustomLineSegments), intent(inout) :: self
         if (.not. self%chain%is_built()) return
@@ -300,7 +318,7 @@ contains
     !> at their positions for t), written and uploaded if they changed.
     recursive subroutine segments_late_update(self, t)
         class(CustomLineSegments), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t           !! simulation time (s)
         if (associated(self%callback)) call self%callback%compute(self, t)
         if (self%changed .and. self%chain%is_built()) call write_segments(self)
         call self%ReferenceFrame%late_update(t)

@@ -48,31 +48,36 @@ module vkf_terrain
 
     public :: rocky_available
 
-    ! layer sources (see the module documentation)
-    integer, parameter, public :: LAYER_TMS = 0, LAYER_GDAL = 1, LAYER_GEODETIC = 2, LAYER_MERCATOR = 3
-    ! elevation encodings
-    integer, parameter, public :: ELEVATION_HEIGHTS = 0, ELEVATION_MAPBOX = 1, ELEVATION_TERRARIUM = 2
+    !> layer sources (see the module documentation)
+    integer, parameter, public :: LAYER_TMS = 0             !! a TMS service
+    integer, parameter, public :: LAYER_GDAL = 1            !! a file or service GDAL reads
+    integer, parameter, public :: LAYER_GEODETIC = 2        !! a {z}/{x}/{y} URL template of geodetic tiles
+    integer, parameter, public :: LAYER_MERCATOR = 3        !! a {z}/{x}/{y} URL template of web Mercator tiles
+    !> elevation encodings
+    integer, parameter, public :: ELEVATION_HEIGHTS = 0     !! heights in meters
+    integer, parameter, public :: ELEVATION_MAPBOX = 1      !! Mapbox Terrain-RGB
+    integer, parameter, public :: ELEVATION_TERRARIUM = 2   !! Terrarium RGB
 
     real(wp), parameter :: earth_radius = 6378137.0_wp      !! m (WGS84)
     real(wp), parameter :: moon_radius = 1737400.0_wp       !! m
 
     !> A map layer as given (applied when the map is made).
     type :: MapLayer
-        logical :: elevation = .false.
-        integer :: source = LAYER_TMS
-        integer :: encoding = ELEVATION_HEIGHTS
-        character(len=:), allocatable :: uri
+        logical :: elevation = .false.                  !! (true: an elevation layer; false: an image layer)
+        integer :: source = LAYER_TMS                   !! a LAYER_* constant
+        integer :: encoding = ELEVATION_HEIGHTS         !! (elevation: an ELEVATION_* constant)
+        character(len=:), allocatable :: uri            !! URL, URL template or file
     end type MapLayer
 
     !> A body drawn from map layers by Rocky (see the module documentation).
     type, extends(ReferenceFrame), public :: TerrainBody
         private
-        character(len=:), allocatable :: profile_
-        real(wp) :: units_per_meter_ = 1.0e-3_wp
-        logical :: lighting_ = .true.
-        type(MapLayer), allocatable :: layers(:)
-        integer :: n_layers = 0
-        type(c_ptr) :: map = c_null_ptr
+        character(len=:), allocatable :: profile_                !! Rocky's tiling profile ('': the Earth)
+        real(wp) :: units_per_meter_ = 1.0e-3_wp                !! scene units per meter
+        logical :: lighting_ = .true.                           !! lit by the scene's lights
+        type(MapLayer), allocatable :: layers(:)                !! (capacity): the layers, in the order added
+        integer :: n_layers = 0                                 !! number of layers
+        type(c_ptr) :: map = c_null_ptr                         !! Rocky's map node (null: not made)
         type(c_ptr) :: map_group = c_null_ptr                   !! the group the map is in (once shown)
     contains
         procedure :: add_image_layer, add_elevation_layer, num_layers
@@ -102,9 +107,9 @@ contains
     !> or [r, g, b, a]; default the frame's).
     function new_terrain_body(name, profile, units_per_meter, color) result(b)
         character(len=*), intent(in) :: name
-        character(len=*), intent(in), optional :: profile
-        real(wp), intent(in), optional :: units_per_meter
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in), optional :: profile          !! Rocky's tiling profile (default '')
+        real(wp), intent(in), optional :: units_per_meter          !! scene units per meter (default 1e-3)
+        real(wp), intent(in), optional :: color(:)                 !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(TerrainBody) :: b
         b%ReferenceFrame = ReferenceFrame(name, color)
         b%profile_ = ''
@@ -118,7 +123,7 @@ contains
     subroutine add_image_layer(self, uri, source)
         class(TerrainBody), intent(inout) :: self
         character(len=*), intent(in) :: uri
-        integer, intent(in), optional :: source
+        integer, intent(in), optional :: source         !! a LAYER_* constant (default LAYER_TMS)
         type(MapLayer) :: layer
         layer%uri = uri
         if (present(source)) layer%source = source
@@ -131,7 +136,8 @@ contains
     subroutine add_elevation_layer(self, uri, source, encoding)
         class(TerrainBody), intent(inout) :: self
         character(len=*), intent(in) :: uri
-        integer, intent(in), optional :: source, encoding
+        integer, intent(in), optional :: source         !! a LAYER_* constant (default LAYER_TMS)
+        integer, intent(in), optional :: encoding       !! an ELEVATION_* constant (default ELEVATION_HEIGHTS)
         type(MapLayer) :: layer
         layer%elevation = .true.
         layer%uri = uri
@@ -140,6 +146,7 @@ contains
         call add_layer(self, layer)
     end subroutine add_elevation_layer
 
+    !> Keep `layer`, and add it to the map if it is made.
     subroutine add_layer(self, layer)
         type(TerrainBody), intent(inout) :: self
         type(MapLayer), intent(in) :: layer
@@ -155,6 +162,7 @@ contains
         if (c_associated(self%map)) call apply_layer(self, layer)
     end subroutine add_layer
 
+    !> Number of layers (image and elevation).
     pure integer function num_layers(self)
         class(TerrainBody), intent(in) :: self
         num_layers = self%n_layers
@@ -168,17 +176,20 @@ contains
         call apply_settings(self)
     end subroutine set_lighting
 
+    !> True if the body is lit by the scene's lights.
     pure logical function lighting(self)
         class(TerrainBody), intent(in) :: self
         lighting = self%lighting_
     end function lighting
 
+    !> Rocky's tiling profile ('': Rocky's default, the Earth).
     function profile(self) result(p)
         class(TerrainBody), intent(in) :: self
         character(len=:), allocatable :: p
         p = self%profile_
     end function profile
 
+    !> Scene units per meter the body is drawn at.
     pure real(wp) function units_per_meter(self)
         class(TerrainBody), intent(in) :: self
         units_per_meter = self%units_per_meter_
@@ -202,8 +213,8 @@ contains
     !> without such a layer or data there, or without Rocky.
     function elevation(self, lat, lon, found) result(h)
         class(TerrainBody), intent(in) :: self
-        real(wp), intent(in) :: lat, lon
-        logical, intent(out), optional :: found
+        real(wp), intent(in) :: lat, lon                !! latitude and longitude (degrees)
+        logical, intent(out), optional :: found         !! false if there is no height there
         real(wp) :: h
         character(len=:), allocatable :: file
         integer(c_int) :: ok
@@ -223,6 +234,7 @@ contains
         end do
     end function elevation
 
+    !> The body's bounding sphere (frame coordinates): its equatorial radius, at the origin.
     subroutine terrain_bound(self, center, radius)
         class(TerrainBody), intent(in) :: self
         real(wp), intent(out) :: center(3), radius
@@ -230,6 +242,7 @@ contains
         radius = self%body_radius()
     end subroutine terrain_bound
 
+    !> The kind of frame: 'TerrainBody'.
     function terrain_frame_info(self) result(info)
         class(TerrainBody), intent(in) :: self
         character(len=:), allocatable :: info
@@ -239,7 +252,8 @@ contains
     !> The map, made for the viewer showing the body (none headless or without Rocky).
     subroutine terrain_build_contents(self, viewer, group)
         class(TerrainBody), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer   !! a window's viewer handle (null: headless)
+        type(c_ptr), intent(in) :: group    !! the group node to build under
         if (.not. c_associated(viewer)) return
         if (.not. rocky_available()) then
             write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': vkframes was built without Rocky ' // &
@@ -274,7 +288,7 @@ contains
     !> running), then the frame's update.
     recursive subroutine terrain_update(self, t)
         class(TerrainBody), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t           !! simulation time (s)
         type(c_ptr) :: viewer
         integer(c_int) :: status
         if (c_associated(self%map)) then
@@ -294,6 +308,7 @@ contains
         call self%ReferenceFrame%update(t)
     end subroutine terrain_update
 
+    !> Give the lighting and the frame's color to the map (if made).
     subroutine apply_settings(self)
         type(TerrainBody), intent(inout) :: self
         if (.not. c_associated(self%map)) return
@@ -301,6 +316,7 @@ contains
             write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not apply the settings'
     end subroutine apply_settings
 
+    !> Add `layer` to the map (a file found on VKFRAMES_DATA_PATH).
     subroutine apply_layer(self, layer)
         type(TerrainBody), intent(inout) :: self
         type(MapLayer), intent(in) :: layer
@@ -323,14 +339,14 @@ contains
         if (status /= 0) write(*, '(a)') 'vkframes: TerrainBody '//self%name()//': could not add layer '//layer%uri
     end subroutine apply_layer
 
-    !> Picking: a sphere of the body's radius (not the terrain's heights), with
+    !> Picked on a sphere of the body's radius (not the terrain's heights), with
     !> the latitude and longitude of the point hit; else the frame's origin.
     subroutine terrain_pick(self, cam, to_root, hits, n)
         class(TerrainBody), intent(in), target :: self
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: to_root(4,4)
-        type(PickHit), allocatable, intent(inout) :: hits(:)
-        integer, intent(inout) :: n
+        type(PickCamera), intent(in) :: cam                 !! the cursor's ray and the pick's settings
+        real(wp), intent(in) :: to_root(4,4)                !! the frame's transform to the root frame
+        type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits so far (grown as needed)
+        integer, intent(inout) :: n                         !! number of hits in hits
         real(wp) :: r, m(4,4)
         r = self%body_radius()
         if (self%contents_shown() .and. r > 0.0_wp) then
