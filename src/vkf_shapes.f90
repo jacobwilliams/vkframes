@@ -13,7 +13,7 @@
 module vkf_shapes
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_int32_t, c_float, c_double
-    use vkf_math, only: wp, pi, quat_from_matrix
+    use vkf_math, only: wp, pi, quat_from_matrix, cross
     use vkf_frames, only: ReferenceFrame, X_AXIS, Y_AXIS, Z_AXIS, ALL_AXES
     use vkf_artists, only: MARKER_DISK, MARKER_IMAGE
     use vkf_files, only: find_data_file
@@ -1029,13 +1029,6 @@ contains
         real(wp), intent(in) :: a(2), b(2), q(2)
         side = (b(1) - a(1)) * (q(2) - a(2)) - (q(1) - a(1)) * (b(2) - a(2))
     end function side
-
-    !> The cross product a x b.
-    pure function cross(a, b) result(c)
-        real(wp), intent(in) :: a(3), b(3)
-        real(wp) :: c(3)
-        c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
-    end function cross
 
     !> What kind of frame this is: 'PolyhedralCone'.
     function cone_frame_info(self) result(info)

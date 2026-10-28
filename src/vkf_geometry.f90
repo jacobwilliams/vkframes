@@ -3,6 +3,7 @@
 module vkf_geometry
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_double, c_float, c_int32_t, c_null_ptr, c_associated
+    use vkf_math, only: cross                    ! (real64: c_double)
     use vkf_layer, only: vkf_mesh_create, mesh_arrays
 
     implicit none
@@ -265,12 +266,5 @@ contains
         call mesh_arrays(mesh, n_vertices, n_indices, xyz, normals, uv, indices)
         call arrow(base, direction, body_length, head_length, body_radius, head_radius, n, xyz, normals, uv, indices)
     end function arrow_create
-
-    !> The cross product a x b.
-    pure function cross(a, b) result(c)
-        real(c_double), intent(in) :: a(3), b(3)
-        real(c_double) :: c(3)
-        c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
-    end function cross
 
 end module vkf_geometry
