@@ -25,6 +25,17 @@
 !> color); without colors, or with `set_point_colors(.false.)`, in its own
 !> color. Its line buffers hold colors only then.
 !>
+!> Highlight (not in OpenFrames; e.g. a trajectory selected by the program or
+!> by picking): `set_highlight` on a curve or segment artist, or on a
+!> DrawableTrajectory for all of them. HIGHLIGHT_PULSE: the line widens and
+!> brightens towards the highlight color, and back, over and over;
+!> HIGHLIGHT_ARROWS: a translucent band of the highlight color around it, with
+!> chevrons moving along it from its first point to its last (a trajectory's
+!> initial time to its final; a segment's start to its end). Both together:
+!> HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS. The GPU animates them (shaders/
+!> line.vert), so nothing is uploaded or computed each frame. In trace mode,
+!> only the part drawn is highlighted.
+!>
 !> Artists and their trajectories are not owned: they must stay alive while
 !> drawn.
 !>
@@ -48,7 +59,7 @@ module vkf_artists
                          vkf_ribbon_create, &
                          vkf_line_set_range, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_switch_create, &
-                         vkf_compile_node, vkf_viewer_any, line_set_style, line_set_pattern, vkf_image_read, vkf_image_delete
+                         vkf_compile_node, vkf_viewer_any, line_set_style, vkf_image_read, vkf_image_delete
     use vkf_line_chain, only: LineChain, CHAIN_STRIP, CHAIN_SEGMENTS, CHAIN_MARKERS, CHAIN_RIBBON, split_points, &
                               split_distances, &
                               line_buffer
@@ -93,6 +104,21 @@ module vkf_artists
         end subroutine artist_update
     end interface
 
+    !> highlights of curve and segment artists (set_highlight; combine by adding)
+    integer, parameter, public :: HIGHLIGHT_NONE = 0     !! not highlighted
+    integer, parameter, public :: HIGHLIGHT_PULSE = 1    !! the line widens and brightens, and back, over and over
+    integer, parameter, public :: HIGHLIGHT_ARROWS = 2   !! a band around the line, with arrows moving along it
+
+    !> A line artist's highlight (see the module documentation and set_highlight).
+    type :: HighlightStyle
+        integer :: mode = HIGHLIGHT_NONE            !! HIGHLIGHT_* (added)
+        real(wp) :: color(4) = [1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]  !! [r, g, b, a] (default white)
+        real(wp) :: arrow_spacing = 40.0_wp         !! between arrows (window units)
+        real(wp) :: arrow_speed = 50.0_wp           !! window units per second
+        real(wp) :: band_width = 12.0_wp            !! (window units)
+        real(wp) :: pulse_period = 1.5_wp           !! (s)
+    end type HighlightStyle
+
     !> Draws a trajectory's points connected by a line (OpenFrames' CurveArtist).
     !> The x, y and z of the points come from data sources (default: the
     !> trajectory's positions). The line is in the artist's color, or in the
@@ -107,6 +133,7 @@ module vkf_artists
         integer :: pattern_ = int(z'FFFF')          !! 16-bit dash pattern (z'FFFF': solid)
         logical :: lod_ = .true.                    !! level of detail (see set_level_of_detail)
         logical :: point_colors_ = .true.           !! the trajectory's colors, if any (see set_point_colors)
+        type(HighlightStyle) :: highlight_          !! (see set_highlight)
         ! rendering
         type(c_ptr) :: group = c_null_ptr           !! the chain's group (to make it again, colored or not)
         logical :: compile = .false.                !! (chunks made later are compiled)
@@ -123,6 +150,7 @@ module vkf_artists
         procedure :: set_color => curve_set_color, color => curve_color
         procedure :: set_width => curve_set_width, width => curve_width
         procedure :: set_pattern => curve_set_pattern, pattern => curve_pattern
+        procedure :: set_highlight => curve_set_highlight, highlight => curve_highlight
         procedure :: set_level_of_detail, level_of_detail, lod_error
         procedure :: set_point_colors, point_colors, drawn_color
         procedure :: build => curve_build
@@ -160,6 +188,7 @@ module vkf_artists
         real(wp) :: width_ = 1.0_wp                 !! segment width (window units)
         integer :: pattern_factor = 1               !! window units per pattern bit (>= 1)
         integer :: pattern_ = int(z'FFFF')          !! 16-bit dash pattern (z'FFFF': solid)
+        type(HighlightStyle) :: highlight_          !! (see set_highlight)
         ! rendering
         type(LineChain) :: chain                    !! the line buffers (a pair of points per segment)
         integer :: n_written = 0                    !! segments written to the chain
@@ -175,6 +204,7 @@ module vkf_artists
         procedure :: set_color => segment_set_color, color => segment_color
         procedure :: set_width => segment_set_width, width => segment_width
         procedure :: set_pattern => segment_set_pattern, pattern => segment_pattern
+        procedure :: set_highlight => segment_set_highlight, highlight => segment_highlight
         procedure :: build => segment_build
         procedure :: update => segment_update
         procedure :: release => segment_release
@@ -328,6 +358,7 @@ module vkf_artists
         logical :: shown = .false.                  !! built for a window (artists added later are compiled)
     contains
         procedure :: add_artist, remove_artist, remove_all_artists, num_artists, artist
+        procedure :: set_highlight => drawable_set_highlight
         procedure :: frame_info => drawable_frame_info
         procedure :: build_contents => drawable_build_contents
         procedure :: update => drawable_update
@@ -558,6 +589,28 @@ contains
         self%pattern_ = iand(pattern, int(z'FFFF'))
         call curve_style(self)
     end subroutine curve_set_pattern
+
+    !> Highlight the curve (see the module documentation): `mode` a sum of
+    !> HIGHLIGHT_PULSE and HIGHLIGHT_ARROWS (HIGHLIGHT_NONE: not highlighted),
+    !> in `color` ([r, g, b] or [r, g, b, a]; default white). The other
+    !> settings are kept when not given.
+    subroutine curve_set_highlight(self, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+        class(CurveArtist), intent(inout) :: self
+        integer, intent(in) :: mode                         !! HIGHLIGHT_* (added)
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
+        real(wp), intent(in), optional :: arrow_spacing     !! between arrows (window units; default 40)
+        real(wp), intent(in), optional :: arrow_speed       !! (window units per second; default 50)
+        real(wp), intent(in), optional :: band_width        !! of the arrows' band (window units; default 12)
+        real(wp), intent(in), optional :: pulse_period      !! (s; default 1.5)
+        call update_highlight(self%highlight_, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+        call curve_style(self)
+    end subroutine curve_set_highlight
+
+    !> The curve's highlight: HIGHLIGHT_* (added; HIGHLIGHT_NONE: not highlighted).
+    pure integer function curve_highlight(self) result(mode)
+        class(CurveArtist), intent(in) :: self
+        mode = self%highlight_%mode
+    end function curve_highlight
 
     !> Level of detail (default on): seen from far away, the curve is drawn
     !> from every 2nd, 4th, ... point (and its last), as many as can be
@@ -892,11 +945,29 @@ contains
         if (self%chain%is_colored()) rgba = 1.0_wp
         call self%chain%set_style(rgba, self%width_)
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
-        if (c_associated(self%tail)) then
-            call check_status(line_set_style(self%tail, real(rgba, c_float), real(self%width_, c_float)), 'trajectory artists')
-            call check_status(line_set_pattern(self%tail, self%pattern_factor, self%pattern_), 'trajectory artists')
-        end if
+        call apply_highlight(self%highlight_, self%chain)
+        if (c_associated(self%tail)) call self%chain%style_node(self%tail)
     end subroutine curve_style
+
+    !> Change the settings given (see CurveArtist%set_highlight).
+    subroutine update_highlight(h, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+        type(HighlightStyle), intent(inout) :: h
+        integer, intent(in) :: mode
+        real(wp), intent(in), optional :: color(:), arrow_spacing, arrow_speed, band_width, pulse_period
+        h%mode = iand(mode, HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS)
+        if (present(color)) call set_rgba(h%color, color)
+        if (present(arrow_spacing)) h%arrow_spacing = max(arrow_spacing, 1.0_wp)
+        if (present(arrow_speed)) h%arrow_speed = arrow_speed
+        if (present(band_width)) h%band_width = max(band_width, 0.0_wp)
+        if (present(pulse_period)) h%pulse_period = max(pulse_period, 0.05_wp)
+    end subroutine update_highlight
+
+    !> Give the highlight `h` to the line buffers `chain`.
+    subroutine apply_highlight(h, chain)
+        type(HighlightStyle), intent(in) :: h
+        type(LineChain), intent(inout) :: chain
+        call chain%set_highlight(h%mode, h%color, h%arrow_spacing, h%arrow_speed, h%band_width, h%pulse_period)
+    end subroutine apply_highlight
 
     ! ==================================================================
     ! SegmentArtist
@@ -1101,6 +1172,26 @@ contains
         self%pattern_ = iand(pattern, int(z'FFFF'))
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
     end subroutine segment_set_pattern
+
+    !> Highlight the segments (see CurveArtist%set_highlight): the arrows run
+    !> along each segment from its start to its end.
+    subroutine segment_set_highlight(self, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+        class(SegmentArtist), intent(inout) :: self
+        integer, intent(in) :: mode                         !! HIGHLIGHT_* (added)
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
+        real(wp), intent(in), optional :: arrow_spacing     !! between arrows (window units; default 40)
+        real(wp), intent(in), optional :: arrow_speed       !! (window units per second; default 50)
+        real(wp), intent(in), optional :: band_width        !! of the arrows' band (window units; default 12)
+        real(wp), intent(in), optional :: pulse_period      !! (s; default 1.5)
+        call update_highlight(self%highlight_, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+        call apply_highlight(self%highlight_, self%chain)
+    end subroutine segment_set_highlight
+
+    !> The segments' highlight: HIGHLIGHT_* (added; HIGHLIGHT_NONE: not highlighted).
+    pure integer function segment_highlight(self) result(mode)
+        class(SegmentArtist), intent(in) :: self
+        mode = self%highlight_%mode
+    end function segment_highlight
 
     !> The dash pattern: its `factor` and 16 pattern `bits`.
     pure subroutine segment_pattern(self, factor, bits)
@@ -2311,6 +2402,27 @@ contains
         class(TrajectoryArtist), pointer :: a
         a => self%artists(i)%p
     end function artist
+
+    !> Highlight all the frame's curve and segment artists (see
+    !> CurveArtist%set_highlight; HIGHLIGHT_NONE: none of them).
+    subroutine drawable_set_highlight(self, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+        class(DrawableTrajectory), intent(inout) :: self
+        integer, intent(in) :: mode                         !! HIGHLIGHT_* (added)
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
+        real(wp), intent(in), optional :: arrow_spacing     !! between arrows (window units; default 40)
+        real(wp), intent(in), optional :: arrow_speed       !! (window units per second; default 50)
+        real(wp), intent(in), optional :: band_width        !! of the arrows' band (window units; default 12)
+        real(wp), intent(in), optional :: pulse_period      !! (s; default 1.5)
+        integer :: k
+        do k = 1, self%n_artists
+            select type (a => self%artists(k)%p)
+            class is (CurveArtist)
+                call a%set_highlight(mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+            class is (SegmentArtist)
+                call a%set_highlight(mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
+            end select
+        end do
+    end subroutine drawable_set_highlight
 
     !> Picks what the artists draw (see the module documentation), then
     !> the frame's origin (if it shows axes or its name label).

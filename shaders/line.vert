@@ -37,6 +37,21 @@
 // src/vsg/vkf_layer.cpp) picks the stride per view, from the bounds Fortran
 // computes of how far the points skipped are from the segments drawn.
 //
+// Highlight (style.flow.x: flags 1 pulse, 2 arrows; e.g. a selected
+// trajectory): drawn by the GPU from the time pushed (pc.viewport.w), so
+// nothing is uploaded each frame. Pulse: the line widens (up to 1.5 times)
+// and its color turns towards the highlight color, and back, every
+// style.pulse.x seconds. Arrows: the quad is drawn as wide as the band
+// (style.flow.w window units, if wider than the line), and line.frag draws a
+// translucent glow in it and chevrons pointing along the line, from its first
+// point to its last (a trajectory's initial time to its final), every
+// style.flow.y window units, moving style.flow.z window units per second.
+// Their positions come from the same distance along the line as the dashes',
+// in periods of the spacing (two sizes, blended), less the distance moved
+// (in periods, the same for both, so that they meet where the sizes change),
+// so they run on across the joins; their spacing and speed on screen stay
+// within 0.7 to 1.4 times those given.
+//
 // Colors: the style's, or (lines made by vkf_line_create_colored) each
 // point's times the style's, blended along each segment from its first
 // point's to its second's (OpenFrames' CustomLineSegments).
@@ -68,6 +83,10 @@ layout(set = 0, binding = 1) uniform Style {
                             // z = dash pattern (16 bits; 65535 or 0: solid), w = window units per bit
     vec4 count;             // x = points written in the buffer (set by vkf_line_points_changed),
                             // y = 1 for a color per point (colors), else 0
+    vec4 highlight;         // highlight color (rgba)
+    vec4 flow;              // x = highlight flags (1 pulse, 2 arrows), y = arrow spacing (window units),
+                            // z = arrow speed (window units per second), w = band width (window units)
+    vec4 pulse;             // x = pulse period (s)
 } style;
 
 layout(std430, set = 0, binding = 3) readonly buffer Colors {
@@ -77,6 +96,11 @@ layout(std430, set = 0, binding = 3) readonly buffer Colors {
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) noperspective out vec3 dash;   // along the line, in periods 2^n and 2^(n+1);
                                                     // z = the weight of 2^(n+1)
+layout(location = 2) noperspective out vec3 flow;   // as dash, for the arrows (periods of their spacing), moved
+layout(location = 3) flat out vec2 flowPixels;      // pixels per period, of each size
+layout(location = 4) noperspective out float across;    // -1 to 1 across the quad
+layout(location = 5) flat out vec4 highlight;       // x = pulse (0 to 1), y = the line's half width,
+                                                    // z = the quad's (pixels), w = highlight flags
 
 out gl_PerVertex {
     vec4 gl_Position;
@@ -112,8 +136,10 @@ vec3 eyeRelative(int i)
 // The dash positions (in periods 2^n and 2^(n+1)) and the weight of the
 // second at a vertex of the segment from point `first` to `second`: at its
 // drawn start (ta) or end (tb), moved `along` pixels along the segment (a cap
-// or a mitre); screenLength is the drawn part's length in pixels.
-vec3 dashPosition(int first, int second, float end, float ta, float tb, float screenLength, float along)
+// or a mitre); screenLength is the drawn part's length in pixels, period the
+// pattern's (pixels). perPixel: periods per pixel along the segment.
+vec3 dashPosition(int first, int second, float end, float ta, float tb, float screenLength, float along,
+                  float period, out vec2 perPixel)
 {
     vec2 sa = vec2(0.0), sb;                       // distances along the strip (high, low)
     if (style.params.y > 0.5) {
@@ -124,7 +150,6 @@ vec3 dashPosition(int first, int second, float end, float ta, float tb, float sc
     }
     float sceneLength = (sb.x - sa.x) + (sb.y - sa.y);
     float drawn = (tb - ta) * sceneLength;
-    float period = 16.0 * max(style.params.w, 1.0e-3) * pc.viewport.z;    // pixels
     // lambda: log2 of the period's length here in scene units (large if the segment shows no length)
     float lambda = 126.0;
     if (drawn > 0.0 && screenLength > 1.0e-6)
@@ -133,7 +158,7 @@ vec3 dashPosition(int first, int second, float end, float ta, float tb, float sc
     vec2 scale = vec2(exp2(-n), exp2(-n - 1.0));
     vec2 start = fract(sa.x * scale) + fract(sa.y * scale);            // exact: powers of two
     vec2 span = sceneLength * scale;                                   // the whole segment, in periods
-    vec2 perPixel = (screenLength > 1.0e-6) ? (tb - ta) * span / screenLength : vec2(0.0);
+    perPixel = (screenLength > 1.0e-6) ? (tb - ta) * span / screenLength : vec2(0.0);
     vec2 d = ((end == 0.0) ? start + ta * span : start + tb * span) + along * perPixel;
     return vec3(d, lambda - n);
 }
@@ -160,6 +185,10 @@ void main()
         gl_Position = vec4(0.0, 0.0, 0.0, -1.0);   // whole segment behind: outside the clip volume
         fragColor = vec4(0.0);
         dash = vec3(0.0);
+        flow = vec3(0.0);
+        flowPixels = vec2(0.0);
+        across = 0.0;
+        highlight = vec4(0.0);
         return;
     }
     float ta = 0.0, tb = 1.0;                      // the part drawn, as fractions of the segment
@@ -176,7 +205,12 @@ void main()
     vec2 dir = (len > 1.0e-6) ? d / len : vec2(1.0, 0.0);
     vec2 normal = vec2(-dir.y, dir.x);
 
-    float halfWidth = 0.5 * style.params.x * pc.viewport.z;
+    // highlight: the pulse (0 to 1), the line's half width, the quad's (the band's if wider)
+    float time = pc.viewport.w;
+    int flags = int(style.flow.x + 0.5);
+    float pulse = ((flags & 1) != 0) ? 0.5 - 0.5 * cos(6.2831853 * time / max(style.pulse.x, 0.05)) : 0.0;
+    float lineHalfWidth = 0.5 * style.params.x * pc.viewport.z * (1.0 + 0.5 * pulse);
+    float halfWidth = ((flags & 2) != 0) ? max(lineHalfWidth, 0.5 * style.flow.w * pc.viewport.z) : lineHalfWidth;
     bool atEnd = corner.x == 1.0;
     vec4 pos = atEnd ? b : a;
     // the join at this end: a square cap, or (strips) a mitre with the neighbouring segment
@@ -206,8 +240,21 @@ void main()
 
     gl_Position = pos;
     fragColor = (style.count.y > 0.5) ? style.color * colors.c[atEnd ? second : first] : style.color;
+    fragColor.rgb = mix(fragColor.rgb, style.highlight.rgb, 0.5 * pulse);
+    vec2 perPixel;
     dash = vec3(0.0);
     uint pattern = uint(style.params.z) & 0xFFFFu;
     if (pattern != 0xFFFFu && pattern != 0u)
-        dash = dashPosition(first, second, corner.x, ta, tb, len, along);
+        dash = dashPosition(first, second, corner.x, ta, tb, len, along,
+                            16.0 * max(style.params.w, 1.0e-3) * pc.viewport.z, perPixel);
+    flow = vec3(0.0);
+    flowPixels = vec2(0.0);
+    if ((flags & 2) != 0) {
+        float spacing = max(style.flow.y, 1.0) * pc.viewport.z;                   // pixels
+        flow = dashPosition(first, second, corner.x, ta, tb, len, along, spacing, perPixel);
+        flow.xy -= fract(time * style.flow.z * pc.viewport.z / spacing);           // (periods moved)
+        flowPixels = vec2(perPixel.x > 0.0 ? 1.0 / perPixel.x : 1.0e9, perPixel.y > 0.0 ? 1.0 / perPixel.y : 1.0e9);
+    }
+    across = corner.y;
+    highlight = vec4(pulse, lineHalfWidth, halfWidth, float(flags));
 }

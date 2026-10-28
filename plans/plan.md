@@ -1077,6 +1077,27 @@ Interaction:
         and the Qt demo (the view change time in the dock).
       - [ ] Later: keyframed camera paths (several cameras with times, flown
             through; e.g. for presentations and video recording).
+- [x] Highlighting a trajectory (e.g. one selected by the program or picked):
+      `set_highlight(mode, color, arrow_spacing, arrow_speed, band_width,
+      pulse_period)` on CurveArtist and SegmentArtist, and on
+      DrawableTrajectory for all its line artists; `highlight()` gives the
+      mode. HIGHLIGHT_PULSE: the line widens and turns towards the highlight
+      color, and back; HIGHLIGHT_ARROWS: a translucent band with chevrons
+      moving along the line from its first point to its last (initial time to
+      final). All in the line shaders (shaders/line.vert, line.frag) from the
+      frame time already pushed: no per-frame work in Fortran and no uploads.
+      The arrows' positions reuse the dashes' distance along the line (two
+      period sizes, blended), so they run on across joins, chunks and the
+      trace tail. Tested: `test_artists` (the API); shown in
+      `example/highlight_trajectory.f90` and the Qt demo (an orbit picked is
+      highlighted).
+      - [ ] Known: the band writes depth, so its translucent edges (and the
+            square caps at the line's ends) hide lines drawn after it behind
+            them. If it shows, draw the band in a second, no-depth-write pass.
+      - [ ] Later: arrows at given times (e.g. every 10 minutes of mission
+            time) as markers turned along the trajectory's direction on
+            screen (markers are upright now): a marker shape and a rotation
+            per marker.
 
 Astrodynamics graphics:
 - [ ] **(first)** Ground tracks: a spacecraft's sub-satellite point traced on

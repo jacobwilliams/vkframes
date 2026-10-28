@@ -42,7 +42,7 @@ module vkf_line_chain
                          vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
                          vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
-                         marker_set_style, vkf_line_set_lod
+                         marker_set_style, vkf_line_set_lod, vkf_line_set_highlight
 
     implicit none
 
@@ -96,10 +96,14 @@ module vkf_line_chain
         integer :: pattern_factor = 1                   !! (lines: dash pattern (see line_set_pattern))
         integer :: pattern = int(z'FFFF')               !! (lines: 16-bit dash pattern (z'FFFF': solid))
         logical :: lod = .true.                         !! (strips: level of detail (else every point drawn))
+        real(c_float) :: highlight(12) = [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float, &
+                                          0.0_c_float, 40.0_c_float, 50.0_c_float, 12.0_c_float, &
+                                          1.5_c_float, 0.0_c_float, 0.0_c_float, 0.0_c_float]
+                                                        !! (lines: highlight, see vkf_line_set_highlight)
     contains
         procedure :: init, set_compile, is_built, is_colored, release, detach
         procedure :: reserve, slice, color_slice, written, draw
-        procedure :: set_style, set_pattern, set_marker_style, point, point_color, distance, num_chunks
+        procedure :: set_style, set_pattern, set_marker_style, set_highlight, style_node, point, point_color, distance, num_chunks
         procedure :: set_lod, lod_error, chunk_bounds
     end type LineChain
 
@@ -503,6 +507,34 @@ contains
         end do
     end subroutine set_style
 
+    !> For lines, the highlight (see shaders/line.vert): `flags` (1 pulse, 2
+    !> arrows; 0 none), its color (rgba), the arrows' spacing and speed (window
+    !> units, and per second), the band's width (window units) and the pulse's
+    !> period (s).
+    subroutine set_highlight(self, flags, color, spacing, speed, band, period)
+        class(LineChain), intent(inout) :: self
+        integer, intent(in) :: flags            !! 1 pulse + 2 arrows (0: none)
+        real(wp), intent(in) :: color(4)        !! [r, g, b, a] (0 to 1)
+        real(wp), intent(in) :: spacing         !! between arrows (window units)
+        real(wp), intent(in) :: speed           !! of the arrows (window units per second)
+        real(wp), intent(in) :: band            !! width of the band the arrows are drawn in (window units)
+        real(wp), intent(in) :: period          !! of the pulse (s)
+        integer :: j
+        self%highlight = real([color, real(flags, wp), spacing, speed, band, period, 0.0_wp, 0.0_wp, 0.0_wp], &
+                              c_float)
+        do j = 1, self%n_chunks
+            call apply_style(self, self%chunks(j)%line)
+        end do
+    end subroutine set_highlight
+
+    !> Give the chain's style to `line`, a node not in the chain (e.g. a
+    !> curve's trace-mode tail, drawn as part of it).
+    subroutine style_node(self, line)
+        class(LineChain), intent(in) :: self
+        type(c_ptr), intent(in) :: line
+        call apply_style(self, line)
+    end subroutine style_node
+
     !> For markers, the color (rgba), size (window units), shape (shaders/marker.frag)
     !> and attenuation radius (scene units, 0 for none).
     subroutine set_marker_style(self, color, size, shape, radius)
@@ -521,7 +553,7 @@ contains
         end do
     end subroutine set_marker_style
 
-    !> Give the chain's style (color, width or size, pattern, marker shape) to the node `line`.
+    !> Give the chain's style (color, width or size, pattern, highlight, marker shape) to the node `line`.
     subroutine apply_style(self, line)
         type(LineChain), intent(in) :: self
         type(c_ptr), intent(in) :: line
@@ -530,6 +562,8 @@ contains
         else
             call check_status(line_set_style(line, self%color, self%width), 'trajectory artists')
             call check_status(line_set_pattern(line, self%pattern_factor, self%pattern), 'trajectory artists')
+            if (self%kind /= CHAIN_RIBBON) &
+                call check_status(vkf_line_set_highlight(line, self%highlight), 'trajectory artists')
         end if
     end subroutine apply_style
 

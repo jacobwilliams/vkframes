@@ -85,7 +85,11 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     position and/or attitude).
 - **Drawing trajectories**: a `DrawableTrajectory` holds artists, which can
   be added, changed and removed at run time. Only changed data is uploaded.
-  - `CurveArtist`: thick lines with dash patterns.
+  - `CurveArtist`: thick lines with dash patterns. A highlight (not in
+    OpenFrames), for a trajectory selected by the program or picked: it
+    pulses, and arrows move along it from its initial time to its final,
+    animated by the GPU (`set_highlight`; also on `SegmentArtist`, and on a
+    `DrawableTrajectory` for all its artists).
   - `SegmentArtist`: segments between data points. With relative ends (not
     in OpenFrames), a vector stored at each point, such as a thrust, is drawn
     from each position. Its length is a scale that can be changed at any
@@ -272,6 +276,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `shapes` | <img src="media/screenshots/examples/shapes.jpg" width="160" alt="shapes"> | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
 | `two_windows` | <img src="media/screenshots/examples/two_windows_1.jpg" width="78" alt="two_windows, window 1"><img src="media/screenshots/examples/two_windows_2.jpg" width="78" alt="two_windows, window 2"> | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
 | `pick_trajectories` | <img src="media/screenshots/examples/pick_trajectories.jpg" width="160" alt="pick_trajectories"> | Picking and callouts: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (a ring and a readout at the point: the time there and the altitude) or the Earth (latitude and longitude), a GUI panel follows the selected orbit's spacecraft (its altitude, trace mode, line width, go to the time picked), a Controls panel sets the time scale and pause, and `g` goes to the time selected. |
+| `highlight_trajectory` | <img src="media/screenshots/examples/highlight_trajectory.jpg" width="160" alt="highlight_trajectory"> | Highlighting a selected trajectory: four Earth orbits (parking, transfer, geostationary, Molniya); the program selects the next every few seconds and a click selects the one under the pointer. The selected orbit pulses, with arrows moving along it from its initial time to its final in a translucent band (`set_highlight`, animated by the GPU); `m` changes the highlight's mode. |
 | `camera_tour` | <img src="media/screenshots/examples/camera_tour.jpg" width="160" alt="camera_tour"> | The camera from a program: a scripted tour that flies between an Earth view and one following a spacecraft (a view transition), and to cameras given in the root frame (`set_camera` with a duration), printing where the camera is (`get_camera`). |
 | `earth_moon_frames` | <img src="media/screenshots/examples/earth_moon_frames_1.jpg" width="78" alt="earth_moon_frames, window 1"><img src="media/screenshots/examples/earth_moon_frames_2.jpg" width="78" alt="earth_moon_frames, window 2"> | One trajectory in two frames at once: a free-return lunar flyby shown in inertial coordinates about the Earth in one window, and in the Moon's body-fixed frame about the Moon in the other. Each window has its own scene; the Moon-fixed copy is transformed in Fortran, each point at its own time. |
 | `live_changes` | <img src="media/screenshots/examples/live_changes.jpg" width="160" alt="live_changes"> | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |
@@ -294,6 +299,7 @@ pixi run example two_windows
 pixi run example earth_moon_frames
 pixi run example camera_tour
 pixi run example pick_trajectories
+pixi run example highlight_trajectory
 pixi run example live_changes
 pixi run example precision
 pixi run example line_of_sight
@@ -347,7 +353,8 @@ library:
 - **Picking:** a click picks what is under it: an orbit or marker (the
   frame, the time there and the altitude; `g` goes to that time) or the Earth
   (latitude and longitude), shown in the dock and in a GUI panel at the
-  point (with a button to go to that time).
+  point (with a button to go to that time). An orbit picked is highlighted
+  (it pulses, with arrows moving along it).
 - **Camera:** changing the view flies the camera there (the time is set in
   the dock; 0 s cuts, as OpenFrames).
 - **Keys and mouse:** a `WindowEventHandler` per window: `v` and `V` change

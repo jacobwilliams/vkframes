@@ -14,7 +14,8 @@
 !> and all in the artist's color with point colors off. RibbonArtist: the
 !> pairs (origin and position, or other sources) drawn to double precision
 !> across chunks, appends, trace mode (the quad to the interpolated pair),
-!> point colors with the artist's alpha.
+!> point colors with the artist's alpha. Highlights: set on an artist, and
+!> on a DrawableTrajectory for its curve and segment artists.
 program test_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr
@@ -702,6 +703,7 @@ contains
     subroutine check_drawable()
         type(Trajectory), target :: traj
         type(CurveArtist), target :: a, b
+        type(SegmentArtist), target :: s
         type(DrawableTrajectory), target :: dt
         class(TrajectoryArtist), pointer :: p
         integer :: i
@@ -729,6 +731,19 @@ contains
         call dt%add_artist(a)                          ! again: built anew
         call dt%update(0.0_wp)
         call check(a%num_drawn() == 100 .and. a%num_chunks() == 1, 'artist added again')
+        s = SegmentArtist(traj)
+        call dt%add_artist(s)
+        call check(a%highlight() == HIGHLIGHT_NONE .and. s%highlight() == HIGHLIGHT_NONE, 'not highlighted at first')
+        call a%set_highlight(HIGHLIGHT_PULSE, color=[1.0_wp, 1.0_wp, 0.0_wp])
+        call check(a%highlight() == HIGHLIGHT_PULSE .and. b%highlight() == HIGHLIGHT_NONE, 'an artist highlighted')
+        call dt%set_highlight(HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS, arrow_spacing=30.0_wp)
+        call dt%update(0.0_wp)
+        call check(a%highlight() == HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS .and. &
+                   b%highlight() == HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS .and. &
+                   s%highlight() == HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS, 'the frame highlights its line artists')
+        call check(s%num_drawn() == 100, 'highlighted segments drawn')
+        call dt%set_highlight(HIGHLIGHT_NONE)
+        call check(a%highlight() == HIGHLIGHT_NONE .and. s%highlight() == HIGHLIGHT_NONE, 'highlights cleared')
         call dt%remove_all_artists()
         call check(dt%num_artists() == 0, 'remove_all_artists')
     end subroutine check_drawable

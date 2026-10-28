@@ -2405,7 +2405,7 @@ static void* make_line(int capacity, bool colored, bool ribbon = false)
         line->ribbon = ribbon;
         line->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
-        line->style = dynamic_vec4_array(3);     // [color, params, (points written, colored): shaders/line.vert]
+        line->style = dynamic_vec4_array(6);     // [color, params, (points written, colored), highlight: shaders/line.vert]
         line->colored = colored;
         line->colors = vsg::vec4Array::create(colored ? static_cast<uint32_t>(capacity) : 1u, vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         if (colored) line->colors->properties.dataVariance = vsg::DYNAMIC_DATA;
@@ -2730,6 +2730,21 @@ VKF_API int vkf_line_set_range(void* line, int first, int n)
     auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
     if (!l || first < 1 || n < 0 || 8 * static_cast<uint32_t>(first - 1 + n) > l->points->size()) return -1;
     l->setRange(static_cast<uint32_t>(first), static_cast<uint32_t>(n));
+    return 0;
+}
+
+// A line's highlight (shaders/line.vert): 12 floats, its color (r, g, b, a),
+// (flags: 1 pulse, 2 arrows; arrow spacing and band width in window units,
+// arrow speed in window units per second; as in that order: flags, spacing,
+// speed, band width), (pulse period in seconds, 0, 0, 0). Uploaded at once.
+// Returns 0, or -1 if `line` isn't a line (or a ribbon).
+VKF_API int vkf_line_set_highlight(void* line, const float* values)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l || l->markers || l->style->size() < 6) return -1;
+    for (int k = 0; k < 3; ++k)
+        l->style->at(3 + k) = vsg::vec4(values[4 * k], values[4 * k + 1], values[4 * k + 2], values[4 * k + 3]);
+    l->style->dirty();
     return 0;
 }
 

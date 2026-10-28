@@ -38,7 +38,7 @@ module vkf_layer
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
-    public :: vkf_ribbon_create
+    public :: vkf_ribbon_create, vkf_line_set_highlight
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
@@ -903,6 +903,18 @@ module vkf_layer
             implicit none
             type(c_ptr), value :: line  !! line, marker or ribbon handle
         end function vkf_line_style_changed
+
+        !> Set a line's highlight (shaders/line.vert) and upload it: `values`
+        !> are its color (rgba), (flags: 1 pulse, 2 arrows; arrow spacing
+        !> (window units), arrow speed (window units per second), band width
+        !> (window units)), (pulse period (s), 0, 0, 0). Returns 0, or -1 if
+        !> `line` isn't a line.
+        integer(c_int) function vkf_line_set_highlight(line, values) bind(C, name="vkf_line_set_highlight")
+            import :: c_ptr, c_int, c_float
+            implicit none
+            type(c_ptr), value :: line                      !! line handle
+            real(c_float), dimension(12), intent(in) :: values
+        end function vkf_line_set_highlight
 
     end interface
 

@@ -64,7 +64,9 @@
 !> there and the altitude; g goes to that time) or a body (the latitude and
 !> longitude), shown in the dock and in a GUI panel at the point picked
 !> (vkf_gui: Dear ImGui, kept there each frame in the handler's before_draw),
-!> with buttons to go to the time there and to close it.
+!> with buttons to go to the time there and to close it. An orbit picked is
+!> highlighted (DrawableTrajectory%set_highlight: it pulses, with arrows
+!> moving along it), until the next click.
 !>
 !> How the pieces fit:
 !>
@@ -230,6 +232,7 @@ module vkdemo
         type(ReferenceFrame) :: picked                         !! at the point picked (where its GUI panel is)
         character(len=96) :: picked_text = ''                  !! the panel's readout
         integer :: picked_window = 0                           !! the window it was picked in (0: none)
+        class(DrawableTrajectory), pointer :: highlighted => null()   !! the trajectory picked (highlighted)
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -992,6 +995,8 @@ contains
         call window%pick(x, y, hits)
         app%have_picked_time = .false.
         app%picked_window = 0
+        if (associated(app%highlighted)) call app%highlighted%set_highlight(HIGHLIGHT_NONE)
+        app%highlighted => null()
         if (size(hits) == 0) then
             write(app%last_click, '(a,i0,a)') 'Clicked (window ', self%window, '): nothing there'
         else
@@ -1004,6 +1009,11 @@ contains
                     app%picked_time = h%time
                     app%have_picked_time = .true.
                     write(readout, '(a,i0,a,i0,a)') '   t = ', nint(h%time), ' s, ', nint(norm2(h%position) - re), ' km'
+                    select type (f => h%frame)
+                    class is (DrawableTrajectory)                  ! (highlighted until the next click)
+                        app%highlighted => f
+                        call f%set_highlight(HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS, color=[1.0_wp, 1.0_wp, 0.85_wp])
+                    end select
                 case (PICK_BODY)
                     write(app%last_click, '(a,a,a,f7.2,a,f8.2)') 'Picked: ', h%frame%name(), ', latitude ', &
                         h%latitude * 180.0_wp / pi, ', longitude ', h%longitude * 180.0_wp / pi
