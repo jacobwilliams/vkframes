@@ -1027,6 +1027,14 @@ Interaction:
             ImGui's input text needs them), combo boxes and colors, a panel's
             close button, and a pixel ratio that changes (a window moved to
             another screen).
+      - [ ] Later: more widget types for Fortran (each a command replayed in
+            vkf_gui.cpp and a Gui procedure; now: panels, text, button,
+            checkbox, slider, separator, same_line). Candidates: integer
+            sliders and number inputs (InputDouble, InputInt, DragScalar),
+            radio buttons, colored text, a progress bar, collapsing headers,
+            tooltips, tabs, list boxes, and small plots through ImPlot
+            (bundled with vsgImGui: e.g. altitude against time beside the 3D
+            view).
       - Panels placed in the 3D world ("Qt widgets in 3D") stay deferred:
         mainly for VR.
 - [ ] Built-in time controls: an optional time slider or HUD readout in a
