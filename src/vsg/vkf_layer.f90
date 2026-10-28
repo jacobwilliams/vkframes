@@ -32,6 +32,7 @@ module vkf_layer
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
     public :: vkf_image_read, vkf_image_delete, vkf_model_read
+    public :: vkf_mesh_set_bound
     public :: vkf_mesh_create, vkf_mesh_array, vkf_mesh_material, vkf_mesh_material_changed, vkf_mesh_vertices_changed, &
               vkf_mesh_set_twilight
     public :: vkf_light_create, vkf_light_set, vkf_viewer_light, vkf_viewer_light_enable
@@ -630,6 +631,15 @@ module vkf_layer
 
         !> A triangle mesh (a node handle), filled from Fortran (vkf_mesh_array, before the first frame);
         !> null on failure.
+        !> A translucent mesh's bounding sphere (its coordinates), for depth sorting and culling.
+        !> Returns 0, or -1 if it isn't a translucent mesh (vkf_mesh_create's flag 8).
+        integer(c_int) function vkf_mesh_set_bound(mesh, x, y, z, radius) bind(C, name="vkf_mesh_set_bound")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: mesh                    !! mesh handle (vkf_mesh_create)
+            real(c_double), value :: x, y, z, radius      !! the bound's center and radius
+        end function vkf_mesh_set_bound
+
         type(c_ptr) function vkf_mesh_create(n_vertices, n_indices, rgba, texture, night_texture, flags) &
                 bind(C, name="vkf_mesh_create")
             import :: c_ptr, c_int, c_float
@@ -639,7 +649,8 @@ module vkf_layer
             integer(c_int), value :: flags  !! 1 for an unlit transparent surface (no textures), 2 for view lighting
                                             !! (frames' axes), else lit by the scene's lights with a material
                                             !! (vkf_mesh_material); plus 4 for vertices that change after the mesh is
-                                            !! compiled (rewritten in place, then vkf_mesh_vertices_changed)
+                                            !! compiled (rewritten in place, then vkf_mesh_vertices_changed); plus 8
+                                            !! for a lit translucent surface (depth sorted: vkf_mesh_set_bound)
             real(c_float), dimension(4), intent(in) :: rgba  !! color (rgba, 0 to 1; multiplies the texture)
             type(c_ptr), value :: texture, night_texture     !! image handles (vkf_image_read), or null
         end function vkf_mesh_create

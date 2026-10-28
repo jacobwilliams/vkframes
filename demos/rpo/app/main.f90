@@ -8,8 +8,9 @@
 !> * The plan: the chaser's initial state and impulsive burns. Its path is
 !>   colored by safety: outside the keep-out sphere (cyan), inside it within
 !>   the approach corridor (yellow, allowed), inside it outside the corridor
-!>   (red: a violation). The keep-out sphere is a red wireframe (a
-!>   LatLonGrid), the corridor a translucent cone along -V-bar.
+!>   (red: a violation). The keep-out sphere is translucent red (a Sphere
+!>   with `set_opacity`: lit, the path and the target seen through it), the
+!>   corridor a translucent cone along -V-bar.
 !> * Burns: markers on the path with their Δv drawn as vectors (a
 !>   SegmentArtist with relative ends, `Δv arrow scale` metres per m/s). A
 !>   click on the path (not a drag) adds a burn there; a click on a burn
@@ -73,7 +74,7 @@ module rpo_demo
         integer :: frame = 0
         ! controls
         type(QComboBox) :: preset, view_choice
-        type(QDoubleSpinBox) :: altitude, orbits, state(6), keep_out, corridor, arrow_scale, zoom_speed
+        type(QDoubleSpinBox) :: altitude, orbits, state(6), keep_out, corridor, arrow_scale, zoom_speed, keep_out_opacity
         type(QCheckBox) :: animate
         type(QPushButton) :: record
         type(QLabel) :: burn_list, readout, orbit_info
@@ -81,7 +82,7 @@ module rpo_demo
         type(ReferenceFrame) :: root
         type(CoordinateAxes) :: axes
         type(Sphere) :: target
-        type(LatLonGrid) :: keep_out_zone
+        type(Sphere) :: keep_out_zone                          !! translucent
         type(EllipticCone) :: approach
         type(Trajectory) :: path                               !! the chaser's path (times s; colors by safety)
         type(DrawableTrajectory) :: path_frame
@@ -364,8 +365,8 @@ contains
         call app%target%set_pickable(.false.)
         call add(app%root, app%target)
 
-        app%keep_out_zone = LatLonGrid('Keep-out sphere', color=[1.0_wp, 0.3_wp, 0.3_wp, 0.45_wp])
-        call app%keep_out_zone%set_line_widths(1.0_wp, 1.0_wp)
+        app%keep_out_zone = Sphere('Keep-out sphere', radius=200.0_wp, color=[1.0_wp, 0.25_wp, 0.2_wp])
+        call app%keep_out_zone%set_opacity(0.25_wp)                     ! (translucent: set before it is shown)
         call app%keep_out_zone%show_decorations(.false.)
         call app%keep_out_zone%set_pickable(.false.)
         call add(app%root, app%keep_out_zone)
@@ -444,7 +445,7 @@ contains
         real(wp) :: r, a
         r = app%keep_out%value()
         a = app%corridor%value() * deg
-        call app%keep_out_zone%set_parameters(r, r, r, 30.0_wp * deg, 30.0_wp * deg)
+        call app%keep_out_zone%set_radius(r)
         call app%approach%set_primary_angles(a, a)
         call app%approach%set_cone_length(1.6_wp * r)
     end subroutine update_zones
@@ -733,6 +734,13 @@ contains
         app%dirty = .true.
     end subroutine on_zone_value
 
+    !> The keep-out sphere's opacity.
+    subroutine on_keep_out_opacity(value, data)
+        real(c_double), intent(in) :: value
+        class(*), intent(inout), optional :: data
+        call app%keep_out_zone%set_opacity(real(value, wp))
+    end subroutine on_keep_out_opacity
+
     subroutine on_arrow_scale(value, data)
         real(c_double), intent(in) :: value
         class(*), intent(inout), optional :: data
@@ -912,6 +920,9 @@ contains
         form = QFormLayout(group)
         app%keep_out = real_box(10.0_wp, 5000.0_wp, 200.0_wp, 0, 10.0_wp, ' m', on_zone_value)
         call form%addRow('Keep-out radius', app%keep_out)
+        app%keep_out_opacity = real_box(0.02_wp, 0.95_wp, 0.25_wp, 2, 0.05_wp, '', on_keep_out_opacity)
+        call app%keep_out_opacity%setToolTip('How opaque the translucent keep-out sphere is')
+        call form%addRow('Keep-out opacity', app%keep_out_opacity)
         app%corridor = real_box(1.0_wp, 60.0_wp, 15.0_wp, 1, 1.0_wp, ' deg', on_zone_value)
         call app%corridor%setToolTip('The approach corridor''s half-angle about -V-bar')
         call form%addRow('Corridor half-angle', app%corridor)

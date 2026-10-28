@@ -75,7 +75,9 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - `Sphere`: a sphere or exact ellipsoid (such as WGS84) with day and night
     textures and a material. Its radius, color and material can change while
     it's shown. Level of detail keeps its outline smooth however close the
-    view, with finer meshes only when needed.
+    view, with finer meshes only when needed. It can be translucent (not in
+    OpenFrames; `set_opacity`): still lit, with what is behind it seen
+    through it, e.g. a keep-out zone.
   - `Model`: a 3D model file (`.3ds`, `.obj`, glTF, OSG formats through
     vsgXchange).
 - **Trajectories**:
@@ -461,8 +463,8 @@ Clohessy-Wiltshire equations (closed form, in Fortran).
 - A plan, the chaser's start and impulsive burns, drawn as a path colored by
   safety: outside the keep-out sphere, inside it within the approach
   corridor, or inside it outside the corridor (a violation). The keep-out
-  sphere is a wireframe, the corridor a translucent cone, the burns markers
-  with their Δv as vectors.
+  sphere is a translucent sphere, the corridor a translucent cone, the burns
+  markers with their Δv as vectors.
 - Click the path: a burn is added there. Click a burn: a panel next to it
   sets its Δv and time (or deletes it), and the path is propagated again as
   the sliders move.

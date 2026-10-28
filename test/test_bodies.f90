@@ -1,12 +1,14 @@
 !> Checks Sphere and Model settings (no window): shape, sphere and model
-!> transforms, frame_info in the tree, a missing model file, FrameManager.
+!> transforms, opacity (a translucent sphere built headless), frame_info in
+!> the tree, a missing model file, FrameManager.
 program test_bodies
 
+    use, intrinsic :: iso_c_binding, only: c_null_ptr
     use vkframes
 
     implicit none
 
-    type(Sphere), target :: earth
+    type(Sphere), target :: earth, zone
     type(Model), target :: craft
     type(FrameManager) :: scene
     class(ReferenceFrame), pointer :: root
@@ -24,6 +26,17 @@ program test_bodies
     call check(earth%texture_map() == 'earth.jpg' .and. earth%night_texture_map() == '', 'texture maps')
     call earth%set_sphere_attitude([0.0_wp, 0.0_wp, 2.0_wp, 0.0_wp])
     call check(all(earth%sphere_attitude() == [0.0_wp, 0.0_wp, 1.0_wp, 0.0_wp]), 'sphere attitude normalized')
+
+    zone = Sphere('Zone', radius=200.0_wp, color=[1.0_wp, 0.2_wp, 0.2_wp])
+    call check(zone%opacity() == 1.0_wp, 'opaque by default')
+    call zone%set_opacity(1.5_wp)
+    call check(zone%opacity() == 1.0_wp, 'opacity limited to 1')
+    call zone%set_opacity(0.25_wp)
+    call check(zone%opacity() == 0.25_wp, 'set_opacity')
+    call zone%realize(c_null_ptr)                           ! (a translucent mesh, headless)
+    call zone%set_opacity(0.5_wp)                           ! (while built: through the material)
+    call zone%set_radius(300.0_wp)
+    call check(zone%opacity() == 0.5_wp .and. zone%radius() == 300.0_wp, 'a translucent sphere built, changed')
 
     craft = Model('Craft')
     call check(.not. craft%set_model('does/not/exist.3ds') .and. .not. craft%has_model(), 'missing model file')

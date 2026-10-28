@@ -4,7 +4,7 @@ module vkf_geometry
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_int, c_double, c_float, c_int32_t, c_null_ptr, c_associated
     use vkf_math, only: cross                    ! (real64: c_double)
-    use vkf_layer, only: vkf_mesh_create, mesh_arrays
+    use vkf_layer, only: vkf_mesh_create, mesh_arrays, vkf_mesh_set_bound
 
     implicit none
 
@@ -94,20 +94,24 @@ contains
     !> An ellipsoid mesh node with semi-axes `radii` (x, y, z) and color (`rgba`,
     !> multiplying the texture), with an optional equirectangular texture and
     !> night texture (image handles; the night texture shows where the light
-    !> is weak). `n_lon` and `n_lat` default to 128 and 64 segments. Null on
-    !> failure.
-    function ellipsoid_create(radii, rgba, texture, n_lon, n_lat, night_texture) result(mesh)
+    !> is weak). `n_lon` and `n_lat` default to 128 and 64 segments. With
+    !> `translucent`, a translucent surface (its material's alpha; drawn after
+    !> the opaque scene, sorted by depth). Null on failure.
+    function ellipsoid_create(radii, rgba, texture, n_lon, n_lat, night_texture, translucent) result(mesh)
         real(c_double), dimension(3), intent(in) :: radii   !! semi-axes along x, y, z
         real(c_float), dimension(4), intent(in) :: rgba     !! color [r, g, b, a] (0 to 1)
         type(c_ptr), intent(in), optional :: texture        !! image handle of the (day) texture
         type(c_ptr), intent(in), optional :: night_texture  !! image handle of the night texture
         integer, intent(in), optional :: n_lon              !! segments in longitude (default 128)
         integer, intent(in), optional :: n_lat              !! segments in latitude (default 64)
+        logical, intent(in), optional :: translucent        !! a translucent surface (default false)
         type(c_ptr) :: mesh
         real(c_float), dimension(:,:), pointer :: xyz, normals, uv
         integer(c_int32_t), dimension(:), pointer :: indices
         type(c_ptr) :: tex, night
         integer :: nx, ny, n_vertices, n_indices
+        integer(c_int) :: flags
+        logical :: see_through
         nx = 128
         ny = 64
         if (present(n_lon)) nx = n_lon
@@ -116,11 +120,18 @@ contains
         if (present(texture)) tex = texture
         night = c_null_ptr
         if (present(night_texture)) night = night_texture
+        see_through = .false.
+        if (present(translucent)) see_through = translucent
+        flags = merge(8_c_int, 0_c_int, see_through)
         call ellipsoid_size(nx, ny, n_vertices, n_indices)
-        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, tex, night, 0_c_int)
+        mesh = vkf_mesh_create(int(n_vertices, c_int), int(n_indices, c_int), rgba, tex, night, flags)
         if (.not. c_associated(mesh)) return
         call mesh_arrays(mesh, n_vertices, n_indices, xyz, normals, uv, indices)
         call ellipsoid(radii, nx, ny, xyz, normals, uv, indices)
+        if (see_through) then
+            if (vkf_mesh_set_bound(mesh, 0.0_c_double, 0.0_c_double, 0.0_c_double, maxval(radii)) /= 0) &
+                write(*, '(a)') 'vkframes: could not set a translucent mesh''s bound'
+        end if
     end function ellipsoid_create
 
     !> A sphere mesh node: `ellipsoid_create` with equal semi-axes.

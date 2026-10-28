@@ -1306,6 +1306,21 @@ namespace
         void apply(vsg::ColorBlendState& state) override { state.configureAttachments(true); }
     };
 
+    // Pipeline states of lit translucent surfaces (a translucent Sphere): blended,
+    // front faces only (the back of a closed surface isn't drawn through it),
+    // not writing depth. Drawn in translucent_bin, after the opaque scene.
+    struct TranslucentStates : public vsg::Visitor
+    {
+        void apply(vsg::Object& object) override { object.traverse(*this); }
+        void apply(vsg::RasterizationState& state) override { state.cullMode = VK_CULL_MODE_BACK_BIT; }
+        void apply(vsg::DepthStencilState& state) override { state.depthWriteEnable = VK_FALSE; }
+        void apply(vsg::ColorBlendState& state) override { state.configureAttachments(true); }
+    };
+
+    // The bin of translucent meshes (vsg::DepthSorted), drawn after the
+    // opaque scene, farthest first (each window's scene view has it).
+    constexpr int32_t translucent_bin = 10;
+
     vsg::ref_ptr<vsg::vec4Array> dynamic_vec4_array(uint32_t n)
     {
         auto a = vsg::vec4Array::create(n, vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f));
@@ -1942,6 +1957,10 @@ VKF_API int vkf_viewer_frame_begin(void* viewer)
         {
             // (no VSG headlight: the window's light is vkframes', v->headlight)
             v->commandGraph = vsg::createCommandGraphForView(v->window, v->camera, v->scene, VK_SUBPASS_CONTENTS_INLINE, false);
+            for (auto& child : v->commandGraph->children)   // translucent meshes: after the opaque scene, farthest first
+                if (auto renderGraph = child.cast<vsg::RenderGraph>(); renderGraph && !renderGraph->children.empty())
+                    if (auto view = renderGraph->children.front().cast<vsg::View>())
+                        view->bins.push_back(vsg::Bin::create(translucent_bin, vsg::Bin::DESCENDING));
             if (v->hudScene)
             {
                 // the HUD: a second view in the same render pass, after the scene
@@ -2422,7 +2441,9 @@ VKF_API void* vkf_model_read(const char* filename, int filename_len)
 // surface (TransparentStates; no textures), 2 for view lighting (frames' axes;
 // see "Lighting"), else lit by the scene's lights with a material
 // (vkf_mesh_material); plus 4 for vertices that change after the mesh is
-// compiled (rewritten in place, then vkf_mesh_vertices_changed).
+// compiled (rewritten in place, then vkf_mesh_vertices_changed); plus 8 for a
+// lit translucent surface (its material's alpha; TranslucentStates, depth
+// sorted with the bound of vkf_mesh_set_bound).
 VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture, void* night_texture,
                               int flags)
 {
@@ -2474,6 +2495,11 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
             TransparentStates states;
             config->accept(states);
         }
+        else if ((flags & 8) != 0)
+        {
+            TranslucentStates states;
+            config->accept(states);
+        }
         if (!unlit && (flags & 2) != 0)
         {
             if (!config->shaderHints) config->shaderHints = vsg::ShaderCompileSettings::create();
@@ -2489,9 +2515,24 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         draw->indexCount = static_cast<uint32_t>(n_indices);
         draw->instanceCount = 1;
         stateGroup->addChild(draw);
-        mesh->node = stateGroup;
+        if (!unlit && (flags & 8) != 0)          // drawn after the opaque scene, sorted by depth
+            mesh->node = vsg::DepthSorted::create(translucent_bin, vsg::dsphere(0.0, 0.0, 0.0, 1.0), stateGroup);
+        else
+            mesh->node = stateGroup;
         return mesh.release();
     });
+}
+
+// A translucent mesh's bounding sphere (its coordinates), for sorting it by
+// depth and culling it. Returns 0, or -1 if it isn't a translucent mesh.
+VKF_API int vkf_mesh_set_bound(void* mesh, double x, double y, double z, double radius)
+{
+    auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
+    if (!m) return -1;
+    auto sorted = m->node.cast<vsg::DepthSorted>();
+    if (!sorted) return -1;
+    sorted->bound = vsg::dsphere(x, y, z, radius);
+    return 0;
 }
 
 // The material of a lit mesh: 19 floats (vsg::PhongMaterial: ambient, diffuse,

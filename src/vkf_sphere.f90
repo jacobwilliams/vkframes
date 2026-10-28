@@ -21,6 +21,13 @@
 !> terminator, to where the light is a given angle below the horizon, fading
 !> out: e.g. sunlight scattered by an atmosphere.
 !>
+!> Translucency (not in OpenFrames): `set_opacity` (default 1, opaque) below
+!> 1 draws the body translucent: lit as usual, blended over what is behind
+!> it, drawn after the opaque scene (farthest first: VSG's depth-sorted bin)
+!> without writing depth, front faces only. Whether it is translucent is
+!> decided when a window first shows it (as the textures); its opacity can
+!> then change at any time (through the material's alpha).
+!>
 !> Texture files are found with find_data_file (a path, or a name on
 !> VKFRAMES_DATA_PATH, e.g. data/'s 2k_earth_daymap.jpg and
 !> 2k_earth_nightmap.jpg). The textures and the mesh resolution are read when
@@ -78,6 +85,8 @@ module vkf_sphere
         real(wp) :: emission_(4) = [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]  !! emission color [r, g, b, a]
         real(wp) :: shininess_ = 0.0_wp                       !! 0 to 128 (0: no specular highlight)
         real(wp) :: twilight_ = 0.0_wp                        !! radians below the horizon (0: none)
+        real(wp) :: opacity_ = 1.0_wp                         !! 1 opaque; below 1 translucent (see set_opacity)
+        logical :: translucent = .false.                      !! built translucent (opacity below 1 when first shown)
         type(c_ptr) :: sphere_node = c_null_ptr              !! transform of the body within the frame
         type(c_ptr) :: mesh = c_null_ptr                     !! without level of detail
         ! level of detail
@@ -96,6 +105,7 @@ module vkf_sphere
         procedure :: set_auto_lod, auto_lod
         procedure :: set_material, material
         procedure :: set_twilight, twilight
+        procedure :: set_opacity, opacity
         procedure :: set_resolution
         procedure :: frame_info => sphere_frame_info
         procedure :: bound => sphere_bound
@@ -138,6 +148,24 @@ contains
         call self%ReferenceFrame%set_color(color)
         call apply_material(self)
     end subroutine sphere_set_color
+
+    !> The body's opacity, 0 (invisible) to 1 (opaque, the default): below 1
+    !> it is drawn translucent (see the module documentation). Set below 1
+    !> before a window first shows it to make it translucent; then the
+    !> opacity can change at any time (a translucent body stays translucent,
+    !> an opaque one opaque).
+    subroutine set_opacity(self, opacity)
+        class(Sphere), intent(inout) :: self
+        real(wp), intent(in) :: opacity                     !! 0 to 1
+        self%opacity_ = max(0.0_wp, min(1.0_wp, opacity))
+        call apply_material(self)
+    end subroutine set_opacity
+
+    !> The body's opacity (set_opacity).
+    pure real(wp) function opacity(self)
+        class(Sphere), intent(in) :: self
+        opacity = self%opacity_
+    end function opacity
 
     !> The sphere's radius (scene units).
     pure real(wp) function radius(self)
@@ -302,6 +330,7 @@ contains
         if (.not. c_associated(mesh)) return
         diffuse = self%diffuse_
         if (.not. self%textured) diffuse = diffuse * self%color()
+        if (self%translucent) diffuse(4) = diffuse(4) * self%opacity_      ! (the shader's alpha: the diffuse color's)
         if (mesh_set_material(mesh, real(self%ambient_, c_float), real(diffuse, c_float), &
                               real(self%specular_, c_float), real(self%emission_, c_float), &
                               real(self%shininess_, c_float)) /= 0) &
@@ -376,6 +405,7 @@ contains
         night = read_texture(self, self%night_texture)
         self%textured = c_associated(image)
         self%built_radii = self%radii()
+        self%translucent = self%opacity_ < 1.0_wp
         if (self%auto_lod_) then                           ! meshes chosen per view, built when wanted
             self%image = image                              ! (kept for those built later)
             self%night = night
@@ -386,7 +416,7 @@ contains
             body = self%lod_node
         else
             self%mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], image, &
-                                         self%n_lon, self%n_lat, night)
+                                         self%n_lon, self%n_lat, night, translucent=self%translucent)
             if (c_associated(image)) call vkf_image_delete(image)
             if (c_associated(night)) call vkf_image_delete(night)
             if (.not. c_associated(self%mesh)) return
@@ -407,7 +437,7 @@ contains
         logical, intent(in) :: compile
         type(c_ptr) :: mesh
         mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], self%image, &
-                                lod_segments(k), lod_segments(k) / 2, self%night)
+                                lod_segments(k), lod_segments(k) / 2, self%night, translucent=self%translucent)
         if (.not. c_associated(mesh)) then
             write(*, '(a,i0,a)') 'vkframes: Sphere '//self%name()//': could not build its ', lod_segments(k), '-segment mesh'
             return
