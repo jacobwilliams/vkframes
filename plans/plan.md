@@ -470,6 +470,21 @@ Decided so far:
       days 0.14 s -> 0.025 s, 20000 over a year 6.4 s -> 1.0 s, the same
       fates. Without OpenMP the `!$` lines are comments: serial.
       - [ ] Untested: OpenMP on Linux (libgomp) and Windows.
+  - The rendezvous demo (`demos/rpo`, `pixi run -e qt rpo-demo`): RPO in
+    the target's LVLH frame (scene x V-bar, y cross-track, z radial up;
+    metres) under the Clohessy-Wiltshire equations (`app/cw.f90`: the closed
+    form, checked against RK4 to 1e-11 m; a plan propagated piecewise
+    between impulsive burns; radial hops along V-bar). The path is colored
+    by safety (outside the keep-out sphere; inside it within the approach
+    corridor along -V-bar; a violation), the keep-out sphere a wireframe
+    (LatLonGrid), the corridor an EllipticCone, the burns markers and Δv
+    vectors (SegmentArtist, relative ends, a scale). A click on the path adds
+    a burn there; a click on a burn opens a vkf_gui panel next to it (Δv,
+    time, delete), the plan propagated again as the sliders move. Presets,
+    the dock's plan and safety settings, total Δv, closest approach and
+    violations; animation, a view following the chaser, video recording.
+    `--preset k`, `--select k`, `--click t` (a click on the path through
+    forwarded mouse events, in CI on macOS).
   - MarkerArtist point colors (`set_point_colors`, off by default; not in
     OpenFrames): each marker in the trajectory's color at its point, the
     intermediate ones blended between points by time, points without a

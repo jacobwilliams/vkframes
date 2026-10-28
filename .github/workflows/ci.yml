@@ -78,6 +78,16 @@ jobs:
         continue-on-error: true
         run: pixi run -e qt qt-demo --capture "$PWD/captures/qt_demo.png" --capture-frame 30 --quit-after 10
 
+      # The rendezvous demo (qt-fortran; a click on the path simulated with --click).
+      - name: Build the rendezvous demo
+        continue-on-error: ${{ runner.os == 'Windows' }}
+        run: pixi run -e qt rpo-build
+
+      - name: Run the rendezvous demo (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: pixi run -e qt rpo-demo --preset 1 --click 1500 --capture "$PWD/captures/rpo_demo.png" --capture-frame 90 --quit-after 10
+
       # The CR3BP demo (qt-fortran; a click on a dot simulated with --click-near).
       - name: Build the CR3BP demo
         continue-on-error: ${{ runner.os == 'Windows' }}

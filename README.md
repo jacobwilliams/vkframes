@@ -450,6 +450,32 @@ problem, in the frame rotating with the Earth and the Moon (both fixed).
 pixi run -e qt cr3bp-demo
 ```
 
+#### Rendezvous demo
+
+<img src="media/screenshots/rpo_demo.jpg" alt="Radial hops along V-bar toward a target, with the keep-out sphere, the approach corridor and a burn's panel" width="300" align="right">
+
+[demos/rpo](demos/rpo): rendezvous and proximity operations, in the
+target's LVLH frame (V-bar, cross-track, radial), under the
+Clohessy-Wiltshire equations (closed form, in Fortran).
+
+- A plan, the chaser's start and impulsive burns, drawn as a path colored by
+  safety: outside the keep-out sphere, inside it within the approach
+  corridor, or inside it outside the corridor (a violation). The keep-out
+  sphere is a wireframe, the corridor a translucent cone, the burns markers
+  with their Δv as vectors.
+- Click the path: a burn is added there. Click a burn: a panel next to it
+  sets its Δv and time (or deletes it), and the path is propagated again as
+  the sliders move.
+- Presets (radial hops along V-bar, a natural-motion circumnavigation, a
+  drift from below, a football too close); the target's altitude, the
+  duration, the start, the keep-out radius and corridor angle in the dock,
+  with the total Δv, the closest approach and any violation. Animation, a
+  view following the chaser, and video recording.
+
+```sh
+pixi run -e qt rpo-demo
+```
+
 #### PySide6 demo
 
 [demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI
