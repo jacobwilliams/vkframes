@@ -18,6 +18,8 @@ module vkf_layer
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
     public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, vkf_viewer_frame_begin, vkf_viewer_frame_draw
+    public :: vkf_viewer_gui, vkf_gui_begin, vkf_gui_end, vkf_gui_text, vkf_gui_button, vkf_gui_checkbox, vkf_gui_slider, &
+              vkf_gui_separator, vkf_gui_same_line
     public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_compile_node, vkf_viewer_any
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
@@ -243,6 +245,77 @@ module vkf_layer
             integer(c_int), value :: kind, uri_len, encoding
             character(kind=c_char), dimension(*), intent(in) :: uri
         end function vkf_rocky_add_elevation
+
+        type(c_ptr) function vkf_viewer_gui(viewer, font, font_len, size) bind(C, name="vkf_viewer_gui")
+            import :: c_ptr, c_int, c_char, c_double
+            implicit none
+            type(c_ptr), value :: viewer
+            character(kind=c_char), intent(in) :: font(*)
+            integer(c_int), value :: font_len
+            real(c_double), value :: size
+        end function vkf_viewer_gui
+
+        subroutine vkf_gui_begin(gui, title, title_len, x, y, pivot_x, pivot_y, follow) bind(C, name="vkf_gui_begin")
+            import :: c_ptr, c_int, c_char, c_double
+            implicit none
+            type(c_ptr), value :: gui
+            character(kind=c_char), intent(in) :: title(*)
+            integer(c_int), value :: title_len, follow
+            real(c_double), value :: x, y, pivot_x, pivot_y
+        end subroutine vkf_gui_begin
+
+        subroutine vkf_gui_end(gui) bind(C, name="vkf_gui_end")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: gui
+        end subroutine vkf_gui_end
+
+        subroutine vkf_gui_text(gui, text, text_len) bind(C, name="vkf_gui_text")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: gui
+            character(kind=c_char), intent(in) :: text(*)
+            integer(c_int), value :: text_len
+        end subroutine vkf_gui_text
+
+        integer(c_int) function vkf_gui_button(gui, label, label_len) bind(C, name="vkf_gui_button")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: gui
+            character(kind=c_char), intent(in) :: label(*)
+            integer(c_int), value :: label_len
+        end function vkf_gui_button
+
+        integer(c_int) function vkf_gui_checkbox(gui, label, label_len, value) bind(C, name="vkf_gui_checkbox")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: gui
+            character(kind=c_char), intent(in) :: label(*)
+            integer(c_int), value :: label_len
+            integer(c_int), intent(inout) :: value
+        end function vkf_gui_checkbox
+
+        integer(c_int) function vkf_gui_slider(gui, label, label_len, value, low, high) bind(C, name="vkf_gui_slider")
+            import :: c_ptr, c_int, c_char, c_double
+            implicit none
+            type(c_ptr), value :: gui
+            character(kind=c_char), intent(in) :: label(*)
+            integer(c_int), value :: label_len
+            real(c_double), intent(inout) :: value
+            real(c_double), value :: low, high
+        end function vkf_gui_slider
+
+        subroutine vkf_gui_separator(gui) bind(C, name="vkf_gui_separator")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: gui
+        end subroutine vkf_gui_separator
+
+        subroutine vkf_gui_same_line(gui) bind(C, name="vkf_gui_same_line")
+            import :: c_ptr
+            implicit none
+            type(c_ptr), value :: gui
+        end subroutine vkf_gui_same_line
 
         integer(c_int) function vkf_viewer_frame_begin(viewer) bind(C, name="vkf_viewer_frame_begin")
             import :: c_ptr, c_int

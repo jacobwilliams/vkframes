@@ -10,6 +10,9 @@ module test_events_recorder
 
     type, extends(WindowEventHandler), public :: Recorder
         integer :: presses = 0, releases = 0, motions = 0, button_presses = 0, button_releases = 0
+        ! the motions since `motions` was reset (the real pointer's too, if it moves over the window)
+        real(wp) :: motion_xy(2, 64) = 0.0_wp
+        logical :: motion_buttons(3, 64) = .false.
         integer :: key = 0, modifiers = 0, button = 0
         real(wp) :: x = huge(1.0_wp), y = huge(1.0_wp)
         logical :: buttons(3) = .false.
@@ -60,6 +63,10 @@ contains
         self%x = x
         self%y = y
         self%buttons = buttons
+        if (self%motions <= size(self%motion_xy, 2)) then
+            self%motion_xy(:, self%motions) = [x, y]
+            self%motion_buttons(:, self%motions) = buttons
+        end if
     end subroutine recorder_mouse_motion
 
     subroutine recorder_button_press(self, window, x, y, button)
@@ -166,15 +173,18 @@ program test_events
     call check(window%frame(), 'frame')
     call check(rec%button_presses == 1 .and. rec%button == MOUSE_LEFT .and. &
                near(rec%x, -1.0_wp) .and. near(rec%y, 1.0_wp), 'button press at the top left: (-1, 1)')
+    ! (the real pointer over the window can add motions: the ones forwarded are looked for among them)
+    rec%motions = 0
     call window%mouse(MOUSE_MOVE, int(width) / 2, int(height) / 2, MASK_LEFT, 0)
     call check(window%frame(), 'frame')
-    call check(rec%motions == 1 .and. near(rec%x, 0.0_wp) .and. near(rec%y, 0.0_wp) .and. &
-               all(rec%buttons .eqv. [.true., .false., .false.]), 'dragging at the center: (0, 0), the left button held')
+    call check(saw_motion(0.0_wp, 0.0_wp, [.true., .false., .false.]), &
+               'dragging at the center: (0, 0), the left button held')
+    rec%motions = 0
     call window%mouse(MOUSE_RELEASE, int(width), int(height), 0, MOUSE_LEFT)
     call window%mouse(MOUSE_MOVE, int(width), int(height), 0, 0)
     call check(window%frame(), 'frame')
-    call check(rec%button_releases == 1 .and. rec%motions == 2 .and. near(rec%x, 1.0_wp) .and. near(rec%y, -1.0_wp) &
-               .and. .not. any(rec%buttons), 'release and move at the bottom right: (1, -1), no buttons')
+    call check(rec%button_releases == 1 .and. saw_motion(1.0_wp, -1.0_wp, [.false., .false., .false.]), &
+               'release and move at the bottom right: (1, -1), no buttons')
 
     ! cleared: no more events to the handler
     call window%clear_event_handler()
@@ -206,6 +216,19 @@ program test_events
     write(*, '(a)') 'PASS: window events (WindowEventHandler), built-in keys'
 
 contains
+
+    !> A motion to (x, y) with these buttons held was given to the handler
+    !> since its motions were counted from 0.
+    logical function saw_motion(x, y, buttons) result(saw)
+        real(wp), intent(in) :: x, y
+        logical, intent(in) :: buttons(3)
+        integer :: k
+        saw = .false.
+        do k = 1, min(rec%motions, size(rec%motion_xy, 2))
+            if (near(rec%motion_xy(1, k), x) .and. near(rec%motion_xy(2, k), y) .and. &
+                all(rec%motion_buttons(:, k) .eqv. buttons)) saw = .true.
+        end do
+    end function saw_motion
 
     !> A key pressed and released, then a frame (the events passed on).
     subroutine press(symbol, modified, modifier)

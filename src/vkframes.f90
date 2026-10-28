@@ -24,6 +24,7 @@ module vkframes
                           KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN, KEY_PAGE_UP, KEY_PAGE_DOWN, KEY_END, KEY_INSERT, &
                           KEY_F1, MOD_SHIFT, MOD_CAPS_LOCK, MOD_CONTROL, MOD_ALT, MOD_NUM_LOCK, MOD_META
     use vkf_hud, only: HUDText
+    use vkf_gui, only: Gui
     use vkf_sky, only: SkySphere, SKY_NONE, SKY_TEXTURE, SKY_STARS
     use vkf_shapes, only: CoordinateAxes, LatLonGrid, RadialPlane, PolyhedralCone, EllipticCone, RectangularCone, &
                           CONE_NONE, CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE, CONE_ALL

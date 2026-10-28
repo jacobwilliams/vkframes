@@ -147,12 +147,19 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     screen, to keep HUD text next to a moving object. The event handler's
     `before_draw` is called each frame once the scene and camera are final,
     so such a callout is in step with what is drawn.
+  - GUI panels (not in OpenFrames): Dear ImGui panels with text, buttons,
+    checkboxes and sliders, drawn flat on top of the scene in vkframes' own
+    windows (and embedded ones), described from Fortran each frame
+    (`window%gui()`). A panel can stay next to a picked or moving object.
+    Clicks over a panel go to it, not to the camera or picking.
   - Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
     point of the window, nearest first: a trajectory's curve (the point and
     the time there, interpolated), its markers and segments, a body (the
     point on its surface, with latitude and longitude) or a frame. Lines and
     markers are reached within a few pixels beyond their width or size; in
-    trace mode only what is drawn is picked.
+    trace mode only what is drawn is picked. Frames and artists can be left
+    out (`set_pickable`), a pick can ask for some kinds only, and for the
+    nearest hit only (cheap enough for every mouse move).
   - Keyboard and mouse: a program's `WindowEventHandler` (OpenFrames' window
     callbacks) is given key presses and releases, mouse motion and button
     presses and releases, also in embedded windows. OpenFrames' keys are
@@ -214,6 +221,7 @@ All of these are installed by pixi (see [pixi.toml](pixi.toml)):
 | Fortran | gfortran 15, fpm 0.13 |
 | C++ | a C++ compiler (clang++ on Windows, for conda-forge's MSVC-built VSG), CMake, Ninja |
 | Rendering | VulkanSceneGraph 1.1, vsgXchange 1.1 (images, models, fonts), glslang (shader compiler) |
+| GUI panels | vsgImGui 0.8 (Dear ImGui 1.92) |
 | Vulkan on macOS | [KosmicKrisp](https://docs.mesa3d.org/drivers/kosmickrisp.html) (Mesa's Vulkan on Metal) |
 | Fonts | DejaVu Sans (the default label font) |
 | Qt demos (`qt` environment) | Qt 6.11; qt-fortran and json-fortran are fetched by fpm |
@@ -263,7 +271,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `day_night` | <img src="media/screenshots/examples/day_night.jpg" width="160" alt="day_night"> | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
 | `shapes` | <img src="media/screenshots/examples/shapes.jpg" width="160" alt="shapes"> | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
 | `two_windows` | <img src="media/screenshots/examples/two_windows_1.jpg" width="78" alt="two_windows, window 1"><img src="media/screenshots/examples/two_windows_2.jpg" width="78" alt="two_windows, window 2"> | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
-| `pick_trajectories` | <img src="media/screenshots/examples/pick_trajectories.jpg" width="160" alt="pick_trajectories"> | Picking and callouts: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (a ring and a readout at the point: the time there and the altitude) or the Earth (latitude and longitude), HUD text follows the selected orbit's spacecraft with its altitude, and `g` goes to the time selected. |
+| `pick_trajectories` | <img src="media/screenshots/examples/pick_trajectories.jpg" width="160" alt="pick_trajectories"> | Picking and callouts: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (a ring and a readout at the point: the time there and the altitude) or the Earth (latitude and longitude), a GUI panel follows the selected orbit's spacecraft (its altitude, trace mode, line width, go to the time picked), a Controls panel sets the time scale and pause, and `g` goes to the time selected. |
 | `camera_tour` | <img src="media/screenshots/examples/camera_tour.jpg" width="160" alt="camera_tour"> | The camera from a program: a scripted tour that flies between an Earth view and one following a spacecraft (a view transition), and to cameras given in the root frame (`set_camera` with a duration), printing where the camera is (`get_camera`). |
 | `earth_moon_frames` | <img src="media/screenshots/examples/earth_moon_frames_1.jpg" width="78" alt="earth_moon_frames, window 1"><img src="media/screenshots/examples/earth_moon_frames_2.jpg" width="78" alt="earth_moon_frames, window 2"> | One trajectory in two frames at once: a free-return lunar flyby shown in inertial coordinates about the Earth in one window, and in the Moon's body-fixed frame about the Moon in the other. Each window has its own scene; the Moon-fixed copy is transformed in Fortran, each point at its own time. |
 | `live_changes` | <img src="media/screenshots/examples/live_changes.jpg" width="160" alt="live_changes"> | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |
@@ -338,7 +346,8 @@ library:
   time slider.
 - **Picking:** a click picks what is under it: an orbit or marker (the
   frame, the time there and the altitude; `g` goes to that time) or the Earth
-  (latitude and longitude), shown in the dock and in a callout at the point.
+  (latitude and longitude), shown in the dock and in a GUI panel at the
+  point (with a button to go to that time).
 - **Camera:** changing the view flies the camera there (the time is set in
   the dock; 0 s cuts, as OpenFrames).
 - **Keys and mouse:** a `WindowEventHandler` per window: `v` and `V` change

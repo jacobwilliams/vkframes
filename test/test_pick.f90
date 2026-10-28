@@ -134,6 +134,26 @@ program test_pick
     if (k > 0) call check(hits(k)%index == 1 .and. near3(hits(k)%position, 0.7_wp * [-2000.0_wp, 0.0_wp, 1500.0_wp], &
                           1.0e-6_wp), 'segment: the first, the point')
 
+    ! what is picked: frames and artists left out, kinds, the nearest only
+    earth_pickable: block
+        call earth%set_pickable(.false.)
+        call window%pick(0.0_wp, 0.0_wp, hits)
+        call check(first_hit(PICK_BODY) == 0, 'not pickable: the body left out')
+        call earth%set_pickable(.true.)
+    end block earth_pickable
+    call at([-2000.0_wp, 0.0_wp, 1500.0_wp], x, y)                  ! (the curve, the start marker and a spoke)
+    call window%pick(x, y, hits)
+    call check(first_hit(PICK_CURVE) > 0 .and. first_hit(PICK_MARKER) > 0 .and. first_hit(PICK_SEGMENT) > 0, &
+               'several hits there')
+    call window%pick(x, y, hits, kinds=[PICK_MARKER])
+    call check(size(hits) >= 1 .and. all(hits%kind == PICK_MARKER), 'kinds: markers only')
+    call window%pick(x, y, hits, nearest=.true.)
+    call check(size(hits) == 1, 'nearest: one hit')
+    call markers%set_pickable(.false.)
+    call window%pick(x, y, hits)
+    call check(first_hit(PICK_MARKER) == 0 .and. first_hit(PICK_CURVE) > 0, 'artist not pickable: left out')
+    call markers%set_pickable(.true.)
+
     ! callouts: where a point is (HUD positions: 0 to 1, y up), and HUD text
     ! and a frame's label changed while shown
     call at([550.0_wp, 0.0_wp, 1500.0_wp], x, y)

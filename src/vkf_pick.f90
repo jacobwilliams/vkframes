@@ -37,9 +37,11 @@ module vkf_pick
         real(wp) :: tolerance = 6.0_wp                      !! framebuffer pixels
         real(wp) :: pixel_ratio = 1.0_wp                    !! framebuffer pixels per window unit (for line widths, marker sizes)
         real(wp) :: near = 0.0_wp                           !! the smallest depth in front of the eye
+        integer :: kinds = -1                               !! the kinds of hits wanted: bit k for kind k (all)
+        real(wp) :: max_depth = huge(1.0_wp)                !! hits deeper than this aren't wanted (nearest only)
     end type PickCamera
 
-    public :: pick_camera, project, point_pick, segment_pick, sphere_near, ray, ray_ellipsoid
+    public :: pick_camera, project, point_pick, segment_pick, sphere_near, ray, ray_ellipsoid, wants
 
 contains
 
@@ -75,6 +77,13 @@ contains
         cam%tolerance = tolerance
         cam%near = 1.0e-6_wp * max(d, tiny(1.0_wp))          ! (as the renderer's near plane)
     end function pick_camera
+
+    !> Hits of `kind` (vkf_frames' PICK_*) are wanted.
+    pure logical function wants(cam, kind)
+        type(PickCamera), intent(in) :: cam
+        integer, intent(in) :: kind
+        wants = btest(cam%kinds, kind)
+    end function wants
 
     !> The screen offset (framebuffer pixels) of point p (root frame) from the
     !> cursor, and its depth; false if it is behind the eye.
@@ -116,7 +125,7 @@ contains
         pixels = hypot(sx, sy)
         reach = cam%tolerance
         if (present(extra)) reach = reach + extra
-        hit = pixels <= reach
+        hit = pixels <= reach .and. depth <= cam%max_depth
     end function point_pick
 
     !> Segment a-b (root frame) passes within the tolerance (plus `extra`
@@ -162,6 +171,7 @@ contains
         depth = z0 + u * (z1 - z0)
         hit = pixels <= cam%tolerance
         if (present(extra)) hit = pixels <= cam%tolerance + extra
+        hit = hit .and. depth <= cam%max_depth
     end function segment_pick
 
     !> A sphere (root frame: center c, radius r) might be within the tolerance
@@ -173,6 +183,10 @@ contains
         real(wp), intent(in), optional :: extra
         real(wp) :: sx, sy, depth, scale, reach
         near = .true.
+        if (dot_product(c - cam%eye, cam%forward) - r > cam%max_depth) then   ! (all deeper than a hit already found)
+            near = .false.
+            return
+        end if
         if (cam%perspective) then
             depth = dot_product(c - cam%eye, cam%forward)
             if (depth <= r + cam%near) then                     ! (the eye inside it, or close: can't tell)

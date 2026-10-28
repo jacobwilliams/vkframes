@@ -62,8 +62,9 @@
 !> position in the window (-1 to 1) is shown in the dock, and a click picks
 !> what is under it (WindowProxy%pick): an orbit or marker (its frame, the time
 !> there and the altitude; g goes to that time) or a body (the latitude and
-!> longitude), shown in the dock and in a callout at the point picked (a
-!> frame moved there whose name label, drawn on top, is the readout).
+!> longitude), shown in the dock and in a GUI panel at the point picked
+!> (vkf_gui: Dear ImGui, kept there each frame in the handler's before_draw),
+!> with buttons to go to the time there and to close it.
 !>
 !> How the pieces fit:
 !>
@@ -141,6 +142,7 @@ module vkdemo
         procedure :: key_press => demo_key_press
         procedure :: mouse_motion => demo_mouse_motion
         procedure :: button_press => demo_button_press
+        procedure :: before_draw => demo_before_draw
     end type DemoEvents
 
     !> One window showing the scene: a QWindow (in the main window, or in a
@@ -225,7 +227,9 @@ module vkdemo
         type(CustomLineSegments) :: line_of_sight
         type(LineOfSightLink) :: line_of_sight_link
         type(SkySphere) :: sky                                 !! stars and (with OpenFrames' data) a texture
-        type(ReferenceFrame) :: picked                         !! at the point picked: its name label is the readout
+        type(ReferenceFrame) :: picked                         !! at the point picked (where its GUI panel is)
+        character(len=96) :: picked_text = ''                  !! the panel's readout
+        integer :: picked_window = 0                           !! the window it was picked in (0: none)
         ! options
         character(len=:), allocatable :: data_dir, capture
         integer :: capture_frame = 120
@@ -955,6 +959,28 @@ contains
         end associate
     end subroutine demo_key_press
 
+    !> Each frame, before drawing: a GUI panel (vkf_gui) at the point last
+    !> picked in this window, kept at its place on the screen, with its readout
+    !> and buttons to go to the time there and to close it.
+    subroutine demo_before_draw(self, window, t)
+        class(DemoEvents), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: t
+        type(Gui) :: g
+        real(wp) :: at(2)
+        if (app%picked_window /= self%window) return
+        if (.not. window%screen_position(app%picked%position(), at)) return
+        g = window%gui()
+        call g%begin_panel('##picked', position=at + [0.01_wp, 0.01_wp], pivot=[0.0_wp, 1.0_wp], follow=.true.)
+        call g%text(trim(app%picked_text))
+        if (app%have_picked_time) then
+            if (g%button('go to this time')) call app%windows(1)%proxy%set_time(app%picked_time)
+            call g%same_line()
+        end if
+        if (g%button('close')) app%picked_window = 0
+        call g%end_panel()
+    end subroutine demo_before_draw
+
     !> The pointer's position (-1 to 1 across the window, y up), in the dock.
     subroutine demo_mouse_motion(self, window, x, y, buttons)
         class(DemoEvents), intent(inout) :: self
@@ -980,7 +1006,7 @@ contains
         if (button /= MOUSE_LEFT) return
         call window%pick(x, y, hits)
         app%have_picked_time = .false.
-        call app%picked%show_name_label(.false.)
+        app%picked_window = 0
         if (size(hits) == 0) then
             write(app%last_click, '(a,i0,a)') 'Clicked (window ', self%window, '): nothing there'
         else
@@ -1001,10 +1027,10 @@ contains
                     app%last_click = 'Picked: '//h%frame%name()
                     readout = '   '//h%frame%name()
                 end select
-                ! the callout at the point picked
-                call app%picked%set_name(trim(readout))
+                ! a GUI panel at the point picked (demo_before_draw)
+                app%picked_text = adjustl(readout)
                 call app%picked%set_position(h%position)
-                call app%picked%show_name_label(.true.)
+                app%picked_window = self%window
             end associate
         end if
         call app%pointer_label%setText('<small>'//trim(app%last_click)//'</small>')

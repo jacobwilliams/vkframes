@@ -67,6 +67,15 @@ namespace vkf
     // ... and the device features they need, and their state for a view (before the first compile)
     void device_features(vsg::WindowTraits& traits);
     bool prepare_view(vsg::Viewer* viewer, vsg::View& view, vsg::ref_ptr<vsg::Device> device);
+
+    // GUI panels (vkf_gui.cpp): made for a viewer on first use, attached once
+    // its command graph exists, cleared after each draw, deleted with it
+    struct Gui;
+    Gui* gui_create(float pixel_ratio, const std::string& font, float size);
+    void gui_attach(Gui* gui, vsg::ref_ptr<vsg::Window> window, vsg::Viewer& viewer, vsg::CommandGraph& commandGraph);
+    bool gui_attached(const Gui* gui);
+    void gui_frame_done(Gui* gui);
+    void gui_delete(Gui* gui, vsg::Viewer& viewer);
 } // namespace vkf
 
 namespace
@@ -763,6 +772,7 @@ namespace
         bool resizeOwn = false;                // macOS, VSG's own window: resized (see vkf_viewer_frame)
         vsg::clock::time_point lastResize;     // (see resize_settle)
         std::vector<std::array<int32_t, 12>> events;   // keyboard and mouse events for Fortran (EventRecorder)
+        vkf::Gui* gui = nullptr;               // GUI panels (vkf_gui.cpp), once used
     };
 
     // Records the window's keyboard and mouse events for Fortran (its event
@@ -788,10 +798,12 @@ namespace
 
         void key(int32_t kind, vsg::KeyEvent& e)
         {
+            if (e.handled) return;                     // (taken by a GUI panel)
             record({kind, int32_t(e.keyModified), int32_t(e.keyBase), int32_t(e.keyModifier), 0, 0, 0, 0, 0, 0, 0, 0});
         }
         void pointer(int32_t kind, vsg::PointerEvent& e, uint32_t button)
         {
+            if (e.handled) return;                     // (over a GUI panel)
             const auto area = v->camera->getRenderArea();
             record({kind, 0, 0, 0, int32_t(button), int32_t(e.mask), e.x, e.y,
                     area.offset.x, area.offset.y, int32_t(area.extent.width), int32_t(area.extent.height)});
@@ -1364,6 +1376,7 @@ VKF_API void vkf_viewer_delete(void* viewer)
     auto v = static_cast<Viewer*>(viewer);
     guarded("vkf_viewer_delete", 0, [&]() {
         if (v && v->compiled) v->viewer->deviceWaitIdle();
+        if (v && v->gui) vkf::gui_delete(v->gui, *v->viewer);
         if (v) delete static_cast<Node*>(v->headlightHandle);
         auto vsgViewer = v ? v->viewer : vsg::ref_ptr<vsg::Viewer>();
         auto& viewers = live_viewers();
@@ -1652,6 +1665,7 @@ VKF_API int vkf_viewer_frame_begin(void* viewer)
                     if (auto renderGraph = child.cast<vsg::RenderGraph>()) renderGraph->addChild(vsg::View::create(hudCamera, v->hudScene));
             }
             set_pixel_ratio(*v->commandGraph, v->pixelRatio);
+            if (v->gui) vkf::gui_attach(v->gui, v->window, *v->viewer, *v->commandGraph);   // (on top of the HUD)
             v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
             prepare_views(*v);                                  // (compiled with the scene)
             v->viewer->compile();
@@ -1707,7 +1721,22 @@ VKF_API int vkf_viewer_frame_draw(void* viewer)
         v->viewer->update();
         v->viewer->recordAndSubmit();
         v->viewer->present();
+        vkf::gui_frame_done(v->gui);                   // (the panels are described again for the next frame)
         return 1;
+    });
+}
+
+// The viewer's GUI panels (vkf_gui.cpp), made on first use with the font file
+// `font` (empty: ImGui's) of `size` window units: a handle for the vkf_gui_*
+// functions, valid while the viewer exists.
+VKF_API void* vkf_viewer_gui(void* viewer, const char* font, int font_len, double size)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return nullptr;
+    return guarded("vkf_viewer_gui", static_cast<void*>(nullptr), [&]() -> void* {
+        if (!v->gui) v->gui = vkf::gui_create(v->pixelRatio, to_string(font, font_len), static_cast<float>(size));
+        if (v->compiled && !vkf::gui_attached(v->gui)) vkf::gui_attach(v->gui, v->window, *v->viewer, *v->commandGraph);
+        return v->gui;
     });
 }
 

@@ -43,7 +43,7 @@ module vkf_frames
     use vkf_geometry, only: arrow_create
     use vkf_text, only: label_create, label_set_layout
     use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, rigid_inverse
-    use vkf_pick, only: PickCamera, point_pick, ray, ray_ellipsoid
+    use vkf_pick, only: PickCamera, point_pick, ray, ray_ellipsoid, wants
     use vkf_trajectory, only: Trajectory
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE
 
@@ -123,6 +123,7 @@ module vkf_frames
         real(wp) :: light_ambient_(3) = 0.05_wp, light_diffuse_(3) = 0.8_wp, light_specular_(3) = 0.05_wp
         type(c_ptr) :: light_node = c_null_ptr, light_switch = c_null_ptr
         logical :: contents = .true.
+        logical :: pickable_ = .true.                       !! picked (WindowProxy%pick); its children aside
         ! rendering
         type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
         type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
@@ -168,7 +169,7 @@ module vkf_frames
         procedure :: follow, unfollow, follower, is_following
         procedure :: update, late_update
         procedure :: realize, build_contents, sync, node
-        procedure :: bound, pick
+        procedure :: bound, pick, set_pickable, pickable
         procedure :: move_x_axis, move_y_axis, move_z_axis, reposition_axes
     end type ReferenceFrame
 
@@ -534,6 +535,20 @@ contains
         contents_shown = self%contents
     end function contents_shown
 
+    !> Whether `pick` tests what this frame draws (default true; e.g. false
+    !> for an overlay such as a selection marker). Its children are picked or
+    !> not by their own setting.
+    subroutine set_pickable(self, pickable)
+        class(ReferenceFrame), intent(inout) :: self
+        logical, intent(in) :: pickable
+        self%pickable_ = pickable
+    end subroutine set_pickable
+
+    pure logical function pickable(self)
+        class(ReferenceFrame), intent(in) :: self
+        pickable = self%pickable_
+    end function pickable
+
     !> Pick what the frame draws (see the module documentation): `to_root`
     !> is its transform to the root frame; hits are added to hits(1:n). A
     !> plain frame: its origin, if it shows axes or its name label.
@@ -545,6 +560,7 @@ contains
         integer, intent(inout) :: n
         type(PickHit) :: h
         if (self%axes == NO_AXES .and. .not. self%name_label) return
+        if (.not. wants(cam, PICK_FRAME)) return
         if (.not. point_pick(cam, to_root(1:3, 4), h%pixels, h%distance)) return
         h%kind = PICK_FRAME
         h%frame => self
@@ -566,9 +582,12 @@ contains
         integer, intent(inout) :: n
         type(PickHit) :: h
         real(wp) :: origin(3), dir(3), along, local(3), normal(3)
+        hit = .false.
+        if (.not. wants(cam, PICK_BODY)) return
         call ray(cam, origin, dir)
         hit = ray_ellipsoid(origin, dir, matmul(to_root(1:3, 1:3), center) + to_root(1:3, 4), &
                             matmul(to_root(1:3, 1:3), axes), radii, along, h%position, local)
+        if (hit) hit = dot_product(h%position - cam%eye, cam%forward) <= cam%max_depth
         if (.not. hit) return
         h%kind = PICK_BODY
         h%frame => self

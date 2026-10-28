@@ -43,7 +43,7 @@ module vkf_artists
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, SOURCE_ZERO, SOURCE_POSOPT, &
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
     use vkf_frames, only: ReferenceFrame, PickHit, add_pick_hit, PICK_CURVE, PICK_SEGMENT, PICK_MARKER
-    use vkf_pick, only: PickCamera, point_pick, segment_pick, sphere_near
+    use vkf_pick, only: PickCamera, point_pick, segment_pick, sphere_near, wants
     use vkf_layer, only: vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_line_points_changed, &
                          vkf_ribbon_create, &
                          vkf_line_set_range, &
@@ -62,11 +62,13 @@ module vkf_artists
         private
         type(Trajectory), pointer :: traj => null()
         logical :: trace = .false.
+        logical :: pickable_ = .true.               !! picked (WindowProxy%pick)
         ! what was drawn
         integer :: seen_generation = -1, seen_revision = -1
     contains
         procedure :: set_trajectory, get_trajectory
         procedure :: set_trace_mode, trace_mode
+        procedure :: set_pickable => artist_set_pickable, pickable => artist_pickable
         procedure :: release => artist_release
         procedure(artist_build), deferred :: build
         procedure(artist_update), deferred :: update
@@ -353,6 +355,19 @@ contains
         type(Trajectory), pointer :: traj
         traj => self%traj
     end function get_trajectory
+
+    !> Whether `pick` tests what this artist draws (default true; e.g. false for
+    !> a spacecraft's marker beside its orbit's curve).
+    subroutine artist_set_pickable(self, pickable)
+        class(TrajectoryArtist), intent(inout) :: self
+        logical, intent(in) :: pickable
+        self%pickable_ = pickable
+    end subroutine artist_set_pickable
+
+    pure logical function artist_pickable(self)
+        class(TrajectoryArtist), intent(in) :: self
+        artist_pickable = self%pickable_
+    end function artist_pickable
 
     !> Draw only the part up to the current time (see the module documentation).
     subroutine set_trace_mode(self, enabled)
@@ -2238,13 +2253,14 @@ contains
         integer :: k
         if (self%contents_shown()) then
             do k = 1, self%n_artists
+                if (.not. self%artists(k)%p%pickable_) cycle
                 select type (a => self%artists(k)%p)
                 class is (CurveArtist)
-                    call curve_pick(a, self, cam, to_root, hits, n)
+                    if (wants(cam, PICK_CURVE)) call curve_pick(a, self, cam, to_root, hits, n)
                 class is (SegmentArtist)
-                    call segment_artist_pick(a, self, cam, to_root, hits, n)
+                    if (wants(cam, PICK_SEGMENT)) call segment_artist_pick(a, self, cam, to_root, hits, n)
                 class is (MarkerArtist)
-                    call marker_pick(a, self, cam, to_root, hits, n)
+                    if (wants(cam, PICK_MARKER)) call marker_pick(a, self, cam, to_root, hits, n)
                 end select
             end do
         end if

@@ -8,11 +8,15 @@
 !>     marker at its origin, and its name label, changed to the readout, in
 !>     the orbit's color, drawn on top of the scene (it follows the point as
 !>     the view turns);
-!>   - HUD text kept next to the orbit's spacecraft each frame, with its
-!>     altitude as it moves: moved in the handler's `before_draw` (called
-!>     each frame once the spacecraft and the camera are where they are drawn)
-!>     to the spacecraft's place on the screen (WindowProxy%screen_position).
+!>   - a GUI panel (vkf_gui: Dear ImGui) kept next to the orbit's spacecraft
+!>     each frame, with its altitude as it moves, a checkbox for the orbit's
+!>     trace mode, a slider for its line width, and buttons to go to the time
+!>     picked and to close it: described in the handler's `before_draw`
+!>     (called each frame once the spacecraft and the camera are where they
+!>     are drawn) at the spacecraft's place on the screen
+!>     (WindowProxy%screen_position).
 !>   Clicking the Earth shows the latitude and longitude instead.
+!> * A Controls panel (top left, movable): the time scale and pause.
 !> * g: goes to the time selected (the spacecraft move there).
 !>
 !> Arguments (optional): number of frames to run, then a file to capture the
@@ -34,11 +38,10 @@ module pick_trajectories_handler
         type(ReferenceFrame), pointer :: selection => null()     !! moved to the point picked; its label: the readout
         type(DrawableTrajectory), pointer :: ring => null()      !! the ring there (a child of the selection)
         type(HUDText), pointer :: hud => null()
-        type(HUDText), pointer :: callout => null()              !! next to the selected orbit's spacecraft
         type(DrawableTrajectory), pointer :: crafts(:) => null() !! the spacecraft (markers following the orbits)
         character(len=16) :: names(n_orbits) = ''
         real(wp) :: colors(3, n_orbits) = 1.0_wp
-        integer :: selected = 0                                  !! the orbit selected (its spacecraft's callout), or 0
+        integer :: selected = 0                                  !! the orbit selected (its spacecraft's panel), or 0
         real(wp), pointer :: widths(:) => null()
         integer :: hovered = 0
         real(wp) :: selected_time = 0.0_wp
@@ -63,7 +66,7 @@ contains
         type(PickHit), allocatable :: hits(:)
         integer :: k
         if (any(buttons)) return
-        call window%pick(x, y, hits)
+        call window%pick(x, y, hits, kinds=[PICK_CURVE, PICK_MARKER], nearest=.true.)   ! (cheap: every move)
         k = 0
         if (size(hits) > 0) k = orbit_of(self, hits(1))
         if (k == self%hovered) return
@@ -80,25 +83,46 @@ contains
         if (button == MOUSE_LEFT) call self%select(window, x, y)
     end subroutine picker_press
 
-    !> Each frame, before drawing: the callout next to the selected orbit's
-    !> spacecraft, where it is in this frame, with its altitude.
+    !> Each frame, before drawing: the GUI's panels, the selected orbit's next
+    !> to its spacecraft, where it is in this frame.
     subroutine picker_before_draw(self, window, t)
         class(Picker), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
         real(wp), intent(in) :: t
+        type(Gui) :: g
         character(len=96) :: text
-        real(wp) :: p(3), at(2)
+        real(wp) :: p(3), at(2), scale, width
+        logical :: paused, trace
         integer :: k
+        g = window%gui()
+        ! the controls: a panel at the top left (movable)
+        call g%begin_panel('Controls', position=[0.01_wp, 0.98_wp])
+        scale = window%time_scale()
+        if (g%slider('time scale', scale, 0.0_wp, 2000.0_wp)) call window%set_time_scale(scale)
+        paused = window%is_time_paused()
+        if (g%checkbox('pause', paused)) call window%pause_time(paused)
+        call g%end_panel()
+        ! the selected orbit's spacecraft: a panel kept next to it, where it is now
         k = self%selected
-        call self%callout%show(.false.)
         if (k == 0) return
         p = self%crafts(k)%position()                           ! (a child of the root: root coordinates)
         if (.not. window%screen_position(p, at)) return
+        call g%begin_panel('##spacecraft', position=at + [0.01_wp, 0.01_wp], pivot=[0.0_wp, 1.0_wp], follow=.true.)
         write(text, '(a,i0,a)') trim(self%names(k))//' spacecraft: ', nint(norm2(p) - self%radius), ' km'
-        call self%callout%set_text(trim(text))
-        call self%callout%set_color(self%colors(:, k))
-        call self%callout%set_position(at + [0.012_wp, 0.012_wp])
-        call self%callout%show(.true.)
+        call g%text(trim(text))
+        trace = self%curves(k)%trace_mode()
+        if (g%checkbox('trace', trace)) call self%curves(k)%set_trace_mode(trace)
+        width = self%widths(k)
+        if (g%slider('line width', width, 1.0_wp, 8.0_wp)) then
+            self%widths(k) = width
+            call self%curves(k)%set_width(width)
+        end if
+        if (self%have_time) then
+            if (g%button('go to the time picked')) call window%set_time(self%selected_time)
+            call g%same_line()
+        end if
+        if (g%button('close')) self%selected = 0
+        call g%end_panel()
     end subroutine picker_before_draw
 
     !> g: go to the time selected.
@@ -125,7 +149,6 @@ contains
         call window%pick(x, y, hits)
         self%have_time = .false.
         self%selected = 0
-        call drop_ring(hits)                                    ! (the selection's own ring: not a pick)
         if (size(hits) == 0) then
             call self%ring%show_contents(.false.)
             call self%selection%show_name_label(.false.)
@@ -173,17 +196,6 @@ contains
             call self%ring%show_contents(.true.)
         end associate
     end subroutine picker_select
-
-    !> The hits without those on the selection's ring.
-    subroutine drop_ring(hits)
-        type(PickHit), allocatable, intent(inout) :: hits(:)
-        logical :: keep(size(hits))
-        integer :: i
-        do i = 1, size(hits)
-            keep(i) = hits(i)%frame%name() /= 'Ring'
-        end do
-        hits = pack(hits, keep)
-    end subroutine drop_ring
 
     !> The spacecraft a hit is on (its frame), or 0.
     integer function spacecraft_of(self, hit) result(k)
@@ -237,7 +249,7 @@ program pick_trajectories
     type(FrameManager), target :: scene
     type(WindowProxy), target :: window
     type(View), target :: earth_view
-    type(HUDText), target :: hud, callout
+    type(HUDText), target :: hud
     type(Picker), target :: picker_
     character(len=1024) :: arg, file
     real(wp) :: period, t, x, y
@@ -302,6 +314,8 @@ program pick_trajectories
     call quiet(ring_frame)
     call ring_frame%add_artist(ring)
     call ring_frame%show_contents(.false.)
+    call ring_frame%set_pickable(.false.)                             ! (the selection's own marks: not picked)
+    call selection%set_pickable(.false.)
     call selection%set_label_size(16)
     call selection%set_name_label_on_top(.true.)                     ! (a readout: not hidden by the Earth)
     call selection%set_label_alignment(ALIGN_LEFT_CENTER)
@@ -319,17 +333,12 @@ program pick_trajectories
     hud = HUDText('click an orbit, a marker or the Earth   (g: go to the time selected)', position=[0.01_wp, 0.01_wp], &
                   alignment=ALIGN_LEFT_BOTTOM, size=16.0_wp, color=[0.85_wp, 0.85_wp, 0.85_wp])
     call window%add_hud_text(hud)
-    ! the callout next to the selected orbit's spacecraft (moved each frame)
-    callout = HUDText('', alignment=ALIGN_LEFT_BOTTOM, size=15.0_wp)
-    call callout%show(.false.)
-    call window%add_hud_text(callout)
 
     picker_%curves => curves
     picker_%widths => widths
     picker_%selection => selection
     picker_%ring => ring_frame
     picker_%hud => hud
-    picker_%callout => callout
     picker_%crafts => crafts
     picker_%names = names
     picker_%colors = colors

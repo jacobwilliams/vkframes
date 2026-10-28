@@ -76,7 +76,8 @@ module vkf_window
     use vkf_view, only: View, PERSPECTIVE, camera_between, transform_camera
     use vkf_hud, only: HUDText
     use vkf_sky, only: SkySphere
-    use vkf_text, only: label_create, label_set_layout
+    use vkf_text, only: label_create, label_set_layout, find_font, default_font
+    use vkf_gui, only: Gui
     use vkf_layer, only: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_add_node, vkf_viewer_frame, &
                          vkf_viewer_capture, vkf_viewer_look_at, vkf_viewer_perspective, vkf_viewer_set_background, &
                          vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic, &
@@ -85,7 +86,7 @@ module vkf_window
                          vkf_viewer_light, vkf_viewer_light_enable, vkf_light_set, vkf_viewer_remove_node, &
                          vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio, &
                          vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, &
-                         vkf_viewer_frame_begin, vkf_viewer_frame_draw
+                         vkf_viewer_frame_begin, vkf_viewer_frame_draw, vkf_viewer_gui
 
     implicit none
 
@@ -208,6 +209,8 @@ module vkf_window
         ! picking (see the module documentation), and where points are on the screen
         procedure :: pick => window_pick
         procedure :: screen_position
+        ! GUI panels (vkf_gui)
+        procedure :: gui => window_gui
         ! HUD text (OpenFrames' RenderRectangle HUD)
         procedure :: add_hud_text, remove_hud_text
         procedure :: set_sky, sky
@@ -710,18 +713,27 @@ contains
     !> documentation): none before the first frame. `tolerance`: how close
     !> lines, markers and frames' origins must be, in window units (logical
     !> pixels; default 4), beyond half a line's width or a marker's size.
-    subroutine window_pick(self, x, y, hits, tolerance)
+    !> `kinds`: only hits of these kinds (PICK_*; the others aren't tested).
+    !> `nearest`: only the nearest hit (cheaper: what is deeper than a hit
+    !> found is skipped, e.g. to pick on every mouse move). Frames and
+    !> artists can be left out (`set_pickable(.false.)`).
+    subroutine window_pick(self, x, y, hits, tolerance, kinds, nearest)
         class(WindowProxy), intent(in), target :: self
         real(wp), intent(in) :: x, y
         type(PickHit), allocatable, intent(out) :: hits(:)
         real(wp), intent(in), optional :: tolerance
+        integer, intent(in), optional :: kinds(:)
+        logical, intent(in), optional :: nearest
         class(ReferenceFrame), pointer :: root
         type(PickCamera) :: cam
         type(PickHit) :: h
         real(wp) :: eye(3), center(3), up(3), ratio, tol
         integer(c_int) :: width, height
         integer :: n, i, j
+        logical :: only_nearest
         n = 0
+        only_nearest = .false.
+        if (present(nearest)) only_nearest = nearest
         allocate(hits(8))
         if (.not. self%is_open() .or. .not. associated(self%shown) .or. .not. associated(self%scene)) then
             hits = hits(1:0)
@@ -739,6 +751,12 @@ contains
         cam = pick_camera(eye, center, up, self%shown%projection_type() == PERSPECTIVE, self%shown%field_of_view(), &
                           aspect_ratio(self), self%shown%orthographic_bounds(), int(width), int(height), x, y, tol * ratio)
         cam%pixel_ratio = ratio
+        if (present(kinds)) then
+            cam%kinds = 0
+            do i = 1, size(kinds)
+                if (kinds(i) >= 0 .and. kinds(i) < bit_size(cam%kinds)) cam%kinds = ibset(cam%kinds, kinds(i))
+            end do
+        end if
         call pick_frame(root, identity_matrix())                  ! (the root frame's coordinates: the camera's)
         do i = 2, n                                               ! nearest first
             h = hits(i)
@@ -760,8 +778,14 @@ contains
             class(ReferenceFrame), intent(in), target :: f
             real(wp), intent(in) :: m(4,4)
             class(ReferenceFrame), pointer :: c
-            integer :: k
-            call f%pick(cam, m, hits, n)
+            integer :: k, best
+            if (f%pickable()) call f%pick(cam, m, hits, n)
+            if (only_nearest .and. n > 1) then                    ! (keep the nearest; skip what is deeper)
+                best = minloc(hits(1:n)%distance, dim=1)
+                hits(1) = hits(best)
+                n = 1
+            end if
+            if (only_nearest .and. n == 1) cam%max_depth = hits(1)%distance
             do k = 1, f%num_children()
                 c => f%child(k)
                 call pick_frame(c, matmul(m, c%local_matrix()))
@@ -769,6 +793,24 @@ contains
         end subroutine pick_frame
 
     end subroutine window_pick
+
+    !> The window's GUI panels (vkf_gui), made on first use: with `font` (a
+    !> font file name or path, as labels'; default DejaVu Sans) of `size`
+    !> window units (default 15), which apply then. Not valid unless open.
+    function window_gui(self, font, size) result(g)
+        class(WindowProxy), intent(in) :: self
+        character(len=*), intent(in), optional :: font
+        real(wp), intent(in), optional :: size
+        type(Gui) :: g
+        character(len=:), allocatable :: path
+        real(c_double) :: s
+        if (.not. self%is_open()) return
+        path = find_font(default_font)
+        if (present(font)) path = find_font(font)
+        s = 15.0_c_double
+        if (present(size)) s = size
+        g%handle = vkf_viewer_gui(self%viewer_, path, len(path, kind=c_int), s)
+    end function window_gui
 
     !> Where point `p` (root frame) is in the window, as HUD text positions:
     !> (x, y) from 0 to 1, left to right and bottom to top (as at the last

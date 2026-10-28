@@ -74,7 +74,7 @@ def prefix():
     return os.path.join(p, "Library") if WINDOWS else p
 
 
-LIBS = ["vsgXchange", "vsg"]                  # plus Vulkan: libvulkan, or vulkan-1 on Windows
+LIBS = ["vsgImGui", "imgui", "vsgXchange", "vsg"]   # plus Vulkan: libvulkan, or vulkan-1 on Windows
 VSG_DEFINES = ["-DVSG_SHARED_LIBRARY", "-DVSGXCHANGE_SHARED_LIBRARY"]
 LAYER_SRC = os.path.join(ROOT, "src", "vsg")
 

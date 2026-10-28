@@ -952,6 +952,12 @@ Interaction:
         markers, segments, trace mode with the tail; the perspective-correct
         fraction). Shown in `example/pick_trajectories.f90` (hover, select,
         go to the time) and the Qt demo (a click shows what is picked).
+      - What is picked: `ReferenceFrame%set_pickable` (the frame's own
+        contents; its children by their own) and `TrajectoryArtist%
+        set_pickable` leave things out (e.g. a selection's own marks);
+        `pick(..., kinds=[...])` tests only those kinds; `nearest=.true.`
+        keeps only the nearest hit and skips what is deeper (whole curve
+        chunks by their bounds), for picking on every mouse move.
       - [ ] Later: models' triangles (VSG's LineSegmentIntersector on the
             model's subgraph, through a thin C++ call), terrain's heights
             (Rocky), RibbonArtist surfaces and CustomLineSegments, and labels
@@ -985,15 +991,44 @@ Interaction:
         readout at the point clicked).
       - [ ] Later: a background box behind HUD text and labels, and several
             lines (newlines) checked.
-- [ ] A GUI in vkframes' own windows: Dear ImGui through vsgImGui (both on
-      conda-forge: `vsgimgui`, `imgui`) for panels, buttons, sliders and text
-      fields drawn in the Vulkan window, without Qt; e.g. a popup placed at a
-      picked object's projected position (a callout that follows it). Driven
-      from Fortran through a small set of widgets exposed as C functions (an
-      `on_gui` procedure in the WindowEventHandler, called each frame), to keep
-      the C++ layer thin; ImGui takes the mouse and keys it uses, so clicks on
-      a panel don't move the camera. (Panels placed in the 3D world, "Qt
-      widgets in 3D", stay deferred: mainly for VR.)
+- [x] GUI panels in vkframes' windows (`src/vkf_gui.f90`,
+      `src/vsg/vkf_gui.cpp`): Dear ImGui through vsgImGui (`vsgimgui` 0.8,
+      imgui 1.92, conda-forge, all three platforms), drawn flat on top of the
+      scene, also in embedded windows.
+      - Fortran describes the panels immediate-mode between frames
+        (`window%gui()`: a `Gui` handle; `begin_panel` / `end_panel`, `text`,
+        `button`, `checkbox`, `slider`, `separator`, `same_line`), e.g. in the
+        event handler's `before_draw`. The C++ layer keeps them as a list of
+        commands and replays them as ImGui calls during the draw (a node under
+        vsgImGui's RenderImGui, last in the render graph), keeping each
+        widget's result for the next call (clicked, a new value): no Fortran
+        is called from inside the draw, and nothing is shown that isn't
+        described in a frame.
+      - Panels at a position (0 to 1, y up, as HUD text; a pivot), once or
+        every frame (`follow`): e.g. next to a picked object; '##' titles have
+        no title bar.
+      - One ImGui context per window (vsgImGui uses ImGui's current one, so
+        each window's is made current around its draw and its events).
+        vsgImGui's SendEventsToImGui goes first among the event handlers: the
+        events over a panel are marked handled, and the trackball, the
+        program's handler and picking don't get them.
+      - Scaled by the window's pixel ratio, in DejaVu Sans (`gui(font=,
+        size=)`); no imgui.ini written.
+      - Tested: `test/test_gui.f90` (a button clicked through forwarded
+        events, the click taken by the panel, a click elsewhere the
+        handler's, two windows with a GUI each). Shown in
+        `example/pick_trajectories.f90` (a panel following the selected
+        spacecraft, a Controls panel) and the Qt demo (a panel at the point
+        clicked). The Rocky environment's imgui moved to 1.92.8 with it
+        (Rocky rebuilt).
+      - Untested: Windows (the DLL links vsgImGui.lib and imgui.lib) and
+        Linux.
+      - [ ] Later: text fields (VSG's key events carry the characters typed:
+            ImGui's input text needs them), combo boxes and colors, a panel's
+            close button, and a pixel ratio that changes (a window moved to
+            another screen).
+      - Panels placed in the 3D world ("Qt widgets in 3D") stay deferred:
+        mainly for VR.
 - [ ] Built-in time controls: an optional time slider or HUD readout in a
       window of its own, with keys to play, pause and step; calendar times
       (UTC from a Julian date or MJD epoch) formatted for HUD text.
