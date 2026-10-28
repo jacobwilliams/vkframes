@@ -236,7 +236,7 @@ All of these are installed by pixi (see [pixi.toml](pixi.toml)):
 | GUI panels | vsgImGui 0.8 (Dear ImGui 1.92) |
 | Vulkan on macOS | [KosmicKrisp](https://docs.mesa3d.org/drivers/kosmickrisp.html) (Mesa's Vulkan on Metal) |
 | Fonts | DejaVu Sans (the default label font) |
-| Video recording | ffmpeg (run as a program; not linked) |
+| Video recording | [ffmpeg](https://www.ffmpeg.org) (run as a program; not linked) |
 | Qt demos (`qt` environment) | Qt 6.11; qt-fortran and json-fortran are fetched by fpm |
 | Python demo | Python 3.13, PySide6 |
 | Rocky (`rocky` environment) | GDAL, PROJ, spdlog, glm, entt and others; Rocky itself is built from source |
