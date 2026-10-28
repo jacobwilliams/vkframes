@@ -20,7 +20,8 @@
 !> its dot in that color by the MarkerArtist's point colors), and the
 !> propagation: its time (days),
 !> forwards or backwards, animated or not; the bodies' drawn size (impacts
-!> stay at their real radii). A readout shows the state picked
+!> stay at their real radii); the mouse's zoom speed and whether the camera
+!> keeps moving after a released drag. A readout shows the state picked
 !> (nondimensional), its Jacobi constant and how the propagation ended.
 !>
 !> Keys (in the view): e and m fly the camera to the Earth and the Moon (it
@@ -77,7 +78,8 @@ module cr3bp_demo
         type(Picker) :: picker
         integer :: frame = 0
         ! controls
-        type(QDoubleSpinBox) :: distance, mass_ratio, jacobi_c, marker_size, days, body_size, escape
+        type(QDoubleSpinBox) :: distance, mass_ratio, jacobi_c, marker_size, days, body_size, escape, zoom_speed
+        type(QCheckBox) :: camera_throw
         type(QComboBox) :: color_by                            !! 0: all blue, 1: by fate
         type(QLabel) :: fate_legend
         type(QSpinBox) :: n_points, seed
@@ -465,6 +467,8 @@ contains
         call app%proxy%add_hud_text(app%hud_title)
         call app%proxy%add_hud_text(app%hud_help)
         call app%proxy%set_event_handler(app%picker)
+        call app%proxy%set_zoom_speed(real(app%zoom_speed%value(), wp))
+        call app%proxy%set_camera_throw(app%camera_throw%isChecked())
         call app%proxy%set_time_scale(0.0_wp)
         if (app%select_at_start > 0) call select_state(app%select_at_start)
     end subroutine open_view
@@ -576,7 +580,7 @@ contains
         type(QWheelEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
         if (event%angleDeltaY() == 0) return
-        call app%proxy%scroll(merge(1.0_wp, -1.0_wp, event%angleDeltaY() > 0))
+        call app%proxy%scroll(event%angleDeltaY() / 120.0_wp)     ! (wheel notches: a trackpad's are fractions)
         call event%accept()
     end subroutine on_wheel
 
@@ -738,6 +742,20 @@ contains
         call app%earth%set_radius(value * r_earth)
         call app%moon%set_radius(value * r_moon)
     end subroutine on_body_size
+
+    !> The mouse's zoom speed (per wheel or trackpad step, and per right drag).
+    subroutine on_zoom_speed(value, data)
+        real(c_double), intent(in) :: value
+        class(*), intent(inout), optional :: data
+        call app%proxy%set_zoom_speed(real(value, wp))
+    end subroutine on_zoom_speed
+
+    !> The camera keeps moving after a drag released while moving, or stops.
+    subroutine on_camera_throw(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%proxy%set_camera_throw(checked)
+    end subroutine on_camera_throw
 
     subroutine on_go_earth(data)
         class(*), intent(inout), optional :: data
@@ -924,6 +942,13 @@ contains
         app%body_size = real_box(1.0_wp, 20.0_wp, 3.0_wp, 1, 1.0_wp, ' x', on_body_size)
         call app%body_size%setToolTip('The Earth and the Moon drawn larger (impacts stay at their real radii)')
         call form%addRow('Body size', app%body_size)
+        app%zoom_speed = real_box(0.05_wp, 3.0_wp, 0.5_wp, 2, 0.05_wp, ' x', on_zoom_speed)
+        call app%zoom_speed%setToolTip('How fast the wheel, a trackpad and a right drag zoom (1: VSG''s)')
+        call form%addRow('Zoom speed', app%zoom_speed)
+        app%camera_throw = QCheckBox('Keep turning after a drag')
+        call app%camera_throw%setToolTip('The camera keeps moving if the mouse is moving when the button is released')
+        call app%camera_throw%toggled%connect(on_camera_throw)
+        call form%addRow('', app%camera_throw)
         button = QPushButton('Go to the Earth (e)')
         call button%clicked%connect(on_go_earth)
         call form%addRow('', button)

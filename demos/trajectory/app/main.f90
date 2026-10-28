@@ -944,7 +944,7 @@ contains
         type(QWheelEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
         if (event%angleDeltaY() == 0) return
-        call app%proxy%scroll(merge(1.0_wp, -1.0_wp, event%angleDeltaY() > 0))
+        call app%proxy%scroll(event%angleDeltaY() / 120.0_wp)     ! (wheel notches: a trackpad's are fractions)
         call event%accept()
     end subroutine on_wheel
 

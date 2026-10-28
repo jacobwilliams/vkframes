@@ -71,6 +71,10 @@
 !> video by ffmpeg (`watermark`). The video's size is its first frame's (a window
 !> resized while recording is cropped or padded).
 !>
+!> The mouse's sensitivity: `set_zoom_speed` (the zoom per wheel or trackpad
+!> step and per right drag; default 1, VSG's) and `set_camera_throw` (the
+!> camera keeps moving after a drag released while moving; default on).
+!>
 !> Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
 !> point of the window (x, y as the event handler's: -1 to 1, y up), nearest
 !> first, as drawn at the last frame: trajectory curves (the point and the
@@ -101,7 +105,8 @@ module vkf_window
                          vkf_viewer_hud_remove, vkf_node_delete, vkf_viewer_set_pixel_ratio, &
                          vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, &
                          vkf_viewer_frame_begin, vkf_viewer_frame_draw, vkf_viewer_gui, &
-                         vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames
+                         vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames, &
+                         vkf_viewer_set_camera_controls
 
     implicit none
 
@@ -208,6 +213,8 @@ module vkf_window
         real(wp) :: transition_ = 0.0_wp                    !! s, for view changes and resets
         real(wp) :: switch_duration = -1.0_wp               !! s, for the next view change (< 0: transition_)
         type(CameraFlight) :: flight                        !! the camera flight (when active)
+        real(wp) :: zoom_speed_ = 1.0_wp                    !! the trackball's zoom per scroll step and drag (1: VSG's)
+        logical :: camera_throw_ = .true.                   !! the camera keeps moving after a drag released while moving
         ! video recording
         logical :: recording_ = .false.                     !! recording (start_recording)
         real(wp) :: record_fps = 30.0_wp                    !! the video's frames per second
@@ -228,6 +235,7 @@ module vkf_window
         ! the camera (OpenFrames' trackball transformation), smooth transitions
         procedure :: get_camera, set_camera
         procedure :: set_view_transition, view_transition, in_transition, stop_transition
+        procedure :: set_zoom_speed, zoom_speed, set_camera_throw, camera_throw
         ! picking (see the module documentation), and where points are on the screen
         procedure :: pick => window_pick
         procedure :: screen_position
@@ -342,6 +350,7 @@ contains
         call self%set_background_color(self%background)
         self%light_on = .true.
         call apply_window_light(self)
+        call apply_camera_controls(self)
     end function open
 
     !> Close the window (waiting for the GPU). The scene is kept, and can be
@@ -1033,6 +1042,48 @@ contains
     ! ==================================================================
     ! the camera
 
+    !> How fast the mouse zooms (default 1, VSG's: 10% per wheel step, and a
+    !> right drag's rate): e.g. 0.3 for a gentler zoom. Scales scroll steps
+    !> however they come (a mouse wheel, a trackpad, a host's `scroll`).
+    subroutine set_zoom_speed(self, speed)
+        class(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: speed                       !! (> 0; 1: the default)
+        if (speed <= 0.0_wp) return
+        self%zoom_speed_ = speed
+        call apply_camera_controls(self)
+    end subroutine set_zoom_speed
+
+    !> The zoom speed (set_zoom_speed).
+    pure real(wp) function zoom_speed(self)
+        class(WindowProxy), intent(in) :: self
+        zoom_speed = self%zoom_speed_
+    end function zoom_speed
+
+    !> Whether the camera keeps moving (turning, zooming, panning) after a drag
+    !> is released while the mouse moves (default true, VSG's and OSG's throw);
+    !> false: it stops where it is released.
+    subroutine set_camera_throw(self, enabled)
+        class(WindowProxy), intent(inout) :: self
+        logical, intent(in) :: enabled
+        self%camera_throw_ = enabled
+        call apply_camera_controls(self)
+    end subroutine set_camera_throw
+
+    !> Whether the camera keeps moving after a released drag (set_camera_throw).
+    pure logical function camera_throw(self)
+        class(WindowProxy), intent(in) :: self
+        camera_throw = self%camera_throw_
+    end function camera_throw
+
+    !> Give the zoom speed and throw to the trackball (if open).
+    subroutine apply_camera_controls(self)
+        type(WindowProxy), intent(inout) :: self
+        if (.not. c_associated(self%viewer_)) return
+        if (vkf_viewer_set_camera_controls(self%viewer_, real(self%zoom_speed_, c_double), &
+                                           merge(1_c_int, 0_c_int, self%camera_throw_)) /= 0) &
+            write(*, '(a)') 'vkframes: could not set the camera controls'
+    end subroutine apply_camera_controls
+
     !> The camera of the view shown (from the last frame): eye, center and up
     !> in the view frame's coordinates (OpenFrames' trackball
     !> getTransformation), or in its root frame's if `in_root`. Zero before
@@ -1349,7 +1400,8 @@ contains
     !> The scroll wheel: dy > 0 away from the user.
     subroutine scroll(self, dy)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: dy                          !! wheel steps (> 0: away from the user)
+        real(wp), intent(in) :: dy                          !! wheel steps (> 0: away from the user; fractions
+                                                            !! for a trackpad's small steps: Qt's angleDelta / 120)
         if (.not. c_associated(self%viewer_)) return
         if (vkf_viewer_scroll(self%viewer_, real(dy, c_float)) /= 0) write(*, '(a)') 'vkframes: scroll event failed'
     end subroutine scroll

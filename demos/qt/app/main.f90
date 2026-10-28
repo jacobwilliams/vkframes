@@ -831,7 +831,7 @@ contains
         select type (w => data)
         type is (view_window_t)
             if (event%angleDeltaY() == 0) return
-            call w%proxy%scroll(merge(1.0_wp, -1.0_wp, event%angleDeltaY() > 0))
+            call w%proxy%scroll(event%angleDeltaY() / 120.0_wp)   ! (wheel notches: a trackpad's are fractions)
             call event%accept()
         end select
     end subroutine on_wheel

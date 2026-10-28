@@ -1155,6 +1155,19 @@ Interaction:
         and the Qt demo (the view change time in the dock).
       - [ ] Later: keyframed camera paths (several cameras with times, flown
             through; e.g. for presentations and video recording).
+- [x] The mouse's sensitivity: `WindowProxy%set_zoom_speed(speed)` (default
+      1, VSG's: 10% per scroll step) scales every scroll step before the
+      trackball sees it (the EventRecorder scales ScrollWheelEvent's delta:
+      wheels, trackpads, a host's `scroll`) and a right drag's zoom (the
+      trackball's zoomScale); `set_camera_throw(enabled)` (default on: VSG's
+      supportsThrow) keeps the camera moving after a drag released while
+      moving, or stops it. `vkf_viewer_set_camera_controls`. The demos
+      forwarded each Qt wheel event as a whole step, so a trackpad (many
+      small events per swipe) zoomed far too fast: now `angleDelta / 120`
+      (wheel notches, a trackpad's fractions). The CR3BP demo sets zoom
+      speed 0.5 and no throw, with controls in its dock. Tested:
+      `test_camera` (a step's zoom scaled by the speed, a half step as a step
+      at half the speed).
 - [x] Highlighting a trajectory (e.g. one selected by the program or picked):
       `set_highlight(mode, color, arrow_spacing, arrow_speed, band_width,
       pulse_period)` on CurveArtist and SegmentArtist, and on

@@ -941,6 +941,8 @@ namespace
         std::vector<std::array<int32_t, 12>> events;   // keyboard and mouse events for Fortran (EventRecorder)
         vkf::Gui* gui = nullptr;               // GUI panels (vkf_gui.cpp), once used
         Recorder recorder;                     // video recording (vkf_viewer_record_start)
+        vsg::ref_ptr<vsg::Trackball> trackball;
+        float zoomSpeed = 1.0f;                // scroll steps scaled by it (vkf_viewer_set_camera_controls)
     };
 
     // Records the window's keyboard and mouse events for Fortran (its event
@@ -948,7 +950,8 @@ namespace
     // them. Each: kind (1 key press, 2 key release, 3 pointer move, 4 button
     // press, 5 button release), key (modified: 'V' with shift), key base,
     // modifiers, button, buttons held (mask), x, y (framebuffer pixels from the
-    // top left), and the render area (offset x, y, width, height).
+    // top left), and the render area (offset x, y, width, height). It also
+    // scales scroll steps by the viewer's zoom speed, for the trackball.
     class EventRecorder : public vsg::Inherit<vsg::Visitor, EventRecorder>
     {
     public:
@@ -959,6 +962,7 @@ namespace
         void apply(vsg::MoveEvent& e) override { pointer(3, e, 0); }
         void apply(vsg::ButtonPressEvent& e) override { pointer(4, e, e.button); }
         void apply(vsg::ButtonReleaseEvent& e) override { pointer(5, e, e.button); }
+        void apply(vsg::ScrollWheelEvent& e) override { e.delta *= v->zoomSpeed; }
 
     private:
         static constexpr size_t max_events = 4096;     // (kept while nothing reads them)
@@ -1612,6 +1616,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
                          &trackball->moveLeftKey, &trackball->moveRightKey, &trackball->moveUpKey, &trackball->moveDownKey})
             *key = vsg::KEY_Undefined;
         v->viewer->addEventHandler(trackball);
+        v->trackball = trackball;
         live_viewers().push_back(v.get());
         return v.release();
     });
@@ -2068,6 +2073,20 @@ VKF_API long long vkf_viewer_record_frames(void* viewer)
     auto v = static_cast<Viewer*>(viewer);
     if (!v || !v->recorder.active || v->recorder.failed) return -1;
     return static_cast<long long>(v->recorder.copied);
+}
+
+// The trackball's sensitivity: `zoom_speed` scales the zoom of each scroll
+// step (wheel or trackpad: VSG zooms 10% per step) and of a right drag (its
+// zoomScale); `throw_` (1) keeps the camera moving after a drag released
+// while moving (VSG's supportsThrow), 0 stops it at once. Returns 0, or -1.
+VKF_API int vkf_viewer_set_camera_controls(void* viewer, double zoom_speed, int throw_)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || !v->trackball || zoom_speed <= 0.0) return -1;
+    v->zoomSpeed = static_cast<float>(zoom_speed);
+    v->trackball->zoomScale = zoom_speed;
+    v->trackball->supportsThrow = throw_ != 0;
+    return 0;
 }
 
 // Write the last presented frame to an image file (format from the extension,

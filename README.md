@@ -178,7 +178,9 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     callbacks) is given key presses and releases, mouse motion and button
     presses and releases, also in embedded windows. OpenFrames' keys are
     built in: `v` and `V` for the next and previous view, the space bar to
-    reset the view.
+    reset the view. The mouse's zoom speed (`set_zoom_speed`, per wheel or
+    trackpad step and per right drag) and whether the camera keeps moving
+    after a released drag (`set_camera_throw`) can be set.
 - **Precision**: double precision throughout. Lines are drawn relative to the
   eye and the depth buffer uses reverse-Z, so a 10 m spacecraft and an Earth
   orbit can share one view without OpenFrames' `DepthPartitioner`.

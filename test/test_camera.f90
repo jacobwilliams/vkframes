@@ -2,7 +2,9 @@
 !> set_camera in the view frame's coordinates and in the root's; flights
 !> (set_camera with a duration, and changes of view with a view transition)
 !> pass between the two cameras and end at the new one; a mouse press ends a
-!> flight; View%set_camera gives a view its camera for when it is shown.
+!> flight; View%set_camera gives a view its camera for when it is shown; the
+!> zoom speed scales a scroll step's zoom (a half step as a step at half the
+!> speed).
 program test_camera
 
     use vkframes
@@ -14,7 +16,7 @@ program test_camera
     type(FrameManager), target :: scene
     type(WindowProxy) :: window
     type(View), target :: view_a, view_b
-    real(wp) :: eye(3), center(3), up(3), cam_b(3,3), target(3,3), mid(3)
+    real(wp) :: eye(3), center(3), up(3), cam_b(3,3), target(3,3), mid(3), z(3)
     integer :: failures, n
 
     failures = 0
@@ -98,6 +100,21 @@ program test_camera
     call window%get_camera(eye, center, up)
     call check(near(eye, [5.0_wp, 5.0_wp, 5.0_wp]), 'View%set_camera: when shown')
 
+    ! the zoom speed: a scroll step's zoom scaled by it (and a half step = a full step at half the speed)
+    call check(window%zoom_speed() == 1.0_wp .and. window%camera_throw(), 'zoom speed and throw: VSG''s defaults')
+    call window%mouse(MOUSE_MOVE, 160, 120, 0, 0)                   ! (the pointer in the window: the trackball zooms)
+    call frame()
+    z(1) = zoom_ratio(1.0_wp)
+    call window%set_zoom_speed(0.5_wp)
+    z(2) = zoom_ratio(1.0_wp)
+    call window%set_zoom_speed(1.0_wp)
+    z(3) = zoom_ratio(0.5_wp)
+    call check(z(1) /= 1.0_wp .and. abs(log(z(2)) / log(z(1)) - 0.5_wp) < 0.05_wp, &
+               'zoom speed 0.5: half the zoom per scroll step')
+    call check(abs(z(3) - z(2)) < 1.0e-9_wp, 'a half scroll step: as a step at half the speed')
+    call window%set_camera_throw(.false.)
+    call check(.not. window%camera_throw(), 'camera throw off')
+
     call window%close()
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
@@ -106,6 +123,19 @@ program test_camera
     write(*, '(a)') 'PASS: camera (get, set, in the root frame), flights, view transitions'
 
 contains
+
+    !> The camera's distance after a scroll of `dy` steps, over the distance before.
+    real(wp) function zoom_ratio(dy) result(ratio)
+        real(wp), intent(in) :: dy
+        real(wp) :: d0
+        call window%get_camera(eye, center, up)
+        d0 = norm2(eye - center)
+        call window%scroll(dy)
+        call frame()
+        call frame()
+        call window%get_camera(eye, center, up)
+        ratio = norm2(eye - center) / d0
+    end function zoom_ratio
 
     subroutine frame()
         if (.not. window%frame()) then

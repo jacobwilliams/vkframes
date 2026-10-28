@@ -21,6 +21,7 @@ module vkf_layer
     public :: vkf_viewer_set_background
     public :: vkf_viewer_add_node, vkf_viewer_frame, vkf_viewer_capture
     public :: vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames
+    public :: vkf_viewer_set_camera_controls
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
     public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
     public :: vkf_viewer_frame_begin, vkf_viewer_frame_draw
@@ -464,6 +465,17 @@ module vkf_layer
             implicit none
             type(c_ptr), value :: viewer                                  !! viewer handle (vkf_viewer_create)
         end function vkf_viewer_record_stop
+
+        !> The trackball's sensitivity: `zoom_speed` scales each scroll step's zoom and a right drag's;
+        !> `throw` (1) keeps the camera moving after a drag released while moving. Returns 0, or -1.
+        integer(c_int) function vkf_viewer_set_camera_controls(viewer, zoom_speed, throw) &
+                bind(C, name="vkf_viewer_set_camera_controls")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: viewer                                  !! viewer handle (vkf_viewer_create)
+            real(c_double), value :: zoom_speed                           !! (> 0; 1: VSG's)
+            integer(c_int), value :: throw                                !! 1: keep moving after a released drag
+        end function vkf_viewer_set_camera_controls
 
         !> Frames recorded so far, or -1 if not recording or recording failed.
         integer(c_long_long) function vkf_viewer_record_frames(viewer) bind(C, name="vkf_viewer_record_frames")

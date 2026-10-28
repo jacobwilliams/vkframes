@@ -206,7 +206,7 @@ class VkWindow(QWindow):
     def wheelEvent(self, event):
         dy = event.angleDelta().y()
         if self.id and dy:
-            self.lib.vkdemo_window_scroll(self.id, 1.0 if dy > 0 else -1.0)
+            self.lib.vkdemo_window_scroll(self.id, dy / 120.0)   # wheel notches (a trackpad's: fractions)
             event.accept()
 
     def forward_key(self, pressed, event):
