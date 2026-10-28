@@ -14,7 +14,11 @@
 !> propagation time in days, follows from it and the Earth's and Moon's
 !> masses), the mass ratio mu, the Jacobi constant (with the Lagrange
 !> points' constants for reference), the number of states, planar or 3D, the
-!> random seed, the dots' size, and the propagation: its time (days),
+!> random seed, the dots' size, the dots' color (all blue, or by each
+!> state's fate after the propagation time: hits the Earth, hits the Moon,
+!> escapes beyond the escape distance, or neither; each state propagated,
+!> its dot in that color by the MarkerArtist's point colors), and the
+!> propagation: its time (days),
 !> forwards or backwards, animated or not; the bodies' drawn size (impacts
 !> stay at their real radii). A readout shows the state picked
 !> (nondimensional), its Jacobi constant and how the propagation ended.
@@ -25,7 +29,8 @@
 !> Run with `pixi run -e qt cr3bp-demo` (from the vkframes root). Options:
 !> `--select k` propagates state k at the start; `--click-near x y` clicks
 !> the dot nearest (x, y) (nondimensional) after 30 frames, as the user would;
-!> `--go-to earth` (or `moon`) flies there after 30 frames, as the e (m) key; `--capture file` saves
+!> `--go-to earth` (or `moon`) flies there after 30 frames, as the e (m) key;
+!> `--color-by fate` starts with the dots colored by their fate; `--capture file` saves
 !> frame `--capture-frame n` (default 120) as an image; `--quit-after
 !> seconds` closes the demo.
 module cr3bp_demo
@@ -33,7 +38,7 @@ module cr3bp_demo
     use qt
     use vkframes
     use vkf_text, only: get_font
-    use cr3bp, only: propagate, jacobi, lagrange_points, sample_states, PROPAGATED, IMPACT_1, IMPACT_2
+    use cr3bp, only: propagate, jacobi, lagrange_points, sample_states, PROPAGATED, IMPACT_1, IMPACT_2, ESCAPED
     use iso_c_binding
 
     implicit none
@@ -43,6 +48,11 @@ module cr3bp_demo
     real(wp), parameter :: day = 86400.0_wp                                         !! s
     real(wp), parameter :: cloud_color(3) = [0.45_wp, 0.75_wp, 1.0_wp]
     real(wp), parameter :: path_color(3) = [1.0_wp, 0.6_wp, 0.2_wp]
+    !> the cloud's colors by fate (Color by: fate): hits the Earth, hits the Moon, escapes, neither
+    real(wp), parameter :: fate_colors(3, 4) = reshape([0.3_wp, 0.9_wp, 0.4_wp, 0.95_wp, 0.95_wp, 0.95_wp, &
+                                                        1.0_wp, 0.35_wp, 0.3_wp, 0.45_wp, 0.75_wp, 1.0_wp], [3, 4])
+    character(len=*), parameter :: fate_names(4) = [character(len=13) :: 'hits the Earth', 'hits the Moon', &
+                                                     'escapes', 'neither']
 
     !> Picks a dot of the cloud on a click (a press and release in the same place).
     type, extends(WindowEventHandler) :: Picker
@@ -65,7 +75,9 @@ module cr3bp_demo
         type(Picker) :: picker
         integer :: frame = 0
         ! controls
-        type(QDoubleSpinBox) :: distance, mass_ratio, jacobi_c, marker_size, days, body_size
+        type(QDoubleSpinBox) :: distance, mass_ratio, jacobi_c, marker_size, days, body_size, escape
+        type(QComboBox) :: color_by                            !! 0: all blue, 1: by fate
+        type(QLabel) :: fate_legend
         type(QSpinBox) :: n_points, seed
         type(QCheckBox) :: planar, backward, animate, show_lagrange
         type(QLabel) :: lagrange_c, cloud_info, readout
@@ -102,6 +114,7 @@ module cr3bp_demo
         integer :: capture_frame = 120
         integer :: select_at_start = 0
         real(wp) :: click_near(2) = huge(1.0_wp)               !! (--click-near: a click there, nondimensional)
+        logical :: fate_at_start = .false.                     !! (--color-by fate)
         integer :: go_to = 0                                   !! (--go-to: fly to the Earth (1) or the Moon (2))
         real(wp) :: quit_after = -1.0_wp
     end type app_t
@@ -269,14 +282,65 @@ contains
         call sample_states(app%mu, real(app%jacobi_c%value(), wp), n, 1.6_wp, app%planar%isChecked(), &
                            [3.0_wp * r_earth, 3.0_wp * r_moon] / app%length, s, found)
         app%states = s(:, 1:found)
-        call app%cloud%clear()
-        if (found > 0) call app%cloud%add([(real(k, wp), k = 1, found)], pos=app%length * app%states(1:3, :))
+        call draw_cloud()
         write(text, '(i0,a,i0,a)') found, ' states', n, ' wanted'
         if (found == n) write(text, '(i0,a)') found, ' states'
         if (found == 0) text = 'No states: C is above the allowed region''s'
         call app%cloud_info%setText('<small>'//trim(text)//'</small>')
         call place_bodies()                                 ! (the HUD's C)
     end subroutine make_cloud
+
+    !> Draw the cloud's states (km): all blue, or (Color by: fate) colored by
+    !> their fate after the propagation time (and direction): each state
+    !> propagated (to a looser tolerance than the state picked: only where it
+    !> ends matters), its dot in the trajectory's color there (MarkerArtist
+    !> point colors). A legend counts each fate.
+    subroutine draw_cloud()
+        real(wp), allocatable :: rgba(:,:), t(:), st(:,:)
+        real(wp) :: tf
+        integer :: n, k, outcome, fate, counts(4)
+        character(len=400) :: text
+        character(len=7) :: hex
+        n = 0
+        if (allocated(app%states)) n = size(app%states, 2)
+        call app%cloud%clear()
+        call app%cloud_dots%set_point_colors(app%color_by%currentIndex() == 1)
+        if (app%color_by%currentIndex() /= 1) then
+            call app%fate_legend%setText('')
+            if (n > 0) call app%cloud%add([(real(k, wp), k = 1, n)], pos=app%length * app%states(1:3, :))
+            return
+        end if
+        call app%fate_legend%setText('<small>Propagating the states...</small>')
+        call QApplication_processEvents()
+        tf = app%days%value() * day / time_unit()
+        if (app%backward%isChecked()) tf = -tf
+        allocate(rgba(4, n))
+        counts = 0
+        do k = 1, n
+            call propagate(app%mu, app%states(:, k), tf, abs(tf), 1.0e-9_wp, [r_earth, r_moon] / app%length, t, st, &
+                           outcome, escape=app%escape%value())
+            select case (outcome)
+            case (IMPACT_1)
+                fate = 1
+            case (IMPACT_2)
+                fate = 2
+            case (ESCAPED)
+                fate = 3
+            case default
+                fate = 4
+            end select
+            counts(fate) = counts(fate) + 1
+            rgba(:, k) = [fate_colors(:, fate), 1.0_wp]
+        end do
+        if (n > 0) call app%cloud%add([(real(k, wp), k = 1, n)], pos=app%length * app%states(1:3, :), color=rgba)
+        text = '<small>'
+        do k = 1, 4
+            write(hex, '(a,3z2.2)') '#', nint(255 * fate_colors(:, k))
+            write(text, '(a,a,a,a,a,a,i0,a)') trim(text), '<span style="color:', hex, '">&#9679;</span> ', &
+                trim(fate_names(k)), ': ', counts(k), '<br>'
+        end do
+        call app%fate_legend%setText(trim(text)//'</small>')
+    end subroutine draw_cloud
 
     !> Propagate the state picked (the controls' time and direction) and draw
     !> it; the clock runs over it (in about 8 s) for the spacecraft.
@@ -291,7 +355,7 @@ contains
         tf = app%days%value() * day / tu
         if (app%backward%isChecked()) tf = -tf
         call propagate(app%mu, app%selected, tf, abs(tf) / 2000.0_wp, 1.0e-11_wp, [r_earth, r_moon] / app%length, &
-                       t, s, outcome)
+                       t, s, outcome, escape=app%escape%value())
         call app%path%clear()
         call app%path%add(t * tu, pos=app%length * s(1:3, :))
         select case (outcome)
@@ -301,6 +365,8 @@ contains
             ended = 'impact on the Earth'
         case (IMPACT_2)
             ended = 'impact on the Moon'
+        case (ESCAPED)
+            ended = 'escaped'
         case default
             ended = 'the step size got too small'
         end select
@@ -591,17 +657,29 @@ contains
     end subroutine on_marker_size
 
     !> The propagation changed (its time or direction): propagated again.
+    !> (the fates too, if the cloud is colored by them)
     subroutine on_days(value, data)
         real(c_double), intent(in) :: value
         class(*), intent(inout), optional :: data
-        if (.not. app%building) call propagate_selected()
+        if (app%building) return
+        call propagate_selected()
+        if (app%color_by%currentIndex() == 1) call draw_cloud()
     end subroutine on_days
 
     subroutine on_backward(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
-        if (.not. app%building) call propagate_selected()
+        if (app%building) return
+        call propagate_selected()
+        if (app%color_by%currentIndex() == 1) call draw_cloud()
     end subroutine on_backward
+
+    !> Color by: all blue, or by fate (each state propagated).
+    subroutine on_color_by(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        if (.not. app%building) call draw_cloud()
+    end subroutine on_color_by
 
     !> Animate: the path traced up to the spacecraft, flying along it.
     subroutine on_animate(checked, data)
@@ -785,6 +863,12 @@ contains
         call form%addRow('Dot size', app%marker_size)
         app%cloud_info = QLabel('')
         call form%addRow(app%cloud_info)
+        app%color_by = QComboBox()
+        call app%color_by%addItems([character(len=34) :: 'Uniform (blue)', 'Fate after the propagation time'])
+        call app%color_by%currentIndexChanged%connect(on_color_by)
+        call form%addRow('Color by', app%color_by)
+        app%fate_legend = QLabel('')
+        call form%addRow(app%fate_legend)
         call column%addWidget(group)
 
         ! the propagation
@@ -792,6 +876,9 @@ contains
         form = QFormLayout(group)
         app%days = real_box(0.1_wp, 3650.0_wp, 30.0_wp, 1, 5.0_wp, ' days', on_days)
         call form%addRow('Time', app%days)
+        app%escape = real_box(1.2_wp, 50.0_wp, 3.0_wp, 1, 0.5_wp, ' x distance', on_days)
+        call app%escape%setToolTip('Escaped: farther than this from the barycenter (in Earth-Moon distances)')
+        call form%addRow('Escape beyond', app%escape)
         app%backward = QCheckBox('Backwards in time')
         call app%backward%toggled%connect(on_backward)
         call form%addRow('', app%backward)
@@ -879,6 +966,10 @@ program vkframes_cr3bp_demo
             call get_command_argument(i + 2, arg)
             read(arg, *) app%click_near(2)
             i = i + 2
+        case ('--color-by')
+            call get_command_argument(i + 1, arg)
+            app%fate_at_start = arg == 'fate'
+            i = i + 1
         case ('--go-to')
             call get_command_argument(i + 1, arg)
             app%go_to = merge(1, 2, arg == 'earth')
@@ -893,6 +984,7 @@ program vkframes_cr3bp_demo
 
     call build_scene()
     call build_ui()
+    if (app%fate_at_start) call app%color_by%setCurrentIndex(1)
     app%building = .false.
     call make_cloud()
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)

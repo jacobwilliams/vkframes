@@ -865,12 +865,14 @@ module vkf_layer
         !> Markers at up to `capacity` points (initially none): a screen-space quad per point, of the shape and
         !> size in the style buffer (shaders/marker.vert); a node handle, or null on failure. The point and style
         !> buffers are those of a line (vkf_line_points, vkf_line_style, vkf_line_points_changed,
-        !> vkf_line_set_range, vkf_line_style_changed).
-        type(c_ptr) function vkf_marker_create(capacity, image) bind(C, name="vkf_marker_create")
+        !> vkf_line_set_range, vkf_line_style_changed); with `colored` (1), a color per marker
+        !> (vkf_line_colors), times the style's.
+        type(c_ptr) function vkf_marker_create(capacity, image, colored) bind(C, name="vkf_marker_create")
             import :: c_ptr, c_int
             implicit none
             integer(c_int), value :: capacity  !! the most points
             type(c_ptr), value :: image  !! image handle (vkf_image_read) for the image shape, or null
+            integer(c_int), value :: colored  !! 1: a color per marker, 0: the style's only
         end function vkf_marker_create
 
         !> A line with a color per point (vkf_line_colors), blended along each segment.

@@ -254,7 +254,7 @@ contains
         type(c_ptr) :: node
         node = c_null_ptr
         if (size(xyz, 2) < 1) return
-        node = vkf_marker_create(int(size(xyz, 2), c_int), image)
+        node = vkf_marker_create(int(size(xyz, 2), c_int), image, 0_c_int)
         if (.not. c_associated(node)) return
         call check_status(marker_set_style(node, real(rgba, c_float), real(px, c_float), shape, real(radius, c_float)), 'shapes')
         call check_status(line_set_points(node, real(xyz, c_double)), 'shapes')

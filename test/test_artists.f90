@@ -14,7 +14,11 @@
 !> and all in the artist's color with point colors off. RibbonArtist: the
 !> pairs (origin and position, or other sources) drawn to double precision
 !> across chunks, appends, trace mode (the quad to the interpolated pair),
-!> point colors with the artist's alpha. Empty trajectories: every artist
+!> point colors with the artist's alpha. Marker point colors: off by default
+!> (each kind's color); on, the start and end in their points' colors, the
+!> intermediate markers in the color at their time (blended between points),
+!> points without a color in the marker's, and colors added later drawn.
+!> Empty trajectories: every artist
 !> draws nothing (and then the points added), a frame follows nothing. Highlights: set on an artist, and
 !> on a DrawableTrajectory for its curve and segment artists.
 program test_artists
@@ -45,6 +49,7 @@ program test_artists
     call check_markers()
     call check_drawable()
     call check_empty()
+    call check_marker_colors()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
@@ -791,5 +796,57 @@ contains
         call dt%update(0.0_wp)
         call check(c%num_drawn() == 10 .and. m%num_intermediate() == 8, 'empty trajectory: then the points added')
     end subroutine check_empty
+
+    !> MarkerArtist point colors (read back from the marker buffers).
+    subroutine check_marker_colors()
+        type(Trajectory), target :: traj
+        type(MarkerArtist) :: a, b
+        real(wp), parameter :: red(4) = [1.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], blue(4) = [0.0_wp, 0.0_wp, 1.0_wp, 1.0_wp]
+        real(wp), parameter :: own(4) = [0.5_wp, 0.5_wp, 0.5_wp, 1.0_wp]
+        real(wp), parameter :: tol = 1.0e-6_wp
+        integer :: i
+        traj = Trajectory()
+        do i = 1, 5                                    ! t = 1 .. 5: red, blue, red, blue, red
+            call traj%add(real(i, wp), pos=[real(i, wp), 0.0_wp, 0.0_wp], color=merge(red, blue, mod(i, 2) == 1))
+        end do
+        a = MarkerArtist(traj, markers=ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END))
+        call a%set_marker_color(ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END), own)
+        call a%set_intermediate_type(INTERMEDIATE_DATA)
+        call a%build(c_null_ptr, vkf_switch_create())
+        call a%update(0.0_wp)
+        call check(.not. a%point_colors() .and. all(a%drawn_color(MARKER_START) == own) .and. &
+                   all(a%drawn_color(MARKER_INTERMEDIATE, 1) == own), 'marker colors: off by default (their own)')
+        call a%set_point_colors(.true.)
+        call a%update(0.0_wp)
+        call check(all(abs(a%drawn_color(MARKER_START) - red) < tol) .and. all(abs(a%drawn_color(MARKER_END) - red) < tol), &
+                   'marker colors: start and end in their points'' colors')
+        call check(a%num_intermediate() == 3, 'marker colors: the intermediate markers')
+        call check(all(abs(a%drawn_color(MARKER_INTERMEDIATE, 1) - blue) < tol) .and. &
+                   all(abs(a%drawn_color(MARKER_INTERMEDIATE, 2) - red) < tol), 'marker colors: each at its point')
+        call a%set_point_colors(.false.)
+        call a%update(0.0_wp)
+        call check(all(a%drawn_color(MARKER_INTERMEDIATE, 1) == own), 'marker colors: off again')
+
+        ! intermediate markers by time, between points: blended; points without a color: the marker's own
+        b = MarkerArtist(traj, markers=MARKER_INTERMEDIATE)
+        call b%set_marker_color(MARKER_INTERMEDIATE, own)
+        call b%set_intermediate_type(INTERMEDIATE_TIME)
+        call b%set_intermediate_spacing(0.5_wp)
+        call b%set_point_colors(.true.)
+        call b%build(c_null_ptr, vkf_switch_create())
+        call b%update(0.0_wp)
+        call check(all(abs(b%drawn_color(MARKER_INTERMEDIATE, 1) - 0.5_wp * (red + blue)) < tol), &
+                   'marker colors: blended between points (by time)')
+        call traj%add(6.0_wp, pos=[6.0_wp, 0.0_wp, 0.0_wp])                    ! (no color yet)
+        call traj%add(7.0_wp, pos=[7.0_wp, 0.0_wp, 0.0_wp])
+        call b%update(0.0_wp)
+        call check(all(abs(b%drawn_color(MARKER_INTERMEDIATE, b%num_intermediate()) - own) < tol), &
+                   'marker colors: a point without one in the marker''s own')
+        call traj%add_color(blue)
+        call traj%add_color(blue)
+        call b%update(0.0_wp)
+        call check(all(abs(b%drawn_color(MARKER_INTERMEDIATE, b%num_intermediate()) - blue) < tol), &
+                   'marker colors: colors added later drawn')
+    end subroutine check_marker_colors
 
 end program test_artists

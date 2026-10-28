@@ -87,7 +87,7 @@ module vkf_line_chain
         integer :: n_chunks = 0                         !! number of chunks
         integer :: kind = CHAIN_STRIP                   !! what is drawn: a CHAIN_* constant
         type(c_ptr) :: image = c_null_ptr               !! (markers: the image (shape 10))
-        logical :: colored = .false.                    !! (lines: a color per point (color_slice))
+        logical :: colored = .false.                    !! (lines, markers: a color per point (color_slice))
         ! style
         real(c_float) :: color(4) = 1.0_c_float         !! [r, g, b, a] (0 to 1)
         real(c_float) :: width = 1.0_c_float            !! line width, or marker size
@@ -117,14 +117,14 @@ contains
         type(c_ptr), intent(in) :: group
         integer, intent(in) :: kind                     !! a CHAIN_* constant
         type(c_ptr), intent(in), optional :: image      !! (markers: a vkf_image_read handle)
-        logical, intent(in), optional :: colored       !! (lines: a color per point (color_slice))
+        logical, intent(in), optional :: colored       !! (lines, markers: a color per point (color_slice))
         self%group = group
         self%kind = kind
         self%compile_new = .false.
         self%image = c_null_ptr
         if (present(image)) self%image = image
         self%colored = .false.
-        if (present(colored)) self%colored = colored .and. kind /= CHAIN_MARKERS
+        if (present(colored)) self%colored = colored
     end subroutine init
 
     !> Forget the chunks (after their group was removed from the scene): init
@@ -164,7 +164,7 @@ contains
         is_built = c_associated(self%group)
     end function is_built
 
-    !> For lines, whether each point has its own color (init's `colored`).
+    !> For lines and markers, whether each point has its own color (init's `colored`).
     pure logical function is_colored(self)
         class(LineChain), intent(in) :: self
         is_colored = self%colored
@@ -202,7 +202,7 @@ contains
             end if
             if (self%kind == CHAIN_SEGMENTS .or. self%kind == CHAIN_RIBBON) c%capacity = c%capacity + modulo(c%capacity, 2)
             if (self%kind == CHAIN_MARKERS) then
-                c%line = vkf_marker_create(int(c%capacity, c_int), self%image)
+                c%line = vkf_marker_create(int(c%capacity, c_int), self%image, merge(1_c_int, 0_c_int, self%colored))
             else if (self%kind == CHAIN_RIBBON) then
                 c%line = vkf_ribbon_create(int(c%capacity, c_int), merge(1_c_int, 0_c_int, self%colored))
             else

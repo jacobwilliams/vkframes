@@ -7,6 +7,9 @@
 // line.vert: n markers are one draw of 6*n vertices), drawn relative to the
 // eye for double precision (see line.vert).
 //
+// Colors: the style's, or (markers made colored, style.params.w = 1) each
+// marker's times the style's.
+//
 // Auto-attenuation (OpenFrames' MarkerArtist::computeAttenuation): with a
 // radius R > 0, a marker at eye distance d is drawn at size * min(1, sqrt(R/d)),
 // so markers shrink as the camera moves away beyond R (the size of the
@@ -28,8 +31,12 @@ layout(std430, set = 0, binding = 0) readonly buffer Points {
 layout(set = 0, binding = 1) uniform Style {
     vec4 color;
     vec4 params;            // x = size in window units, y = shape (marker.frag),
-                            // z = attenuation radius R (0: none)
+                            // z = attenuation radius R (0: none), w = 1 for a color per marker
 } style;
+
+layout(std430, set = 0, binding = 3) readonly buffer Colors {
+    vec4 c[];               // marker i's color (if style.params.w = 1: else one, white)
+} colors;
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 pointCoord;   // as gl_PointCoord: 0 to 1, y down
@@ -80,7 +87,7 @@ void main()
     pos.xy += (0.5 * size * corner / halfSize) * pos.w;
 
     gl_Position = pos;
-    fragColor = style.color;
+    fragColor = (style.params.w > 0.5) ? style.color * colors.c[marker] : style.color;
     pointCoord = 0.5 * corner + 0.5;               // Vulkan's y is down, as gl_PointCoord's
     time = pc.viewport.w;
 }

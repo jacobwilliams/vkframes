@@ -457,6 +457,18 @@ Decided so far:
     - Found by it: a MarkerArtist with a start marker on an empty trajectory
       read point 1 (a crash); fixed, and `test_artists` checks empty
       trajectories for every artist and a follower.
+    - Color by: all blue, or by fate after the propagation time (hits the
+      Earth, the Moon, escapes beyond a distance, or neither; each state
+      propagated to 1e-9, 4000 in about a second), with a legend of counts;
+      `--color-by fate` starts so.
+  - MarkerArtist point colors (`set_point_colors`, off by default; not in
+    OpenFrames): each marker in the trajectory's color at its point, the
+    intermediate ones blended between points by time, points without a
+    color in the marker's own; colors added later redraw the markers. The
+    marker pipeline binds the points' colors buffer (binding 3, as lines);
+    `vkf_marker_create(capacity, image, colored)`, the style's params.w
+    flags it for marker.vert. `drawn_color` reads a marker's color back.
+    Tested in `test_artists`.
   - libvsg exports no `type_info` for `vsg::Exception`, so on macOS a
     `vsg::Exception` thrown inside libvsg is not caught by type in our code;
     the layer's `guarded()` has a catch-all that recognizes it by name.

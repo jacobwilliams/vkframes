@@ -96,7 +96,9 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     time without touching the trajectory, and points with no vector draw
     nothing.
   - `MarkerArtist`: markers at the start, the end and in between, in
-    OpenFrames' marker shapes, with optional attenuation.
+    OpenFrames' marker shapes, with optional attenuation. Optionally (not in
+    OpenFrames; off by default, `set_point_colors`) each marker is drawn in
+    the trajectory's point color there, blended between points.
   - Trace mode: draw only up to the current time.
   - Level of detail: seen from far away, a curve is drawn from fewer
     points, staying within half a pixel of all of them, chosen per view.
@@ -434,6 +436,10 @@ problem, in the frame rotating with the Earth and the Moon (both fixed).
   planar or 3D, the random seed, the propagation time (forwards or
   backwards), and the bodies' drawn size. The readout shows the state, how
   the propagation ended and the Jacobi constant's drift.
+- Color by: all blue, or each dot by its state's fate after the propagation
+  time (hits the Earth, hits the Moon, escapes beyond a distance, or
+  neither), with a legend counting each: every state is propagated, and
+  the dots are drawn in per-marker colors (`MarkerArtist%set_point_colors`).
 - `e` and `m` (or the dock's buttons) fly the camera to the Earth and the
   Moon, which it then turns about; the space bar resets the view.
 

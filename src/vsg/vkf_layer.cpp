@@ -384,7 +384,7 @@ namespace
             bindings.push_back({1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
             if (kind == PointsKind::markers || kind == PointsKind::skyTexture)
                 bindings.push_back({2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
-            if (kind == PointsKind::lines || kind == PointsKind::ribbons)   // the points' colors (vkf_line_create_colored)
+            if (kind == PointsKind::lines || kind == PointsKind::ribbons || kind == PointsKind::markers)   // the points' colors
                 bindings.push_back({3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
             descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
@@ -2746,10 +2746,11 @@ VKF_API float* vkf_line_colors(void* line, int* capacity)
 
 // Markers at up to capacity points (initially none): a screen-space quad per
 // point, of the shape and size in the style buffer (shaders/marker.vert), with
-// image (a vkf_image_read handle, or null) for the image shape. The point and
-// style buffers are those of a line (vkf_line_points, vkf_line_style,
+// image (a vkf_image_read handle, or null) for the image shape; `colored`: a
+// color per marker (vkf_line_colors), times the style's. The point and style
+// buffers are those of a line (vkf_line_points, vkf_line_style,
 // vkf_line_points_changed, vkf_line_set_range, vkf_line_style_changed).
-VKF_API void* vkf_marker_create(int capacity, void* image)
+VKF_API void* vkf_marker_create(int capacity, void* image, int colored)
 {
     if (capacity < 1) return nullptr;
     return guarded("vkf_marker_create", static_cast<void*>(nullptr), [&]() -> void* {
@@ -2759,6 +2760,10 @@ VKF_API void* vkf_marker_create(int capacity, void* image)
         marker->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         marker->points->properties.dataVariance = vsg::DYNAMIC_DATA;
         marker->style = dynamic_vec4_array(2);
+        marker->colored = colored != 0;
+        marker->colors = vsg::vec4Array::create(marker->colored ? static_cast<uint32_t>(capacity) : 1u, vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        if (marker->colored) marker->colors->properties.dataVariance = vsg::DYNAMIC_DATA;
+        marker->style->at(1).w = marker->colored ? 1.0f : 0.0f;    // (shaders/marker.vert)
 
         vsg::ref_ptr<vsg::Data> data;
         if (image) data = static_cast<Image*>(image)->data;
@@ -2770,6 +2775,7 @@ VKF_API void* vkf_marker_create(int capacity, void* image)
             vsg::DescriptorBuffer::create(marker->points, 0, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
             vsg::DescriptorBuffer::create(marker->style, 1, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER),
             vsg::DescriptorImage::create(sampler, data, 2, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER),
+            vsg::DescriptorBuffer::create(marker->colors, 3, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER),
         });
 
         auto stateGroup = vsg::StateGroup::create();

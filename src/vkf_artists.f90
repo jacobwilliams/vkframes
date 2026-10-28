@@ -287,7 +287,9 @@ module vkf_artists
     !> their size on screen (window units), or with auto-attenuation shrink
     !> when the camera is farther than the trajectory's size. In trace mode
     !> (an addition), the markers passed are drawn: the end marker (at the
-    !> trajectory's end) only once the time reaches the end.
+    !> trajectory's end) only once the time reaches the end. Point colors (an
+    !> addition, off by default: set_point_colors): each marker in the
+    !> trajectory's color there (see set_point_colors).
     type, extends(TrajectoryArtist), public :: MarkerArtist
         private
         type(DataSource) :: sources_(3)             !! x, y, z data sources (default: the positions)
@@ -304,9 +306,11 @@ module vkf_artists
         character(len=:), allocatable :: image_file  !! the marker image file ('': none)
         type(c_ptr) :: image = c_null_ptr           !! the image read from it (owned; null: none)
         logical :: attenuate = .false.              !! auto-attenuation (see set_auto_attenuate)
+        logical :: point_colors_ = .false.          !! the trajectory's colors, if any (see set_point_colors)
         ! rendering
         type(c_ptr) :: group = c_null_ptr           !! the artist's group (null until built)
         logical :: shown = .false.                  !! built for a window (marker nodes made later are compiled)
+        integer :: n_colors_seen = 0                !! the trajectory's colors when the markers were written
         type(LineChain) :: start_node, end_node, inter  !! start, end and intermediate marker buffers
         logical :: drawn = .false.                  !! drawn at least once since built
         integer :: n_seen = 0                       !! points seen (for the bounds)
@@ -314,6 +318,7 @@ module vkf_artists
         real(wp) :: radius = 0.0_wp                 !! attenuation radius applied
         ! intermediate markers: in trajectory order, and where to continue
         real(wp), allocatable :: inter_xyz(:,:), inter_t(:)  !! intermediate markers' points and times (1:n_inter)
+        real(wp), allocatable :: inter_rgba(:,:)    !! (4, :) their colors (with point colors)
         integer :: n_inter = 0, n_inter_written = 0, n_inter_drawn = 0  !! intermediate markers computed, written, drawn
         real(wp) :: next_time = 0.0_wp              !! time of the next marker (INTERMEDIATE_TIME)
         integer :: next_index = 0                   !! where to continue (0: not started)
@@ -330,6 +335,8 @@ module vkf_artists
         procedure :: set_marker_shape, marker_shape
         procedure :: set_marker_image, marker_image_file
         procedure :: set_auto_attenuate, auto_attenuate
+        procedure :: set_point_colors => marker_set_point_colors, point_colors => marker_point_colors
+        procedure :: drawn_color => marker_drawn_color
         procedure :: set_intermediate_type, intermediate_type
         procedure :: set_intermediate_spacing, intermediate_spacing
         procedure :: set_intermediate_direction, intermediate_direction
@@ -1905,6 +1912,85 @@ contains
     end function auto_attenuate
 
     !> How intermediate markers are spaced: INTERMEDIATE_TIME, _DISTANCE or _DATA.
+    !> Point colors (default off): with the trajectory's colors (Trajectory%
+    !> add_color, or add's `color`), each marker is drawn in the color at its
+    !> point (intermediate markers between points: blended between theirs, by
+    !> time), points without a color yet in the marker's own color
+    !> (set_marker_color). Off, or without colors: the markers' own colors.
+    subroutine marker_set_point_colors(self, enabled)
+        class(MarkerArtist), intent(inout) :: self
+        logical, intent(in) :: enabled
+        if (enabled .eqv. self%point_colors_) return
+        self%point_colors_ = enabled
+        call rebuild_markers(self)
+    end subroutine marker_set_point_colors
+
+    !> Whether the trajectory's colors are drawn (set_point_colors).
+    pure logical function marker_point_colors(self)
+        class(MarkerArtist), intent(in) :: self
+        marker_point_colors = self%point_colors_
+    end function marker_point_colors
+
+    !> The color marker k of `which` (one MARKER_* flag; k: the intermediate
+    !> marker's number) is drawn in: read back from its buffer with point
+    !> colors, else the marker's own color.
+    function marker_drawn_color(self, which, k) result(rgba)
+        class(MarkerArtist), intent(in) :: self
+        integer, intent(in) :: which
+        integer, intent(in), optional :: k
+        real(wp) :: rgba(4)
+        integer :: i
+        i = 1
+        if (present(k)) i = k
+        select case (which)
+        case (MARKER_START)
+            rgba = self%start_color
+            if (self%start_node%is_colored()) rgba = self%start_node%point_color(1)
+        case (MARKER_END)
+            rgba = self%end_color
+            if (self%end_node%is_colored()) rgba = self%end_node%point_color(1)
+        case default
+            rgba = self%intermediate_color
+            if (self%inter%is_colored()) rgba = self%inter%point_color(i)
+        end select
+    end function marker_drawn_color
+
+    !> Whether the markers are drawn in the trajectory's colors: wanted, and it has some.
+    logical function marker_uses_colors(self)
+        type(MarkerArtist), intent(in) :: self
+        marker_uses_colors = self%point_colors_ .and. associated(self%traj)
+        if (marker_uses_colors) marker_uses_colors = self%traj%num_colors() > 0
+    end function marker_uses_colors
+
+    !> The trajectory's color at time t (between points i and i + 1: blended),
+    !> `own` for points without one.
+    function color_at(self, t, own) result(rgba)
+        type(MarkerArtist), intent(in) :: self
+        real(wp), intent(in) :: t, own(4)
+        real(wp) :: rgba(4), c1(4), t0, t1
+        integer :: status, i, n
+        n = self%traj%num_times()
+        status = self%traj%time_index(t, i)
+        i = max(1, min(n, i))
+        rgba = point_rgba_or(self%traj, i, own)
+        if (i >= n) return
+        t0 = self%traj%time(i)
+        t1 = self%traj%time(i + 1)
+        if (t1 == t0) return
+        c1 = point_rgba_or(self%traj, i + 1, own)
+        rgba = rgba + max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0))) * (c1 - rgba)
+    end function color_at
+
+    !> Color of point i: the trajectory's, or `own` if it has none yet.
+    pure function point_rgba_or(traj, i, own) result(rgba)
+        type(Trajectory), intent(in) :: traj
+        integer, intent(in) :: i
+        real(wp), intent(in) :: own(4)
+        real(wp) :: rgba(4)
+        rgba = own
+        if (i >= 1 .and. i <= traj%num_colors()) rgba = traj%color(i)
+    end function point_rgba_or
+
     subroutine set_intermediate_type(self, type)
         class(MarkerArtist), intent(inout) :: self
         integer, intent(in) :: type
@@ -1994,9 +2080,11 @@ contains
     subroutine build_marker_nodes(self, compile)
         type(MarkerArtist), intent(inout) :: self
         logical, intent(in) :: compile
-        call self%start_node%init(self%group, CHAIN_MARKERS, self%image)
-        call self%end_node%init(self%group, CHAIN_MARKERS, self%image)
-        call self%inter%init(self%group, CHAIN_MARKERS, self%image)
+        logical :: colored
+        colored = marker_uses_colors(self)
+        call self%start_node%init(self%group, CHAIN_MARKERS, self%image, colored=colored)
+        call self%end_node%init(self%group, CHAIN_MARKERS, self%image, colored=colored)
+        call self%inter%init(self%group, CHAIN_MARKERS, self%image, colored=colored)
         call self%start_node%set_compile(compile .and. self%shown)
         call self%end_node%set_compile(compile .and. self%shown)
         call self%inter%set_compile(compile .and. self%shown)
@@ -2047,9 +2135,18 @@ contains
         real(wp) :: r
         r = 0.0_wp
         if (self%attenuate) r = self%radius
-        call self%start_node%set_marker_style(self%start_color, self%size_, self%shape_, r)
-        call self%end_node%set_marker_style(self%end_color, self%size_, self%shape_, r)
-        call self%inter%set_marker_style(self%intermediate_color, self%size_, self%shape_, r)
+        call self%start_node%set_marker_style(style_color(self%start_node, self%start_color), self%size_, self%shape_, r)
+        call self%end_node%set_marker_style(style_color(self%end_node, self%end_color), self%size_, self%shape_, r)
+        call self%inter%set_marker_style(style_color(self%inter, self%intermediate_color), self%size_, self%shape_, r)
+    contains
+        !> The style's color: the marker's, or white if each marker has its own (the shader multiplies them).
+        function style_color(chain, own) result(c)
+            type(LineChain), intent(in) :: chain
+            real(wp), intent(in) :: own(4)
+            real(wp) :: c(4)
+            c = own
+            if (chain%is_colored()) c = 1.0_wp
+        end function style_color
     end subroutine marker_style
 
     !> Write the start, end and new intermediate markers if the trajectory changed,
@@ -2067,6 +2164,9 @@ contains
             n = source_points(self%traj, self%sources_)
         end if
 
+        ! the trajectory's colors drawn or not (its first colors, or the setting,
+        ! changed): the marker nodes made again, with or without colors
+        if (marker_uses_colors(self) .neqv. self%inter%is_colored()) call rebuild_markers(self)
         changed = data_changed(self, redraw)
         if (.not. self%drawn) then
             changed = .true.
@@ -2074,10 +2174,15 @@ contains
             self%drawn = .true.
         end if
         if (changed) then
+            if (self%inter%is_colored()) then                 ! (colors added or changed: all written again)
+                if (self%traj%num_colors() /= self%n_colors_seen) redraw = .true.
+                self%n_colors_seen = self%traj%num_colors()
+            end if
             if (redraw .or. n < self%n_seen) call reset_markers(self)
             call update_bounds(self, n, zero)
-            if (n >= 1) call write_marker(self%start_node, marker_point(self, 1, zero))   ! (none: nothing drawn)
-            if (n > 1) call write_marker(self%end_node, marker_point(self, n, zero))
+            if (n >= 1) call write_marker(self%start_node, marker_point(self, 1, zero), &   ! (none: nothing drawn)
+                                          end_rgba(self, 1, self%start_color))
+            if (n > 1) call write_marker(self%end_node, marker_point(self, n, zero), end_rgba(self, n, self%end_color))
             if (iand(self%markers_, MARKER_INTERMEDIATE) /= 0 .and. .not. zero .and. n > 2) call add_intermediates(self, n)
         end if
 
@@ -2092,6 +2197,17 @@ contains
         if (self%trace .and. self%n_inter_written > 0) self%n_inter_drawn = markers_passed(self, t)
         call self%inter%draw(self%n_inter_drawn)
     end subroutine marker_update
+
+    !> The color of point i for a start or end marker: the trajectory's (its
+    !> own if none), with point colors.
+    function end_rgba(self, i, own) result(rgba)
+        type(MarkerArtist), intent(in) :: self
+        integer, intent(in) :: i
+        real(wp), intent(in) :: own(4)
+        real(wp) :: rgba(4)
+        rgba = own
+        if (self%inter%is_colored()) rgba = point_rgba_or(self%traj, i, own)
+    end function end_rgba
 
     !> Point i from the data sources (the origin if `zero`).
     function marker_point(self, i, zero) result(v)
@@ -2119,16 +2235,20 @@ contains
         v = v + frac * (traj%point(k + 1, sources) - v)
     end function point_at_time
 
-    !> A single marker's point (in a chain of one marker), uploaded.
-    subroutine write_marker(chain, v)
+    !> A single marker's point (in a chain of one marker), and its color (a
+    !> colored chain), uploaded.
+    subroutine write_marker(chain, v, rgba)
         type(LineChain), intent(inout) :: chain
-        real(wp), intent(in) :: v(3)
+        real(wp), intent(in) :: v(3), rgba(4)
         real(c_float), dimension(:,:,:), pointer :: p
+        real(c_float), dimension(:,:), pointer :: c
         integer :: lo, hi
         if (chain%num_chunks() < 1) return
         call chain%slice(1, 1, 1, lo, hi, p)
         if (.not. associated(p)) return
         call split_points(reshape(v, [3, 1]), p)
+        call chain%color_slice(1, 1, 1, lo, hi, c)
+        if (associated(c)) c(:, 1) = real(rgba, c_float)
         call chain%written(1, 1)
     end subroutine write_marker
 
@@ -2193,6 +2313,7 @@ contains
         if (self%direction_ == MARKER_END) then          ! in trajectory order
             self%inter_xyz(:, 1:self%n_inter) = self%inter_xyz(:, self%n_inter:1:-1)
             self%inter_t(1:self%n_inter) = self%inter_t(self%n_inter:1:-1)
+            if (self%inter%is_colored()) self%inter_rgba(:, 1:self%n_inter) = self%inter_rgba(:, self%n_inter:1:-1)
         end if
         first = self%n_inter_written + 1
         if (self%n_inter >= first) call write_intermediates(self, first, self%n_inter)
@@ -2276,33 +2397,40 @@ contains
     subroutine push_intermediate(self, v, t)
         type(MarkerArtist), intent(inout) :: self
         real(wp), intent(in) :: v(3), t
-        real(wp), allocatable :: xyz(:,:), times(:)
+        real(wp), allocatable :: xyz(:,:), times(:), rgba(:,:)
         integer :: m
-        if (.not. allocated(self%inter_xyz)) allocate(self%inter_xyz(3, 64), self%inter_t(64))
+        if (.not. allocated(self%inter_xyz)) allocate(self%inter_xyz(3, 64), self%inter_t(64), self%inter_rgba(4, 64))
         m = size(self%inter_t)
         if (self%n_inter == m) then
-            allocate(xyz(3, 2 * m), times(2 * m))
+            allocate(xyz(3, 2 * m), times(2 * m), rgba(4, 2 * m))
             xyz(:, 1:m) = self%inter_xyz
             times(1:m) = self%inter_t
+            rgba(:, 1:m) = self%inter_rgba
             call move_alloc(xyz, self%inter_xyz)
             call move_alloc(times, self%inter_t)
+            call move_alloc(rgba, self%inter_rgba)
         end if
         self%n_inter = self%n_inter + 1
         self%inter_xyz(:, self%n_inter) = v
         self%inter_t(self%n_inter) = t
+        if (self%inter%is_colored()) self%inter_rgba(:, self%n_inter) = color_at(self, t, self%intermediate_color)
     end subroutine push_intermediate
 
-    !> Write intermediate markers i1 .. i2 into their chain (and upload the chunks written to).
+    !> Write intermediate markers i1 .. i2 into their chain, with their colors
+    !> (with point colors), and upload the chunks written to.
     subroutine write_intermediates(self, i1, i2)
         type(MarkerArtist), intent(inout) :: self
         integer, intent(in) :: i1, i2
         real(c_float), dimension(:,:,:), pointer :: p
+        real(c_float), dimension(:,:), pointer :: c
         integer :: j, lo, hi
         call self%inter%reserve(i2)
         do j = 1, self%inter%num_chunks()
             call self%inter%slice(j, i1, i2, lo, hi, p)
             if (.not. associated(p)) cycle
             call split_points(self%inter_xyz(:, lo:hi), p)
+            call self%inter%color_slice(j, i1, i2, lo, hi, c)
+            if (associated(c)) c = real(self%inter_rgba(:, lo:hi), c_float)
         end do
         call self%inter%written(i1, i2)
     end subroutine write_intermediates

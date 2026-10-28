@@ -10,7 +10,7 @@
 !>   trajectory; `pseudo_potential` gives Omega.
 !> * `propagate`: an adaptive Dormand-Prince 5(4) integrator, keeping every
 !>   step (and at most `max_step` apart, for a smooth curve), stopping at a
-!>   primary's surface (an impact).
+!>   primary's surface (an impact) or, optionally, beyond an escape distance.
 !> * `lagrange_points`: L1 to L5.
 !> * `sample_states`: a cloud of states of one Jacobi constant: positions
 !>   drawn at random where they are allowed (2 Omega >= C: inside the zero
@@ -31,6 +31,7 @@ module cr3bp
     integer, parameter, public :: IMPACT_1 = 1       !! at the larger primary's surface
     integer, parameter, public :: IMPACT_2 = 2       !! at the smaller primary's surface
     integer, parameter, public :: STEP_FAILED = 3    !! the step size fell below the smallest
+    integer, parameter, public :: ESCAPED = 4        !! beyond the escape distance from the barycenter
 
 contains
 
@@ -65,12 +66,14 @@ contains
     !> Propagate `s0` from time 0 to `tf` (negative: backwards): `t(n)` and
     !> `states(6, n)` (the start included), steps at most `max_step` long
     !> (> 0), to a relative and absolute tolerance `tol`. Stops at the
-    !> primaries' radii `radius(2)`; `outcome` says why it stopped.
-    subroutine propagate(mu, s0, tf, max_step, tol, radius, t, states, outcome)
+    !> primaries' radii `radius(2)`, and beyond `escape` from the barycenter
+    !> (if given); `outcome` says why it stopped.
+    subroutine propagate(mu, s0, tf, max_step, tol, radius, t, states, outcome, escape)
         real(wp), intent(in) :: mu, s0(6), tf, max_step, tol
         real(wp), intent(in) :: radius(2)                   !! the primaries' radii (nondimensional)
         real(wp), allocatable, intent(out) :: t(:), states(:,:)
-        integer, intent(out) :: outcome                     !! PROPAGATED, IMPACT_1, IMPACT_2 or STEP_FAILED
+        integer, intent(out) :: outcome                     !! PROPAGATED, IMPACT_1, IMPACT_2, ESCAPED or STEP_FAILED
+        real(wp), intent(in), optional :: escape            !! the escape distance (nondimensional; default: none)
         ! Dormand-Prince 5(4) coefficients
         real(wp), parameter :: c2 = 1.0_wp / 5, c3 = 3.0_wp / 10, c4 = 4.0_wp / 5, c5 = 8.0_wp / 9
         real(wp), parameter :: a21 = 1.0_wp / 5
@@ -126,6 +129,12 @@ contains
                 if (norm2([s(1) - 1.0_wp + mu, s(2), s(3)]) <= radius(2)) then
                     outcome = IMPACT_2
                     exit
+                end if
+                if (present(escape)) then
+                    if (norm2(s(1:3)) > escape) then
+                        outcome = ESCAPED
+                        exit
+                    end if
                 end if
             end if
             h = h * min(5.0_wp, max(0.2_wp, 0.9_wp * max(e, 1.0e-10_wp)**(-0.2_wp)))
