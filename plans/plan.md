@@ -1167,7 +1167,12 @@ Interaction:
       (wheel notches, a trackpad's fractions). The CR3BP demo sets zoom
       speed 0.5 and no throw, with controls in its dock. Tested:
       `test_camera` (a step's zoom scaled by the speed, a half step as a step
-      at half the speed).
+      at half the speed; a flick thrown, and stopped without throw).
+      - Throw on macOS: VSG's trackball throws only for a release in the
+        same millisecond as the last pointer event, as Windows' messages
+        are; macOS's (and a host's, forwarded one by one) are milliseconds
+        apart, so a flick never threw there. The EventRecorder gives a
+        release under 40 ms after a drag's last move that move's time.
 - [x] Highlighting a trajectory (e.g. one selected by the program or picked):
       `set_highlight(mode, color, arrow_spacing, arrow_speed, band_width,
       pulse_period)` on CurveArtist and SegmentArtist, and on

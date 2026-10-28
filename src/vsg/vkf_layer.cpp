@@ -951,7 +951,12 @@ namespace
     // press, 5 button release), key (modified: 'V' with shift), key base,
     // modifiers, button, buttons held (mask), x, y (framebuffer pixels from the
     // top left), and the render area (offset x, y, width, height). It also
-    // scales scroll steps by the viewer's zoom speed, for the trackball.
+    // scales scroll steps by the viewer's zoom speed, for the trackball, and
+    // gives a button release soon after a drag's last move (under throw_gap:
+    // released while moving) that move's time: VSG's trackball throws (keeps
+    // the camera moving) only for a release in the same millisecond as the
+    // last pointer event, which Windows' messages are, but not macOS's (nor
+    // a host's events, forwarded one by one), so a flick never threw there.
     class EventRecorder : public vsg::Inherit<vsg::Visitor, EventRecorder>
     {
     public:
@@ -959,14 +964,34 @@ namespace
 
         void apply(vsg::KeyPressEvent& e) override { key(1, e); }
         void apply(vsg::KeyReleaseEvent& e) override { key(2, e); }
-        void apply(vsg::MoveEvent& e) override { pointer(3, e, 0); }
-        void apply(vsg::ButtonPressEvent& e) override { pointer(4, e, e.button); }
-        void apply(vsg::ButtonReleaseEvent& e) override { pointer(5, e, e.button); }
+        void apply(vsg::MoveEvent& e) override
+        {
+            if ((e.mask & (vsg::BUTTON_MASK_1 | vsg::BUTTON_MASK_2 | vsg::BUTTON_MASK_3)) != 0)
+            {
+                lastDragMove = e.time;
+                dragging = true;
+            }
+            pointer(3, e, 0);
+        }
+        void apply(vsg::ButtonPressEvent& e) override
+        {
+            dragging = false;
+            pointer(4, e, e.button);
+        }
+        void apply(vsg::ButtonReleaseEvent& e) override
+        {
+            if (dragging && e.time >= lastDragMove && e.time - lastDragMove < throw_gap) e.time = lastDragMove;
+            dragging = false;
+            pointer(5, e, e.button);
+        }
         void apply(vsg::ScrollWheelEvent& e) override { e.delta *= v->zoomSpeed; }
 
     private:
         static constexpr size_t max_events = 4096;     // (kept while nothing reads them)
+        static constexpr std::chrono::milliseconds throw_gap{40};  // (moves come every 8 to 16 ms while moving)
         Viewer* v;
+        vsg::time_point lastDragMove;                  // the last move with a button held
+        bool dragging = false;                         // a move with a button held since the last press
 
         void key(int32_t kind, vsg::KeyEvent& e)
         {

@@ -4,7 +4,8 @@
 !> pass between the two cameras and end at the new one; a mouse press ends a
 !> flight; View%set_camera gives a view its camera for when it is shown; the
 !> zoom speed scales a scroll step's zoom (a half step as a step at half the
-!> speed).
+!> speed); a flick (a drag released while moving) keeps the camera turning
+!> with throw (on every platform: the release's time), and not without.
 program test_camera
 
     use vkframes
@@ -112,8 +113,11 @@ program test_camera
     call check(z(1) /= 1.0_wp .and. abs(log(z(2)) / log(z(1)) - 0.5_wp) < 0.05_wp, &
                'zoom speed 0.5: half the zoom per scroll step')
     call check(abs(z(3) - z(2)) < 1.0e-9_wp, 'a half scroll step: as a step at half the speed')
+    ! a flick (a left drag released while moving): thrown, the camera turns on; without throw it stops
+    call check(turned_after_flick() > 1.0e-3_wp, 'a flick: the camera keeps turning (throw)')
     call window%set_camera_throw(.false.)
     call check(.not. window%camera_throw(), 'camera throw off')
+    call check(turned_after_flick() < 1.0e-6_wp, 'a flick without throw: the camera stops')   ! (acos near 1: ~1e-8)
 
     call window%close()
     if (failures > 0) then
@@ -123,6 +127,30 @@ program test_camera
     write(*, '(a)') 'PASS: camera (get, set, in the root frame), flights, view transitions'
 
 contains
+
+    !> A flick (a left press, moves a frame apart, the release a frame after
+    !> the last move), then how far the eye turns over the next 10 frames
+    !> without input (radians).
+    real(wp) function turned_after_flick() result(angle)
+        real(wp) :: e0(3), e1(3)
+        integer :: k
+        call window%mouse(MOUSE_PRESS, 100, 120, 256, 1)
+        call frame()
+        do k = 1, 4
+            call window%mouse(MOUSE_MOVE, 100 + 8 * k, 120, 256, 0)
+            call frame()
+        end do
+        call window%mouse(MOUSE_RELEASE, 132, 120, 0, 1)
+        call frame()
+        call window%get_camera(eye, center, up)
+        e0 = (eye - center) / norm2(eye - center)
+        do k = 1, 10
+            call frame()
+        end do
+        call window%get_camera(eye, center, up)
+        e1 = (eye - center) / norm2(eye - center)
+        angle = acos(max(-1.0_wp, min(1.0_wp, dot_product(e0, e1))))
+    end function turned_after_flick
 
     !> The camera's distance after a scroll of `dy` steps, over the distance before.
     real(wp) function zoom_ratio(dy) result(ratio)
