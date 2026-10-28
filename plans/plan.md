@@ -415,6 +415,13 @@ Decided so far:
       dragged to no height), and a host's window of no width or height
       (`resize`, e.g. a collapsed splitter) isn't drawn until it has a size
       again (tested in test_events).
+    - [ ] Check windows of no size on Linux and Windows: VSG's own windows
+          minimized (Windows gives a client area of no size) or dragged to
+          no height, and whether building a swapchain of no size or
+          acquiring an image then fails or hangs there too. If so, the same
+          guard: a minimum size for VSG's own windows (Win32's
+          WM_GETMINMAXINFO, X11's size hints) or not drawing them while
+          empty. (A host's window of no size isn't drawn on any platform.)
     - **Untested:** moving a window between screens of different scales,
       changing the display's scaling while running, and non-integer ratios
       (Windows 125% and 150%, fractional scaling on Linux).
