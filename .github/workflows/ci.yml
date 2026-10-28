@@ -78,6 +78,16 @@ jobs:
         continue-on-error: true
         run: pixi run -e qt qt-demo --capture "$PWD/captures/qt_demo.png" --capture-frame 30 --quit-after 10
 
+      # The CR3BP demo (qt-fortran; a click on a dot simulated with --click-near).
+      - name: Build the CR3BP demo
+        continue-on-error: ${{ runner.os == 'Windows' }}
+        run: pixi run -e qt cr3bp-build
+
+      - name: Run the CR3BP demo (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: pixi run -e qt cr3bp-demo --click-near 0.8 0.05 --capture "$PWD/captures/cr3bp_demo.png" --capture-frame 90 --quit-after 10
+
       # The PySide6 demo (separate fpm project, a shared library driven by a
       # Python GUI through ctypes).
       - name: Build the PySide6 demo

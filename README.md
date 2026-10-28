@@ -414,6 +414,31 @@ pixi run -e qt trajectory-demo -- my_segments.json
 The file format and every style option are documented at the top of
 [demos/trajectory/app/main.f90](demos/trajectory/app/main.f90).
 
+#### CR3BP demo
+
+<img src="media/screenshots/cr3bp_demo.jpg" alt="The Earth-Moon CR3BP: a cloud of states of one Jacobi constant, the Lagrange points, and a state propagated from near L1" width="300" align="right">
+
+[demos/cr3bp](demos/cr3bp): the Earth-Moon circular restricted three-body
+problem, in the frame rotating with the Earth and the Moon (both fixed).
+
+- A cloud of states of one Jacobi constant, drawn as dots (one marker per
+  state of a trajectory that is never drawn as a line). The cloud fills the
+  region that constant allows, inside its zero-velocity curves; the
+  Lagrange points are marked.
+- Click a dot: its state is propagated with the CR3BP equations of motion
+  (an adaptive Dormand-Prince 5(4) integrator in Fortran, stopping at an
+  impact), drawn as a highlighted curve with arrows in the direction of
+  time, and optionally flown by a spacecraft.
+- The dock sets the Earth-Moon distance, the mass ratio, the Jacobi
+  constant (with the Lagrange points' constants), the number of states,
+  planar or 3D, the random seed, the propagation time (forwards or
+  backwards), and the bodies' drawn size. The readout shows the state, how
+  the propagation ended and the Jacobi constant's drift.
+
+```sh
+pixi run -e qt cr3bp-demo
+```
+
 #### PySide6 demo
 
 [demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI

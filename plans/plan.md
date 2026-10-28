@@ -434,6 +434,26 @@ Decided so far:
     artists' and Sphere's setters); File > Save / Save As write it back,
     replacing only the style keys the editor sets (the data and other keys
     as read); unsaved changes are asked about on closing.
+  - The CR3BP demo (`demos/cr3bp`, `pixi run -e qt cr3bp-demo`): the
+    Earth-Moon circular restricted three-body problem in the rotating frame
+    (the Earth and the Moon fixed; textured, drawn up to 20 times larger),
+    the Lagrange points, and a cloud of states of one Jacobi constant drawn
+    as a MarkerArtist's dots (a trajectory never drawn as a line; its times
+    are the states' numbers). A click (a press and release in one place: not
+    a camera drag; the window's WindowEventHandler, picking markers only)
+    propagates the dot's state (`app/cr3bp.f90`: the equations of motion,
+    the Jacobi constant, adaptive Dormand-Prince 5(4) stopping at an impact,
+    the Lagrange points, the sampling of states inside the zero-velocity
+    surface), drawn highlighted (arrows in the direction of time) and
+    optionally flown by a spacecraft (trace mode). The dock sets the
+    distance, mu, the Jacobi constant, the number of states, planar or 3D,
+    the seed, the propagation time and direction, the dots' and bodies'
+    sizes; the readout shows the state, the outcome and the Jacobi drift
+    (about 1e-11 over 30 days). `--click-near x y` clicks the nearest dot
+    through forwarded mouse events (in CI on macOS).
+    - Found by it: a MarkerArtist with a start marker on an empty trajectory
+      read point 1 (a crash); fixed, and `test_artists` checks empty
+      trajectories for every artist and a follower.
   - libvsg exports no `type_info` for `vsg::Exception`, so on macOS a
     `vsg::Exception` thrown inside libvsg is not caught by type in our code;
     the layer's `guarded()` has a catch-all that recognizes it by name.

@@ -2076,7 +2076,7 @@ contains
         if (changed) then
             if (redraw .or. n < self%n_seen) call reset_markers(self)
             call update_bounds(self, n, zero)
-            call write_marker(self%start_node, marker_point(self, 1, zero))
+            if (n >= 1) call write_marker(self%start_node, marker_point(self, 1, zero))   ! (none: nothing drawn)
             if (n > 1) call write_marker(self%end_node, marker_point(self, n, zero))
             if (iand(self%markers_, MARKER_INTERMEDIATE) /= 0 .and. .not. zero .and. n > 2) call add_intermediates(self, n)
         end if

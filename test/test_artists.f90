@@ -14,7 +14,8 @@
 !> and all in the artist's color with point colors off. RibbonArtist: the
 !> pairs (origin and position, or other sources) drawn to double precision
 !> across chunks, appends, trace mode (the quad to the interpolated pair),
-!> point colors with the artist's alpha. Highlights: set on an artist, and
+!> point colors with the artist's alpha. Empty trajectories: every artist
+!> draws nothing (and then the points added), a frame follows nothing. Highlights: set on an artist, and
 !> on a DrawableTrajectory for its curve and segment artists.
 program test_artists
 
@@ -43,6 +44,7 @@ program test_artists
     call check_ribbon()
     call check_markers()
     call check_drawable()
+    call check_empty()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
@@ -747,5 +749,47 @@ contains
         call dt%remove_all_artists()
         call check(dt%num_artists() == 0, 'remove_all_artists')
     end subroutine check_drawable
+
+    !> An empty trajectory: each kind of artist draws nothing (no crash: a
+    !> marker's start once read point 1), then the points added; a frame
+    !> following it stays where it is.
+    subroutine check_empty()
+        type(Trajectory), target :: traj
+        type(CurveArtist), target :: c
+        type(SegmentArtist), target :: s
+        type(MarkerArtist), target :: m
+        type(RibbonArtist), target :: r
+        type(DrawableTrajectory), target :: dt
+        type(ReferenceFrame), target :: root, craft
+        integer :: i
+        traj = Trajectory()
+        c = CurveArtist(traj)
+        call c%set_highlight(HIGHLIGHT_ARROWS)
+        s = SegmentArtist(traj)
+        m = MarkerArtist(traj, markers=ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END))
+        call m%set_intermediate_type(INTERMEDIATE_DATA)
+        r = RibbonArtist(traj)
+        dt = DrawableTrajectory('Empty')
+        call dt%add_artist(c)
+        call dt%add_artist(s)
+        call dt%add_artist(m)
+        call dt%add_artist(r)
+        call dt%realize(c_null_ptr)
+        call dt%update(0.0_wp)
+        call check(c%num_drawn() == 0 .and. s%num_drawn() == 0 .and. m%num_intermediate() == 0 .and. &
+                   r%num_drawn() == 0, 'empty trajectory: nothing drawn')
+        root = ReferenceFrame('Root')
+        craft = ReferenceFrame('Craft')
+        call craft%set_position([1.0_wp, 2.0_wp, 3.0_wp])
+        call craft%follow(traj, mode=FOLLOW_LIMIT)
+        if (.not. root%add_child(craft)) error stop 'add_child failed'
+        call root%update(0.0_wp)
+        call check(all(craft%position() == [1.0_wp, 2.0_wp, 3.0_wp]), 'empty trajectory: a follower stays')
+        do i = 1, 10
+            call traj%add(real(i, wp), orbit(real(i, wp)))
+        end do
+        call dt%update(0.0_wp)
+        call check(c%num_drawn() == 10 .and. m%num_intermediate() == 8, 'empty trajectory: then the points added')
+    end subroutine check_empty
 
 end program test_artists
