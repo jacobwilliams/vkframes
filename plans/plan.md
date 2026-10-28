@@ -459,8 +459,17 @@ Decided so far:
       trajectories for every artist and a follower.
     - Color by: all blue, or by fate after the propagation time (hits the
       Earth, the Moon, escapes beyond a distance, or neither; each state
-      propagated to 1e-9, 4000 in about a second), with a legend of counts;
-      `--color-by fate` starts so.
+      propagated to 1e-9), with a legend of counts and the time taken;
+      `--color-by fate` starts so (and prints the counts and time).
+    - The states are propagated in parallel with OpenMP (the demo's
+      `fpm.toml`: fpm's `openmp` metapackage; on macOS conda-forge's
+      gfortran links LLVM's libomp): an `!$omp parallel do` with dynamic
+      chunks (some end early, at an impact or an escape), the widgets'
+      values read first (Qt only on the GUI thread). On 10 cores (4
+      performance, 6 efficiency) about 6 times faster: 4000 states over 30
+      days 0.14 s -> 0.025 s, 20000 over a year 6.4 s -> 1.0 s, the same
+      fates. Without OpenMP the `!$` lines are comments: serial.
+      - [ ] Untested: OpenMP on Linux (libgomp) and Windows.
   - MarkerArtist point colors (`set_point_colors`, off by default; not in
     OpenFrames): each marker in the trajectory's color at its point, the
     intermediate ones blended between points by time, points without a

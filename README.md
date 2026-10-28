@@ -438,8 +438,9 @@ problem, in the frame rotating with the Earth and the Moon (both fixed).
   the propagation ended and the Jacobi constant's drift.
 - Color by: all blue, or each dot by its state's fate after the propagation
   time (hits the Earth, hits the Moon, escapes beyond a distance, or
-  neither), with a legend counting each: every state is propagated, and
-  the dots are drawn in per-marker colors (`MarkerArtist%set_point_colors`).
+  neither), with a legend counting each: every state is propagated (in
+  parallel, with OpenMP), and the dots are drawn in per-marker colors
+  (`MarkerArtist%set_point_colors`).
 - `e` and `m` (or the dock's buttons) fly the camera to the Earth and the
   Moon, which it then turns about; the space bar resets the view.
 

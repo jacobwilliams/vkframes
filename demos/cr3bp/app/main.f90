@@ -40,6 +40,8 @@ module cr3bp_demo
     use vkf_text, only: get_font
     use cr3bp, only: propagate, jacobi, lagrange_points, sample_states, PROPAGATED, IMPACT_1, IMPACT_2, ESCAPED
     use iso_c_binding
+    use, intrinsic :: iso_fortran_env, only: int64
+    !$ use omp_lib, only: omp_get_max_threads
 
     implicit none
 
@@ -294,12 +296,16 @@ contains
     !> their fate after the propagation time (and direction): each state
     !> propagated (to a looser tolerance than the state picked: only where it
     !> ends matters), its dot in the trajectory's color there (MarkerArtist
-    !> point colors). A legend counts each fate.
+    !> point colors). A legend counts each fate. The states are propagated in
+    !> parallel (OpenMP: each one on its own; the widgets' values read first,
+    !> Qt being for the GUI thread only), in dynamic chunks (some end early,
+    !> at an impact or an escape).
     subroutine draw_cloud()
         real(wp), allocatable :: rgba(:,:), t(:), st(:,:)
-        real(wp) :: tf
-        integer :: n, k, outcome, fate, counts(4)
-        character(len=400) :: text
+        real(wp) :: tf, mu, radius(2), escape
+        integer :: n, k, outcome, fate, counts(4), threads
+        integer(int64) :: start, finish, rate
+        character(len=500) :: text
         character(len=7) :: hex
         n = 0
         if (allocated(app%states)) n = size(app%states, 2)
@@ -314,11 +320,17 @@ contains
         call QApplication_processEvents()
         tf = app%days%value() * day / time_unit()
         if (app%backward%isChecked()) tf = -tf
+        mu = app%mu
+        radius = [r_earth, r_moon] / app%length
+        escape = app%escape%value()
+        threads = 1
+        !$ threads = omp_get_max_threads()
         allocate(rgba(4, n))
         counts = 0
+        call system_clock(start, rate)
+        !$omp parallel do default(shared) private(t, st, outcome, fate) schedule(dynamic, 8) reduction(+:counts)
         do k = 1, n
-            call propagate(app%mu, app%states(:, k), tf, abs(tf), 1.0e-9_wp, [r_earth, r_moon] / app%length, t, st, &
-                           outcome, escape=app%escape%value())
+            call propagate(mu, app%states(:, k), tf, abs(tf), 1.0e-9_wp, radius, t, st, outcome, escape=escape)
             select case (outcome)
             case (IMPACT_1)
                 fate = 1
@@ -332,6 +344,8 @@ contains
             counts(fate) = counts(fate) + 1
             rgba(:, k) = [fate_colors(:, fate), 1.0_wp]
         end do
+        !$omp end parallel do
+        call system_clock(finish)
         if (n > 0) call app%cloud%add([(real(k, wp), k = 1, n)], pos=app%length * app%states(1:3, :), color=rgba)
         text = '<small>'
         do k = 1, 4
@@ -339,7 +353,11 @@ contains
             write(text, '(a,a,a,a,a,a,i0,a)') trim(text), '<span style="color:', hex, '">&#9679;</span> ', &
                 trim(fate_names(k)), ': ', counts(k), '<br>'
         end do
+        write(text, '(a,a,f0.2,a,i0,a)') trim(text), '(propagated in ', real(finish - start, wp) / real(rate, wp), &
+            ' s, ', threads, merge(' threads)', ' thread) ', threads > 1)
         call app%fate_legend%setText(trim(text)//'</small>')
+        if (app%fate_at_start) write(*, '(a,4i6,a,f0.3,a,i0,a)') 'fates (Earth, Moon, escape, neither):', counts, &
+            ' in ', real(finish - start, wp) / real(rate, wp), ' s on ', threads, ' threads'
     end subroutine draw_cloud
 
     !> Propagate the state picked (the controls' time and direction) and draw
