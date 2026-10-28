@@ -73,6 +73,7 @@ program record_video
     call earth%show_name_label(.false.)
     grid = LatLonGrid('Grid', color=[0.6_wp, 0.8_wp, 1.0_wp, 0.45_wp])
     call grid%set_parameters(1.004_wp * re, 1.004_wp * re, 1.004_wp * re, 15.0_wp * deg, 15.0_wp * deg)
+    call grid%set_line_widths(1.0_wp, 1.0_wp)                            ! (the equator and prime meridian as thin as the rest)
     call grid%show_decorations(.false.)
     if (.not. earth%add_child(grid)) error stop 'add_child failed'
     spin = Trajectory()
