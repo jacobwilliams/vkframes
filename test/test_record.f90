@@ -2,7 +2,8 @@
 !> environment): the frames drawn are written to the file (ffprobe counts
 !> them, at an even size), the simulation time advances by exactly
 !> scale/fps per frame while recording, and goes on from there after; a
-!> second start fails while recording; an ffmpeg that fails (an unknown
+!> second start fails while recording; a watermark is drawn (a missing one
+!> refused); an ffmpeg that fails (an unknown
 !> encoder) ends the recording, and stopping says it failed.
 program test_record
 
@@ -66,6 +67,17 @@ program test_record
     end if
     call check(counted == n_frames, 'the video holds the frames')
     call check(width > 0 .and. height > 0 .and. mod(width, 2) == 0 .and. mod(height, 2) == 0, 'an even size')
+
+    ! a watermark (drawn by ffmpeg); a missing one refused
+    call check(window%start_recording('build/test_record_logo.mp4', watermark='media/logo/vkframes-logo-dark.svg', &
+                                      watermark_width=0.3_wp, watermark_opacity=0.5_wp), 'recording with a watermark')
+    do k = 1, 5
+        ok = window%frame()
+    end do
+    call check(window%stop_recording(written) .and. written == 5, 'a watermarked video written')
+    call check(.not. window%start_recording('build/test_record_none.mp4', watermark='no/such/logo.png'), &
+               'a missing watermark refused')
+    call check(.not. window%is_recording(), 'not recording then')
 
     ! ffmpeg failing: the recording ends
     call check(window%start_recording('build/test_record_bad.mp4', codec='no_such_encoder'), 'started (ffmpeg not yet)')

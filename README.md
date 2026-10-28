@@ -148,10 +148,10 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     `start_recording('orbit.mp4', fps=30)` ... `stop_recording()` pipes the
     frames drawn as raw pixels to ffmpeg (conda-forge's, in the pixi
     environment), which encodes them (H.264 by default; any ffmpeg encoder
-    and options), with no image files. While recording, each frame advances
-    the simulation time, camera flights and animations by exactly one
-    frame's time, so the video is smooth at its own speed however long a
-    frame takes to draw or encode.
+    and options; a watermark such as a logo), with no image files. While
+    recording, each frame advances the simulation time, camera flights and
+    animations by exactly one frame's time, so the video is smooth at its
+    own speed however long a frame takes to draw or encode.
   - Callouts: HUD text and frames' labels can change while shown (text,
     color, position, size, alignment, font). A frame's name label can be
     drawn on top of the scene, so a frame moved to a picked point makes a
@@ -286,7 +286,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `two_windows` | <img src="media/screenshots/examples/two_windows_1.jpg" width="78" alt="two_windows, window 1"><img src="media/screenshots/examples/two_windows_2.jpg" width="78" alt="two_windows, window 2"> | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
 | `pick_trajectories` | <img src="media/screenshots/examples/pick_trajectories.jpg" width="160" alt="pick_trajectories"> | Picking and callouts: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (a ring and a readout at the point: the time there and the altitude) or the Earth (latitude and longitude), a GUI panel follows the selected orbit's spacecraft (its altitude, trace mode, line width, go to the time picked), a Controls panel sets the time scale and pause, and `g` goes to the time selected. |
 | `highlight_trajectory` | <img src="media/screenshots/examples/highlight_trajectory.jpg" width="160" alt="highlight_trajectory"> | Highlighting a selected trajectory: four Earth orbits (parking, transfer, geostationary, Molniya); the program selects the next every few seconds and a click selects the one under the pointer. The selected orbit pulses, with arrows moving along it from its initial time to its final in a translucent band (`set_highlight`, animated by the GPU); `m` changes the highlight's mode. |
-| `record_video` | <img src="media/screenshots/examples/record_video.jpg" width="160" alt="record_video"> | Recording a video: a spacecraft on a highlighted orbit with a pulsing marker and a camera flight half way, recorded to a video file by ffmpeg (`start_recording`, `stop_recording`); the simulation time, the flight and the animations advance by exactly one frame's time per frame, so the video is smooth however fast the window draws. |
+| `record_video` | <img src="media/screenshots/examples/record_video.jpg" width="160" alt="record_video"> | Recording a video: a spacecraft on a highlighted orbit with a pulsing marker, the Earth spinning with its axes and a latitude/longitude grid, and a camera flight half way, recorded to a video file by ffmpeg (`start_recording`, `stop_recording`), with the vkframes logo as a translucent watermark; the simulation time, the flight and the animations advance by exactly one frame's time per frame, so the video is smooth however fast the window draws. |
 | `camera_tour` | <img src="media/screenshots/examples/camera_tour.jpg" width="160" alt="camera_tour"> | The camera from a program: a scripted tour that flies between an Earth view and one following a spacecraft (a view transition), and to cameras given in the root frame (`set_camera` with a duration), printing where the camera is (`get_camera`). |
 | `earth_moon_frames` | <img src="media/screenshots/examples/earth_moon_frames_1.jpg" width="78" alt="earth_moon_frames, window 1"><img src="media/screenshots/examples/earth_moon_frames_2.jpg" width="78" alt="earth_moon_frames, window 2"> | One trajectory in two frames at once: a free-return lunar flyby shown in inertial coordinates about the Earth in one window, and in the Moon's body-fixed frame about the Moon in the other. Each window has its own scene; the Moon-fixed copy is transformed in Fortran, each point at its own time. |
 | `live_changes` | <img src="media/screenshots/examples/live_changes.jpg" width="160" alt="live_changes"> | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text and a starry sky added. |

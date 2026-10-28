@@ -67,7 +67,8 @@
 !> flights and animated shaders (pulsing markers, highlighted lines) by
 !> 1/fps s, so the video plays smoothly at its own speed however long a
 !> frame takes to draw (or to encode). Stopping goes back to the wall clock
-!> from where the video was. The video's size is its first frame's (a window
+!> from where the video was. A watermark (e.g. a logo) can be drawn over the
+!> video by ffmpeg (`watermark`). The video's size is its first frame's (a window
 !> resized while recording is cropped or padded).
 !>
 !> Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
@@ -457,29 +458,63 @@ contains
     !> libx264, libx265 and libvpx-vp9 the CRF: 0 lossless to 51, default 18,
     !> visually lossless), scaled by `scale` (default 1; e.g. 0.5 for half the
     !> size of a Retina window's pixels), the size made even. `options`
-    !> replaces all of those ffmpeg output options (e.g. '-c:v prores_ks
-    !> -profile:v 3'). `ffmpeg`: the program (default: VKFRAMES_FFMPEG, else
-    !> ffmpeg on the path). Returns false if the window isn't open or is
-    !> already recording; ffmpeg's errors (e.g. an unknown encoder) show when
-    !> it starts, at the next frame, and end the recording.
-    logical function start_recording(self, file, fps, quality, codec, scale, options, ffmpeg) result(ok)
+    !> replaces the encoder options (codec, quality; and the scale, unless
+    !> there is a watermark), e.g. '-c:v prores_ks -profile:v 3'.
+    !> `watermark`: an image (e.g. a logo; PNG, SVG, ... with transparency)
+    !> drawn over the video's bottom right corner by ffmpeg, `watermark_width`
+    !> of the video's width (default 0.2), `watermark_opacity` opaque (default
+    !> 0.6). `ffmpeg`: the program (default: VKFRAMES_FFMPEG, else ffmpeg on
+    !> the path). Returns false if the window isn't open, is already
+    !> recording or the watermark doesn't exist; ffmpeg's errors (e.g. an
+    !> unknown encoder) show when it starts, at the next frame, and end the
+    !> recording.
+    logical function start_recording(self, file, fps, quality, codec, scale, options, watermark, watermark_width, &
+                                     watermark_opacity, ffmpeg) result(ok)
         class(WindowProxy), intent(inout) :: self
         character(len=*), intent(in) :: file                !! the video file (e.g. .mp4, .mov, .webm)
         real(wp), intent(in), optional :: fps               !! frames per second of the video (default 30)
         integer, intent(in), optional :: quality            !! the CRF (default 18; lower is better)
         character(len=*), intent(in), optional :: codec     !! an ffmpeg encoder (default libx264)
         real(wp), intent(in), optional :: scale             !! of the window's pixels (default 1)
-        character(len=*), intent(in), optional :: options   !! ffmpeg's output options, instead of those above
+        character(len=*), intent(in), optional :: options   !! ffmpeg's encoder options, instead of those above
+        character(len=*), intent(in), optional :: watermark !! an image file drawn at the bottom right
+        real(wp), intent(in), optional :: watermark_width   !! its width, of the video's (default 0.2)
+        real(wp), intent(in), optional :: watermark_opacity !! 0 to 1 (default 0.6)
         character(len=*), intent(in), optional :: ffmpeg    !! the ffmpeg program
-        character(len=:), allocatable :: output, program
+        character(len=:), allocatable :: output, program, filter
         character(len=1024) :: env
+        character(len=32) :: f, w, a
         integer :: n, status
+        logical :: exists
         ok = .false.
         if (.not. self%is_open() .or. self%recording_) return
+        write(f, '(g0)') 1.0_wp
+        if (present(scale)) write(f, '(g0)') max(scale, 0.01_wp)
+        filter = 'scale=trunc(iw*'//trim(f)//'/2)*2:trunc(ih*'//trim(f)//'/2)*2'     ! (an even size)
+        output = ''
+        if (present(watermark)) then
+            inquire(file=watermark, exist=exists)
+            if (.not. exists) then
+                write(*, '(a)') 'vkframes: recording: no watermark file '//trim(watermark)
+                return
+            end if
+            output = '-i "'//trim(watermark)//'" '                   ! (ffmpeg's second input)
+        end if
         if (present(options)) then
-            output = trim(options)
+            output = output//trim(options)
         else
-            output = encoder_options(codec, quality, scale)
+            output = output//encoder_options(codec, quality)
+        end if
+        if (present(watermark)) then
+            ! the video scaled; the image scaled to its width and made translucent, over its bottom right corner
+            write(w, '(g0)') 0.2_wp
+            if (present(watermark_width)) write(w, '(g0)') max(0.01_wp, min(1.0_wp, watermark_width))
+            write(a, '(g0)') 0.6_wp
+            if (present(watermark_opacity)) write(a, '(g0)') max(0.0_wp, min(1.0_wp, watermark_opacity))
+            output = output//' -filter_complex "[0:v]'//filter//'[v];[1:v][v]scale=w=rw*'//trim(w)// &
+                     ':h=-1,format=rgba,colorchannelmixer=aa='//trim(a)//'[w];[v][w]overlay=W-w-H*0.03:H-h-H*0.03"'
+        else if (.not. present(options)) then
+            output = output//' -vf "'//filter//'"'
         end if
         output = output//' "'//trim(file)//'"'
         if (present(ffmpeg)) then
@@ -500,19 +535,16 @@ contains
         ok = .true.
     end function start_recording
 
-    !> ffmpeg's output options for `codec`, `quality` and `scale` (see start_recording).
-    function encoder_options(codec, quality, scale) result(args)
+    !> ffmpeg's encoder options for `codec` and `quality` (see start_recording).
+    function encoder_options(codec, quality) result(args)
         character(len=*), intent(in), optional :: codec
         integer, intent(in), optional :: quality
-        real(wp), intent(in), optional :: scale
         character(len=:), allocatable :: args, c
-        character(len=32) :: q, f
+        character(len=32) :: q
         c = 'libx264'
         if (present(codec)) c = trim(codec)
         write(q, '(i0)') 18
         if (present(quality)) write(q, '(i0)') max(0, min(63, quality))
-        write(f, '(g0)') 1.0_wp
-        if (present(scale)) write(f, '(g0)') max(scale, 0.01_wp)
         args = '-c:v '//c
         select case (c)
         case ('libx264')
@@ -522,7 +554,6 @@ contains
         case ('libvpx-vp9')
             args = args//' -crf '//trim(q)//' -b:v 0 -pix_fmt yuv420p'
         end select
-        args = args//' -vf "scale=trunc(iw*'//trim(f)//'/2)*2:trunc(ih*'//trim(f)//'/2)*2"'
     end function encoder_options
 
     !> Stop recording: ffmpeg finishes the file. The window's time goes on

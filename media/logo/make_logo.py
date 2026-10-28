@@ -1,4 +1,7 @@
-"""Generate the vkframes logo (vkframes-logo.svg, next to this script).
+"""Generate the vkframes logo (vkframes-logo.svg, next to this script), and
+vkframes-logo-dark.svg: the same in the dark-background colors always (for
+renderers without prefers-color-scheme, e.g. ffmpeg's librsvg: the video
+watermark of example/record_video.f90).
 
 The mark: a half-lit body with an orbit traced from its start (a green start
 marker) up to the spacecraft, the plane swept so far (translucent), and the
@@ -14,6 +17,7 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "vkframes-logo.svg")
+OUT_DARK = os.path.join(HERE, "vkframes-logo-dark.svg")
 
 # the axes (x, y, z), the orbit and spacecraft, the outlines
 RED, GREEN, BLUE = "#e5484d", "#2fb170", "#3e7bfa"
@@ -37,6 +41,11 @@ STYLE = f"""<style>
     .vk {{ fill: {VULKAN_RED_DARK}; }}
     .ft {{ fill: {FORTRAN_PURPLE_DARK}; }}
   }}
+</style>"""
+STYLE_DARK = f"""<style>
+  .ink {{ stroke: {INK_DARK}; }}
+  .vk {{ fill: {VULKAN_RED_DARK}; }}
+  .ft {{ fill: {FORTRAN_PURPLE_DARK}; }}
 </style>"""
 
 
@@ -71,7 +80,7 @@ def arrow(ox, oy, dx, dy, length, color, width, head, head_w):
             f'{f(bx - px * head_w)},{f(by - py * head_w)}" fill="{color}"/>')
 
 
-def logo():
+def logo(style=STYLE):
     parts = ['<defs><clipPath id="body"><circle cx="128" cy="132" r="44"/></clipPath></defs>']
     # the plane swept so far, and the orbit traced behind the body
     fan = arc(T_START, T_SPACECRAFT)
@@ -105,10 +114,11 @@ def logo():
     body = "\n".join(parts)
     return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 786 256" width="786" height="256" '
             'role="img" aria-label="vkframes">\n<title>vkframes</title>\n'
-            f'{STYLE}\n{body}\n</svg>\n')
+            f'{style}\n{body}\n</svg>\n')
 
 
 if __name__ == "__main__":
-    with open(OUT, "w") as fh:
-        fh.write(logo())
-    print("wrote", OUT)
+    for out, style in ((OUT, STYLE), (OUT_DARK, STYLE_DARK)):
+        with open(out, "w") as fh:
+            fh.write(logo(style))
+        print("wrote", out)

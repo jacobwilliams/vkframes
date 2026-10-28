@@ -769,7 +769,13 @@ Decided so far:
         `pixi.toml` (a GPL build: libx264, libx265, VP9, ProRes, ...);
         default H.264 at CRF 18, yuv420p, the size made even (`scale`
         too); `options` replaces the encoder options; the program from
-        `ffmpeg`, VKFRAMES_FFMPEG or the path. ffmpeg starts at the first
+        `ffmpeg`, VKFRAMES_FFMPEG or the path. `watermark` (an image, e.g.
+        a logo, SVG or PNG): drawn by ffmpeg over the bottom right corner,
+        `watermark_width` of the video's width, `watermark_opacity` (ffmpeg
+        7.1 or later: scaled to the video). media/logo/make_logo.py also
+        writes vkframes-logo-dark.svg (the dark-background colors without
+        prefers-color-scheme, which librsvg ignores), the watermark of
+        `example/record_video.f90`. ffmpeg starts at the first
         frame (its size and byte order known then); its errors end the
         recording (`frame()` notices, `stop_recording` returns false).
       - C++ (`src/vsg/vkf_layer.cpp`: Recorder, GrabFrame): a command after
