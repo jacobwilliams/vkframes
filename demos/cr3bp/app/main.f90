@@ -19,9 +19,13 @@
 !> stay at their real radii). A readout shows the state picked
 !> (nondimensional), its Jacobi constant and how the propagation ended.
 !>
+!> Keys (in the view): e and m fly the camera to the Earth and the Moon (it
+!> then turns about them), the space bar resets the view.
+!>
 !> Run with `pixi run -e qt cr3bp-demo` (from the vkframes root). Options:
 !> `--select k` propagates state k at the start; `--click-near x y` clicks
-!> the dot nearest (x, y) (nondimensional) after 30 frames, as the user would; `--capture file` saves
+!> the dot nearest (x, y) (nondimensional) after 30 frames, as the user would;
+!> `--go-to earth` (or `moon`) flies there after 30 frames, as the e (m) key; `--capture file` saves
 !> frame `--capture-frame n` (default 120) as an image; `--quit-after
 !> seconds` closes the demo.
 module cr3bp_demo
@@ -98,6 +102,7 @@ module cr3bp_demo
         integer :: capture_frame = 120
         integer :: select_at_start = 0
         real(wp) :: click_near(2) = huge(1.0_wp)               !! (--click-near: a click there, nondimensional)
+        integer :: go_to = 0                                   !! (--go-to: fly to the Earth (1) or the Moon (2))
         real(wp) :: quit_after = -1.0_wp
     end type app_t
 
@@ -132,6 +137,8 @@ contains
         call app%moon%set_texture_map('lroc_color_2k.jpg')
         call app%moon%show_axes(NO_AXES)
         call app%moon%show_axes_labels(NO_AXES)
+        call app%earth%set_name_label_on_top(.true.)                  ! (not hidden by the bodies drawn larger)
+        call app%moon%set_name_label_on_top(.true.)
 
         ! the Lagrange points: crosses (not pickable) and their labels
         app%lagrange = Trajectory()
@@ -393,6 +400,7 @@ contains
         if (.not. app%proxy%frame()) return
         app%frame = app%frame + 1
         if (app%frame == 30 .and. app%click_near(1) < huge(1.0_wp)) call click_near()
+        if (app%frame == 30 .and. app%go_to > 0) call go_to_body(app%go_to)
         if (allocated(app%capture) .and. app%frame == app%capture_frame) then
             if (app%proxy%capture(app%capture)) write(*, '(a)') 'captured '//app%capture
         end if
@@ -488,12 +496,21 @@ contains
         call event%accept()
     end subroutine on_wheel
 
-    !> The space bar (reset the view) to vkframes; other keys are the GUI's.
+    !> Keys: e and m fly to the Earth and the Moon (go_to_body); the space bar
+    !> (reset the view) to vkframes; other keys are the GUI's.
     subroutine on_key_press(event, data)
         type(QKeyEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        if (event%key() /= Qt_Key_Space) return
-        call app%proxy%key(.true., 32, 32, 0)
+        select case (event%key())
+        case (Qt_Key_A + 4)                                     ! e
+            call go_to_body(1)
+        case (Qt_Key_A + 12)                                    ! m
+            call go_to_body(2)
+        case (Qt_Key_Space)
+            call app%proxy%key(.true., 32, 32, 0)
+        case default
+            return
+        end select
         call event%accept()
     end subroutine on_key_press
 
@@ -504,6 +521,26 @@ contains
         call app%proxy%key(.false., 32, 32, 0)
         call event%accept()
     end subroutine on_key_release
+
+    !> Fly the camera to body k (1 the Earth, 2 the Moon): centered on it
+    !> (the trackball then turns about it), looking from the same direction,
+    !> close enough to see its neighbourhood (the Moon's: L1 and L2).
+    subroutine go_to_body(k)
+        integer, intent(in) :: k
+        real(wp), parameter :: distance(2) = [0.8_wp, 0.55_wp]  !! from the body (of the Earth-Moon distance)
+        real(wp) :: eye(3), center(3), up(3), d(3), body(3)
+        if (.not. app%proxy%is_open()) return
+        if (k == 1) then
+            body = app%earth%position()
+        else
+            body = app%moon%position()
+        end if
+        call app%proxy%get_camera(eye, center, up, in_root=.true.)
+        d = eye - center
+        if (norm2(d) <= 0.0_wp) d = [0.0_wp, -1.0_wp, 1.0_wp]
+        d = d / norm2(d)
+        call app%proxy%set_camera(body + distance(k) * app%length * d, body, up, duration=1.2_wp, in_root=.true.)
+    end subroutine go_to_body
 
     ! ==================================================================
     ! controls (GUI thread)
@@ -605,6 +642,16 @@ contains
         call app%earth%set_radius(value * r_earth)
         call app%moon%set_radius(value * r_moon)
     end subroutine on_body_size
+
+    subroutine on_go_earth(data)
+        class(*), intent(inout), optional :: data
+        call go_to_body(1)
+    end subroutine on_go_earth
+
+    subroutine on_go_moon(data)
+        class(*), intent(inout), optional :: data
+        call go_to_body(2)
+    end subroutine on_go_moon
 
     subroutine on_reset_view(data)
         class(*), intent(inout), optional :: data
@@ -772,13 +819,20 @@ contains
         app%body_size = real_box(1.0_wp, 20.0_wp, 3.0_wp, 1, 1.0_wp, ' x', on_body_size)
         call app%body_size%setToolTip('The Earth and the Moon drawn larger (impacts stay at their real radii)')
         call form%addRow('Body size', app%body_size)
-        button = QPushButton('Reset view')
+        button = QPushButton('Go to the Earth (e)')
+        call button%clicked%connect(on_go_earth)
+        call form%addRow('', button)
+        button = QPushButton('Go to the Moon (m)')
+        call button%clicked%connect(on_go_moon)
+        call form%addRow('', button)
+        button = QPushButton('Reset view (space)')
         call button%clicked%connect(on_reset_view)
         call form%addRow('', button)
         call column%addWidget(group)
 
         call column%addWidget(QLabel('<small>Click a dot: propagate it<br>Left drag: rotate<br>' // &
-                                     'Right drag: zoom<br>Middle drag: pan<br>Wheel: zoom<br>Space: reset the view</small>'))
+                                     'Right drag: zoom<br>Middle drag: pan<br>Wheel: zoom<br>e / m: go to the Earth / Moon<br>' // &
+                                     'Space: reset the view</small>'))
         call column%addStretch()
         scroll = QScrollArea()
         call scroll%setWidgetResizable(.true.)
@@ -825,6 +879,10 @@ program vkframes_cr3bp_demo
             call get_command_argument(i + 2, arg)
             read(arg, *) app%click_near(2)
             i = i + 2
+        case ('--go-to')
+            call get_command_argument(i + 1, arg)
+            app%go_to = merge(1, 2, arg == 'earth')
+            i = i + 1
         case ('--quit-after')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%quit_after

@@ -449,8 +449,11 @@ Decided so far:
     distance, mu, the Jacobi constant, the number of states, planar or 3D,
     the seed, the propagation time and direction, the dots' and bodies'
     sizes; the readout shows the state, the outcome and the Jacobi drift
-    (about 1e-11 over 30 days). `--click-near x y` clicks the nearest dot
-    through forwarded mouse events (in CI on macOS).
+    (about 1e-11 over 30 days). The keys e and m (and dock buttons) fly the
+    camera to the Earth and the Moon (set_camera with a duration, keeping
+    the viewing direction; the trackball then turns about the body).
+    `--click-near x y` clicks the nearest dot through forwarded mouse
+    events (in CI on macOS); `--go-to earth|moon` flies as the keys do.
     - Found by it: a MarkerArtist with a start marker on an empty trajectory
       read point 1 (a crash); fixed, and `test_artists` checks empty
       trajectories for every artist and a follower.

@@ -434,6 +434,8 @@ problem, in the frame rotating with the Earth and the Moon (both fixed).
   planar or 3D, the random seed, the propagation time (forwards or
   backwards), and the bodies' drawn size. The readout shows the state, how
   the propagation ended and the Jacobi constant's drift.
+- `e` and `m` (or the dock's buttons) fly the camera to the Earth and the
+  Moon, which it then turns about; the space bar resets the view.
 
 ```sh
 pixi run -e qt cr3bp-demo
