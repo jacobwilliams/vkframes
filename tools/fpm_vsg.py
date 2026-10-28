@@ -170,10 +170,11 @@ def windows_settings():
         for d in glob.glob(os.path.join(os.getcwd(), build_dir(), "gfortran_*")):
             shutil.rmtree(d, ignore_errors=True)
     # The DLL is passed as a linker input: ld resolves its C symbols directly.
+    # (forward slashes: fpm drops backslashes from the link flags of some projects, e.g. demos/cr3bp)
     settings = {
         "FPM_CXX": os.environ.get("FPM_CXX") or which("clang++", "g++"),
         "FPM_CXXFLAGS": "-DVKF_EXTERNAL_LAYER",
-        "FPM_LDFLAGS": dll,
+        "FPM_LDFLAGS": dll.replace("\\", "/"),
     }
     return settings, os.path.dirname(dll)
 
