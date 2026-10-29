@@ -843,6 +843,13 @@ contains
         call a%remove_trail()
         call a%update(dir * 505.0_wp)
         call check(.not. a%has_trail() .and. a%num_drawn() == 200, what//'removed: the whole curve')
+        call check(a%dash_mode() == DASH_SCENE, what//'dashes anchored by default')
+        call a%set_dash_mode(DASH_SCREEN)
+        call a%update(dir * 505.0_wp)
+        call check(a%dash_mode() == DASH_SCREEN .and. a%num_drawn() == 200, what//'screen-locked dashes')
+        call a%set_dash_mode(DASH_FIXED)
+        call a%update(dir * 505.0_wp)
+        call check(a%dash_mode() == DASH_FIXED .and. a%num_drawn() == 200, what//'fixed-length dashes')
     end subroutine check_trail
 
     !> MarkerArtist point colors (read back from the marker buffers).

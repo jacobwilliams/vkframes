@@ -1,7 +1,12 @@
 #version 450
 
 // Lines (see line.vert): the style's color, with the dash pattern's gaps
-// discarded; blended between its two sizes (2^n and 2^(n+1) scene units).
+// discarded. The pattern has two sizes (2^n and 2^(n+1) scene units); each
+// pixel's signed distance to the nearest dash edge (in pixels: the pattern's
+// bits scaled by how fast the dash position changes on screen) is blended
+// between them, and its coverage is a one-pixel anti-aliased edge about it:
+// so as the size changes (zooming) dashes merge and split smoothly, always
+// solid, instead of cross-fading into half-transparent ones.
 // Highlighted with arrows: the quad is a band, a translucent glow of the
 // highlight color, with the line (dashed, if it is) in its middle and
 // chevrons of the highlight color over both, blended between their two
@@ -35,14 +40,49 @@ layout(location = 6) in float trailDistance;        // from the current time's, 
 layout(location = 7) noperspective in vec3 dash2;   // (trails) the future's dashes
 layout(location = 0) out vec4 outColor;
 
-// The coverage of a dash pattern at dash positions d (1 where solid).
-float dashCoverage(uint pattern, vec3 d)
+// The signed distance (in bits; > 0 in a dash) from position x (0 to 16, in
+// bits of the 16-bit `pattern`, repeating) to the nearest change of the
+// pattern: on to off or off to on.
+float bitDistance(uint pattern, float x)
+{
+    int b = clamp(int(floor(x)), 0, 15);
+    uint on = (pattern >> uint(b)) & 1u;
+    float ahead = float(b + 1) - x, behind = x - float(b);
+    for (int k = 1; k < 16; ++k) {
+        if (((pattern >> uint((b + k) & 15)) & 1u) != on) break;
+        ahead += 1.0;
+    }
+    for (int k = 1; k < 16; ++k) {
+        if (((pattern >> uint((b - k) & 15)) & 1u) != on) break;
+        behind += 1.0;
+    }
+    float d = min(ahead, behind);
+    return (on == 1u) ? d : -d;
+}
+
+// The coverage of a dash pattern at dash positions d (its two sizes, and the
+// second's weight), `rate` the screen-space rate of d.xy (periods per pixel):
+// the edge distances in pixels blended (crisp where one size shows, gaps
+// closing or opening as they change), anti-aliased over a pixel; where the
+// pattern's bits are under a pixel (fixed-length dashes, far away), its
+// average instead (a fainter solid line, not a flicker).
+float dashCoverage(uint pattern, vec3 d, vec2 rate)
 {
     if (pattern == 0xFFFFu || pattern == 0u) return 1.0;
-    uvec2 bit = min(uvec2(floor(16.0 * fract(d.xy))), uvec2(15u));
-    float on0 = float((pattern >> bit.x) & 1u);
-    float on1 = float((pattern >> bit.y) & 1u);
-    return mix(on0, on1, smoothstep(0.3, 0.7, d.z));             // crisp but near the middle
+    vec2 pixelsPerBit = 1.0 / max(16.0 * rate, vec2(1.0e-6));
+    float w = smoothstep(0.3, 0.7, d.z);
+    float d0 = bitDistance(pattern, 16.0 * fract(d.x)) * pixelsPerBit.x;
+    float d1 = bitDistance(pattern, 16.0 * fract(d.y)) * pixelsPerBit.y;
+    float coverage = clamp(0.5 + mix(d0, d1, w), 0.0, 1.0);
+    float average = float(bitCount(pattern)) / 16.0;
+    return mix(average, coverage, smoothstep(0.25, 0.75, mix(pixelsPerBit.x, pixelsPerBit.y, w)));
+}
+
+// The screen-space rate of change of dash positions (periods per pixel, along
+// the line), for each size. (Derivatives: taken before any discard.)
+vec2 dashRate(vec3 d)
+{
+    return vec2(length(vec2(dFdx(d.x), dFdy(d.x))), length(vec2(dFdx(d.y), dFdy(d.y))));
 }
 
 // 0 at a to 1 at b (a step if they are the same)
@@ -53,6 +93,7 @@ float ramp(float a, float b, float x)
 
 void main()
 {
+    vec2 rate = dashRate(dash), rate2 = dashRate(dash2);      // (in uniform control flow, before any discard)
     vec4 base = fragColor;
     float coverage, fade = 1.0;
     if (style.trail0.z != 0.0) {                                 // a trail: the past's or the future's style
@@ -62,14 +103,14 @@ void main()
         if (r <= 0.0) {
             fade = ramp(style.trail1.x, style.trail1.y, r);
             base = ((flags & 1) != 0) ? style.trail2 : vec4(base.rgb, base.a * style.trail2.a);
-            coverage = dashCoverage(uint(style.trail4.x) & 0xFFFFu, dash);
+            coverage = dashCoverage(uint(style.trail4.x) & 0xFFFFu, dash, rate);
         } else {
             fade = 1.0 - ramp(style.trail1.z, style.trail1.w, r);
             base = ((flags & 2) != 0) ? style.trail3 : vec4(base.rgb, base.a * style.trail3.a);
-            coverage = dashCoverage(uint(style.trail4.z) & 0xFFFFu, dash2);
+            coverage = dashCoverage(uint(style.trail4.z) & 0xFFFFu, dash2, rate2);
         }
     } else {
-        coverage = dashCoverage(uint(style.params.z) & 0xFFFFu, dash);
+        coverage = dashCoverage(uint(style.params.z) & 0xFFFFu, dash, rate);
     }
     if ((int(highlight.w + 0.5) & 2) == 0) {
         if (coverage <= 0.0 || fade <= 0.0) discard;

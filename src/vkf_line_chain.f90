@@ -35,14 +35,14 @@
 !>     call chain%draw(i2)
 module vkf_line_chain
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double, c_f_pointer
     use vkf_math, only: wp
     use vkf_layer, only: check_status, &
                          vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_marker_create, vkf_ribbon_create, &
                          vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
                          vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
-                         marker_set_style, vkf_line_set_lod, vkf_line_set_highlight, vkf_line_set_trail
+                         marker_set_style, vkf_line_set_lod, vkf_line_set_highlight, vkf_line_set_trail, vkf_line_set_dash_mode
 
     implicit none
 
@@ -101,10 +101,13 @@ module vkf_line_chain
                                           1.5_c_float, 0.0_c_float, 0.0_c_float, 0.0_c_float]
                                                         !! (lines: highlight, see vkf_line_set_highlight)
         real(c_float) :: trail(20) = 0.0_c_float        !! (strips: the trail, see vkf_line_set_trail; z = 0: none)
+        integer :: dash_mode = 0                        !! (lines: 0 anchored, 1 screen-locked, 2 fixed length: vkf_line_set_dash_mode)
+        real(wp) :: dash_length = 0.0_wp                !! (2: the pattern's length, scene units; 0 from the first view)
     contains
         procedure :: init, set_compile, is_built, is_colored, release, detach
         procedure :: reserve, slice, color_slice, written, draw, draw_range
-        procedure :: set_style, set_pattern, set_marker_style, set_highlight, set_trail, style_node, point, point_color, distance, num_chunks
+        procedure :: set_style, set_pattern, set_marker_style, set_highlight, set_trail, set_dash_mode, style_node
+        procedure :: dash_mode_of, point, point_color, distance, num_chunks
         procedure :: set_lod, lod_error, chunk_bounds
     end type LineChain
 
@@ -558,6 +561,28 @@ contains
         end do
     end subroutine set_trail
 
+    !> For lines, how the dashes are laid out: 0 anchored to the line (the
+    !> default), 1 screen-locked (a constant length in pixels, following the
+    !> line on screen), 2 a fixed length of the line (strips): `length` scene
+    !> units for the pattern, or if 0 its length on screen when first drawn.
+    subroutine set_dash_mode(self, mode, length)
+        class(LineChain), intent(inout) :: self
+        integer, intent(in) :: mode
+        real(wp), intent(in) :: length
+        integer :: j
+        self%dash_mode = mode
+        self%dash_length = length
+        do j = 1, self%n_chunks
+            call apply_style(self, self%chunks(j)%line)
+        end do
+    end subroutine set_dash_mode
+
+    !> The dashes' layout (set_dash_mode).
+    pure integer function dash_mode_of(self)
+        class(LineChain), intent(in) :: self
+        dash_mode_of = self%dash_mode
+    end function dash_mode_of
+
     !> Give the chain's style to `line`, a node not in the chain (e.g. a
     !> curve's trace-mode tail, drawn as part of it).
     subroutine style_node(self, line)
@@ -596,6 +621,9 @@ contains
             if (self%kind /= CHAIN_RIBBON) &
                 call check_status(vkf_line_set_highlight(line, self%highlight), 'trajectory artists')
             if (self%kind == CHAIN_STRIP) call check_status(vkf_line_set_trail(line, self%trail), 'trajectory artists')
+            if (self%kind /= CHAIN_RIBBON) call check_status(vkf_line_set_dash_mode(line, &
+                                                             int(self%dash_mode, c_int), real(self%dash_length, c_double)), &
+                                                             'trajectory artists')
         end if
     end subroutine apply_style
 

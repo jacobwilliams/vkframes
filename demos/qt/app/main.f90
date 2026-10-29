@@ -29,7 +29,9 @@
 !> can be dragged (or clicked, or moved with the keys) to set the time. The orbit
 !> is drawn by a CurveArtist in a DrawableTrajectory (a child of the inertial
 !> frame), whole or traced up to the spacecraft (trace mode, from the dock),
-!> solid or in a dash pattern (dashed, dotted, dash-dot: OpenGL stipples);
+!> solid or in a dash pattern (dashed, dotted, dash-dot: OpenGL stipples),
+!> its dashes anchored to the line, fixed-length or screen-locked
+!> (set_dash_mode, from the dock);
 !> radius vectors (a SegmentArtist at every 12th point) are added to it and
 !> removed while running; markers (a MarkerArtist: start, end, and every 10
 !> minutes) in a shape chosen from the dock, optionally auto-attenuated. The
@@ -180,6 +182,7 @@ module vkdemo
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors, show_plane_swept
         type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los, show_shadow
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
+        type(QComboBox) :: dash_mode                           !! the orbits' dashes: anchored, fixed-length or screen-locked
         type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
         type(QComboBox) :: sky_choice                          !! none, stars, texture, both
         type(QComboBox) :: line_pattern                        !! the orbits' dash pattern
@@ -1212,6 +1215,29 @@ contains
         call app%radius_vectors%set_pattern(2, bits(k))
     end subroutine on_line_pattern
 
+    !> How the orbits' dashes are laid out: anchored to the line (0, the
+    !> default: they stay put on it, sized in scene units), a fixed length
+    !> (1: as paint on the line, never changing, growing on screen as it
+    !> zooms in; the radius vectors, segments, as 0) or
+    !> screen-locked (2: the same length in pixels at any zoom, sliding as the
+    !> view changes).
+    subroutine on_dash_mode(index, data)
+        integer, intent(in) :: index
+        class(*), intent(inout), optional :: data
+        integer :: mode
+        select case (index)
+        case (1)
+            mode = DASH_FIXED
+        case (2)
+            mode = DASH_SCREEN
+        case default
+            mode = DASH_SCENE
+        end select
+        call app%orbit_curve%set_dash_mode(mode)
+        call app%orbit2_curve%set_dash_mode(mode)
+        call app%radius_vectors%set_dash_mode(mode)
+    end subroutine on_dash_mode
+
     !> Marker shape (0: none; 1 + a MARKER_* shape).
     subroutine on_marker_shape(index, data)
         integer, intent(in) :: index
@@ -1398,9 +1424,11 @@ contains
     ! ==================================================================
     ! construction
 
-    !> The main window: the first view in the center, controls in a dock.
+    !> The main window: the first view in the center, controls in a dock
+    !> (scrolling, when it is taller than the window).
     subroutine build_ui()
         type(QDockWidget) :: dock
+        type(QScrollArea) :: scroll
         type(QWidget) :: panel
         type(QFormLayout) :: form
         type(QPushButton) :: reset, reset_view, new_win
@@ -1483,6 +1511,14 @@ contains
         call app%line_pattern%addItems([character(len=8) :: 'Solid', 'Dashed', 'Dotted', 'Dash-dot'])
         call app%line_pattern%currentIndexChanged%connect(on_line_pattern)
         call form%addRow('Orbit pattern', app%line_pattern)
+        app%dash_mode = QComboBox()
+        call app%dash_mode%addItems([character(len=24) :: 'Anchored to the line', 'Fixed length (painted)', &
+                                     'Screen-locked'])
+        call app%dash_mode%setToolTip('Anchored: dashes stay put on the line, sized in scene units; ' // &
+                                      'fixed length: painted on the line, never changing (bigger as you ' // &
+                                      'zoom in); screen-locked: the same length in pixels at any zoom')
+        call app%dash_mode%currentIndexChanged%connect(on_dash_mode)
+        call form%addRow('Dashes', app%dash_mode)
         app%trace_orbit = QCheckBox('Trace orbit')
         call app%trace_orbit%toggled%connect(on_trace_orbit)
         call form%addRow('', app%trace_orbit)
@@ -1552,8 +1588,11 @@ contains
                                 'g: go to the time picked</small>'))
         app%pointer_label = QLabel('<small>Pointer: (move over a view)</small>')
         call form%addRow(app%pointer_label)
+        scroll = QScrollArea()
+        call scroll%setWidgetResizable(.true.)
+        call scroll%setWidget(panel)
         dock = QDockWidget('Controls', app%main)
-        call dock%setWidget(panel)
+        call dock%setWidget(scroll)
         call app%main%addDockWidget(Qt_LeftDockWidgetArea, dock)
     end subroutine build_ui
 

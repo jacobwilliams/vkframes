@@ -87,7 +87,13 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     position and/or attitude).
 - **Drawing trajectories**: a `DrawableTrajectory` holds artists, which can
   be added, changed and removed at run time. Only changed data is uploaded.
-  - `CurveArtist`: thick lines with dash patterns. A highlight (not in
+  - `CurveArtist`: thick lines with dash patterns, anchored to the line
+    (the default: dashes stay put on it as the view changes), a fixed
+    length of the line (`set_dash_mode(DASH_FIXED, length)`: as paint on
+    it, never changing, so they grow on screen as you zoom in) or
+    screen-locked
+    (`set_dash_mode(DASH_SCREEN)`: every dash the same number of pixels at
+    any zoom, as OpenGL's line stipple). A highlight (not in
     OpenFrames), for a trajectory selected by the program or picked: it
     pulses, and arrows move along it from its initial time to its final,
     animated by the GPU (`set_highlight`; also on `SegmentArtist`, and on a
@@ -308,7 +314,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `colored_orbits` | <img src="media/screenshots/examples/colored_orbits.jpg" width="160" alt="colored_orbits"> | A color per trajectory point: a Molniya orbit colored by altitude (a smooth gradient), and a traced low orbit colored by sunlight (yellow while sunlit, blue in the Earth's umbra, matching the Earth's `ShadowCones`). |
 | `orbit_planes` | <img src="media/screenshots/examples/orbit_planes.jpg" width="160" alt="orbit_planes"> | `RibbonArtist`: orbit planes swept out from the Earth's center, for a low orbit and a geostationary orbit drawn whole, and a Molniya orbit traced as its spacecraft moves. |
 | `trace_directions` | <img src="media/screenshots/examples/trace_directions.jpg" width="160" alt="trace_directions"> | Trace mode with trajectories propagated forwards and backwards: one orbit split at a match point (forward from t01 to tm, backward from t02 to tm, the same state there). As time runs the two trace one continuous history, each sweeping out its orbit's plane (`RibbonArtist`); arrows show each one's propagation direction. Keys reverse the time and toggle trace mode and the planes. |
-| `fading_trails` | <img src="media/screenshots/examples/fading_trails.jpg" width="160" alt="fading_trails"> | Fading trails: three spacecraft drawn only near the current time, a solid trail behind each (fading out) and a dashed, translucent one ahead (`set_trail`, `set_trail_style`); keys toggle the whole orbits and lengthen or shorten the trails. |
+| `fading_trails` | <img src="media/screenshots/examples/fading_trails.jpg" width="160" alt="fading_trails"> | Fading trails: three spacecraft drawn only near the current time, a solid trail behind each (fading out) and a dashed, translucent one ahead (`set_trail`, `set_trail_style`). Each orbit has one of the three dash layouts (`set_dash_mode`: anchored, fixed-length, screen-locked), to compare; keys toggle the whole orbits, lengthen or shorten the trails, and rotate the dash layouts. |
 | `thrust_arcs` | <img src="media/screenshots/examples/thrust_arcs.jpg" width="160" alt="thrust_arcs"> | Thrust vectors along a transfer between two circular orbits, with a burn at the start and another at the apoapsis that also changes the plane (`SegmentArtist` with relative ends). The orbit is orange while thrusting, and `+` and `-` change the vectors' scale (a `WindowEventHandler`). |
 | `eclipse` | <img src="media/screenshots/examples/eclipse.jpg" width="160" alt="eclipse"> | `ShadowCones`: a total solar eclipse. The Earth orbits the Sun and the Moon orbits the Earth, and the Moon's umbra reaches the Earth inside its wide penumbra. The Earth's own shadow points away from the Sun. A HUD line shows the umbra's length. |
 | `rocky_map` | <img src="media/screenshots/examples/rocky_map.jpg" width="160" alt="rocky_map"> | Terrain with Rocky (`TerrainBody`; needs the `rocky` environment): the Earth from ReadyMap's tiles, or the Moon from NASA's Moon Trek and LOLA's elevation, from orbit and close to the surface. |
@@ -364,7 +370,8 @@ library:
   spacecraft (OpenFrames' Hubble model, or a sphere) and a second spacecraft
   on part of another orbit; the Sun as a light source; a starry sky.
 - **Trajectories:** the orbits drawn whole or traced up to the spacecraft,
-  in a dash pattern, or colored by altitude (a color per point); the orbit's
+  in a dash pattern (its dashes anchored to the line, fixed-length or screen-locked), or
+  colored by altitude (a color per point); the orbit's
   plane swept out (`RibbonArtist`); markers along them; radius vectors (a `SegmentArtist`)
   added and removed while running.
 - **The spacecraft as markers:** shown as their bodies, or as a marker of

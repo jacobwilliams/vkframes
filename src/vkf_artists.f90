@@ -118,6 +118,11 @@ module vkf_artists
         end subroutine artist_update
     end interface
 
+    !> how a curve's or segments' dash pattern is laid out (set_dash_mode)
+    integer, parameter, public :: DASH_SCENE = 0    !! anchored to the line (sizes in scene units; the default)
+    integer, parameter, public :: DASH_SCREEN = 1   !! screen-locked (a constant length in pixels; OpenGL's stipple)
+    integer, parameter, public :: DASH_FIXED = 2    !! a fixed length of the line, as paint on it (curves)
+
     !> the parts of a curve's trail (set_trail_style)
     integer, parameter, public :: TRAIL_PAST = 1, TRAIL_FUTURE = 2
 
@@ -183,6 +188,7 @@ module vkf_artists
         procedure :: set_pattern => curve_set_pattern, pattern => curve_pattern
         procedure :: set_highlight => curve_set_highlight, highlight => curve_highlight
         procedure :: set_trail, remove_trail, has_trail, set_trail_style
+        procedure :: set_dash_mode => curve_set_dash_mode, dash_mode => curve_dash_mode
         procedure :: set_level_of_detail, level_of_detail, lod_error
         procedure :: set_point_colors, point_colors, drawn_color
         procedure :: build => curve_build
@@ -239,6 +245,7 @@ module vkf_artists
         procedure :: set_width => segment_set_width, width => segment_width
         procedure :: set_pattern => segment_set_pattern, pattern => segment_pattern
         procedure :: set_highlight => segment_set_highlight, highlight => segment_highlight
+        procedure :: set_dash_mode => segment_set_dash_mode, dash_mode => segment_dash_mode
         procedure :: build => segment_build
         procedure :: update => segment_update
         procedure :: release => segment_release
@@ -698,6 +705,37 @@ contains
         if (present(fade)) self%trail_%fade = max(0.0_wp, min(1.0_wp, fade))
         self%tail_time = huge(1.0_wp)                       ! (drawn again at the next update)
     end subroutine set_trail
+
+    !> How the dash pattern (and a trail's) is laid out: DASH_SCENE (the
+    !> default) anchored to the line: a dash stays put on it as the view
+    !> changes, its size in scene units (one per line and view, from 0.7 to
+    !> 1.4 times the pattern's on screen, changing by doubling as it zooms);
+    !> DASH_SCREEN screen-locked, as OpenGL's line stipple (OpenFrames'):
+    !> every dash the pattern's length in pixels, at any zoom and depth,
+    !> sliding along the line as the view changes; DASH_FIXED a fixed
+    !> length of the line, as paint on it: never changing, so zooming in the
+    !> dashes grow on screen, and out they shrink (under a pixel, blending
+    !> into a fainter solid line); `length` (scene units, for the whole
+    !> pattern: the other patterns, a trail's future's and the arrows', in
+    !> proportion), else the pattern's length on screen where the line is
+    !> first drawn. DASH_SCREEN and DASH_FIXED cost projecting the points
+    !> drawn on the CPU, per view and frame.
+    subroutine curve_set_dash_mode(self, mode, length)
+        class(CurveArtist), intent(inout) :: self
+        integer, intent(in) :: mode                         !! DASH_SCENE, DASH_SCREEN or DASH_FIXED
+        real(wp), intent(in), optional :: length            !! (DASH_FIXED) the pattern's length, scene units
+        real(wp) :: l
+        l = 0.0_wp
+        if (present(length)) l = max(0.0_wp, length)
+        call self%chain%set_dash_mode(mode, l)
+        if (c_associated(self%tail)) call self%chain%style_node(self%tail)
+    end subroutine curve_set_dash_mode
+
+    !> The dash pattern's layout: DASH_SCENE, DASH_SCREEN or DASH_FIXED.
+    pure integer function curve_dash_mode(self) result(mode)
+        class(CurveArtist), intent(in) :: self
+        mode = self%chain%dash_mode_of()
+    end function curve_dash_mode
 
     !> No trail: the whole curve (or trace mode, if set) again.
     subroutine remove_trail(self)
@@ -1453,6 +1491,21 @@ contains
         self%pattern_ = iand(pattern, int(z'FFFF'))
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
     end subroutine segment_set_pattern
+
+    !> The dash pattern's layout (see CurveArtist%set_dash_mode): screen-locked
+    !> dashes start again at each segment's start, as GL_LINES; DASH_FIXED
+    !> (strips only) is taken as DASH_SCENE.
+    subroutine segment_set_dash_mode(self, mode)
+        class(SegmentArtist), intent(inout) :: self
+        integer, intent(in) :: mode                         !! DASH_SCENE or DASH_SCREEN
+        call self%chain%set_dash_mode(merge(DASH_SCENE, mode, mode == DASH_FIXED), 0.0_wp)
+    end subroutine segment_set_dash_mode
+
+    !> The dash pattern's layout: DASH_SCENE or DASH_SCREEN.
+    pure integer function segment_dash_mode(self) result(mode)
+        class(SegmentArtist), intent(in) :: self
+        mode = self%chain%dash_mode_of()
+    end function segment_dash_mode
 
     !> Highlight the segments (see CurveArtist%set_highlight): the arrows run
     !> along each segment from its start to its end.

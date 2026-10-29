@@ -485,6 +485,55 @@ Decided so far:
     The highlight's arrows keep the point order (the propagation's
     direction). `example/trace_directions.f90` (forward and backward to a
     match point); `test_artists` (decreasing times).
+  - Dashes morph instead of cross-fading: line.frag blended the two dash
+    sizes' coverage (2^n and 2^(n+1) scene units, while zooming), so where
+    they disagreed a dash was half transparent; it now blends each pixel's
+    signed distance to the nearest dash edge, in pixels (the pattern's bits
+    scaled by the dash position's screen-space rate, its derivatives taken
+    before any discard), with a one-pixel anti-aliased edge: dashes stay
+    solid and merge or split as they change size. Their size on screen
+    still varies from 0.7 to 1.4 times the pattern's (anchored to the line,
+    so they don't crawl).
+  - One dash size per line: each segment chose its own size (by its own
+    scale on screen), so a line's dashes differed in length (in
+    perspective, and mid-change). Now the C++ layer chooses one per line
+    (chunk) and view (dash_levels in src/vsg/vkf_layer.cpp: the power of
+    two of scene units closest to the pattern's length at the nearest point
+    of the line's bounding sphere, kept until 0.6 of a doubling off), for
+    the dashes, the trail's future's and the highlight's arrows; a change
+    morphs over 0.3 s; packed into a fifth push-constant vec4 (the range
+    208 bytes). So at a given zoom all of a line's dashes have one length
+    (smaller where farther: perspective). Per-segment sizes remain where
+    there are no bounds (separate segments) or the eye is among the
+    line's points (e.g. a camera riding along an orbit).
+      - [ ] Untested: the 240-byte push constants (208, then two vec4 for
+            fixed-length dashes) on Linux and Windows drivers (Vulkan
+            guarantees 128; common drivers give 256).
+  - [x] Fixed-length dashes (`set_dash_mode(DASH_FIXED, length)`, curves):
+        the pattern a fixed length of the line in scene units, as paint on
+        it (given, or its length on screen where first drawn), never
+        changing with the view; taken about a pivot near the view's center
+        for precision (fixed_dashes in src/vsg/vkf_layer.cpp). Under a pixel
+        per bit the pattern blends into its average (a fainter solid line).
+        Segments take it as DASH_SCENE.
+  - [x] Screen-locked dashes (`set_dash_mode(DASH_SCREEN)` on CurveArtist
+        and SegmentArtist; `DASH_SCENE`, anchored, the default): OpenGL's line
+        stipple (OpenFrames'): every dash the pattern's length in pixels at
+        any zoom and depth, sliding along the line as the view changes. The
+        C++ layer projects the strip's drawn points (at the level of detail's
+        stride, each segment clipped as line.vert does) while recording each
+        view and accumulates their screen lengths into a mapped buffer of that
+        line's and view's (one per frame in flight), bound as descriptor set
+        1 (raw Vulkan: its own pool; a dummy set for other lines, set 1 being
+        in the line pipeline's layout); line.vert's dash position is that
+        plus the pixels along the segment. Separate segments restart at each
+        segment (GL_LINES). Costs CPU per view and frame for the points drawn.
+        The pattern counts from the first point drawn, or with a trail from
+        the point at the current time (else it jumped whenever the trail's
+        first point changed: jitter).
+        Shown in `example/fading_trails.f90` (the elliptic orbit).
+        - [ ] Later: the trace tail continuing the curve's screen pattern
+              (it starts its own).
   - Fading trails (`CurveArtist%set_trail(past, future, fade)`,
     `remove_trail`, `set_trail_style(TRAIL_PAST | TRAIL_FUTURE, color,
     opacity, factor, pattern)`; not in OpenFrames): only the part within

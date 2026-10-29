@@ -373,6 +373,7 @@ namespace
     struct PointsPipeline
     {
         vsg::ref_ptr<vsg::DescriptorSetLayout> descriptorSetLayout;
+        vsg::ref_ptr<vsg::DescriptorSetLayout> arcLayout;   // lines: set 1, the screen lengths (see ScreenArcs)
         vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
         vsg::ref_ptr<vsg::BindGraphicsPipeline> bindPipeline;
 
@@ -388,10 +389,16 @@ namespace
                 bindings.push_back({3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
             descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
             // VSG pushes the projection and model-view matrices (2 x mat4, offset 0);
-            // EyeRelative pushes the eye position, the viewport and a line's level of
-            // detail (4 x vec4, offset 128)
-            pipelineLayout = vsg::PipelineLayout::create(vsg::DescriptorSetLayouts{descriptorSetLayout},
-                                                         vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 192}});
+            // EyeRelative pushes the eye position, the viewport, a line's level of
+            // detail and its dash sizes (7 x vec4, offset 128)
+            vsg::DescriptorSetLayouts layouts{descriptorSetLayout};
+            if (kind == PointsKind::lines)        // set 1: a line's screen lengths, per view (EyeRelative)
+            {
+                arcLayout = vsg::DescriptorSetLayout::create(vsg::DescriptorSetLayoutBindings{
+                    {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}});
+                layouts.push_back(arcLayout);
+            }
+            pipelineLayout = vsg::PipelineLayout::create(layouts, vsg::PushConstantRanges{{VK_SHADER_STAGE_VERTEX_BIT, 0, 240}});
             vsg::ShaderStages stages{
                 vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vsg::ShaderModule::create(vert)),
                 vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", vsg::ShaderModule::create(frag)),
@@ -651,7 +658,106 @@ namespace
         double radius = 0.0;
         std::array<float, 16> error{};        // error[k]: the bound at stride 2^(k+1) (scene units)
         int levels = 0;
+        bool hasBound = false;                // center and radius given (vkf_line_set_lod: strips)
+        // One dash size per line and view (see dash_levels): for the dashes, the
+        // trail's future's dashes and the highlight's arrows
+        vsg::ref_ptr<vsg::vec4Array> style;   // the line's style (the patterns' factors, the arrows' spacing)
+        struct DashLevel
+        {
+            int level = 0, previous = 0;      // the size shown (2^level scene units), and the one before
+            double since = -1.0;              // when it changed (s; < 0: no change to morph)
+            bool set = false;
+        };
+        std::map<const vsg::View*, std::array<DashLevel, 3>> dashLevels;
+        // Screen-locked dashes (style count.z = 1: vkf_line_set_dash_mode): each
+        // point's distance along the strip on screen, per view (see ScreenArcs)
+        bool screenDashes = false;
+        vsg::ref_ptr<vsg::floatArray> points;   // the strip's points (high/low pairs)
+        struct ScreenArcs
+        {
+            static constexpr int slots = 4;                 // (a frame in flight's each)
+            std::array<vsg::ref_ptr<vsg::Buffer>, slots> buffers;
+            std::array<float*, slots> mapped{};
+            std::array<VkDescriptorSet, slots> sets{};
+            uint32_t capacity = 0;
+        };
+        std::map<const vsg::View*, ScreenArcs> screenArcs;
+        // Fixed-length dashes (vkf_line_set_dash_mode 2: see fixed_dashes): the
+        // pattern's length (scene units; 0: from the first view), and per view
+        // the window units per scene unit it was given
+        bool fixedDashes = false;
+        double dashLength = 0.0;
+        std::map<const vsg::View*, double> fixedBase;
     };
+
+    // Seconds since the first call (for the dashes' changes of size).
+    double steady_seconds()
+    {
+        static const auto start = std::chrono::steady_clock::now();
+        return std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    }
+
+    constexpr double dash_hysteresis = 0.6;   // a size kept until it is this many doublings off (> 0.5)
+    constexpr double dash_morph = 0.3;        // seconds a change of size morphs over
+
+    // One dash size per line and view (not per segment, so that a line's
+    // dashes all have one length): for each of the line's patterns (its dashes,
+    // its trail's future's, its highlight's arrows), the power of two of scene
+    // units whose length on screen at the nearest point of the line's bounding
+    // sphere is closest to the pattern's, kept until it is dash_hysteresis
+    // doublings off; a change morphs from the old size to the new over
+    // dash_morph seconds. Packed per pattern for line.vert: the old size + 128,
+    // the new + 128 (8 bits each), the morph's progress (16 bits). False
+    // (per-segment sizes) for a line without bounds, or with the eye among its
+    // points.
+    bool dash_levels(LineLod& lod, const vsg::View* view, const vsg::dvec3& eye, const vsg::dmat4& projection,
+                     const vsg::dmat4& modelView, const float viewport[4], uint32_t packed[3])
+    {
+        if (!lod.hasBound || !lod.style || lod.style->size() < 11 || !view) return false;
+        const double fx = std::abs(projection[0][0]) * viewport[0], fy = std::abs(projection[1][1]) * viewport[1];
+        double pixelsPerUnit;
+        if (projection[3][3] == 1.0)
+        {
+            const double scale = vsg::length(vsg::dvec3(modelView[0][0], modelView[0][1], modelView[0][2]));
+            pixelsPerUnit = 0.5 * std::max(fx, fy) * scale;
+        }
+        else
+        {
+            const double d = vsg::length(lod.center - eye) - lod.radius;
+            if (!(d > 0.0)) return false;
+            pixelsPerUnit = 0.5 * std::max(fx, fy) / d;
+        }
+        if (!(pixelsPerUnit > 0.0)) return false;
+        const auto& st = *lod.style;
+        const bool trail = st[6].z != 0.0f;
+        const double ratio = viewport[2];
+        const double periods[3] = {16.0 * std::max(trail ? st[10].y : st[1].w, 1.0e-3f) * ratio,   // pixels
+                                   16.0 * std::max(st[10].w, 1.0e-3f) * ratio,
+                                   std::max(st[4].y, 1.0f) * ratio};
+        auto& levels = lod.dashLevels[view];
+        const double now = steady_seconds();
+        for (int k = 0; k < 3; ++k)
+        {
+            const double lambda = std::clamp(std::log2(periods[k] / pixelsPerUnit), -125.0, 125.0);
+            auto& dl = levels[k];
+            if (!dl.set)
+            {
+                dl.level = dl.previous = static_cast<int>(std::lround(lambda));
+                dl.since = -1.0;
+                dl.set = true;
+            }
+            else if (std::abs(lambda - dl.level) > dash_hysteresis)
+            {
+                dl.previous = dl.level;
+                dl.level = static_cast<int>(std::lround(lambda));
+                dl.since = now;
+            }
+            const double w = (dl.since < 0.0) ? 1.0 : std::clamp((now - dl.since) / dash_morph, 0.0, 1.0);
+            packed[k] = static_cast<uint32_t>(dl.previous + 128) | (static_cast<uint32_t>(dl.level + 128) << 8) |
+                        (static_cast<uint32_t>(std::lround(w * 65535.0)) << 16);
+        }
+        return true;
+    }
 
     // The stride to draw a strip with in the view being recorded: the largest
     // 2^k whose error bound projects under lod_tolerance pixels.
@@ -680,6 +786,231 @@ namespace
         return stride;
     }
 
+    // Screen-locked dashes (OpenGL's line stipple: a constant length in pixels,
+    // following the line on screen): line.vert needs each point's distance
+    // along the strip on screen from the first point drawn, which changes with
+    // every view and frame. EyeRelative computes it while recording a view
+    // (projecting the points drawn, at the level of detail's stride, each
+    // segment clipped in front of the eye as line.vert does) into a buffer of
+    // that line's and view's (one per frame in flight, mapped), bound as
+    // descriptor set 1; lines without them bind a dummy set (set 1 is in the
+    // line pipeline's layout). Their own descriptor pool, per device; raw
+    // Vulkan, as they are made while recording.
+    struct ArcResources
+    {
+        VkDescriptorPool pool = VK_NULL_HANDLE;
+        vsg::ref_ptr<vsg::Buffer> dummyBuffer;
+        VkDescriptorSet dummy = VK_NULL_HANDLE;
+    };
+
+    VkDescriptorSet allocate_arc_set(ArcResources& r, vsg::Device* device, const vsg::Buffer& buffer, VkDeviceSize size)
+    {
+        const uint32_t id = device->deviceID;
+        VkDescriptorSetLayout layout = line_pipeline().arcLayout->vk(id);
+        VkDescriptorSetAllocateInfo info{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+        info.descriptorPool = r.pool;
+        info.descriptorSetCount = 1;
+        info.pSetLayouts = &layout;
+        VkDescriptorSet set = VK_NULL_HANDLE;
+        if (vkAllocateDescriptorSets(device->vk(), &info, &set) != VK_SUCCESS) return VK_NULL_HANDLE;
+        VkDescriptorBufferInfo bufferInfo{buffer.vk(id), 0, size};
+        VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+        write.dstSet = set;
+        write.dstBinding = 0;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        write.pBufferInfo = &bufferInfo;
+        vkUpdateDescriptorSets(device->vk(), 1, &write, 0, nullptr);
+        return set;
+    }
+
+    // A host-visible, coherent storage buffer of n floats, mapped (null if it can't be).
+    vsg::ref_ptr<vsg::Buffer> mapped_floats(vsg::Device* device, uint32_t n, float** mapped)
+    {
+        const VkDeviceSize size = VkDeviceSize(std::max(n, 1u)) * sizeof(float);
+        auto buffer = vsg::createBufferAndMemory(vsg::ref_ptr<vsg::Device>(device), size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                                                 VK_SHARING_MODE_EXCLUSIVE,
+                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        void* data = nullptr;
+        auto memory = buffer->getDeviceMemory(device->deviceID);
+        if (!memory || memory->map(buffer->getMemoryOffset(device->deviceID), size, 0, &data) != VK_SUCCESS) return {};
+        *mapped = static_cast<float*>(data);
+        return buffer;
+    }
+
+    ArcResources& arc_resources(vsg::Device* device)
+    {
+        static std::map<vsg::Device*, ArcResources> resources;   // (kept for the whole run, as the pipelines)
+        auto& r = resources[device];
+        if (r.pool == VK_NULL_HANDLE)
+        {
+            VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 4096};
+            VkDescriptorPoolCreateInfo info{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+            info.maxSets = 4096;
+            info.poolSizeCount = 1;
+            info.pPoolSizes = &size;
+            vkCreateDescriptorPool(device->vk(), &info, nullptr, &r.pool);
+            float* mapped = nullptr;
+            r.dummyBuffer = mapped_floats(device, 1, &mapped);
+            if (mapped) mapped[0] = 0.0f;
+            if (r.dummyBuffer) r.dummy = allocate_arc_set(r, device, *r.dummyBuffer, sizeof(float));
+        }
+        return r;
+    }
+
+    // The screen lengths of strip `lod` for the view being recorded (see
+    // ScreenArcs): arc[i] at each segment's first point drawn (from `first`,
+    // at `stride`, to point `drawn` - 1), in framebuffer pixels. The set to
+    // bind (null if it can't be made).
+    VkDescriptorSet screen_arcs(LineLod& lod, vsg::RecordTraversal& visitor, vsg::Device* device, const vsg::dvec3& eye,
+                                const vsg::dmat4& projection, const vsg::dmat4& modelView, const float viewport[4],
+                                uint32_t first, uint32_t drawn, uint32_t stride)
+    {
+        if (!lod.points || !visitor.viewDependentState || !visitor.getFrameStamp()) return VK_NULL_HANDLE;
+        const uint32_t capacity = static_cast<uint32_t>(lod.points->size() / 8);
+        auto& r = arc_resources(device);
+        auto& arcs = lod.screenArcs[visitor.viewDependentState->view];
+        const int slot = static_cast<int>(visitor.getFrameStamp()->frameCount % LineLod::ScreenArcs::slots);
+        if (arcs.capacity != capacity)                       // (made for this strip's buffer)
+        {
+            for (int k = 0; k < LineLod::ScreenArcs::slots; ++k)
+            {
+                arcs.buffers[k] = mapped_floats(device, capacity, &arcs.mapped[k]);
+                arcs.sets[k] = arcs.buffers[k] ? allocate_arc_set(r, device, *arcs.buffers[k], VkDeviceSize(capacity) * sizeof(float))
+                                               : VK_NULL_HANDLE;
+            }
+            arcs.capacity = capacity;
+        }
+        float* arc = arcs.mapped[slot];
+        if (!arc || arcs.sets[slot] == VK_NULL_HANDLE) return VK_NULL_HANDLE;
+        vsg::dmat4 rotation = modelView;
+        rotation[3][0] = rotation[3][1] = rotation[3][2] = 0.0;
+        const vsg::dmat4 mvp = projection * rotation;
+        const float* p = lod.points->data();
+        auto clip = [&](uint32_t i) {
+            const vsg::dvec3 v(double(p[8 * i]) + double(p[8 * i + 4]) - eye.x, double(p[8 * i + 1]) + double(p[8 * i + 5]) - eye.y,
+                               double(p[8 * i + 2]) + double(p[8 * i + 6]) - eye.z);
+            return mvp * vsg::dvec4(v, 1.0);
+        };
+        constexpr double w_min = 1.0e-6;                     // (line.vert's W_MIN)
+        const double hx = 0.5 * viewport[0], hy = 0.5 * viewport[1];
+        const uint32_t last = drawn - 1, q = first / stride;
+        // the pattern's origin: the first point drawn, or with a trail the point
+        // at the current time (its distance along the strip: the trail's), so
+        // the dashes don't jump as the trail's first point changes
+        const auto& st = *lod.style;
+        const bool trail = lod.style->size() >= 11 && st[6].z != 0.0f;
+        const double s_now = trail ? double(st[6].x) + double(st[6].y) : 0.0;
+        auto along = [&](uint32_t i) { return double(p[8 * i + 3]) + double(p[8 * i + 7]); };   // distance along the strip
+        double total = 0.0, origin = 0.0;
+        bool found = false;
+        for (uint32_t s = 0;; ++s)                           // the segments line.vert draws
+        {
+            const uint32_t a = (s == 0) ? first : (q + s) * stride;
+            if (a >= last) break;
+            const uint32_t b = std::min((q + s + 1) * stride, last);
+            arc[a] = static_cast<float>(total);
+            vsg::dvec4 ca = clip(a), cb = clip(b);
+            double length = 0.0;
+            if (!(ca.w < w_min && cb.w < w_min))             // (else behind the eye: not drawn)
+            {
+                if (ca.w < w_min) ca = ca + (cb - ca) * ((w_min - ca.w) / (cb.w - ca.w));
+                if (cb.w < w_min) cb = cb + (ca - cb) * ((w_min - cb.w) / (ca.w - cb.w));
+                length = std::hypot((cb.x / cb.w - ca.x / ca.w) * hx, (cb.y / cb.w - ca.y / ca.w) * hy);
+            }
+            if (trail && !found)                             // the current time in this segment (or before the first)
+            {
+                const double sa = along(a), sb = along(b);
+                if (s_now <= sb || b >= last)
+                {
+                    const double f = (sb > sa) ? std::clamp((s_now - sa) / (sb - sa), 0.0, 1.0) : 0.0;
+                    origin = total + f * length;
+                    found = true;
+                }
+            }
+            total += length;
+        }
+        if (origin != 0.0)                                   // (the pattern from the current time's point)
+            for (uint32_t s = 0;; ++s)
+            {
+                const uint32_t a = (s == 0) ? first : (q + s) * stride;
+                if (a >= last) break;
+                arc[a] = static_cast<float>(double(arc[a]) - origin);
+            }
+        return arcs.sets[slot];
+    }
+
+    // Fixed-length dashes (vkf_line_set_dash_mode 2): the pattern a fixed
+    // length of the line, as paint on it: d(s) = s * perUnit for the distance
+    // s along the strip, perUnit the pattern's periods per scene unit, never
+    // changing with the view (zooming in, the dashes grow on screen). Its
+    // length: lod.dashLength (scene units), or if 0 the pattern's length on
+    // screen at the point nearest the view's center, the first time the line
+    // is drawn in this view. For precision (long trajectories, close up) d is
+    // taken about a pivot near the view's center: d = phase + (s - pivot) *
+    // perUnit, phase = fract(pivot * perUnit) in double, the same pattern for
+    // any pivot. Packed for line.vert: (pivot high, pivot low, phase 0,
+    // perUnit 0), (phase 1, perUnit 1, phase 2, perUnit 2) for the dashes, the
+    // trail's future's and the arrows; false if not used here.
+    bool fixed_dashes(LineLod& lod, const vsg::View* view, const vsg::dvec3& eye, const vsg::dmat4& projection,
+                      const vsg::dmat4& modelView, const float viewport[4], uint32_t first, uint32_t drawn, uint32_t stride,
+                      float out[8])
+    {
+        if (!lod.fixedDashes || !lod.points || !lod.style || lod.style->size() < 11 || !view || drawn < first + 2) return false;
+        const float* p = lod.points->data();
+        vsg::dmat4 rotation = modelView;
+        rotation[3][0] = rotation[3][1] = rotation[3][2] = 0.0;
+        const vsg::dmat4 mvp = projection * rotation;
+        // the pivot: the drawn point nearest the view's center (at the level of detail's stride)
+        double pivot = 0.0, depth = -1.0, best = std::numeric_limits<double>::max();
+        const uint32_t last = drawn - 1, q = first / stride;
+        for (uint32_t k = 0;; ++k)
+        {
+            const uint32_t i = (k == 0) ? first : std::min((q + k) * stride, last);
+            const vsg::dvec3 v(double(p[8 * i]) + double(p[8 * i + 4]) - eye.x, double(p[8 * i + 1]) + double(p[8 * i + 5]) - eye.y,
+                               double(p[8 * i + 2]) + double(p[8 * i + 6]) - eye.z);
+            const vsg::dvec4 c = mvp * vsg::dvec4(v, 1.0);
+            const double r = (c.w > 1.0e-6) ? (c.x / c.w) * (c.x / c.w) + (c.y / c.w) * (c.y / c.w)
+                                            : std::numeric_limits<double>::max() / 2;   // (behind: if nothing's in front)
+            if (r < best)
+            {
+                best = r;
+                pivot = double(p[8 * i + 3]) + double(p[8 * i + 7]);
+                depth = c.w;
+            }
+            if (i >= last) break;
+        }
+        const auto& st = *lod.style;
+        // each pattern's period (window units: 16 bits of `factor`; the arrows' spacing)
+        const double periods[3] = {16.0 * std::max(st[6].z != 0.0f ? st[10].y : st[1].w, 1.0e-3f),
+                                   16.0 * std::max(st[10].w, 1.0e-3f), std::max(st[4].y, 1.0f)};
+        double& base = lod.fixedBase[view];                     // window units per scene unit, set once
+        if (lod.dashLength > 0.0)
+            base = periods[0] / lod.dashLength;
+        else if (base <= 0.0)
+        {
+            const double ratio = std::max(double(viewport[2]), 1.0e-6);
+            const double fx = std::abs(projection[0][0]) * viewport[0], fy = std::abs(projection[1][1]) * viewport[1];
+            if (projection[3][3] == 1.0)
+                base = 0.5 * std::max(fx, fy) * vsg::length(vsg::dvec3(modelView[0][0], modelView[0][1], modelView[0][2])) / ratio;
+            else if (depth > 1.0e-6)
+                base = 0.5 * std::max(fx, fy) / depth / ratio;
+            if (!(base > 0.0) || !std::isfinite(base)) { base = 0.0; return false; }
+        }
+        float high, low;
+        split(pivot, high, low);
+        out[0] = high;
+        out[1] = low;
+        for (int k = 0; k < 3; ++k)
+        {
+            const double perUnit = base / periods[k];
+            const double phase = pivot * perUnit;
+            out[2 + 2 * k] = static_cast<float>(phase - std::floor(phase));
+            out[3 + 2 * k] = static_cast<float>(perUnit);
+        }
+        return true;
+    }
+
     class EyeRelative : public vsg::Inherit<vsg::Group, EyeRelative>
     {
     public:
@@ -688,6 +1019,7 @@ namespace
 
         vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
         std::shared_ptr<LineLod> lod;          // line strips (null for other geometry)
+        bool linePipeline = false;             // drawn by the line pipeline: its set 1 bound (screen lengths)
 
         void traverse(vsg::RecordTraversal& visitor) const override
         {
@@ -696,8 +1028,10 @@ namespace
             const vsg::dvec3 eye = vsg::inverse(modelView) * vsg::dvec3(0.0, 0.0, 0.0);
 
             // eye high, eye low, viewport (width, height, pixel ratio, time), level of
-            // detail (stride, points drawn, the first point drawn (0-based): as integers)
-            float constants[16] = {};
+            // detail (stride, points drawn, the first point drawn (0-based): as integers),
+            // the dash sizes (packed: see dash_levels; the last 1 if given, 2 for
+            // fixed-length dashes: then fixed_dashes's 8 values after)
+            float constants[28] = {};
             for (int i = 0; i < 3; ++i) split(eye[i], constants[i], constants[4 + i]);
             recorded_viewport(visitor, constants + 8);
             constants[11] = animation_time(visitor);
@@ -717,9 +1051,31 @@ namespace
             std::memcpy(constants + 12, &stride, sizeof(stride));
             std::memcpy(constants + 13, &drawn, sizeof(drawn));
             std::memcpy(constants + 14, &first, sizeof(first));
+            uint32_t packed[4] = {0, 0, 0, 0};
+            if (lod && visitor.viewDependentState && lod->fixedDashes && lod->strip &&
+                fixed_dashes(*lod, visitor.viewDependentState->view, eye, state->projectionMatrixStack.top(), modelView,
+                             constants + 8, first, drawn, stride, constants + 20))
+                packed[3] = 2;
+            else if (lod && visitor.viewDependentState &&
+                     dash_levels(*lod, visitor.viewDependentState->view, eye, state->projectionMatrixStack.top(), modelView,
+                                 constants + 8, packed))
+                packed[3] = 1;
+            std::memcpy(constants + 16, packed, sizeof(packed));
             auto& commandBuffer = *state->_commandBuffer;
             vkCmdPushConstants(commandBuffer, pipelineLayout->vk(commandBuffer.deviceID), VK_SHADER_STAGE_VERTEX_BIT,
                                128, sizeof(constants), constants);
+            if (linePipeline)                  // set 1: the screen lengths (screen-locked dashes), or the dummy set
+            {
+                auto* device = commandBuffer.getDevice();
+                VkDescriptorSet set = VK_NULL_HANDLE;
+                if (lod && lod->screenDashes && lod->strip && drawn >= first + 2)
+                    set = screen_arcs(*lod, visitor, const_cast<vsg::Device*>(device), eye, state->projectionMatrixStack.top(),
+                                      modelView, constants + 8, first, drawn, stride);
+                if (set == VK_NULL_HANDLE) set = arc_resources(const_cast<vsg::Device*>(device)).dummy;
+                if (set != VK_NULL_HANDLE)
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout->vk(commandBuffer.deviceID),
+                                            1, 1, &set, 0, nullptr);
+            }
 
             vsg::dmat4 rotationOnly = modelView;
             rotationOnly[3][0] = rotationOnly[3][1] = rotationOnly[3][2] = 0.0;
@@ -2803,7 +3159,10 @@ static void* make_line(int capacity, bool colored, bool ribbon = false)
         auto eyeRelative = EyeRelative::create(pipeline.pipelineLayout);
         line->lod = std::make_shared<LineLod>();
         line->lod->draw = line->draw;
+        line->lod->style = line->style;
+        line->lod->points = line->points;
         eyeRelative->lod = line->lod;
+        eyeRelative->linePipeline = !ribbon;
         eyeRelative->addChild(stateGroup);
         line->node = eyeRelative;
         return line.release();
@@ -3104,6 +3463,7 @@ VKF_API int vkf_line_set_lod(void* line, const double* center, double radius, co
     l->lod->radius = radius;
     for (int k = 0; k < levels; ++k) l->lod->error[k] = error[k];
     l->lod->levels = levels;
+    l->lod->hasBound = true;
     return 0;
 }
 
@@ -3147,6 +3507,26 @@ VKF_API int vkf_line_set_trail(void* line, const float* values)
     if (!l || l->markers || l->ribbon || l->style->size() < 11) return -1;
     for (int k = 0; k < 5; ++k)
         l->style->at(6 + k) = vsg::vec4(values[4 * k], values[4 * k + 1], values[4 * k + 2], values[4 * k + 3]);
+    l->style->dirty();
+    return 0;
+}
+
+// A line's dashes: 0 anchored to the line (the default: sizes in scene units,
+// see dash_levels), 1 screen-locked (a constant length in pixels, following
+// the line on screen, as OpenGL's line stipple: see ScreenArcs), 2 a fixed
+// length of the line (see fixed_dashes; strips): `length` scene units for the
+// pattern, or if 0 its length on screen when first drawn. 1 and 2 cost a
+// projection of the points drawn per view and frame. Returns 0, or -1 if
+// `line` isn't a line.
+VKF_API int vkf_line_set_dash_mode(void* line, int mode, double length)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l || l->markers || l->ribbon || !l->lod) return -1;
+    l->lod->screenDashes = mode == 1;
+    if (mode != 2 || length != l->lod->dashLength) l->lod->fixedBase.clear();
+    l->lod->fixedDashes = mode == 2;
+    l->lod->dashLength = (mode == 2) ? std::max(length, 0.0) : 0.0;
+    l->style->at(2).z = mode == 1 ? 1.0f : 0.0f;
     l->style->dirty();
     return 0;
 }

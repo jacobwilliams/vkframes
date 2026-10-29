@@ -41,7 +41,7 @@ module vkf_layer
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
-    public :: vkf_ribbon_create, vkf_line_set_highlight, vkf_line_set_trail
+    public :: vkf_ribbon_create, vkf_line_set_highlight, vkf_line_set_trail, vkf_line_set_dash_mode
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
@@ -985,6 +985,16 @@ module vkf_layer
             type(c_ptr), value :: line                      !! line handle
             real(c_float), dimension(20), intent(in) :: values
         end function vkf_line_set_trail
+
+        !> A line's dashes: `screen` 1 screen-locked (a constant length in pixels, following the line on
+        !> screen), 0 anchored to the line (the default). Returns 0, or -1 if `line` isn't a line.
+        integer(c_int) function vkf_line_set_dash_mode(line, mode, length) bind(C, name="vkf_line_set_dash_mode")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: line                      !! line handle
+            integer(c_int), value :: mode                   !! 0 anchored, 1 screen-locked, 2 a fixed length
+            real(c_double), value :: length                 !! (2) the pattern's length, scene units (0: from the first view)
+        end function vkf_line_set_dash_mode
 
     end interface
 

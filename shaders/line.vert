@@ -21,15 +21,23 @@
 // along the line in pattern periods of two sizes: powers of two in scene
 // units, 2^n and 2^(n+1), the nearest below and above the pattern's length on
 // screen there (n = floor(lambda), lambda = log2(pattern length / pixels per
-// scene unit) per segment). line.frag blends the two by fract(lambda) (only
-// from 0.3 to 0.7, so that the dashes are mostly crisp), so they change size
-// smoothly along the line and while zooming, from 0.7 to 1.4 times the
-// pattern's length on screen. The position comes from each point's distance
+// scene unit) per segment; or, as given per line in pc.dashLevels (see
+// dash_levels in src/vsg/vkf_layer.cpp: one size for the whole line, so its
+// dashes all have one length, morphing over a fraction of a second when it
+// changes), the old and the new size and the morph's progress). line.frag
+// blends the two by fract(lambda) (from
+// 0.3 to 0.7: one size only most of the time), blending each pixel's
+// distance to the nearest dash edge rather than its coverage, so the dashes
+// stay solid while they change size, smoothly along the line and while
+// zooming, from 0.7 to 1.4 times the pattern's length on screen. The position comes from each point's distance
 // along the strip (from its start; written with the points by Fortran, as a
 // high/low pair), so the dashes run on across the joins, and fract(s / 2^n)
 // of a float s is exact: they stay precise however far along a long
 // trajectory. Separate segments start their pattern at their first point, as
-// GL_LINES does.
+// GL_LINES does. Fixed-length dashes (pc.dashLevels.w = 2: fixed_dashes)
+// instead have one period per line in scene units that never changes, as
+// paint on the line (zooming in, they grow on screen), taken about a pivot
+// near the view's center for precision.
 //
 // Level of detail (strips): the strip may be drawn at a stride (pc.lod.x)
 // from its first point drawn (pc.lod.z, 0-based: a trace of decreasing
@@ -54,6 +62,14 @@
 // (in periods, the same for both, so that they meet where the sizes change),
 // so they run on across the joins; their spacing and speed on screen stay
 // within 0.7 to 1.4 times those given.
+//
+// Screen-locked dashes (style.count.z = 1; vkf_line_set_dash_mode): as
+// OpenGL's line stipple, a constant length in pixels, following the line on
+// screen (crawling along it as the view changes): the position is each
+// segment's first point's distance along the strip on screen (computed per
+// view and frame on the CPU: ScreenArcs in src/vsg/vkf_layer.cpp, set 1) plus
+// the pixels along the segment, in pattern periods (one size: no blend).
+// Separate segments start their pattern at each segment, as GL_LINES does.
 //
 // Trails (style.trail0.z = 1 or -1: a fading trail): the part of a strip
 // within a time window about the current time, in two styles: the past
@@ -86,6 +102,11 @@ layout(push_constant) uniform PushConstants {
     vec4 viewport;          // xy = size of the view in framebuffer pixels,
                             // z = framebuffer pixels per window unit (2 on Retina)
     ivec4 lod;              // x = stride (strips), y = points drawn (up to), z = the first drawn (0-based)
+    uvec4 dashLevels;       // the sizes per line (w = 1: given; else per segment) of the dashes (x), the
+                            // trail's future's (y) and the arrows (z): the old size + 128, the new + 128
+                            // (8 bits each), the morph's progress (16 bits); w = 2: fixed length, as
+    vec4 fixedDash0;        // the pivot's distance along the strip (high, low), the dashes' phase and
+    vec4 fixedDash1;        // periods per scene unit; the future's, the arrows' (see fixed_dashes)
 } pc;
 
 layout(std430, set = 0, binding = 0) readonly buffer Points {
@@ -97,7 +118,7 @@ layout(set = 0, binding = 1) uniform Style {
     vec4 params;            // x = width in window units (logical pixels), y = 1 for separate segments,
                             // z = dash pattern (16 bits; 65535 or 0: solid), w = window units per bit
     vec4 count;             // x = points written in the buffer (set by vkf_line_points_changed),
-                            // y = 1 for a color per point (colors), else 0
+                            // y = 1 for a color per point (colors), else 0, z = 1 for screen-locked dashes
     vec4 highlight;         // highlight color (rgba)
     vec4 flow;              // x = highlight flags (1 pulse, 2 arrows), y = arrow spacing (window units),
                             // z = arrow speed (window units per second), w = band width (window units)
@@ -109,6 +130,10 @@ layout(set = 0, binding = 1) uniform Style {
     vec4 trail3;            // the future's color (rgba)
     vec4 trail4;            // the past's dash pattern and factor, the future's
 } style;
+
+layout(std430, set = 1, binding = 0) readonly buffer ScreenArcs {
+    float arc[];            // (screen-locked dashes) point i's distance along the strip on screen (pixels)
+} screen;
 
 layout(std430, set = 0, binding = 3) readonly buffer Colors {
     vec4 c[];               // point i's color (if style.count.y = 1: else one, white), times style.color
@@ -160,9 +185,12 @@ vec3 eyeRelative(int i)
 // second at a vertex of the segment from point `first` to `second`: at its
 // drawn start (ta) or end (tb), moved `along` pixels along the segment (a cap
 // or a mitre); screenLength is the drawn part's length in pixels, period the
-// pattern's (pixels). perPixel: periods per pixel along the segment.
+// pattern's (pixels), level its sizes per line (packed: see pc.dashLevels; used
+// if pc.dashLevels.w = 1), fixedDash its phase and periods per scene unit
+// (used if pc.dashLevels.w = 2: d = phase + (s - pivot) * perUnit, one size).
+// perPixel: periods per pixel along the segment.
 vec3 dashPosition(int first, int second, float end, float ta, float tb, float screenLength, float along,
-                  float period, out vec2 perPixel)
+                  float period, uint level, vec2 fixedDash, out vec2 perPixel)
 {
     vec2 sa = vec2(0.0), sb;                       // distances along the strip (high, low)
     if (style.params.y > 0.5) {
@@ -172,6 +200,12 @@ vec3 dashPosition(int first, int second, float end, float ta, float tb, float sc
         sb = vec2(points.p[2 * second].w, points.p[2 * second + 1].w);
     }
     float sceneLength = (sb.x - sa.x) + (sb.y - sa.y);
+    if (pc.dashLevels.w == 2u) {                                       // a fixed length, about the pivot
+        float from = (sa.x - pc.fixedDash0.x) + (sa.y - pc.fixedDash0.y);
+        perPixel = vec2((screenLength > 1.0e-6) ? (tb - ta) * sceneLength * fixedDash.y / screenLength : 0.0);
+        float d = fixedDash.x + (from + ((end == 0.0) ? ta : tb) * sceneLength) * fixedDash.y + along * perPixel.x;
+        return vec3(d, d, 0.0);
+    }
     float drawn = (tb - ta) * sceneLength;
     // lambda: log2 of the period's length here in scene units (large if the segment shows no length)
     float lambda = 126.0;
@@ -179,11 +213,16 @@ vec3 dashPosition(int first, int second, float end, float ta, float tb, float sc
         lambda = clamp(log2(period * drawn / screenLength), -125.0, 126.0);
     float n = floor(lambda);
     vec2 scale = vec2(exp2(-n), exp2(-n - 1.0));
+    float weight = lambda - n;
+    if (pc.dashLevels.w == 1u) {                                       // one size per line: old to new
+        scale = vec2(exp2(-float(int(level & 0xFFu) - 128)), exp2(-float(int((level >> 8) & 0xFFu) - 128)));
+        weight = float(level >> 16) / 65535.0;
+    }
     vec2 start = fract(sa.x * scale) + fract(sa.y * scale);            // exact: powers of two
     vec2 span = sceneLength * scale;                                   // the whole segment, in periods
     perPixel = (screenLength > 1.0e-6) ? (tb - ta) * span / screenLength : vec2(0.0);
     vec2 d = ((end == 0.0) ? start + ta * span : start + tb * span) + along * perPixel;
-    return vec3(d, lambda - n);
+    return vec3(d, weight);
 }
 
 void main()
@@ -276,14 +315,25 @@ void main()
     bool trail = style.trail0.z != 0.0 && !separate;
     uint pattern = uint(trail ? style.trail4.x : style.params.z) & 0xFFFFu;
     float factor = trail ? style.trail4.y : style.params.w;
-    if (pattern != 0xFFFFu && pattern != 0u)
-        dash = dashPosition(first, second, corner.x, ta, tb, len, along,
-                            16.0 * max(factor, 1.0e-3) * pc.viewport.z, perPixel);
+    bool screenDashes = style.count.z > 0.5;
+    // (screen-locked: pixels along the strip on screen at this vertex)
+    float pixels = (separate ? 0.0 : screen.arc[first]) + (atEnd ? len : 0.0) + along;
+    if (pattern != 0xFFFFu && pattern != 0u) {
+        float period = 16.0 * max(factor, 1.0e-3) * pc.viewport.z;
+        if (screenDashes)
+            dash = vec3(vec2(pixels / period), 0.0);
+        else
+            dash = dashPosition(first, second, corner.x, ta, tb, len, along, period, pc.dashLevels.x, pc.fixedDash0.zw, perPixel);
+    }
     if (trail) {
         uint pattern2 = uint(style.trail4.z) & 0xFFFFu;
-        if (pattern2 != 0xFFFFu && pattern2 != 0u)
-            dash2 = dashPosition(first, second, corner.x, ta, tb, len, along,
-                                 16.0 * max(style.trail4.w, 1.0e-3) * pc.viewport.z, perPixel);
+        if (pattern2 != 0xFFFFu && pattern2 != 0u) {
+            float period2 = 16.0 * max(style.trail4.w, 1.0e-3) * pc.viewport.z;
+            if (screenDashes)
+                dash2 = vec3(vec2(pixels / period2), 0.0);
+            else
+                dash2 = dashPosition(first, second, corner.x, ta, tb, len, along, period2, pc.dashLevels.y, pc.fixedDash1.xy, perPixel);
+        }
         // the distance from the current time's at this end of the drawn part (high and low parts apart: exact)
         float s1 = (points.p[2 * first].w - style.trail0.x) + (points.p[2 * first + 1].w - style.trail0.y);
         float s2 = (points.p[2 * second].w - style.trail0.x) + (points.p[2 * second + 1].w - style.trail0.y);
@@ -293,7 +343,7 @@ void main()
     flowPixels = vec2(0.0);
     if ((flags & 2) != 0) {
         float spacing = max(style.flow.y, 1.0) * pc.viewport.z;                   // pixels
-        flow = dashPosition(first, second, corner.x, ta, tb, len, along, spacing, perPixel);
+        flow = dashPosition(first, second, corner.x, ta, tb, len, along, spacing, pc.dashLevels.z, pc.fixedDash1.zw, perPixel);
         flow.xy -= fract(time * style.flow.z * pc.viewport.z / spacing);           // (periods moved)
         flowPixels = vec2(perPixel.x > 0.0 ? 1.0 / perPixel.x : 1.0e9, perPixel.y > 0.0 ? 1.0 / perPixel.y : 1.0e9);
     }
