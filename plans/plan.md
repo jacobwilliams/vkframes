@@ -900,7 +900,9 @@ Decided so far:
       tile templates; added before or after showing), lit by the scene's
       lights (`set_lighting`; Rocky's own default is unlit), the terrain's
       height (`elevation(lat, lon)`, read from its elevation file directly,
-      also before it is shown), `rocky_available`.
+      also before it is shown; one sampler per file, whose tile cache serves
+      later samples nearby: about 10 us a sample, enough for one per frame),
+      `rocky_available`.
       Build: `pixi run -e rocky rocky-build` builds a pinned Rocky
       (tools/build_rocky.py; not on conda-forge, its dependencies are) into
       the `rocky` environment (with Qt); fpm_vsg.py then builds the layer
@@ -927,7 +929,9 @@ Decided so far:
       (the Earth from ReadyMap, the Moon from Moon Trek and LOLA, Sun-lit);
       the lunar Qt demo (demos/moon, `pixi run -e rocky moon-demo`; an
       orbiter, and a lander descending into Tycho, Moon-fixed, onto the
-      terrain's height). Tested
+      terrain's height; its altitude above the terrain below it shown, with a
+      line down to the ground, a curtain of drop lines along its path, and
+      the path's clearance over the central peak printed). Tested
       on macOS.
 - [ ] Rocky, later: one map shown in several windows (now one per window:
       the window that first shows it), Linux and Windows (untested), a

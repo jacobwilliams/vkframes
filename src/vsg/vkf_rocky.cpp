@@ -333,7 +333,8 @@ VKF_API double vkf_rocky_map_radius(void* map)
 // The height (meters) of the elevation data in file `uri` (GDAL) at latitude
 // and longitude (degrees) on the body of Rocky's profile `profile` (as
 // vkf_rocky_map_create), sampled directly (no map or window needed; files are
-// kept open for later samples). *ok is 1 if there was data there.
+// kept open, with a sampler whose tile cache serves later samples nearby).
+// *ok is 1 if there was data there.
 VKF_API double vkf_rocky_elevation(const char* uri, int uri_len, const char* profile, int profile_len,
                                    double lat, double lon, int* ok)
 {
@@ -341,15 +342,16 @@ VKF_API double vkf_rocky_elevation(const char* uri, int uri_len, const char* pro
 #ifdef VKF_ROCKY
     try
     {
-        static std::map<std::string, std::shared_ptr<rocky::GDALElevationLayer>> layers;
+        static std::map<std::string, rocky::ElevationSampler> samplers;
         static rocky::IOOptions io;
         const auto file = to_string(uri, uri_len);
-        auto& layer = layers[file];
-        if (!layer)
+        auto& sampler = samplers[file];
+        if (!sampler.layer)
         {
             GDALAllRegister();   // (Rocky's context does this, but there may be no map yet)
-            layer = rocky::GDALElevationLayer::create();
+            auto layer = rocky::GDALElevationLayer::create();
             layer->uri = rocky::URI(file);
+            sampler.layer = layer;
             auto status = layer->open(io);
             if (status.failed())
             {
@@ -357,11 +359,9 @@ VKF_API double vkf_rocky_elevation(const char* uri, int uri_len, const char* pro
                 return 0.0;
             }
         }
-        if (!layer->status().ok()) return 0.0;
+        if (!sampler.ok()) return 0.0;
         const auto name = to_string(profile, profile_len);
         const auto srs = (name.empty() ? rocky::Profile("global-geodetic") : rocky::Profile(name)).srs().geodeticSRS();
-        rocky::ElevationSampler sampler;
-        sampler.layer = layer;
         auto sample = sampler.sample(rocky::GeoPoint(srs, lon, lat), io);
         if (!sample.ok() || sample.value().height == rocky::NO_DATA_VALUE) return 0.0;
         *ok = 1;

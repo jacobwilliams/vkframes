@@ -10,7 +10,12 @@
 !> descent at t = 1200 s and lands on Tycho's floor north of the central peak
 !> 12 minutes later (constant braking of its horizontal speed; altitude from
 !> 100 km to the ground on a smooth curve, level at both ends), at the
-!> terrain's height there (TerrainBody%elevation); its path is drawn too.
+!> terrain's height there (TerrainBody%elevation); its path is drawn too,
+!> with its altitude above the terrain below it (a dashed line down to the
+!> ground, the height in the HUD) and, as it passes, a drop line to the
+!> ground every 10 s of its descent (the terrain's profile under the path:
+!> Tycho's rim, then its central peak). At startup the demo prints how
+!> closely the path passes over ground higher than the site.
 !>
 !> Views (from the dock, or with the window's keys): the Moon; the spacecraft
 !> (body-fixed); from the spacecraft toward the Moon (the surface going by
@@ -96,6 +101,10 @@ module moondemo
         type(Trajectory) :: descent
         type(DrawableTrajectory) :: descent_frame
         type(CurveArtist) :: descent_curve
+        type(SegmentArtist) :: curtain                        !! drop lines to the ground along the descent
+        type(Trajectory) :: drop                              !! one point: the lander (optional 1), the ground below (2)
+        type(SegmentArtist) :: drop_line                      !! the lander's altitude line
+        type(MarkerArtist) :: drop_foot                       !! where it meets the ground
         type(ReferenceFrame) :: observer                      !! on the ground near the site (Moon-fixed; z up, y north)
         real(wp) :: site_height = 0.0_wp                      !! the ground's at the site (km above the sphere)
         ! options
@@ -179,6 +188,53 @@ contains
         q = quat_from_matrix(reshape([x, y, z], [3, 3]))
     end function lander_attitude
 
+    !> The point on the terrain straight below a Moon-fixed point (km), from
+    !> LOLA's heights (TerrainBody%elevation: the elevation file, at its full
+    !> resolution, whatever the view has loaded).
+    function ground_below(r) result(g)
+        real(wp), intent(in) :: r(3)
+        real(wp) :: g(3)
+        real(wp) :: u(3)
+        u = r / norm2(r)
+        g = (rm + app%moon%elevation(asin(u(3)) / deg, atan2(u(2), u(1)) / deg)) * u
+    end function ground_below
+
+    !> The lander's altitude above the terrain below it (km) at time t, and
+    !> the altitude line's ends (the lander and the ground below) set to it.
+    function update_drop(t) result(agl)
+        real(wp), intent(in) :: t
+        real(wp) :: agl
+        real(wp) :: r(3), g(3), h
+        call lander_state(max(0.0_wp, min(t, t_descent + descent_time)), r, h)   ! (followed with FOLLOW_LIMIT)
+        g = ground_below(r)
+        agl = norm2(r) - lander_size - norm2(g)
+        call app%drop%set_optional(1, r)
+        call app%drop%set_optional(2, g)
+    end function update_drop
+
+    !> Print how closely the descent passes over terrain higher than the
+    !> landing site (the crater's central peak, its rim): the lowest altitude
+    !> above the ground where the ground is at least 0.5 km above the site.
+    subroutine report_clearance()
+        real(wp) :: t, r(3), h, agl, low, t_low, rise
+        low = huge(1.0_wp)
+        t_low = -1.0_wp
+        t = t_descent
+        do while (t < t_descent + descent_time)
+            call lander_state(t, r, h)
+            agl = norm2(r) - lander_size - norm2(ground_below(r))
+            if (h - agl > 0.5_wp .and. agl < low) then
+                low = agl
+                t_low = t
+                rise = h - agl
+            end if
+            t = t + 1.0_wp
+        end do
+        if (t_low < 0.0_wp) return
+        write(*, '(a,i0,a)') 'moon demo: the descent passes '//km(low)//' km over ground '//km(rise)// &
+            ' km above the site (t = ', nint(t_low), ' s)'
+    end subroutine report_clearance
+
     !> A point at latitude and longitude (degrees) and height (km) above the Moon's sphere.
     pure function surface(lat, lon, h) result(p)
         real(wp), intent(in) :: lat, lon, h
@@ -210,6 +266,7 @@ contains
         real(wp) :: t, r(3), h, lon
         integer :: k
         logical :: found
+        type(DataSource) :: foot(3)
         real(wp), parameter :: o(3) = 0.0_wp
 
         app%inertial = ReferenceFrame('Inertial')
@@ -260,12 +317,15 @@ contains
             write(*, '(a)') 'moon demo: no elevation at the landing site: landing on the sphere'
         end if
         app%descent = Trajectory()
+        call app%descent%set_num_optionals(1)                    ! the drop to the ground below (descending)
         t = 0.0_wp
         do while (t < t_descent + descent_time + 1.0_wp)
             call lander_state(t, r, h)
             call app%descent%add(t, pos=r, att=lander_attitude(t))
+            if (t > t_descent) call app%descent%set_optional(1, ground_below(r) - r)
             t = t + merge(10.0_wp, 2.0_wp, t < t_descent)        ! (finer during the descent)
         end do
+        call report_clearance()
         app%lander = Sphere('Lander', radius=lander_size, color=lander_color)
         call app%lander%follow(app%descent, mode=FOLLOW_LIMIT)  ! then stays at the site
         call app%lander%move_x_axis(o, 4.0_wp * lander_size, body_radius=0.06_wp * lander_size, &
@@ -278,6 +338,29 @@ contains
         app%descent_frame = DrawableTrajectory('Descent')
         call app%descent_frame%show_decorations(.false.)
         call app%descent_frame%add_artist(app%descent_curve)
+        ! the terrain under the path: a drop line every 10 s, drawn as the lander passes
+        app%curtain = SegmentArtist(app%descent, color=[lander_color, 0.35_wp], width=1.0_wp, stride=5)
+        if (.not. (app%curtain%set_start_data(position_sources(3)) .and. &
+                   app%curtain%set_end_data(optional_sources(1)))) error stop 'moon demo: the curtain'
+        call app%curtain%set_end_relative(.true.)
+        call app%curtain%set_trace_mode(.true.)
+        call app%descent_frame%add_artist(app%curtain)
+        ! the lander's altitude line, from it straight down to the ground (updated each frame)
+        app%drop = Trajectory()
+        call app%drop%set_num_optionals(2)
+        call app%drop%add(0.0_wp, pos=o)
+        h = update_drop(0.0_wp)
+        app%drop_line = SegmentArtist(app%drop, color=lander_color, width=1.5_wp)
+        if (.not. (app%drop_line%set_start_data(optional_sources(1)) .and. &
+                   app%drop_line%set_end_data(optional_sources(2)))) error stop 'moon demo: the altitude line'
+        call app%drop_line%set_pattern(1, int(z'F0F0'))
+        app%drop_foot = MarkerArtist(app%drop, size=10.0_wp, color=lander_color)
+        call app%drop_foot%set_marker_shape(MARKER_PLUS)
+        foot = optional_sources(2)
+        if (.not. (app%drop_foot%set_x_data(foot(1)) .and. app%drop_foot%set_y_data(foot(2)) .and. &
+                   app%drop_foot%set_z_data(foot(3)))) error stop 'moon demo: the altitude line'
+        call app%descent_frame%add_artist(app%drop_line)
+        call app%descent_frame%add_artist(app%drop_foot)
 
         ! an observer on the ground east of the site: local axes (x east, y north, z up)
         lon = site_lon + observer_east / ((rm + app%site_height) * cos(site_lat * deg)) / deg
@@ -409,7 +492,7 @@ contains
         call app%time_label%setText(trim(text))
         write(text, '(a,f0.1,a)') 't = ', t, ' s'
         call app%hud_time%set_text(trim(text))
-        call app%hud_lander%set_text(lander_status(t))
+        call app%hud_lander%set_text(lander_status(t, update_drop(t)))
         if (.not. app%slider_held) then
             app%slider_setting = .true.
             call app%time_slider%setValue(nint(t))
@@ -627,10 +710,11 @@ contains
 
     !> The lander's state for the HUD: coasting, descending (height above the
     !> site's ground and speed) or landed.
-    function lander_status(t) result(text)
+    function lander_status(t, agl) result(text)
         real(wp), intent(in) :: t
+        real(wp), intent(in) :: agl                     !! altitude above the terrain below (km)
         character(len=:), allocatable :: text
-        character(len=64) :: buf
+        character(len=96) :: buf
         real(wp) :: r1(3), r2(3), h, h2
         if (t >= t_descent + descent_time) then
             text = 'Lander: landed in Tycho'
@@ -639,12 +723,23 @@ contains
         call lander_state(t, r1, h)
         call lander_state(t + 1.0_wp, r2, h2)
         if (t < t_descent) then
-            write(buf, '(a,f0.0,a)') 'Lander: coasting, descent in ', t_descent - t, ' s'
+            write(buf, '(a,i0,a)') 'Lander: coasting, '//km(agl)//' km above the ground, descent in ', &
+                nint(t_descent - t), ' s'
         else
-            write(buf, '(a,f0.2,a,f0.0,a)') 'Lander: descending, ', h, ' km, ', 1000.0_wp * norm2(r2 - r1), ' m/s'
+            write(buf, '(a,i0,a)') 'Lander: descending, '//km(agl)//' km above the ground, ', &
+                nint(1000.0_wp * norm2(r2 - r1)), ' m/s'
         end if
         text = trim(buf)
     end function lander_status
+
+    !> A distance (km) with two decimals (and a leading zero, which f0.2 leaves out).
+    function km(x) result(text)
+        real(wp), intent(in) :: x
+        character(len=:), allocatable :: text
+        character(len=16) :: buf
+        write(buf, '(f16.2)') x
+        text = trim(adjustl(buf))
+    end function km
 
     subroutine on_show_descent(checked, data)
         logical, intent(in) :: checked
