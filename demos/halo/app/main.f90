@@ -6,7 +6,12 @@
 !> orbit's Jacobi constant (in the x-y plane: the edges of the region the
 !> orbit's energy can't reach; none for L3's halos, whose energy reaches
 !> everywhere), a Polyhedron of edges only. The five Lagrange points are
-!> marked and labeled (as in the CR3BP demo).
+!> marked and labeled (as in the CR3BP demo), in front of the HYG v3
+!> catalog's stars (a SkySphere: to magnitude 6; fixed, as the view is of
+!> the rotating frame at one instant). Ticked x, y, z axes (the rotating
+!> frame's directions; a CoordinateAxes, sized to the view, with round tick
+!> spacings, a whole number of major ticks long: each ends on one) mark the center chosen with the panel's buttons (at first the
+!> barycenter; x hides them).
 !>
 !> The halo orbit (northern), about L1, L2 or L3 (a menu), of a z amplitude
 !> (a slider): Richardson's third-order approximation (ported from the
@@ -57,7 +62,8 @@
 !> the Jacobi constant), traced by marching squares on a 600 x 600 grid of
 !> the plane, as segments.
 !>
-!> Keys: 1 and 2 each tube shown or hidden, z the zero-velocity curves, e
+!> Keys: 1 and 2 each tube shown or hidden, z the zero-velocity curves, x
+!> the axes, e
 !> the trajectory lines on or off, l lit or unlit, s smooth or flat, c
 !> colors fading or not, + / - more or less opaque, space resets the view.
 !>
@@ -102,6 +108,8 @@ program halo_manifolds
     type(MarkerArtist), target :: lagrange_dots
     type(DrawableTrajectory), target :: lagrange_frame
     type(ReferenceFrame), target :: lagrange_labels(5)
+    type(SkySphere), target :: sky                      !! the stars (HYG v3)
+    type(CoordinateAxes), target :: axes                !! ticked x, y, z axes at the center chosen
     type(Trajectory), target :: paths(n_lines, n_tubes)
     type(CurveArtist), target :: lines(n_lines, n_tubes)
     type(DrawableTrajectory), target :: line_frames(n_tubes), ring_frame
@@ -188,6 +196,17 @@ program halo_manifolds
     call zvc%show_decorations(.false.)
     call zvc%set_pickable(.false.)
     call add_lagrange_points()
+    ! ticked axes (the rotating frame's directions) at the center chosen (the
+    ! panel's buttons: at first the frame's origin, the barycenter)
+    axes = CoordinateAxes('Axes', color=[0.75_wp, 0.75_wp, 0.75_wp])
+    call axes%set_axis_width(1.5_wp)
+    call axes%set_tick_size(10.0_wp, 5.0_wp)
+    call axes%show_name_label(.false.)
+    call axes%show_axes(NO_AXES)                        ! (the ticked lines only: no arrows, no labels)
+    call axes%show_axes_labels(NO_AXES)
+    call axes%set_pickable(.false.)
+    if (.not. rotating%add_child(axes)) error stop 'add_child failed'
+    keys%axes => axes
     sun = ReferenceFrame('Sun')
     call sun%set_position([-0.4_wp, -1.0_wp, 0.6_wp] * 1.5e8_wp)
     call sun%set_light_source_enabled(.true.)
@@ -240,6 +259,7 @@ program halo_manifolds
     keys%earth = [-mu * lu, 0.0_wp, 0.0_wp]
     keys%moon = [(1.0_wp - mu) * lu, 0.0_wp, 0.0_wp]
     keys%lu = lu
+    call place_axes(keys, [0.0_wp, 0.0_wp, 0.0_wp], 1.0_wp)
     keys%re = re
     call compute(.true.)
     keys%c_requested = keys%c
@@ -248,6 +268,12 @@ program halo_manifolds
 
     if (.not. window%open(1200, 800, 'vkframes: halo orbit manifolds')) error stop 'could not open a window'
     call window%set_scene(scene)
+    ! the stars behind the scene (HYG v3, to magnitude 6)
+    if (sky%set_star_data('Stars_HYGv3.txt', min_mag=-2.0_wp, max_mag=6.0_wp, max_stars=40000)) then
+        call window%set_sky(sky)
+    else
+        write(*, '(a)') 'no star catalog (Stars_HYGv3.txt)'
+    end if
     call window%set_background_color([0.0_wp, 0.0_wp, 0.02_wp])
     view_ = View(rotating, rotating)
     call view_%set_default_view_parameters(eye=[0.2_wp, -2.0_wp, 1.35_wp] * lu, center=[0.25_wp, 0.0_wp, 0.0_wp] * lu, &
@@ -255,7 +281,7 @@ program halo_manifolds
     call window%add_view(view_)
     call view_point()
     legend = HUDText('Earth-Moon halo orbit (white), its manifolds on the Earth side:  1 unstable (orange)   ' // &
-                     '2 stable (cyan)   z: zero-velocity curves (gray)' // &
+                     '2 stable (cyan)   z: zero-velocity curves (gray)   x: axes' // &
                      new_line('a') // 'click a line: its details (arrows: its motion)    e: trajectory lines    ' // &
                      'l: lit / unlit    s: smooth / flat    c: fading colors / plain    + / -: opacity', &
                      position=[0.01_wp, 0.99_wp], alignment=ALIGN_LEFT_TOP, size=14.0_wp, color=[0.75_wp, 0.75_wp, 0.75_wp])

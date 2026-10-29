@@ -12,7 +12,7 @@ module halo_manifolds_keys
     integer, parameter, public :: n_tubes = 2
     integer, parameter, public :: n_lines = 12          !! trajectories drawn as lines (pickable), per tube
 
-    public :: center_on
+    public :: center_on, place_axes
 
     !> What the readout says about a trajectory drawn as a line.
     type, public :: LineInfo
@@ -37,6 +37,8 @@ module halo_manifolds_keys
         type(ReferenceFrame), pointer :: selection => null()        !! moved to the point picked; its label: the readout
         type(DrawableTrajectory), pointer :: ring => null()         !! the ring there
         type(HUDText), pointer :: details => null()                 !! the trajectory picked, in detail
+        type(CoordinateAxes), pointer :: axes => null()             !! ticked axes at the center (center_on)
+        logical :: axes_shown = .true.
         real(wp) :: earth(3) = 0.0_wp, re = 1.0_wp      !! the Earth's center (km) and radius
         real(wp) :: moon(3) = 0.0_wp                    !! the Moon's center (km)
         real(wp) :: lagrange(3) = 0.0_wp                !! the Lagrange point's (km)
@@ -104,6 +106,10 @@ contains
             self%shown(key - iachar('0')) = .not. self%shown(key - iachar('0'))
         case (iachar('z'))
             self%curves_shown = .not. self%curves_shown
+        case (iachar('x'))
+            self%axes_shown = .not. self%axes_shown
+            if (associated(self%axes)) call self%axes%show_contents(self%axes_shown)
+            return
         case (iachar('e'))
             self%edges = .not. self%edges
         case (iachar('l'))
@@ -173,7 +179,7 @@ contains
 
     !> Fly the camera to `p` (root frame, km): centered on it (the trackball
     !> then turns about it), from the direction it looks from now, `distance`
-    !> Earth-Moon distances away.
+    !> Earth-Moon distances away; the ticked axes moved there (place_axes).
     subroutine center_on(self, window, p, distance)
         type(ManifoldKeys), intent(in) :: self
         class(WindowProxy), intent(inout) :: window
@@ -183,7 +189,37 @@ contains
         d = eye - center
         if (norm2(d) <= 0.0_wp) d = [0.0_wp, -1.0_wp, 1.0_wp]
         call window%set_camera(p + distance * self%lu * d / norm2(d), p, up, duration=1.2_wp, in_root=.true.)
+        call place_axes(self, p, distance)
     end subroutine center_on
+
+    !> The ticked axes at `p` (root frame, km), sized for a view `distance`
+    !> Earth-Moon distances away: major ticks at a round spacing (1, 2 or 5
+    !> times a power of ten km) about a quarter of 0.6 of it, minor ones a
+    !> fifth of the major, and the axes a whole number of major ticks long
+    !> (the nearest to 0.6 of it), so each ends on a major tick.
+    subroutine place_axes(self, p, distance)
+        type(ManifoldKeys), intent(in) :: self
+        real(wp), intent(in) :: p(3), distance
+        real(wp) :: length, major, power, f
+        if (.not. associated(self%axes)) return
+        length = 0.6_wp * distance * self%lu
+        major = length / 4.0_wp
+        power = 10.0_wp**floor(log10(major))
+        f = major / power
+        if (f < 1.5_wp) then
+            major = power
+        else if (f < 3.5_wp) then
+            major = 2.0_wp * power
+        else if (f < 7.5_wp) then
+            major = 5.0_wp * power
+        else
+            major = 10.0_wp * power
+        end if
+        length = major * max(1.0_wp, real(nint(length / major), wp))
+        call self%axes%set_position(p)
+        call self%axes%set_axis_length(length)
+        call self%axes%set_tick_spacing(major, major / 5.0_wp)
+    end subroutine place_axes
 
     !> No trajectory selected (e.g. computed again).
     subroutine clear_selection(self)

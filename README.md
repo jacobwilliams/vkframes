@@ -494,7 +494,8 @@ a vkframes window with a GUI panel (no Qt; OpenMP for the propagation).
   transition matrix: the unstable (leaving) and stable (arriving) tubes,
   each a translucent, lit `Polyhedron` grid of 72 trajectories fading along
   time; the zero-velocity curves at its Jacobi constant (a `Polyhedron` of
-  edges only); the five Lagrange points marked and labeled.
+  edges only); the five Lagrange points marked and labeled; the HYG v3
+  catalog's stars behind.
 - Click a trajectory line: it's highlighted (pulsing, arrows in its
   direction of motion), with a readout at the point clicked and its details
   (its place around the orbit, its closest approach to the Earth, its
