@@ -563,6 +563,8 @@ Options (`--view n`, `--windows n`, `--sky n`, `--trace`, `--capture file`,
 
 #### Lunar demo
 
+<img src="media/screenshots/moon_demo.jpg" alt="The lander descending into Tycho crater, its label giving its altitude above the terrain, with drop lines to the ground along its path past the central peak" width="300" align="right">
+
 [demos/moon](demos/moon): terrain with Rocky, in a qt-fortran GUI:
 
 - **Terrain:** the Moon's surface from LRO imagery (NASA's Moon Trek, over
