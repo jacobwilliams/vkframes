@@ -8,15 +8,20 @@
 !> sidereal rate under the inertial orbit. A lander (NASA's Apollo Lunar
 !> Module model, data/Models/apollo_lunar_module.glb from `pixi run -e rocky
 !> lander-model`, enlarged to be seen; else a sphere), in Moon-fixed
-!> coordinates (a child of the Moon's frame), coasts in the same 100 km orbit, starts its
-!> descent at t = 1200 s and lands on Tycho's floor north of the central peak
-!> 12 minutes later (constant braking of its horizontal speed; altitude from
-!> 100 km to the ground on a smooth curve, level at both ends), at the
-!> terrain's height there (TerrainBody%elevation); its path is drawn too,
-!> with its altitude above the terrain below it (a dashed line down to the
-!> ground, the height in its label, which follows it, and in the HUD) and,
-!> as it passes, a drop line to the ground every 10 s of its descent (the terrain's profile under the path:
-!> Tycho's rim, then its central peak). At startup the demo prints how
+!> coordinates (a child of the Moon's frame), coasts in the same 100 km
+!> orbit, starts its descent at t = 1200 s and lands on Tycho's floor north
+!> of the central peak 13 minutes later, at the terrain's height there
+!> (TerrainBody%elevation): braking (a constant deceleration along its
+!> track), pitching over (the deceleration easing to nothing as it stops
+!> over the site), then a vertical descent from 1.5 km, its altitude on
+!> smooth curves; its attitude points its engine along the thrust the path
+!> needs (its acceleration less the Moon's gravity), so it flies engine
+!> first while braking and stands upright for the vertical descent. Its
+!> path is drawn too, with its altitude above the terrain below it (a
+!> dashed line down to the ground, the height in its label, which follows
+!> it, and in the HUD) and, as it passes, a drop line to the ground every
+!> 10 s of its descent (the terrain's profile under the path: Tycho's rim,
+!> then its central peak). At startup the demo prints how
 !> closely the path passes over ground higher than the site.
 !>
 !> Views (from the dock, or with the window's keys): the Moon; the spacecraft
@@ -63,7 +68,10 @@ module moondemo
     real(wp), parameter :: orbit_color(3) = [1.0_wp, 0.85_wp, 0.2_wp]
     ! the lander: coasting, then descending from t_descent for descent_time to its site
     real(wp), parameter :: site_lat = -43.0_wp, site_lon = tycho_lon      !! on Tycho's floor, north of the peak
-    real(wp), parameter :: t_descent = 1200.0_wp, descent_time = 720.0_wp  !! s
+    real(wp), parameter :: t_descent = 1200.0_wp, descent_time = 780.0_wp  !! s
+    real(wp), parameter :: braking_time = 520.0_wp, pitch_time = 170.0_wp  !! s (then the vertical descent)
+    real(wp), parameter :: vertical_height = 1.5_wp                        !! km above the site, where it starts
+    real(wp), parameter :: vertical_speed = 0.025_wp                       !! km/s, then
     ! the lander drawn: NASA's Apollo Lunar Module (`pixi run -e rocky lander-model`), else a sphere
     character(len=*), parameter :: lander_model = 'Models/apollo_lunar_module.glb'
     real(wp), parameter :: lm_bottom = 0.103_wp, lm_top = 5.115_wp        !! its footpads' bottom, its top (m, up)
@@ -174,43 +182,121 @@ contains
         q = quat_from_matrix(reshape([x, y, z], [3, 3]))
     end function orbit_attitude
 
-    !> The lander's position (km, Moon-fixed) and height above the site's ground
-    !> at time t: on its meridian, northbound; coasting in the orbit until
-    !> t_descent, then braking at a constant rate to stop over the site (no
-    !> jump in speed), its altitude easing from the orbit's to the ground's.
+    !> The lander's position (km, Moon-fixed) and height above the site's
+    !> ground at time t: on its meridian, northbound; coasting in the orbit
+    !> until t_descent, then braking (a constant deceleration of its angular
+    !> rate), pitching over (the deceleration easing to nothing, a smoothstep,
+    !> as it stops over the site: no jump in acceleration) and descending
+    !> vertically to the ground. Its altitude: from the orbit's to
+    !> vertical_height above the site, descending at vertical_speed (a
+    !> quartic, starting level and with no vertical acceleration: still in
+    !> orbit, it can't fall faster than that), then to the ground (level; a
+    !> cubic Hermite curve).
     subroutine lander_state(t, r, height)
         real(wp), intent(in) :: t
         real(wp), intent(out) :: r(3), height
-        real(wp) :: n, delta, angle, s, h
+        real(wp) :: n, decel, v_b, x_b, arc, x, tau, q, h, th, tv, d, c3, c4
         n = 2.0_wp * pi / app%period                             ! the orbit's angular rate
-        delta = 0.5_wp * n * descent_time                        ! the descent's arc (constant braking)
+        th = braking_time + pitch_time                           ! the horizontal phases
+        tv = descent_time - th                                   ! the vertical descent
+        decel = n / (braking_time + 0.5_wp * pitch_time)         ! (stopped at th: the smoothstep's mean is 1/2)
+        v_b = n - decel * braking_time                           ! the rate when pitching over starts
+        x_b = n * braking_time - 0.5_wp * decel * braking_time**2
+        arc = x_b + v_b * pitch_time - 0.35_wp * decel * pitch_time**2   ! the arc flown (to the site)
         if (t <= t_descent) then
-            angle = site_lat * deg - delta - n * (t_descent - t)
+            x = -n * (t_descent - t)
             h = altitude
         else
-            s = min(1.0_wp, (t - t_descent) / descent_time)
-            angle = site_lat * deg - delta + delta * (2.0_wp * s - s**2)
-            h = app%site_height + (altitude - app%site_height) * (1.0_wp - 3.0_wp * s**2 + 2.0_wp * s**3)
+            tau = min(t - t_descent, descent_time)
+            if (tau <= braking_time) then
+                x = n * tau - 0.5_wp * decel * tau**2
+            else if (tau <= th) then                             ! deceleration decel * (1 - 3 q^2 + 2 q^3)
+                q = (tau - braking_time) / pitch_time
+                x = x_b + v_b * pitch_time * q - decel * pitch_time**2 * (q**2 / 2 - q**4 / 4 + q**5 / 10)
+            else
+                x = arc
+            end if
+            if (tau <= th) then                                  ! h = altitude + c3 s^3 + c4 s^4
+                d = app%site_height + vertical_height - altitude
+                c4 = -vertical_speed * th - 3.0_wp * d
+                c3 = d - c4
+                h = altitude + c3 * (tau / th)**3 + c4 * (tau / th)**4
+            else
+                h = hermite((tau - th) / tv, app%site_height + vertical_height, -vertical_speed * tv, &
+                            app%site_height, 0.0_wp)
+            end if
         end if
-        r = (rm + h + lander_size) * [cos(angle) * cos(site_lon * deg), cos(angle) * sin(site_lon * deg), sin(angle)]
+        x = site_lat * deg - arc + x                             ! the latitude (rad)
+        r = (rm + h + lander_size) * [cos(x) * cos(site_lon * deg), cos(x) * sin(site_lon * deg), sin(x)]
         height = h - app%site_height
     end subroutine lander_state
 
-    !> The lander's attitude at time t: z up (radial), x north along its path.
+    !> The cubic Hermite curve from p0 (slope m0) at s = 0 to p1 (slope m1) at s = 1.
+    pure real(wp) function hermite(s, p0, m0, p1, m1) result(p)
+        real(wp), intent(in) :: s, p0, m0, p1, m1
+        p = (2 * s**3 - 3 * s**2 + 1) * p0 + (s**3 - 2 * s**2 + s) * m0 + (3 * s**2 - 2 * s**3) * p1 + (s**3 - s**2) * m1
+    end function hermite
+
+    !> The descent's phase at time t ('' before or after it).
+    function lander_phase(t) result(phase)
+        real(wp), intent(in) :: t
+        character(len=:), allocatable :: phase
+        phase = ''
+        if (t <= t_descent .or. t >= t_descent + descent_time) return
+        if (t - t_descent <= braking_time) then
+            phase = 'braking'
+        else if (t - t_descent <= braking_time + pitch_time) then
+            phase = 'pitching over'
+        else
+            phase = 'vertical descent'
+        end if
+    end function lander_phase
+
+    !> The lander's attitude at time t: z (its up, the engine's thrust) along
+    !> the thrust the path needs, its acceleration less the Moon's gravity
+    !> (central differences of lander_state), in the meridian plane it flies
+    !> in, never below horizontal; y west (it pitches about it), so x is
+    !> north when it is upright (its heading) and up when it flies engine
+    !> first. Coasting: as
+    !> when the burn starts (engine first), in its local axes; landed:
+    !> upright (no acceleration).
     function lander_attitude(t) result(q)
         real(wp), intent(in) :: t
         real(wp) :: q(4)
-        real(wp) :: r(3), h, x(3), y(3), z(3), lon
-        call lander_state(t, r, h)
-        lon = site_lon * deg
-        z = r / norm2(r)
-        x = [-z(3) * cos(lon), -z(3) * sin(lon), sqrt(z(1)**2 + z(2)**2)]   ! north (d/dlatitude of z)
-        if (r(1) * cos(lon) + r(2) * sin(lon) < 0.0_wp) x(3) = -x(3)      ! (past a pole)
-        x = x - dot_product(x, z) * z
-        x = x / norm2(x)
-        y = [z(2) * x(3) - z(3) * x(2), z(3) * x(1) - z(1) * x(3), z(1) * x(2) - z(2) * x(1)]
+        real(wp) :: tt, r(3), r1(3), r2(3), h, a(3), thrust(3), x(3), y(3), z(3), zn, zu
+        real(wp), parameter :: dt = 0.5_wp
+        tt = max(t, t_descent + 2.0_wp * dt)
+        call lander_state(tt, r, h)
+        call lander_state(tt - dt, r1, h)
+        call lander_state(tt + dt, r2, h)
+        a = (r2 - 2.0_wp * r + r1) / dt**2
+        thrust = a + mu * r / norm2(r)**3                        ! (a - g, g = -mu r / |r|^3)
+        zn = dot_product(thrust, north_at(r))                    ! (its north and up parts)
+        zu = max(0.0_wp, dot_product(thrust, unit(r)))           ! (not below horizontal: engine first at most)
+        call lander_state(t, r, h)                               ! (where the lander is)
+        x = north_at(r)
+        z = unit(zn * x + zu * unit(r))
+        y = unit(cross(unit(r), x))                              ! west: it pitches about its y axis
+        x = cross(y, z)                                          ! (upright: north)
         q = quat_from_matrix(reshape([x, y, z], [3, 3]))
     end function lander_attitude
+
+    !> The cross product a x b.
+    pure function cross(a, b) result(c)
+        real(wp), intent(in) :: a(3), b(3)
+        real(wp) :: c(3)
+        c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
+    end function cross
+
+    !> North at a point on the lander's meridian (its direction of flight).
+    function north_at(r) result(x)
+        real(wp), intent(in) :: r(3)
+        real(wp) :: x(3), up(3), lon
+        up = unit(r)
+        lon = site_lon * deg
+        x = [-up(3) * cos(lon), -up(3) * sin(lon), sqrt(up(1)**2 + up(2)**2)]   ! (d/dlatitude of up)
+        if (r(1) * cos(lon) + r(2) * sin(lon) < 0.0_wp) x(3) = -x(3)            ! (past a pole)
+    end function north_at
 
     !> The point on the terrain straight below a Moon-fixed point (km), from
     !> LOLA's heights (TerrainBody%elevation: the elevation file, at its full
@@ -820,7 +906,7 @@ contains
             write(buf, '(a,i0,a)') 'Lander: coasting, '//km(agl)//' km above the ground, descent in ', &
                 nint(t_descent - t), ' s'
         else
-            write(buf, '(a,i0,a)') 'Lander: descending, '//km(agl)//' km above the ground, ', &
+            write(buf, '(a,i0,a)') 'Lander: '//lander_phase(t)//', '//km(agl)//' km above the ground, ', &
                 nint(1000.0_wp * norm2(r2 - r1)), ' m/s'
         end if
         text = trim(buf)

@@ -570,8 +570,10 @@ Options (`--view n`, `--windows n`, `--sky n`, `--trace`, `--capture file`,
 - **Terrain:** the Moon's surface from LRO imagery (NASA's Moon Trek, over
   the network) and LOLA's elevation, lit by the Sun, under a starry sky.
 - **Spacecraft:** one in a 100 km polar orbit over Tycho crater; and a
-  lander (NASA's Apollo Lunar Module model, enlarged to be seen) in the same orbit that descends and lands on Tycho's floor, at the
-  terrain's height there. Its altitude above the terrain below it (LOLA's
+  lander (NASA's Apollo Lunar Module model, enlarged to be seen) in the
+  same orbit that brakes, pitches over and descends vertically onto
+  Tycho's floor, at the terrain's height there, its attitude following its
+  thrust (engine first while braking, upright at the end). Its altitude above the terrain below it (LOLA's
   heights, not the sphere) is shown as it goes, with a line down to the
   ground and drop lines along its path tracing the terrain it passes over.
 - **Views:** seven, including Tycho close to the surface, and the lander
