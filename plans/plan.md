@@ -1230,6 +1230,17 @@ Interaction:
         no title bar.
       - One ImGui context per window (vsgImGui uses ImGui's current one, so
         each window's is made current around its draw and its events).
+        ImGui's display size is set to the window's framebuffer each frame
+        (vsgImGui's only follows ConfigureWindowEvents, whose size isn't
+        always the framebuffer's). A button press over a panel (as last
+        drawn) goes to ImGui with its own position, with its release:
+        vsgImGui passes a press on only if ImGui wanted the mouse at the last
+        frame, from the pointer's last move, and after a window is zoomed
+        from its title bar on macOS no moves come until the pointer moves
+        (the panels were drawn but not clickable). VSG's own window on macOS
+        numbers the left button 0 (others 1): both are ImGui's left. Tested:
+        a click after a resize, and one with no move to it first (buttons 1
+        and 0).
         vsgImGui's SendEventsToImGui goes first among the event handlers: the
         events over a panel are marked handled, and the trackball, the
         program's handler and picking don't get them.

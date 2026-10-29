@@ -29,6 +29,7 @@ using vkf::to_string;
 #include <imgui.h>
 
 #include <algorithm>
+#include <array>
 #include <map>
 #include <string>
 #include <vector>
@@ -94,6 +95,7 @@ struct vkf::Gui
     std::vector<Command> commands;                   // for the next draw
     std::map<std::string, Result> results;           // from the draws so far
     std::string panel;                               // the panel being described
+    std::vector<std::array<float, 4>> rects;         // the panels drawn last (x, y, width, height: pixels)
 };
 
 namespace
@@ -109,6 +111,7 @@ namespace
         {
             const ImVec2 display = ImGui::GetIO().DisplaySize;
             int open = 0;                                // panels begun and not ended
+            gui->rects.clear();
             for (const auto& c : gui->commands)
             {
                 switch (c.kind)
@@ -125,6 +128,8 @@ namespace
                     if (c.follow) flags |= ImGuiWindowFlags_NoMove;
                     if (c.text.rfind("##", 0) == 0) flags |= ImGuiWindowFlags_NoTitleBar;   // (no title: a callout)
                     ImGui::Begin(c.text.c_str(), nullptr, flags);
+                    gui->rects.push_back({ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowSize().x,
+                                          ImGui::GetWindowSize().y});
                     ++open;
                     break;
                 }
@@ -188,31 +193,112 @@ namespace
         }
     };
 
-    // The window's RenderImGui, with its ImGui context made current.
+    // The window's RenderImGui, with its ImGui context made current, and
+    // ImGui's display size the window's framebuffer's, each frame: vsgImGui
+    // sets it when made and then from ConfigureWindowEvents, whose size isn't
+    // always the framebuffer's (e.g. VSG's own window on macOS, its swapchain
+    // rebuilt by vkf_viewer_frame_begin): the panels were then drawn where
+    // they were, but the mouse was mapped elsewhere (not clickable, not
+    // movable) once the window was resized.
     class GuiNode : public vsg::Inherit<vsg::Node, GuiNode>
     {
     public:
         vsg::ref_ptr<vsgImGui::RenderImGui> render;
         ImGuiContext* context = nullptr;
+        vsg::observer_ptr<vsg::Window> window;
 
         void accept(vsg::RecordTraversal& visitor) const override
         {
             ImGui::SetCurrentContext(context);
+            if (auto w = window.ref_ptr())
+            {
+                const VkExtent2D extent = w->extent2D();
+                if (extent.width > 0 && extent.height > 0)
+                {
+                    ImGuiIO& io = ImGui::GetIO();
+                    io.DisplaySize = ImVec2(static_cast<float>(extent.width), static_cast<float>(extent.height));
+                    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+                }
+            }
             render->accept(visitor);
         }
     };
 
-    // The window's events to ImGui first (with its context made current).
+    // The window's events to ImGui first (with its context made current). A
+    // button press over a panel (as last drawn) goes to ImGui with its own
+    // position, and is the GUI's (with its release): vsgImGui gives a press
+    // to ImGui only if ImGui wanted the mouse at the last frame, from the
+    // pointer's last move, and after some changes of the window (e.g. zoomed
+    // from its title bar, on macOS) no moves come until the pointer moves
+    // again: a click on a panel then went where the pointer had last moved
+    // (the title bar), to the camera. Elsewhere, as vsgImGui does.
     class GuiEvents : public vsg::Inherit<vsg::Visitor, GuiEvents>
     {
     public:
         vsg::ref_ptr<vsgImGui::SendEventsToImGui> send;
         ImGuiContext* context = nullptr;
+        vkf::Gui* gui = nullptr;
 
         void apply(vsg::UIEvent& event) override
         {
             ImGui::SetCurrentContext(context);
             event.accept(*send);
+        }
+        void apply(vsg::ButtonPressEvent& event) override
+        {
+            ImGui::SetCurrentContext(context);
+            const int button = imgui_button(event.button);
+            if (button < 0 || !over_panel(event.x, event.y))
+            {
+                event.accept(*send);
+                return;
+            }
+            ImGuiIO& io = ImGui::GetIO();
+            io.AddMousePosEvent(static_cast<float>(event.x), static_cast<float>(event.y));
+            io.AddMouseButtonEvent(button, true);
+            pressed |= 1u << button;
+            event.handled = true;
+        }
+        void apply(vsg::ButtonReleaseEvent& event) override
+        {
+            ImGui::SetCurrentContext(context);
+            const int button = imgui_button(event.button);
+            if (button < 0 || (pressed & (1u << button)) == 0)
+            {
+                event.accept(*send);
+                return;
+            }
+            ImGuiIO& io = ImGui::GetIO();
+            io.AddMousePosEvent(static_cast<float>(event.x), static_cast<float>(event.y));
+            io.AddMouseButtonEvent(button, false);
+            pressed &= ~(1u << button);
+            event.handled = true;
+        }
+
+    private:
+        uint32_t pressed = 0;                          // ImGui buttons pressed here (bits), to release here
+
+        // VSG's button as ImGui's (as vsgImGui's _convertButton), or -1: 1
+        // left, 2 middle, 3 right, and 0 left (VSG's own window on macOS
+        // numbers them from 0, as macOS does)
+        static int imgui_button(uint32_t button)
+        {
+            switch (button)
+            {
+            case 0:
+            case 1: return ImGuiMouseButton_Left;
+            case 2: return ImGuiMouseButton_Middle;
+            case 3: return ImGuiMouseButton_Right;
+            default: return -1;
+            }
+        }
+
+        bool over_panel(int32_t x, int32_t y) const
+        {
+            if (!gui) return false;
+            for (const auto& r : gui->rects)
+                if (x >= r[0] && x < r[0] + r[2] && y >= r[1] && y < r[1] + r[3]) return true;
+            return false;
         }
     };
 } // namespace
@@ -255,6 +341,7 @@ void vkf::gui_attach(Gui* gui, vsg::ref_ptr<vsg::Window> window, vsg::Viewer& vi
     auto node = GuiNode::create();
     node->render = render;
     node->context = gui->context;
+    node->window = window;
     gui->node = node;
     for (auto& child : commandGraph.children)
         if (auto renderGraph = child.cast<vsg::RenderGraph>())
@@ -266,6 +353,7 @@ void vkf::gui_attach(Gui* gui, vsg::ref_ptr<vsg::Window> window, vsg::Viewer& vi
     auto events = GuiEvents::create();
     events->send = vsgImGui::SendEventsToImGui::create();
     events->context = gui->context;
+    events->gui = gui;
     gui->events = events;
     auto& handlers = viewer.getEventHandlers();
     handlers.insert(handlers.begin(), events);

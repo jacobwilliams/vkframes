@@ -91,13 +91,47 @@ program test_gui
 
     call check(choice == 2 .and. abs(amount - 1.0e4_wp) < 1.0e-9_wp, 'an untouched combo box and slider: unchanged')
 
+    ! resized: the panel (kept at the center) still takes a click there (ImGui's
+    ! display size the framebuffer's, not the resize event's)
+    call w1%resize(int(width) * 3 / 2, int(height) * 3 / 2)
+    call frames(3)
+    if (vkf_viewer_size(w1%viewer(), width, height) /= 0) error stop 'window size'
+    call w1%mouse(MOUSE_MOVE, int(width) / 2, int(height) / 2, 0, 0)
+    call frames(2)
+    call w1%mouse(MOUSE_PRESS, int(width) / 2, int(height) / 2, MASK_LEFT, MOUSE_LEFT)
+    call frames(2)
+    call w1%mouse(MOUSE_RELEASE, int(width) / 2, int(height) / 2, 0, MOUSE_LEFT)
+    call frames(3)
+    call check(clicks == 2, 'resized: the button clicked again')
+
+    ! a click on the panel with no move to it first (the pointer last moved
+    ! elsewhere: as after a window zoomed from its title bar on macOS, no moves
+    ! come until the pointer moves): the click's own position counts
+    call w1%mouse(MOUSE_MOVE, 4, 4, 0, 0)
+    call frames(2)
+    call w1%mouse(MOUSE_PRESS, int(width) / 2, int(height) / 2, MASK_LEFT, MOUSE_LEFT)
+    call frames(2)
+    call w1%mouse(MOUSE_RELEASE, int(width) / 2, int(height) / 2, 0, MOUSE_LEFT)
+    call frames(3)
+    call check(clicks == 3 .and. handler%count == 1, 'a click with no move first: the panel''s')
+
+    ! the same with the left button numbered 0 (as VSG's own window on macOS gives it)
+    call w1%mouse(MOUSE_MOVE, 4, 4, 0, 0)
+    call frames(2)
+    call w1%mouse(MOUSE_PRESS, int(width) / 2, int(height) / 2, MASK_LEFT, 0)
+    call frames(2)
+    call w1%mouse(MOUSE_RELEASE, int(width) / 2, int(height) / 2, 0, 0)
+    call frames(3)
+    call check(clicks == 4 .and. handler%count == 1, 'a click of button 0 (macOS''s left) with no move first: the panel''s')
+
     call w2%close()
     call w1%close()
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
         error stop 1
     end if
-    write(*, '(a)') 'PASS: GUI panels (a button clicked, events taken, a GUI per window; a slider, a combo box)'
+    write(*, '(a)') 'PASS: GUI panels (a button clicked, also after a resize and with no move first; events taken; ' // &
+                    'a GUI per window; a slider, a combo box)'
 
 contains
 
