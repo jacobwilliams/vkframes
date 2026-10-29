@@ -838,9 +838,12 @@ Decided so far:
       opacity (translucent: depth sorted, writing no depth), two-sided by
       default (mesh flag 16: no culling, VSG_TWO_SIDED_LIGHTING). Shares
       vkf_shapes' node helpers (surface_node, generalized for lit surfaces;
-      line_node, marker_node, ShapeNodes). `example/halo_manifolds.f90`
-      (an Earth-Moon L1 halo orbit's Earth-side manifold tubes, and the
-      zero-velocity curves: a Polyhedron of edges only); tested headless.
+      line_node, marker_node, ShapeNodes). The halo demo (`demos/halo`,
+      `pixi run halo-demo`: an Earth-Moon L1 halo orbit's Earth-side
+      manifold tubes, pickable trajectories, the zero-velocity curves as a
+      Polyhedron of edges only, a Jacobi constant slider, the manifolds
+      propagated in parallel with OpenMP); tested headless.
+      - [ ] Untested: the halo demo on Linux and Windows (OpenMP there).
       - [ ] Translucent surfaces are sorted per object, not per triangle:
             overlapping or self-overlapping translucent tubes can blend in
             the wrong order in places (order-independent transparency would

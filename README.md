@@ -309,7 +309,6 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `earth` | <img src="media/screenshots/examples/earth.jpg" width="160" alt="earth"> | A textured WGS84 Earth and a 3D model following an orbit (`Model`, `Trajectory`, `TrajectoryFollower`), with three views: of the Earth, of the spacecraft, and from the spacecraft toward the Earth. Needs a texture and a model file. |
 | `day_night` | <img src="media/screenshots/examples/day_night.jpg" width="160" alt="day_night"> | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
 | `shapes` | <img src="media/screenshots/examples/shapes.jpg" width="160" alt="shapes"> | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
-| `halo_manifolds` | <img src="media/screenshots/examples/halo_manifolds.jpg" width="160" alt="halo_manifolds"> | The stable and unstable manifolds (Earth side) of an Earth-Moon L1 halo orbit (CR3BP, rotating frame), each a translucent `Polyhedron` grid of trajectories, fading along time, and the zero-velocity curves at its Jacobi constant (a `Polyhedron` of edges only); click a trajectory to highlight it (arrows in its direction of motion) and read its details; a GUI slider picks the Jacobi constant (another orbit of the family, by continuation, its manifolds computed again: in parallel with OpenMP if built with it); keys toggle each tube, the curves, the trajectory lines, lighting, smoothing, the colors and the opacity. |
 | `two_windows` | <img src="media/screenshots/examples/two_windows_1.jpg" width="78" alt="two_windows, window 1"><img src="media/screenshots/examples/two_windows_2.jpg" width="78" alt="two_windows, window 2"> | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
 | `pick_trajectories` | <img src="media/screenshots/examples/pick_trajectories.jpg" width="160" alt="pick_trajectories"> | Picking and callouts: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (a ring and a readout at the point: the time there and the altitude) or the Earth (latitude and longitude), a GUI panel follows the selected orbit's spacecraft (its altitude, trace mode, line width, go to the time picked), a Controls panel sets the time scale and pause, and `g` goes to the time selected. |
 | `highlight_trajectory` | <img src="media/screenshots/examples/highlight_trajectory.jpg" width="160" alt="highlight_trajectory"> | Highlighting a selected trajectory: four Earth orbits (parking, transfer, geostationary, Molniya); the program selects the next every few seconds and a click selects the one under the pointer. The selected orbit pulses, with arrows moving along it from its initial time to its final in a translucent band (`set_highlight`, animated by the GPU); `m` changes the highlight's mode. |
@@ -476,6 +475,33 @@ problem, in the frame rotating with the Earth and the Moon (both fixed).
 
 ```sh
 pixi run -e qt cr3bp-demo
+```
+
+#### Halo manifolds demo
+
+<img src="media/screenshots/halo_demo.jpg" alt="An Earth-Moon L1 halo orbit's stable and unstable manifold tubes, the zero-velocity curves, a picked trajectory and the Jacobi constant's panel" width="300" align="right">
+
+[demos/halo](demos/halo): an Earth-Moon L1 halo orbit (CR3BP, rotating
+frame) and its invariant manifolds on the Earth's side.
+
+- The halo orbit by differential correction; its manifolds from the
+  monodromy matrix's eigenvectors, carried around the orbit by the state
+  transition matrix: the unstable (leaving) and stable (arriving) tubes,
+  each a translucent, lit `Polyhedron` grid of 72 trajectories fading along
+  time; the zero-velocity curves at its Jacobi constant (a `Polyhedron` of
+  edges only).
+- Click a trajectory line: it's highlighted (pulsing, arrows in its
+  direction of motion), with a readout at the point clicked and its details
+  (its place around the orbit, its closest approach to the Earth, its
+  Jacobi constant's drift).
+- A GUI slider picks the Jacobi constant: another orbit of the family (by
+  continuation), its manifolds computed again, in parallel with OpenMP, as
+  the slider moves.
+- Keys toggle each tube, the curves, the trajectory lines, lighting,
+  smoothing, the fading colors and the opacity.
+
+```sh
+pixi run halo-demo
 ```
 
 #### Rendezvous demo
