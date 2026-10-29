@@ -124,7 +124,16 @@ module moondemo
         real(wp) :: quit_after = -1.0_wp
     end type app_t
 
+    !> Each frame, at its time, before it is drawn: the lander's altitude line
+    !> and label (set after a frame, they would be drawn a frame late: behind
+    !> the lander, by as much as it moves in a frame).
+    type, extends(WindowEventHandler) :: MoonHandler
+    contains
+        procedure :: before_draw => moon_before_draw
+    end type MoonHandler
+
     type(app_t), target, save :: app
+    type(MoonHandler), target, save :: handler
 
 contains
 
@@ -502,6 +511,7 @@ contains
             return
         end if
         call app%proxy%set_scene(app%scene)
+        call app%proxy%set_event_handler(handler)
         call app%proxy%set_background_color([0.0_wp, 0.0_wp, 0.0_wp])
         call app%proxy%set_sky(app%sky)
         do k = 1, n_views
@@ -518,6 +528,21 @@ contains
         call turn_moon(app%start_time)
     end subroutine open_view
 
+    !> The scene is at the frame's time t: the altitude line's ends (its two
+    !> artists written again now, to be in this frame) and the lander's label
+    !> and HUD line.
+    subroutine moon_before_draw(self, window, t)
+        class(MoonHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: t
+        real(wp) :: agl
+        agl = update_drop(t)
+        call app%drop_line%update(t)
+        call app%drop_foot%update(t)
+        call app%hud_lander%set_text(lander_status(t, agl))
+        call label_lander(t, agl)
+    end subroutine moon_before_draw
+
     subroutine on_expose(data)
         class(*), intent(inout), optional :: data
         if (app%proxy%is_open() .or. .not. app%window%isExposed()) return
@@ -529,7 +554,7 @@ contains
     subroutine on_update(data)
         class(*), intent(inout), optional :: data
         character(len=48) :: text
-        real(wp) :: t, agl
+        real(wp) :: t
         ! moved to a screen of another scale (or the display's scaling changed):
         ! Qt may send no resize, the window's size in window units being the same
         if (app%window%devicePixelRatio() /= app%proxy%pixel_ratio()) &
@@ -544,9 +569,6 @@ contains
         call app%time_label%setText(trim(text))
         write(text, '(a,f0.1,a)') 't = ', t, ' s'
         call app%hud_time%set_text(trim(text))
-        agl = update_drop(t)
-        call app%hud_lander%set_text(lander_status(t, agl))
-        call label_lander(t, agl)
         if (.not. app%slider_held) then
             app%slider_setting = .true.
             call app%time_slider%setValue(nint(t))
