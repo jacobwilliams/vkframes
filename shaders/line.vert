@@ -101,7 +101,8 @@ layout(push_constant) uniform PushConstants {
     vec4 eyeLow;
     vec4 viewport;          // xy = size of the view in framebuffer pixels,
                             // z = framebuffer pixels per window unit (2 on Retina)
-    ivec4 lod;              // x = stride (strips), y = points drawn (up to), z = the first drawn (0-based)
+    ivec4 lod;              // x = stride (strips), y = points drawn (up to), z = the first drawn (0-based),
+                            // w = the pass: 0 the line, 1 a highlighted line's glow and arrows (see line.frag)
     uvec4 dashLevels;       // the sizes per line (w = 1: given; else per segment) of the dashes (x), the
                             // trail's future's (y) and the arrows (z): the old size + 128, the new + 128
                             // (8 bits each), the morph's progress (16 bits); w = 2: fixed length, as
@@ -149,6 +150,7 @@ layout(location = 5) flat out vec4 highlight;       // x = pulse (0 to 1), y = t
                                                     // z = the quad's (pixels), w = highlight flags
 layout(location = 6) out float trailDistance;       // from the current time's, in the direction of time
 layout(location = 7) noperspective out vec3 dash2;  // (trails) the future's dashes, as dash
+layout(location = 8) flat out int pass;              // pc.lod.w
 
 out gl_PerVertex {
     vec4 gl_Position;
@@ -306,6 +308,7 @@ void main()
     pos.xy += (offset / halfSize) * pos.w;
 
     gl_Position = pos;
+    pass = pc.lod.w;
     fragColor = (style.count.y > 0.5) ? style.color * colors.c[atEnd ? second : first] : style.color;
     fragColor.rgb = mix(fragColor.rgb, style.highlight.rgb, 0.5 * pulse);
     vec2 perPixel;

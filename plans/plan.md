@@ -1328,9 +1328,14 @@ Interaction:
       trace tail. Tested: `test_artists` (the API); shown in
       `example/highlight_trajectory.f90` and the Qt demo (an orbit picked is
       highlighted).
-      - [ ] Known: the band writes depth, so its translucent edges (and the
-            square caps at the line's ends) hide lines drawn after it behind
-            them. If it shows, draw the band in a second, no-depth-write pass.
+      - [x] The band in a second pass: a highlighted line (with arrows) is
+            drawn twice, the line writing depth, then the glow and chevrons
+            (pc.lod.w = 1) by a pipeline writing none (and accepting equal
+            depth, the line's own), in the translucent bin sorted by the
+            line's bound (vkf_line_set_lod), shown only while highlighted
+            with arrows. Its faint glow no longer cuts away translucent
+            surfaces drawn after it (a dark band about the line over the
+            halo demo's manifold tubes).
       - [ ] Later: arrows at given times (e.g. every 10 minutes of mission
             time) as markers turned along the trajectory's direction on
             screen (markers are upright now): a marker shape and a rotation

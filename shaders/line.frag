@@ -10,7 +10,10 @@
 // Highlighted with arrows: the quad is a band, a translucent glow of the
 // highlight color, with the line (dashed, if it is) in its middle and
 // chevrons of the highlight color over both, blended between their two
-// spacings as the dashes. A trail (see line.vert): each pixel in the past's
+// spacings as the dashes; drawn in two passes (pass, pc.lod.w: see make_line
+// in src/vsg/vkf_layer.cpp): the line, writing depth, then the glow and the
+// chevrons, writing none, with the translucent surfaces (sorted by depth),
+// so the faint glow doesn't cut them away. A trail (see line.vert): each pixel in the past's
 // or the future's color and dash pattern, faded toward the cutoffs, and none
 // beyond them.
 
@@ -38,6 +41,7 @@ layout(location = 5) flat in vec4 highlight;        // x = pulse (0 to 1), y = t
                                                     // z = the quad's (pixels), w = highlight flags
 layout(location = 6) in float trailDistance;        // from the current time's, in the direction of time
 layout(location = 7) noperspective in vec3 dash2;   // (trails) the future's dashes
+layout(location = 8) flat in int pass;              // 0 the line, 1 a highlighted line's glow and arrows
 layout(location = 0) out vec4 outColor;
 
 // The signed distance (in bits; > 0 in a dash) from position x (0 to 16, in
@@ -119,7 +123,7 @@ void main()
         coverage = dashCoverage(uint(style.params.z) & 0xFFFFu, dash, rate);
     }
     if ((int(highlight.w + 0.5) & 2) == 0) {
-        if (coverage <= 0.0 || fade <= 0.0) discard;
+        if (pass != 0 || coverage <= 0.0 || fade <= 0.0) discard;
         outColor = vec4(base.rgb, base.a * coverage * fade);
         return;
     }
@@ -135,9 +139,16 @@ void main()
     vec2 on = clamp(0.5 * thickness - abs(g - 0.5 * flowPixels) + 0.5, 0.0, 1.0);
     float arrow = mix(on.x, on.y, smoothstep(0.3, 0.7, flow.z)) * (1.0 - smoothstep(0.75 * h, h, r));
 
-    vec4 c = vec4(style.highlight.rgb, glow);
-    c = mix(c, base, line);
-    c.rgb = mix(c.rgb, style.highlight.rgb, arrow);
+    // two passes: the line (writing depth: it hides what's behind it), then
+    // the glow and the arrows (writing none, after the translucent surfaces
+    // are sorted in: where faint, the glow doesn't hide them)
+    if (pass == 0) {
+        float a = base.a * line * fade;
+        if (a < 0.01) discard;
+        outColor = vec4(base.rgb, a);
+        return;
+    }
+    vec4 c = vec4(style.highlight.rgb, glow * (1.0 - line));     // (the glow about the line, not over it)
     c.a = max(c.a, arrow * style.highlight.a) * fade;
     if (c.a < 0.01) discard;
     outColor = c;

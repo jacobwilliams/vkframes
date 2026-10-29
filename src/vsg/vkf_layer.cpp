@@ -376,6 +376,11 @@ namespace
         vsg::ref_ptr<vsg::DescriptorSetLayout> arcLayout;   // lines: set 1, the screen lengths (see ScreenArcs)
         vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
         vsg::ref_ptr<vsg::BindGraphicsPipeline> bindPipeline;
+        // lines: a highlighted line's glow and arrows (its second pass, see
+        // make_line): blended, depth tested but writing no depth (where the
+        // glow is faint it doesn't hide what's drawn after it: translucent
+        // surfaces), at the line's own depth too (its arrows over it)
+        vsg::ref_ptr<vsg::BindGraphicsPipeline> bindGlowPipeline;
 
         PointsPipeline(const std::vector<uint32_t>& vert, const std::vector<uint32_t>& frag, PointsKind kind)
         {
@@ -428,6 +433,17 @@ namespace
                 depth,
             };
             bindPipeline = vsg::BindGraphicsPipeline::create(vsg::GraphicsPipeline::create(pipelineLayout, stages, states));
+            if (kind == PointsKind::lines)
+            {
+                auto glowDepth = vsg::DepthStencilState::create();
+                glowDepth->depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;   // (reversed depth: and equal, the line's own)
+                glowDepth->depthWriteEnable = VK_FALSE;
+                vsg::GraphicsPipelineStates glowStates{
+                    vsg::VertexInputState::create(), vsg::InputAssemblyState::create(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST),
+                    rasterization, vsg::MultisampleState::create(), colorBlend, glowDepth,
+                };
+                bindGlowPipeline = vsg::BindGraphicsPipeline::create(vsg::GraphicsPipeline::create(pipelineLayout, stages, glowStates));
+            }
         }
     };
 
@@ -1045,6 +1061,7 @@ namespace
         vsg::ref_ptr<vsg::PipelineLayout> pipelineLayout;
         std::shared_ptr<LineLod> lod;          // line strips (null for other geometry)
         bool linePipeline = false;             // drawn by the line pipeline: its set 1 bound (screen lengths)
+        int32_t pass = 0;                      // lines: 0 the line, 1 a highlighted line's glow and arrows (pc.lod.w)
 
         void traverse(vsg::RecordTraversal& visitor) const override
         {
@@ -1076,6 +1093,7 @@ namespace
             std::memcpy(constants + 12, &stride, sizeof(stride));
             std::memcpy(constants + 13, &drawn, sizeof(drawn));
             std::memcpy(constants + 14, &first, sizeof(first));
+            std::memcpy(constants + 15, &pass, sizeof(pass));
             uint32_t packed[4] = {0, 0, 0, 0};
             if (lod && visitor.viewDependentState && lod->fixedDashes && lod->strip &&
                 fixed_dashes(*lod, visitor.viewDependentState->view, eye, state->projectionMatrixStack.top(), modelView,
@@ -1514,6 +1532,10 @@ namespace
         vsg::ref_ptr<vsg::vec4Array> colors; // lines: a color per point (colored), else one, white
         bool colored = false;
         bool ribbon = false;                 // a surface between pairs of points (vkf_ribbon_create)
+        // lines: the glow and arrows of a highlight (shown with arrows: see
+        // make_line), sorted with the translucent surfaces by the line's bound
+        vsg::ref_ptr<vsg::Switch> glow;
+        vsg::ref_ptr<vsg::DepthSorted> glowSorted;
 
         bool segments() const { return style->at(1).y > 0.5f; }
         // the vertices drawing points first .. first+n-1 (1-based)
@@ -3220,7 +3242,33 @@ static void* make_line(int capacity, bool colored, bool ribbon = false)
         eyeRelative->lod = line->lod;
         eyeRelative->linePipeline = !ribbon;
         eyeRelative->addChild(stateGroup);
-        line->node = eyeRelative;
+        if (ribbon)
+        {
+            line->node = eyeRelative;
+            return line.release();
+        }
+        // a highlight's glow and arrows: a second pass of the same draw (the
+        // glow pipeline: writing no depth), after the opaque scene, sorted with
+        // the translucent surfaces (else, its faint glow writing depth hid a
+        // translucent surface drawn after it: a dark band about the line);
+        // the first pass then draws the line only. Shown while highlighted
+        // with arrows (vkf_line_set_highlight).
+        auto glowState = vsg::StateGroup::create();
+        glowState->add(pipeline.bindGlowPipeline);
+        glowState->add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, descriptorSet));
+        glowState->addChild(line->draw);
+        auto glowRelative = EyeRelative::create(pipeline.pipelineLayout);
+        glowRelative->lod = line->lod;
+        glowRelative->linePipeline = true;
+        glowRelative->pass = 1;
+        glowRelative->addChild(glowState);
+        line->glowSorted = vsg::DepthSorted::create(translucent_bin, vsg::dsphere(0.0, 0.0, 0.0, 1.0e30), glowRelative);
+        line->glow = vsg::Switch::create();
+        line->glow->addChild(false, line->glowSorted);
+        auto group = vsg::Group::create();
+        group->addChild(eyeRelative);
+        group->addChild(line->glow);
+        line->node = group;
         return line.release();
     });
 }
@@ -3520,6 +3568,7 @@ VKF_API int vkf_line_set_lod(void* line, const double* center, double radius, co
     for (int k = 0; k < levels; ++k) l->lod->error[k] = error[k];
     l->lod->levels = levels;
     l->lod->hasBound = true;
+    if (l->glowSorted) l->glowSorted->bound = vsg::dsphere(center[0], center[1], center[2], radius);
     return 0;
 }
 
@@ -3545,6 +3594,7 @@ VKF_API int vkf_line_set_highlight(void* line, const float* values)
     for (int k = 0; k < 3; ++k)
         l->style->at(3 + k) = vsg::vec4(values[4 * k], values[4 * k + 1], values[4 * k + 2], values[4 * k + 3]);
     l->style->dirty();
+    if (l->glow) l->glow->setAllChildren((static_cast<int>(values[4] + 0.5f) & 2) != 0);   // (arrows: the glow's pass)
     return 0;
 }
 
