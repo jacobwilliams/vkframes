@@ -360,9 +360,11 @@ its arguments.
 
 Each demo in [demos/](demos/) is a fuller application with a GUI, and a
 separate fpm project that depends on vkframes (the library itself doesn't
-depend on Qt or Python). They run vkframes embedded in a host window: the
-GUI toolkit owns the window and forwards its events, and vkframes renders
-into it.
+depend on Qt, Python or OpenMP). Most run vkframes embedded in a host
+window: the GUI toolkit owns the window and forwards its events, and
+vkframes renders into it. The halo manifolds demo instead uses vkframes'
+own window and its built-in GUI panels (Dear ImGui), so it needs no GUI
+toolkit.
 
 #### Qt demo
 
@@ -479,10 +481,11 @@ pixi run -e qt cr3bp-demo
 
 #### Halo manifolds demo
 
-<img src="media/screenshots/halo_demo.jpg" alt="An Earth-Moon L1 halo orbit's stable and unstable manifold tubes, the zero-velocity curves, a picked trajectory and the Jacobi constant's panel" width="300" align="right">
+<img src="media/screenshots/halo_demo.jpg" alt="An Earth-Moon L1 halo orbit's stable and unstable manifold tubes, the zero-velocity curves, a picked trajectory and the panel of sliders" width="300" align="right">
 
 [demos/halo](demos/halo): an Earth-Moon L1 halo orbit (CR3BP, rotating
-frame) and its invariant manifolds on the Earth's side.
+frame) and its invariant manifolds on the Earth's side, in a vkframes
+window with a GUI panel (no Qt; OpenMP for the propagation).
 
 - The halo orbit by differential correction; its manifolds from the
   monodromy matrix's eigenvectors, carried around the orbit by the state
