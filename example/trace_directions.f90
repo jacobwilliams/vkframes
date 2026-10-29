@@ -14,12 +14,15 @@
 !> reversed (r) it shrinks back. Arrows (a highlight, animated on the GPU)
 !> move along each in the order its points were added: its propagation's
 !> direction (the backward one's from t02 toward tm, against the time).
+!> Each also sweeps out its orbit's plane (a RibbonArtist from the Earth's
+!> center to the positions, translucent, in its color), traced with it.
 !> The HUD shows the time and, for each, which of its points are drawn
 !> (first_drawn, num_drawn) and whether its tail (to the point at the
 !> current time) is drawn.
 !>
-!> Keys: t trace mode on/off, r the time's direction reversed, 0 the start
-!> (t = 0), 9 the end (t = P), space resets the view.
+!> Keys: t trace mode on/off (the curves and the planes), p the planes shown
+!> or hidden, r the time's direction reversed, 0 the start (t = 0), 9 the
+!> end (t = P), space resets the view.
 !>
 !> Arguments (optional): number of frames to run, a file to capture the last
 !> frame to, and the time to start at as a fraction of the period (default
@@ -35,6 +38,8 @@ module trace_directions_keys
     !> The keys (see the program's documentation).
     type, extends(WindowEventHandler), public :: TraceKeys
         type(CurveArtist), pointer :: curves(:) => null()   !! the forward and backward curves
+        type(RibbonArtist), pointer :: planes(:) => null()  !! their planes
+        type(DrawableTrajectory), pointer :: plane_frames(:) => null()  !! the planes' frames (shown or hidden)
         real(wp) :: period = 1.0_wp                         !! P (s)
     contains
         procedure :: key_press => trace_key
@@ -53,6 +58,11 @@ contains
         case (iachar('t'))
             do k = 1, size(self%curves)
                 call self%curves(k)%set_trace_mode(.not. self%curves(k)%trace_mode())
+                call self%planes(k)%set_trace_mode(self%curves(k)%trace_mode())
+            end do
+        case (iachar('p'))
+            do k = 1, size(self%plane_frames)
+                call self%plane_frames(k)%show_contents(.not. self%plane_frames(k)%contents_shown())
             end do
         case (iachar('r'))
             call window%set_time_scale(-window%time_scale())
@@ -82,6 +92,8 @@ program trace_directions
     type(Sphere), target :: earth
     type(Trajectory), target :: forward, backward
     type(CurveArtist), target :: curves(2)
+    type(RibbonArtist), target :: planes(2)
+    type(DrawableTrajectory), target :: plane_frames(2)
     type(MarkerArtist), target :: forward_marks, backward_marks
     type(DrawableTrajectory), target :: forward_frame, backward_frame
     type(Sphere), target :: craft_f, craft_b
@@ -138,6 +150,17 @@ program trace_directions
     call forward_marks%set_marker_color(MARKER_END, [1.0_wp, 1.0_wp, 1.0_wp])
     backward_marks = MarkerArtist(backward, markers=MARKER_START, size=14.0_wp)
     call backward_marks%set_marker_color(MARKER_START, [0.3_wp, 1.0_wp, 0.4_wp])
+    ! the orbits' planes: from the Earth's center to the positions, traced too
+    planes(1) = RibbonArtist(forward, color=[forward_color, 0.2_wp])
+    planes(2) = RibbonArtist(backward, color=[backward_color, 0.2_wp])
+    plane_frames(1) = DrawableTrajectory('Forward plane')
+    plane_frames(2) = DrawableTrajectory('Backward plane')
+    do k = 1, 2
+        call planes(k)%set_trace_mode(.true.)
+        call planes(k)%set_pickable(.false.)
+        call plane_frames(k)%show_decorations(.false.)
+        call plane_frames(k)%add_artist(planes(k))
+    end do
     do k = 1, 2
         call curves(k)%set_trace_mode(.true.)
         call curves(k)%set_highlight(HIGHLIGHT_ARROWS, color=[1.0_wp, 1.0_wp, 0.85_wp], arrow_spacing=45.0_wp, &
@@ -161,6 +184,7 @@ program trace_directions
     call craft_b%show_axes(NO_AXES)
     call craft_b%show_axes_labels(NO_AXES)
     call craft_b%follow(backward, mode=FOLLOW_LIMIT)
+    if (.not. (earth%add_child(plane_frames(1)) .and. earth%add_child(plane_frames(2)))) error stop 'add_child failed'
     if (.not. (earth%add_child(forward_frame) .and. earth%add_child(backward_frame) .and. &
                earth%add_child(craft_f) .and. earth%add_child(craft_b))) error stop 'add_child failed'
     scene = FrameManager(earth)
@@ -179,10 +203,12 @@ program trace_directions
     legend = HUDText('orange: forward (t01 = 0 -> tf1 = tm)    cyan: backward (t02 = P -> tf2 = tm)    ' // &
                      'green: starts    white: the match point (tm)    arrows: the propagation''s direction' // &
                      new_line('a') // &
-                     't: trace on/off    r: reverse time    0 / 9: t = 0 / P', &
+                     't: trace on/off    p: planes    r: reverse time    0 / 9: t = 0 / P', &
                      position=[0.01_wp, 0.99_wp], alignment=ALIGN_LEFT_TOP, size=14.0_wp, color=[0.7_wp, 0.7_wp, 0.7_wp])
     call window%add_hud_text(legend)
     keys%curves => curves
+    keys%planes => planes
+    keys%plane_frames => plane_frames
     keys%period = period
     call window%set_event_handler(keys)
     call window%set_time_range(0.0_wp, period)
