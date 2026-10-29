@@ -12,7 +12,7 @@
 !> 100 km to the ground on a smooth curve, level at both ends), at the
 !> terrain's height there (TerrainBody%elevation); its path is drawn too,
 !> with its altitude above the terrain below it (a dashed line down to the
-!> ground, the height in the HUD) and, as it passes, a drop line to the
+!> ground, the height in its label, which follows it, and in the HUD) and, as it passes, a drop line to the
 !> ground every 10 s of its descent (the terrain's profile under the path:
 !> Tycho's rim, then its central peak). At startup the demo prints how
 !> closely the path passes over ground higher than the site.
@@ -477,7 +477,7 @@ contains
     subroutine on_update(data)
         class(*), intent(inout), optional :: data
         character(len=48) :: text
-        real(wp) :: t
+        real(wp) :: t, agl
         ! moved to a screen of another scale (or the display's scaling changed):
         ! Qt may send no resize, the window's size in window units being the same
         if (app%window%devicePixelRatio() /= app%proxy%pixel_ratio()) &
@@ -492,7 +492,9 @@ contains
         call app%time_label%setText(trim(text))
         write(text, '(a,f0.1,a)') 't = ', t, ' s'
         call app%hud_time%set_text(trim(text))
-        call app%hud_lander%set_text(lander_status(t, update_drop(t)))
+        agl = update_drop(t)
+        call app%hud_lander%set_text(lander_status(t, agl))
+        call label_lander(t, agl)
         if (.not. app%slider_held) then
             app%slider_setting = .true.
             call app%time_slider%setValue(nint(t))
@@ -731,6 +733,19 @@ contains
         end if
         text = trim(buf)
     end function lander_status
+
+    !> The lander's label (following it): its name and, in flight, its
+    !> altitude above the terrain below it, e.g. 'Lander (11.17 km)'.
+    subroutine label_lander(t, agl)
+        real(wp), intent(in) :: t, agl
+        character(len=:), allocatable :: text
+        if (t >= t_descent + descent_time) then
+            text = 'Lander'
+        else
+            text = 'Lander ('//km(agl)//' km)'
+        end if
+        if (text /= app%lander%name()) call app%lander%set_name(text)   ! (the label's text, rewritten in place)
+    end subroutine label_lander
 
     !> A distance (km) with two decimals (and a leading zero, which f0.2 leaves out).
     function km(x) result(text)
