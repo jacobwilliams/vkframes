@@ -184,7 +184,7 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     `before_draw` is called each frame once the scene and camera are final,
     so such a callout is in step with what is drawn.
   - GUI panels (not in OpenFrames): Dear ImGui panels with text, buttons,
-    checkboxes and sliders, drawn flat on top of the scene in vkframes' own
+    checkboxes, sliders and combo boxes (drop-down menus), drawn flat on top of the scene in vkframes' own
     windows (and embedded ones), described from Fortran each frame
     (`window%gui()`). A panel can stay next to a picked or moving object.
     Clicks over a panel go to it, not to the camera or picking.
@@ -481,13 +481,15 @@ pixi run -e qt cr3bp-demo
 
 #### Halo manifolds demo
 
-<img src="media/screenshots/halo_demo.jpg" alt="An Earth-Moon L1 halo orbit's stable and unstable manifold tubes, the zero-velocity curves, a picked trajectory and the panel of sliders" width="300" align="right">
+<img src="media/screenshots/halo_demo.jpg" alt="An Earth-Moon L1 halo orbit's stable and unstable manifold tubes, the zero-velocity curves, a picked trajectory and the panel (Lagrange point menu and sliders)" width="300" align="right">
 
-[demos/halo](demos/halo): an Earth-Moon L1 halo orbit (CR3BP, rotating
-frame) and its invariant manifolds on the Earth's side, in a vkframes
-window with a GUI panel (no Qt; OpenMP for the propagation).
+[demos/halo](demos/halo): an Earth-Moon halo orbit about L1, L2 or L3
+(CR3BP, rotating frame) and its invariant manifolds on the Earth's side, in
+a vkframes window with a GUI panel (no Qt; OpenMP for the propagation).
 
-- The halo orbit by differential correction; its manifolds from the
+- The halo orbit from Richardson's third-order approximation for a given
+  amplitude (from the Fortran Astrodynamics Toolkit), differentially
+  corrected; its manifolds from the
   monodromy matrix's eigenvectors, carried around the orbit by the state
   transition matrix: the unstable (leaving) and stable (arriving) tubes,
   each a translucent, lit `Polyhedron` grid of 72 trajectories fading along
@@ -497,9 +499,12 @@ window with a GUI panel (no Qt; OpenMP for the propagation).
   direction of motion), with a readout at the point clicked and its details
   (its place around the orbit, its closest approach to the Earth, its
   Jacobi constant's drift).
-- GUI sliders pick the Jacobi constant (another orbit of the family, by
-  continuation) and how long the manifolds are propagated (2 to 60 days);
-  the manifolds are computed again, in parallel with OpenMP, as they move.
+- The GUI panel: a menu picks the Lagrange point (L1, L2 or L3), sliders
+  the halo's amplitude, its Jacobi constant (another orbit of the family,
+  by continuation) and how long the manifolds are propagated (2 to 120
+  days); the orbit and its manifolds are computed again, in parallel with
+  OpenMP, as they move. The panel shows the orbit's period, amplitude and
+  unstable eigenvalue.
 - Keys toggle each tube, the curves, the trajectory lines, lighting,
   smoothing, the fading colors and the opacity.
 

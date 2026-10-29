@@ -4,10 +4,10 @@
 !> A window's Gui (`WindowProxy%gui()`, made on first use) is described
 !> immediate-mode, each frame (e.g. in the event handler's `before_draw`, or
 !> in the frame loop before `frame()`): panels (`begin_panel` ... `end_panel`)
-!> holding text, buttons, checkboxes, sliders, separators. A widget's call
-!> gives what the user did with it at the frame before: `button` is true once
-!> after a click; `checkbox` and `slider` change the value given (and are true
-!> then). What isn't described in a frame isn't shown in it.
+!> holding text, buttons, checkboxes, sliders, combo boxes (drop-down
+!> menus), separators. A widget's call gives what the user did with it at the
+!> frame before: `button` is true once after a click; `checkbox`, `slider`
+!> and `combo` change the value given (and are true then). What isn't described in a frame isn't shown in it.
 !>
 !> A panel is placed where ImGui puts it (and can be moved), or at a position
 !> (0 to 1 across the window, y up, as HUD text), at first or every frame
@@ -22,7 +22,7 @@ module vkf_gui
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_double
     use vkf_math, only: wp
     use vkf_layer, only: vkf_gui_begin, vkf_gui_end, vkf_gui_text, vkf_gui_button, vkf_gui_checkbox, vkf_gui_slider, &
-                         vkf_gui_separator, vkf_gui_same_line
+                         vkf_gui_separator, vkf_gui_same_line, vkf_gui_combo
 
     implicit none
 
@@ -33,7 +33,7 @@ module vkf_gui
         type(c_ptr) :: handle = c_null_ptr      !! the window's GUI in the C++ layer (null: none)
     contains
         procedure :: begin_panel, end_panel
-        procedure :: text, button, checkbox, slider, separator, same_line
+        procedure :: text, button, checkbox, slider, combo, separator, same_line
         procedure :: is_valid
     end type Gui
 
@@ -101,18 +101,46 @@ contains
     end function checkbox
 
     !> A slider showing `value`, from `low` to `high`: true (and `value`
-    !> changed) after the user moved it.
-    logical function slider(self, label, value, low, high) result(changed)
+    !> changed) after the user moved it. `format`: how the value is shown
+    !> (printf's, e.g. '%.0f km'; default '%.4g').
+    logical function slider(self, label, value, low, high, format) result(changed)
         class(Gui), intent(inout) :: self
         character(len=*), intent(in) :: label
         real(wp), intent(inout) :: value
         real(wp), intent(in) :: low, high
+        character(len=*), intent(in), optional :: format
         real(c_double) :: v
         v = value
-        changed = vkf_gui_slider(self%handle, label, len(label, kind=c_int), v, real(low, c_double), &
-                                 real(high, c_double)) /= 0
+        if (present(format)) then
+            changed = vkf_gui_slider(self%handle, label, len(label, kind=c_int), v, real(low, c_double), &
+                                     real(high, c_double), format, len(format, kind=c_int)) /= 0
+        else
+            changed = vkf_gui_slider(self%handle, label, len(label, kind=c_int), v, real(low, c_double), &
+                                     real(high, c_double), '', 0_c_int) /= 0
+        end if
         value = v
     end function slider
+
+    !> A combo box (a drop-down menu) of `items` (trailing blanks trimmed),
+    !> showing item `index` (1-based): true (and `index` changed) after the
+    !> user chose another.
+    logical function combo(self, label, index, items) result(changed)
+        class(Gui), intent(inout) :: self
+        character(len=*), intent(in) :: label
+        integer, intent(inout) :: index
+        character(len=*), intent(in) :: items(:)
+        character(len=:), allocatable :: all
+        integer(c_int) :: i
+        integer :: k
+        all = ''
+        do k = 1, size(items)
+            all = all//trim(items(k))
+            if (k < size(items)) all = all//new_line('a')
+        end do
+        i = int(index - 1, c_int)
+        changed = vkf_gui_combo(self%handle, label, len(label, kind=c_int), i, all, len(all, kind=c_int)) /= 0
+        index = i + 1
+    end function combo
 
     !> A horizontal separator line.
     subroutine separator(self)

@@ -27,7 +27,7 @@ module vkf_layer
     public :: vkf_viewer_frame_begin, vkf_viewer_frame_draw
     public :: check_status
     public :: vkf_viewer_gui, vkf_gui_begin, vkf_gui_end, vkf_gui_text, vkf_gui_button, vkf_gui_checkbox, vkf_gui_slider, &
-              vkf_gui_separator, vkf_gui_same_line
+              vkf_gui_separator, vkf_gui_same_line, vkf_gui_combo
     public :: vkf_node_delete, vkf_node_add_child, vkf_node_remove_child, vkf_node_bound, vkf_compile_node, vkf_viewer_any
     public :: vkf_switch_create, vkf_switch_set
     public :: vkf_transform_create, vkf_transform_set_matrix
@@ -382,9 +382,10 @@ module vkf_layer
             integer(c_int), intent(inout) :: value         !! 1 checked, 0 not
         end function vkf_gui_checkbox
 
-        !> A slider showing `value` from `low` to `high`: 1 (and `value` set) if the user changed it since the
-        !> last call for it, else 0.
-        integer(c_int) function vkf_gui_slider(gui, label, label_len, value, low, high) bind(C, name="vkf_gui_slider")
+        !> A slider showing `value` from `low` to `high` (as `format`, printf's; empty: "%.4g"): 1 (and `value`
+        !> set) if the user changed it since the last call for it, else 0.
+        integer(c_int) function vkf_gui_slider(gui, label, label_len, value, low, high, format, format_len) &
+                bind(C, name="vkf_gui_slider")
             import :: c_ptr, c_int, c_char, c_double
             implicit none
             type(c_ptr), value :: gui                      !! GUI handle (vkf_viewer_gui)
@@ -392,7 +393,23 @@ module vkf_layer
             integer(c_int), value :: label_len             !! the length of `label`
             real(c_double), intent(inout) :: value
             real(c_double), value :: low, high             !! the slider's range
+            character(kind=c_char), intent(in) :: format(*)
+            integer(c_int), value :: format_len            !! the length of `format` (0: the default)
         end function vkf_gui_slider
+
+        !> A combo box (drop-down menu) of `items` (newline-separated), showing item `index` (0-based): 1 (and
+        !> `index` set) if the user chose another since the last call for it, else 0.
+        integer(c_int) function vkf_gui_combo(gui, label, label_len, index, items, items_len) &
+                bind(C, name="vkf_gui_combo")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: gui                      !! GUI handle (vkf_viewer_gui)
+            character(kind=c_char), intent(in) :: label(*)
+            integer(c_int), value :: label_len             !! the length of `label`
+            integer(c_int), intent(inout) :: index
+            character(kind=c_char), intent(in) :: items(*)
+            integer(c_int), value :: items_len             !! the length of `items`
+        end function vkf_gui_combo
 
         !> A horizontal separator in the current panel.
         subroutine vkf_gui_separator(gui) bind(C, name="vkf_gui_separator")

@@ -1,7 +1,8 @@
 !> The circular restricted three-body problem (Earth-Moon) for the halo
 !> demo: the equations of motion with the state transition matrix, an
 !> adaptive Dormand-Prince 5(4) integrator, halo orbits by differential
-!> correction (and continuation in the Jacobi constant), the monodromy
+!> correction (from Richardson's approximation for a given amplitude, about
+!> L1, L2 or L3; and continuation in the Jacobi constant), the monodromy
 !> matrix's eigenvectors and the zero-velocity curves (see main.f90).
 module halo_cr3bp
 
@@ -12,7 +13,7 @@ module halo_cr3bp
     private
 
     public :: eom, eom_stm, propagate, propagate_to_crossing, correct_halo, correct_halo_jacobi, continue_halo, &
-              monodromy_vectors, jacobi, zero_velocity_curves
+              monodromy_vectors, monodromy_eigenvalues, jacobi, zero_velocity_curves, collinear_point, richardson_halo, halo_from_amplitude
 
     real(wp), parameter, public :: mu = 0.01215058560962404_wp     !! Earth-Moon mass ratio
     real(wp), parameter, public :: lu = 384400.0_wp                !! length unit (km)
@@ -222,6 +223,7 @@ contains
             call propagate(f, s, dt)
             t = t + dt
             if (sign(1.0_wp, s(2)) /= sign(1.0_wp, prev(2))) exit
+            if (t > 20.0_wp .or. any(s /= s)) return       ! (none: a guess gone astray; NaN)
         end do
         do k = 1, 8                                      ! Newton on the time: y = 0
             d = f(s)
@@ -233,17 +235,22 @@ contains
 
     !> A halo orbit through (x0, 0, z0) perpendicular to the x-z plane: x0 and
     !> vy0 corrected (z0 kept) until the next crossing is perpendicular too.
-    !> period: its period.
-    subroutine correct_halo(x0, z0, vy0, period)
+    !> period: its period; ok: converged.
+    subroutine correct_halo(x0, z0, vy0, period, ok)
         real(wp), intent(inout) :: x0, vy0
         real(wp), intent(in) :: z0
         real(wp), intent(out) :: period
+        logical, intent(out), optional :: ok
         real(wp) :: s(42), phi(6, 6), acc(6), m(2, 2), rhs_(2), d(2), t, det
         integer :: iter
+        logical :: done
+        done = .false.
         do iter = 1, 30
             s = initial(x0, z0, vy0)
             call propagate_to_crossing(eom_stm, s, 0.5_wp, t)
-            if (abs(s(4)) < 1.0e-11_wp .and. abs(s(6)) < 1.0e-11_wp) exit
+            if (any(s /= s) .or. t > 20.0_wp) exit
+            done = abs(s(4)) < 1.0e-11_wp .and. abs(s(6)) < 1.0e-11_wp
+            if (done) exit
             phi = reshape(s(7:42), [6, 6])
             acc = eom(s(1:6))
             m(:, 1) = [phi(4, 1), phi(6, 1)] - acc([4, 6]) / s(5) * phi(2, 1)
@@ -255,7 +262,160 @@ contains
             vy0 = vy0 + d(2)
         end do
         period = 2.0_wp * t
+        if (present(ok)) ok = done
     end subroutine correct_halo
+
+    !> The x of collinear Lagrange point `lib` (1, 2 or 3; rotating frame),
+    !> and gamma, its distance from the nearer primary (the Moon for L1 and
+    !> L2, the Earth for L3): Newton's method on the quintic.
+    subroutine collinear_point(lib, x, gamma)
+        integer, intent(in) :: lib
+        real(wp), intent(out) :: x, gamma
+        real(wp) :: g, f, df
+        integer :: k
+        g = (mu / 3.0_wp)**(1.0_wp / 3.0_wp)            ! (L1, L2: Hill's radius)
+        if (lib == 3) g = 1.0_wp - 7.0_wp / 12.0_wp * mu
+        do k = 1, 50
+            select case (lib)
+            case (1)                                    ! x = 1 - mu - g
+                f = (1.0_wp - mu) / (1.0_wp - g)**2 - mu / g**2 - (1.0_wp - mu - g)
+                df = 2.0_wp * (1.0_wp - mu) / (1.0_wp - g)**3 + 2.0_wp * mu / g**3 + 1.0_wp
+            case (2)                                    ! x = 1 - mu + g
+                f = (1.0_wp - mu) / (1.0_wp + g)**2 + mu / g**2 - (1.0_wp - mu + g)
+                df = -2.0_wp * (1.0_wp - mu) / (1.0_wp + g)**3 - 2.0_wp * mu / g**3 - 1.0_wp
+            case default                                ! x = -mu - g
+                f = (1.0_wp - mu) / g**2 + mu / (1.0_wp + g)**2 - (mu + g)
+                df = -2.0_wp * (1.0_wp - mu) / g**3 - 2.0_wp * mu / (1.0_wp + g)**3 - 1.0_wp
+            end select
+            if (abs(f) < 1.0e-15_wp) exit
+            g = g - f / df
+        end do
+        gamma = g
+        select case (lib)
+        case (1)
+            x = 1.0_wp - mu - g
+        case (2)
+            x = 1.0_wp - mu + g
+        case default
+            x = -mu - g
+        end select
+    end subroutine collinear_point
+
+    !> Richardson's third-order approximation of a halo orbit about collinear
+    !> point `lib` (1, 2 or 3) of z amplitude `az` (km), family `n` (1:
+    !> northern, 3: southern), at tau1 = 0 (its crossing of the x-z plane,
+    !> perpendicular to it): rv, the state (rotating frame, normalized), and
+    !> period, the approximation's. ok: feasible (false below the smallest
+    !> halo's amplitude). Ported from the Fortran Astrodynamics Toolkit's
+    !> halo_orbit_module (halo_to_rv; J. Williams), after D. L. Richardson,
+    !> "Analytic Construction of Periodic Orbits About the Collinear Points",
+    !> Celestial Mechanics 22 (1980).
+    subroutine richardson_halo(lib, az, n, rv, period, ok)
+        integer, intent(in) :: lib, n
+        real(wp), intent(in) :: az
+        real(wp), intent(out) :: rv(6), period
+        logical, intent(out) :: ok
+        real(wp) :: xl, gl, a_z, c2, c3, c4, lambda, k, delta, d1, d2, d3, a21, a23, b21, s1, a22, a24, b22, d21, &
+                    s2, a1, a2, l1, l2, az2, term, ax, ax2, w, a31, a32, b31, b32, d31, d32, dn
+        rv = 0.0_wp
+        period = 0.0_wp
+        call collinear_point(lib, xl, gl)
+        a_z = az / (lu * gl)                            ! (in units of gamma)
+        c2 = c_n(2)
+        c3 = c_n(3)
+        c4 = c_n(4)
+        lambda = sqrt((-c2 + 2.0_wp + sqrt(9.0_wp * c2**2 - 8.0_wp * c2)) / 2.0_wp)
+        k = 2.0_wp * lambda / (lambda**2 + 1.0_wp - c2)
+        delta = lambda**2 - c2
+        d1 = 16.0_wp * lambda**4 + 4.0_wp * lambda**2 * (c2 - 2.0_wp) - 2.0_wp * c2**2 + c2 + 1.0_wp
+        d2 = 81.0_wp * lambda**4 + 9.0_wp * lambda**2 * (c2 - 2.0_wp) - 2.0_wp * c2**2 + c2 + 1.0_wp
+        d3 = 2.0_wp * lambda * (lambda * (1.0_wp + k**2) - 2.0_wp * k)
+        a21 = 3.0_wp * c3 * (k**2 - 2.0_wp) / 4.0_wp / (1.0_wp + 2.0_wp * c2)
+        a23 = -3.0_wp * lambda * c3 * (3.0_wp * k**3 * lambda - 6.0_wp * k * (k - lambda) + 4.0_wp) / 4.0_wp / k / d1
+        b21 = -3.0_wp * c3 * lambda * (3.0_wp * lambda * k - 4.0_wp) / 2.0_wp / d1
+        s1 = ((3.0_wp / 2.0_wp) * c3 * (2.0_wp * a21 * (k**2 - 2.0_wp) - a23 * (k**2 + 2.0_wp) - 2.0_wp * k * b21) - &
+              (3.0_wp / 8.0_wp) * c4 * (3.0_wp * k**4 - 8.0_wp * k**2 + 8.0_wp)) / d3
+        a22 = 3.0_wp * c3 / 4.0_wp / (1.0_wp + 2.0_wp * c2)
+        a24 = -3.0_wp * c3 * lambda * (2.0_wp + 3.0_wp * lambda * k) / 4.0_wp / k / d1
+        b22 = 3.0_wp * lambda * c3 / d1
+        d21 = -c3 / 2.0_wp / lambda**2
+        s2 = ((3.0_wp / 2.0_wp) * c3 * (2.0_wp * a22 * (k**2 - 2.0_wp) + a24 * (k**2 + 2.0_wp) + 2.0_wp * k * b22 + &
+              5.0_wp * d21) + (3.0_wp / 8.0_wp) * c4 * (12.0_wp - k**2)) / d3
+        a1 = -(3.0_wp / 2.0_wp) * c3 * (2.0_wp * a21 + a23 + 5.0_wp * d21) - (3.0_wp / 8.0_wp) * c4 * (12.0_wp - k**2)
+        a2 = (3.0_wp / 2.0_wp) * c3 * (a24 - 2.0_wp * a22) + (9.0_wp / 8.0_wp) * c4
+        l1 = 2.0_wp * s1 * lambda**2 + a1
+        l2 = 2.0_wp * s2 * lambda**2 + a2
+        az2 = a_z**2
+        ok = l1 /= 0.0_wp
+        if (ok) then
+            term = (-delta - l2 * az2) / l1
+            ok = term >= 0.0_wp
+        end if
+        if (.not. ok) return
+        ax = sqrt(term)                                 ! (equation 18)
+        ax2 = ax**2
+        w = 1.0_wp + s1 * ax2 + s2 * az2                ! (the frequency's correction)
+        a31 = -9.0_wp * lambda * (c3 * (k * a23 - b21) + k * c4 * (1.0_wp + k**2 / 4.0_wp)) / d2 + &
+              (9.0_wp * lambda**2 + 1.0_wp - c2) * (3.0_wp * c3 * (2.0_wp * a23 - k * b21) + &
+              c4 * (2.0_wp + 3.0_wp * k**2)) / 2.0_wp / d2
+        a32 = -9.0_wp * lambda * (4.0_wp * c3 * (k * a24 - b22) + k * c4) / 4.0_wp / d2 - &
+              3.0_wp * (9.0_wp * lambda**2 + 1.0_wp - c2) * (c3 * (k * b22 + d21 - 2.0_wp * a24) - c4) / 2.0_wp / d2
+        b31 = (3.0_wp * lambda * (3.0_wp * c3 * (k * b21 - 2.0_wp * a23) - c4 * (2.0_wp + 3.0_wp * k**2)) + &
+               (9.0_wp * lambda**2 + 1.0_wp + 2.0_wp * c2) * (12.0_wp * c3 * (k * a23 - b21) + &
+               3.0_wp * k * c4 * (4.0_wp + k**2)) / 8.0_wp) / d2
+        b32 = (3.0_wp * lambda * (3.0_wp * c3 * (k * b22 + d21 - 2.0_wp * a24) - 3.0_wp * c4) + &
+               (9.0_wp * lambda**2 + 1.0_wp + 2.0_wp * c2) * (12.0_wp * c3 * (k * a24 - b22) + 3.0_wp * c4 * k) / &
+               8.0_wp) / d2
+        d31 = 3.0_wp * (4.0_wp * c3 * a24 + c4) / 64.0_wp / lambda**2
+        d32 = 3.0_wp * (4.0_wp * c3 * (a23 - d21) + c4 * (4.0_wp + k**2)) / 64.0_wp / lambda**2
+        dn = real(2 - n, wp)                            ! (equation 21)
+        period = 2.0_wp * acos(-1.0_wp) / (lambda * w)
+        ! equations 20a, 20b, 20c and their derivatives, at tau1 = 0
+        rv(1) = a21 * ax2 + a22 * az2 - ax + (a23 * ax2 - a24 * az2) + (a31 * ax**3 - a32 * ax * az2)
+        rv(2) = 0.0_wp
+        rv(3) = dn * (a_z + d21 * ax * a_z * (1.0_wp - 3.0_wp) + (d32 * a_z * ax2 - d31 * a_z**3))
+        rv(4) = 0.0_wp
+        rv(5) = k * ax + 2.0_wp * (b21 * ax2 - b22 * az2) + 3.0_wp * (b31 * ax**3 - b32 * ax * az2)
+        rv(6) = 0.0_wp
+        ! from Richardson's scale, about the point, to the rotating frame's
+        rv(1:3) = rv(1:3) * gl
+        rv(4:6) = rv(4:6) * gl * lambda * w
+        rv(1) = rv(1) + xl
+
+    contains
+
+        !> Richardson's c_n (equations 8a and 8b).
+        pure real(wp) function c_n(m)
+            integer, intent(in) :: m
+            select case (lib)
+            case (1)
+                c_n = (mu + (-1)**m * (1.0_wp - mu) * (gl / (1.0_wp - gl))**(m + 1)) / gl**3
+            case (2)
+                c_n = ((-1)**m * (mu + (1.0_wp - mu) * (gl / (1.0_wp + gl))**(m + 1))) / gl**3
+            case default
+                c_n = (1.0_wp - mu + mu * (gl / (1.0_wp + gl))**(m + 1)) / gl**3
+            end select
+        end function c_n
+
+    end subroutine richardson_halo
+
+    !> A halo orbit (northern) about collinear point `lib` of z amplitude about
+    !> `az` (km): Richardson's approximation, corrected (z0 kept; as the
+    !> toolkit's halo_to_rv_diffcorr, here with the state transition
+    !> matrix's partials). ok: feasible, and converged.
+    subroutine halo_from_amplitude(lib, az, x0, z0, vy0, period, ok)
+        integer, intent(in) :: lib
+        real(wp), intent(in) :: az
+        real(wp), intent(out) :: x0, z0, vy0, period
+        logical, intent(out) :: ok
+        real(wp) :: rv(6)
+        call richardson_halo(lib, az, 1, rv, period, ok)
+        x0 = rv(1)
+        z0 = rv(3)
+        vy0 = rv(5)
+        if (.not. ok) return
+        call correct_halo(x0, z0, vy0, period, ok)
+    end subroutine halo_from_amplitude
 
     !> A halo orbit as correct_halo's, of Jacobi constant c: x0, z0 and vy0
     !> corrected together (Newton's method, the steps limited), the third
@@ -334,18 +494,72 @@ contains
         end do
     end function initial
 
-    !> The unstable and stable eigenvectors of the monodromy matrix m (power
-    !> iteration on m and its inverse: their eigenvalues dominate by far).
-    subroutine monodromy_vectors(m, unstable, stable)
+    !> The eigenvalues of a monodromy matrix m (a symplectic matrix's: in
+    !> reciprocal pairs, with a pair of 1s), from the traces of m and m^2.
+    !> Ported from the Fortran Astrodynamics Toolkit's halo_orbit_module
+    !> (compute_monodromy_matrix_eigenvalues; J. Williams), after J. S.
+    !> Parker and R. L. Anderson, "Low-Energy Lunar Trajectory Design" (2014).
+    pure function monodromy_eigenvalues(m) result(lambda)
         real(wp), intent(in) :: m(6, 6)
-        real(wp), intent(out) :: unstable(6), stable(6)
-        integer :: k
+        complex(wp) :: lambda(6)
+        real(wp) :: alpha, beta
+        complex(wp) :: p, q, a, b, c
+        integer :: i
+        alpha = 2.0_wp
+        do i = 1, 6
+            alpha = alpha - m(i, i)
+        end do
+        beta = alpha**2 / 2.0_wp + 1.0_wp
+        block
+            real(wp) :: m2(6, 6)
+            m2 = matmul(m, m)
+            do i = 1, 6
+                beta = beta - m2(i, i) / 2.0_wp
+            end do
+        end block
+        a = sqrt(cmplx(alpha**2 - 4.0_wp * beta + 8.0_wp, 0.0_wp, wp))
+        p = (alpha + a) / 2.0_wp
+        q = (alpha - a) / 2.0_wp
+        b = sqrt(p * p - 4.0_wp)
+        c = sqrt(q * q - 4.0_wp)
+        lambda = [(-p + b) / 2.0_wp, (-p - b) / 2.0_wp, (-q + c) / 2.0_wp, (-q - c) / 2.0_wp, &
+                  (1.0_wp, 0.0_wp), (1.0_wp, 0.0_wp)]
+    end function monodromy_eigenvalues
+
+    !> The unstable and stable eigenvectors of the monodromy matrix m, and
+    !> the unstable eigenvalue (the largest real one; 1 if none is above 1:
+    !> a stable orbit): inverse iteration at each eigenvalue (shifted a hair,
+    !> so m - shift is invertible), robust also for weakly unstable orbits
+    !> (power iteration would mix in the eigenvalues on the unit circle).
+    subroutine monodromy_vectors(m, unstable, stable, lambda_u)
+        real(wp), intent(in) :: m(6, 6)
+        real(wp), intent(out) :: unstable(6), stable(6), lambda_u
+        complex(wp) :: lambda(6)
+        real(wp) :: a(6, 6), shift
+        integer :: i, k
+        lambda = monodromy_eigenvalues(m)
+        lambda_u = 1.0_wp
+        do i = 1, 6
+            if (abs(aimag(lambda(i))) < 1.0e-6_wp * abs(lambda(i))) lambda_u = max(lambda_u, abs(real(lambda(i), wp)))
+        end do
         unstable = 1.0_wp
         stable = 1.0_wp
-        do k = 1, 60
-            unstable = matmul(m, unstable)
+        shift = lambda_u * (1.0_wp + 1.0e-9_wp)
+        a = m
+        do i = 1, 6
+            a(i, i) = a(i, i) - shift
+        end do
+        do k = 1, 4
+            unstable = solve(a, unstable)
             unstable = unstable / norm2(unstable)
-            stable = solve(m, stable)
+        end do
+        shift = (1.0_wp / lambda_u) * (1.0_wp + 1.0e-9_wp)
+        a = m
+        do i = 1, 6
+            a(i, i) = a(i, i) - shift
+        end do
+        do k = 1, 4
+            stable = solve(a, stable)
             stable = stable / norm2(stable)
         end do
     end subroutine monodromy_vectors

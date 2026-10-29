@@ -50,6 +50,8 @@ program test_gui
     integer(c_int) :: width, height
     integer :: failures, clicks
     logical :: checked
+    real(wp) :: amount = 1.0e4_wp
+    integer :: choice = 2
 
     failures = 0
     root = ReferenceFrame('Root')
@@ -87,13 +89,15 @@ program test_gui
     call frames(2)
     call check(handler%count == 1 .and. clicks == 1, 'a click away from the panel: the handler''s')
 
+    call check(choice == 2 .and. abs(amount - 1.0e4_wp) < 1.0e-9_wp, 'an untouched combo box and slider: unchanged')
+
     call w2%close()
     call w1%close()
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
         error stop 1
     end if
-    write(*, '(a)') 'PASS: GUI panels (a button clicked, events taken, a GUI per window)'
+    write(*, '(a)') 'PASS: GUI panels (a button clicked, events taken, a GUI per window; a slider, a combo box)'
 
 contains
 
@@ -110,6 +114,8 @@ contains
             g = w2%gui()
             call g%begin_panel('Second window')
             if (g%checkbox('a checkbox', checked)) continue
+            if (g%slider('a slider', amount, 0.0_wp, 5.0e4_wp, format='%.0f km')) continue
+            if (g%combo('a menu', choice, [character(len=8) :: 'L1', 'L2', 'L3'])) continue
             call g%end_panel()
             if (.not. (w1%frame() .and. w2%frame())) then
                 write(*, '(a)') 'FAIL: a window closed'

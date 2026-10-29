@@ -4,22 +4,28 @@
 !> orange) and that arrive at it (stable, cyan), in the rotating frame (the
 !> Earth and Moon fixed on the x axis); and the zero-velocity curves at the
 !> orbit's Jacobi constant (in the x-y plane: the edges of the region the
-!> orbit's energy can't reach, open at L1), a Polyhedron of edges only.
+!> orbit's energy can't reach; none for L3's halos, whose energy reaches
+!> everywhere), a Polyhedron of edges only.
 !>
-!> The halo orbit (an L1 northern halo) is found by differential correction
-!> from a published initial guess: from the x-z plane, perpendicular to it,
-!> half a period to its next crossing, the corrections to x and vy making
-!> that crossing perpendicular too. Its monodromy matrix (the state
-!> transition matrix over a period) has a large real eigenvalue and its
-!> inverse; their eigenvectors (by power iteration), carried along the
-!> orbit by the state transition matrix, give the directions of the
-!> manifolds at each of 72 points. Each tube: those points displaced 50 km
-!> along them toward the Earth (- toward the Moon), propagated (19.5 days
-!> at first: a slider sets it, 2 to 60) forward (unstable) or backward
-!> (stable), sampled at
-!> common times: a grid of points (around the orbit by along the time), a
-!> Polyhedron (set_grid), closed around. Trajectories that reach the Earth
-!> or the Moon stop there.
+!> The halo orbit (northern), about L1, L2 or L3 (a menu), of a z amplitude
+!> (a slider): Richardson's third-order approximation (ported from the
+!> Fortran Astrodynamics Toolkit's halo_orbit_module), corrected: from the
+!> x-z plane, perpendicular to it, half a period to its next crossing, the
+!> corrections to x and vy (z kept) making that crossing perpendicular too
+!> (with the state transition matrix's partials). Where that doesn't
+!> converge (large amplitudes), by continuation in z from the orbit shown.
+!> Its monodromy matrix (the state transition matrix over a period) has a
+!> real eigenvalue above 1 and its inverse (from the traces of the matrix
+!> and its square, also ported from the toolkit): their eigenvectors (by
+!> inverse iteration), carried along the orbit by the state transition
+!> matrix, give the directions of the manifolds at each of 72 points. Each
+!> tube: those points displaced toward the Earth (50 km; 2000 km for L3,
+!> whose halos are only weakly unstable: an eigenvalue of about 2, against
+!> about 1000 for L1's and L2's), propagated (19.5 days at first, 80 for L3:
+!> a slider sets it, 2 to 120) forward (unstable) or backward (stable),
+!> sampled at common times: a grid of points (around the orbit by along the
+!> time), a Polyhedron (set_grid), closed around. Trajectories that reach
+!> the Earth or the Moon stop there.
 !>
 !> The surfaces: lit, smooth, translucent, a color per vertex fading out
 !> along the time (set_vertex_colors), with every 6th trajectory also drawn
@@ -31,18 +37,18 @@
 !> orbit, its closest approach to the Earth, or its impact, and its Jacobi
 !> constant with its change along it: the integration's error).
 !>
-!> The Jacobi constant: a slider in a GUI panel (top right; Dear ImGui,
-!> WindowProxy%gui) picks another orbit of the family (3.03 to 3.17, from
-!> large halos to small ones near their bifurcation from the planar
-!> Lyapunov orbits): it's found by continuation from the one shown (steps
-!> in C of at most 0.002, each corrected with C held: x0, z0 and vy0
-!> together), then its manifolds and zero-velocity curves are computed and
-!> drawn again (the latest value asked for, once the last is done; the
-!> panel says how long it took). The manifolds' trajectories are propagated
-!> in parallel with OpenMP (the demo's fpm.toml; about 0.004 s on ten
-!> threads of an Apple M-series, 0.04 s on one). A second slider sets how
-!> long the manifolds are propagated (2 to 60 days): they're computed again
-!> (the orbit kept).
+!> The panel (top right; Dear ImGui, WindowProxy%gui): the Lagrange point
+!> (a menu: its family's first orbit), the amplitude (each family's range:
+!> from 1000 km to the largest the correction reaches), the Jacobi
+!> constant (another orbit of the family, by continuation from the one
+!> shown: steps in C of at most 0.002, each corrected with C held: x0, z0
+!> and vy0 together) and the propagation time (the manifolds only). Each
+!> change computes the orbit's manifolds and zero-velocity curves again
+!> (the latest values asked for, once the last are done; the panel says how
+!> long it took, and the orbit's period, amplitude and unstable
+!> eigenvalue). The manifolds' trajectories are propagated in parallel with
+!> OpenMP (the demo's fpm.toml; about 0.005 s on ten threads of an Apple
+!> M-series).
 !>
 !> The zero-velocity curves: 2 U(x, y, 0) = C (U the pseudo-potential, C
 !> the Jacobi constant), traced by marching squares on a 600 x 600 grid of
@@ -55,9 +61,9 @@
 !> Run it with `pixi run halo-demo` (from the vkframes root). Arguments
 !> (optional): number of frames to run, then a file to capture the last
 !> frame to; with `--demo-pick`, a trajectory is picked at the start (for a
-!> capture), with `--jacobi=C` the orbit of Jacobi constant C at the start,
-!> and with `--days=D` the manifolds propagated D days:
-!> `pixi run halo-demo 60 halo.png --demo-pick --jacobi=3.1 --days=30`
+!> capture), and the panel's settings at the start: `--point=N` (1, 2 or 3),
+!> `--az=KM`, `--jacobi=C`, `--days=D`:
+!> `pixi run halo-demo 60 halo.png --point=2 --az=20000 --days=30`
 program halo_manifolds
 
     use vkframes
@@ -70,11 +76,14 @@ program halo_manifolds
     integer, parameter :: n_around = 72                 !! points around the orbit (the tubes' circumference)
     integer, parameter :: n_along = 360                 !! samples along each trajectory
     integer, parameter :: n_orbit = 4 * n_around        !! points along the orbit drawn
-    real(wp), parameter :: offset = 50.0_wp / lu        !! the displacement off the orbit (50 km)
+    real(wp), parameter :: offsets(3) = [50.0_wp, 50.0_wp, 2000.0_wp] / lu   !! each point's displacement off the orbit
+                                                        !! (50 km; L3's halos are only weakly unstable: 2000)
+    real(wp), parameter :: days_first(3) = [19.5_wp, 19.5_wp, 80.0_wp]       !! each point's first propagation time
     real(wp), parameter :: re = 6378.137_wp, rm = 1737.4_wp     !! km
     character(len=*), parameter :: names(n_tubes) = [character(len=24) :: 'Unstable', 'Stable']
     integer, parameter :: branch(n_tubes) = [1, 2]      !! each tube's eigenvector: 1 unstable, 2 stable
-    real(wp), parameter :: side(n_tubes) = [-1.0_wp, -1.0_wp]      !! its side: + the Moon's, - the Earth's
+    real(wp), parameter :: az_largest(3) = [60000.0_wp, 60000.0_wp, 400000.0_wp]  !! each point's largest Az asked (km)
+    real(wp), parameter :: az_first(3) = [30000.0_wp, 20000.0_wp, 20000.0_wp]     !! and the first shown
     real(wp), parameter :: direction(n_tubes) = [1.0_wp, -1.0_wp]  !! its time: forward (unstable), backward
     real(wp), parameter :: tube_colors(3, n_tubes) = reshape([1.0_wp, 0.65_wp, 0.15_wp, 0.2_wp, 0.75_wp, 1.0_wp], &
                                                              [3, n_tubes])
@@ -97,14 +106,18 @@ program halo_manifolds
     type(HUDText), target :: legend
     type(ManifoldKeys), target :: keys
     character(len=1024) :: arg, file
-    real(wp) :: x0, z0, vy0, period, c_reached, c_start, days_start
+    real(wp) :: x0, z0, vy0, period, c_reached, c_start, days_start, az_start
+    real(wp) :: earth_side                              !! the tubes' side: -1 (L1, L2: toward -x), +1 (L3)
+    real(wp) :: offset                                  !! the displacement off the orbit (offsets: the point's)
+    real(wp) :: az_asked                                !! the amplitude last asked for (km)
+    integer :: point_start
     real(wp) :: span                                    !! each trajectory's time (time units: keys%days)
     real(wp) :: orbit(6, n_orbit + 1), dirs(6, n_around, 2), times(n_along)
     real(wp) :: grid(3, n_around, n_along, n_tubes)
     integer :: last(n_around, n_tubes)                  !! each trajectory's samples drawn (up to an impact)
     integer :: j, k, l, frames, frame
     integer(8) :: tick, tock, rate
-    logical :: running, demo, ok, orbit_changed
+    logical :: running, demo, ok, orbit_changed, by_c
 
     frames = huge(frames)
     file = ''
@@ -116,23 +129,26 @@ program halo_manifolds
     demo = .false.
     c_start = 0.0_wp
     days_start = 0.0_wp
+    point_start = 1
+    az_start = 0.0_wp
     do j = 3, command_argument_count()
         call get_command_argument(j, arg)
         if (trim(arg) == '--demo-pick') demo = .true.
         if (arg(1:9) == '--jacobi=') read(arg(10:), *) c_start
         if (arg(1:7) == '--days=') read(arg(8:), *) days_start
+        if (arg(1:8) == '--point=') read(arg(9:), *) point_start
+        if (arg(1:5) == '--az=') read(arg(6:), *) az_start
     end do
     keys%threads = 1
     !$ keys%threads = omp_get_max_threads()
-    keys%days_requested = 4.5_wp * tu_days              ! (each trajectory's time: 4.5 time units at first)
 
-    ! the first halo orbit: from a published initial guess
-    x0 = 0.82575887090385_wp
-    z0 = 0.08_wp
-    vy0 = 0.19369724986446_wp
-    call correct_halo(x0, z0, vy0, period)
-    write(*, '(a,f12.9,a,f6.3,a,f12.9,a,f9.6,a,f6.2,a)') 'halo orbit: x0 = ', x0, ', z0 = ', z0, ', vy0 = ', vy0, &
-        ', period ', period, ' (', period * tu_days, ' days)'
+    ! the first halo orbit: about L1 (or --point=), of Az 30000 km (or --az=)
+    call set_point(max(1, min(3, point_start)))
+    if (days_start > 0.0_wp) keys%days_requested = days_start
+    if (az_start > 0.0_wp) keys%az_requested = max(keys%az_min, min(keys%az_max, az_start))
+    if (.not. from_amplitude(keys%az_requested, .false.)) error stop 'no halo orbit found'
+    write(*, '(a,i0,a,f12.9,a,f9.6,a,f12.9,a,f9.6,a,f6.2,a)') 'L', keys%point, ' halo orbit: x0 = ', x0, &
+        ', z0 = ', z0, ', vy0 = ', vy0, ', period ', period, ' (', period * tu_days, ' days)'
 
     ! the scene: the rotating frame, the Earth and the Moon on its x axis; the
     ! orbit, the tubes (and their lines) and the zero-velocity curves (filled
@@ -151,7 +167,7 @@ program halo_manifolds
     call moon%show_axes_labels(NO_AXES)
     halo = Trajectory()
     halo_curve = CurveArtist(halo, color=[1.0_wp, 1.0_wp, 1.0_wp], width=2.5_wp)
-    halo_frame = DrawableTrajectory('L1 halo orbit')
+    halo_frame = DrawableTrajectory('Halo orbit')
     call halo_frame%show_decorations(.false.)
     call halo_frame%add_artist(halo_curve)
     call halo_frame%set_pickable(.false.)
@@ -214,7 +230,6 @@ program halo_manifolds
     call compute(.true.)
     keys%c_requested = keys%c
     if (c_start > 0.0_wp) keys%c_requested = c_start   ! (--jacobi=C: computed in the first frame)
-    if (days_start > 0.0_wp) keys%days_requested = days_start   ! (--days=D: as well)
     scene = FrameManager(rotating)
 
     if (.not. window%open(1200, 800, 'vkframes: halo orbit manifolds')) error stop 'could not open a window'
@@ -224,7 +239,8 @@ program halo_manifolds
     call view_%set_default_view_parameters(eye=[0.2_wp, -2.0_wp, 1.35_wp] * lu, center=[0.25_wp, 0.0_wp, 0.0_wp] * lu, &
                                            up=[0.0_wp, 0.0_wp, 1.0_wp])
     call window%add_view(view_)
-    legend = HUDText('Earth-Moon L1 halo orbit (white), its manifolds on the Earth side:  1 unstable (orange)   ' // &
+    call view_point()
+    legend = HUDText('Earth-Moon halo orbit (white), its manifolds on the Earth side:  1 unstable (orange)   ' // &
                      '2 stable (cyan)   z: zero-velocity curves (gray)' // &
                      new_line('a') // 'click a line: its details (arrows: its motion)    e: trajectory lines    ' // &
                      'l: lit / unlit    s: smooth / flat    c: fading colors / plain    + / -: opacity', &
@@ -241,25 +257,45 @@ program halo_manifolds
         running = window%frame()
         frame = frame + 1
         if (demo .and. frame == 2) call demo_pick()
-        ! the slider moved: the orbit of that Jacobi constant (continued from
-        ! this one), and its manifolds (the latest value asked for, once the
-        ! last is done)
-        if (abs(keys%c_requested - keys%c) > 1.0e-9_wp .or. abs(keys%days_requested - keys%days) > 1.0e-9_wp) then
+        ! the panel changed (the latest values asked for, once the last are
+        ! done): another Lagrange point (its family's first orbit), another
+        ! amplitude (Richardson's approximation, corrected), another Jacobi
+        ! constant (continued from this orbit), or another propagation time
+        ! (the manifolds only)
+        orbit_changed = keys%point_requested /= keys%point .or. abs(keys%az_requested - az_asked) > 1.0e-6_wp .or. &
+                        abs(keys%c_requested - keys%c) > 1.0e-9_wp
+        if (orbit_changed .or. abs(keys%days_requested - keys%days) > 1.0e-9_wp) then
             call system_clock(tick, rate)
-            ok = .true.
-            orbit_changed = abs(keys%c_requested - keys%c) > 1.0e-9_wp
-            if (orbit_changed) then
+            keys%status = ''
+            by_c = .false.
+            if (keys%point_requested /= keys%point) then
+                call set_point(keys%point_requested)
+                ok = from_amplitude(keys%az_requested, .false.)
+                if (.not. ok) keys%status = 'no halo orbit found there'
+                call view_point()
+            else if (abs(keys%az_requested - az_asked) > 1.0e-6_wp) then
+                ok = from_amplitude(keys%az_requested, .true.)
+                if (.not. ok) then
+                    write(keys%status, '(a,i0,a)') 'no halo orbit found for Az = ', nint(keys%az_requested), ' km'
+                    keys%az_requested = az_asked
+                end if
+            else if (orbit_changed) then
+                by_c = .true.
                 call continue_halo(x0, z0, vy0, keys%c_requested, period, c_reached, ok)
-                keys%status = ''
+                if (.not. ok) then
+                    write(keys%status, '(a,f9.6)') 'no halo orbit found beyond C = ', c_reached
+                    keys%c_requested = c_reached
+                end if
             end if
             call system_clock(tock)
             keys%continued = real(tock - tick, wp) / rate
-            if (.not. ok) then
-                write(keys%status, '(a,f9.6)') 'no halo orbit found beyond C = ', c_reached
-                keys%c_requested = c_reached
-            end if
             call keys%clear_selection()
             call compute(orbit_changed)
+            if (orbit_changed) keys%c_requested = keys%c          ! (the other slider showing this orbit's)
+            if (by_c) then
+                keys%az_requested = max(keys%az_min, min(keys%az_max, keys%az))
+                az_asked = keys%az_requested
+            end if
         end if
     end do
     if (len_trim(file) > 0 .and. running) then
@@ -268,6 +304,111 @@ program halo_manifolds
     call window%close()
 
 contains
+
+    !> Lagrange point `lib`'s family of halo orbits: the amplitude slider's
+    !> range (from the smallest halo's, where Richardson's approximation
+    !> becomes feasible, to az_largest, less if no orbit is found there),
+    !> the Jacobi constant slider's (those orbits'), the first amplitude
+    !> asked for, and the tubes' side (toward the Earth).
+    subroutine set_point(lib)
+        integer, intent(in) :: lib
+        real(wp) :: lo, hi, mid, rv(6), p, xa, za, va, c_lo, c_hi
+        logical :: feasible
+        integer :: it
+        keys%point = lib
+        keys%point_requested = lib
+        earth_side = merge(1.0_wp, -1.0_wp, lib == 3)
+        offset = offsets(lib)
+        keys%days_requested = days_first(lib)
+        lo = 0.0_wp                                     ! the smallest feasible amplitude (bisection)
+        hi = az_largest(lib)
+        do it = 1, 60
+            mid = 0.5_wp * (lo + hi)
+            call richardson_halo(lib, mid, 1, rv, p, feasible)
+            if (feasible) then
+                hi = mid
+            else
+                lo = mid
+            end if
+        end do
+        keys%az_min = max(1000.0_wp, real(ceiling(hi * 1.02_wp / 100.0_wp), wp) * 100.0_wp)
+        keys%az_max = az_largest(lib)
+        do it = 1, 10                                   ! (the largest found)
+            call halo_from_amplitude(lib, keys%az_max, xa, za, va, p, feasible)
+            if (feasible) exit
+            keys%az_max = keys%az_min + 0.8_wp * (keys%az_max - keys%az_min)
+        end do
+        c_lo = jacobi([xa, 0.0_wp, za, 0.0_wp, va, 0.0_wp])
+        call halo_from_amplitude(lib, keys%az_min, xa, za, va, p, feasible)
+        c_hi = merge(jacobi([xa, 0.0_wp, za, 0.0_wp, va, 0.0_wp]), c_lo + 0.05_wp, feasible)
+        keys%c_min = min(c_lo, c_hi)
+        keys%c_max = max(c_lo, c_hi)
+        keys%az_requested = max(keys%az_min, min(keys%az_max, az_first(lib)))
+        write(*, '(a,i0,a,i0,a,i0,a,f8.5,a,f8.5)') 'L', lib, ' halos: Az ', nint(keys%az_min), ' to ', &
+            nint(keys%az_max), ' km, C ', keys%c_min, ' to ', keys%c_max
+    end subroutine set_point
+
+    !> The halo orbit of amplitude `az` (km) about the point: Richardson's
+    !> approximation, corrected; failing that, with `same_family` (the orbit
+    !> shown is the point's), by continuation in z0 from it (steps of at most
+    !> 0.004, ~1500 km) toward the approximation's, else at smaller
+    !> amplitudes (toward the smallest) until one converges. False if none
+    !> did (the orbit kept).
+    logical function from_amplitude(az, same_family) result(ok)
+        real(wp), intent(in) :: az
+        logical, intent(in) :: same_family
+        real(wp) :: xa, za, va, p, rv(6), target, z_from, xs, zs, vs, ps, a
+        integer :: n, k_
+        az_asked = az
+        call halo_from_amplitude(keys%point, az, xa, za, va, p, ok)
+        if (.not. ok .and. .not. same_family) then
+            a = az
+            do k_ = 1, 12
+                a = keys%az_min + 0.7_wp * (a - keys%az_min)
+                call halo_from_amplitude(keys%point, a, xa, za, va, p, ok)
+                if (ok) exit
+            end do
+            if (ok) then
+                az_asked = a
+                keys%az_requested = a
+            end if
+        else if (.not. ok) then
+            call richardson_halo(keys%point, az, 1, rv, p, ok)
+            if (.not. ok) return
+            target = rv(3)
+            xs = x0
+            zs = z0
+            vs = vy0
+            z_from = z0
+            n = max(1, ceiling(abs(target - z_from) / 0.004_wp))
+            do k_ = 1, n
+                zs = z_from + (target - z_from) * k_ / n
+                call correct_halo(xs, zs, vs, ps, ok)
+                if (.not. ok) return
+            end do
+            xa = xs
+            za = zs
+            va = vs
+            p = ps
+        end if
+        if (.not. ok) return
+        x0 = xa
+        z0 = za
+        vy0 = va
+        period = p
+    end function from_amplitude
+
+    !> The camera: the point's halos, their tubes and the Earth (from above,
+    !> behind; framed for each point: L3's halos are larger than the Earth-Moon
+    !> distance).
+    subroutine view_point()
+        real(wp), parameter :: centers(3) = [0.25_wp, 0.45_wp, -0.75_wp]     !! x (Earth-Moon distances)
+        real(wp), parameter :: scales(3) = [1.0_wp, 1.0_wp, 1.7_wp]          !! the camera's distance (times L1's)
+        real(wp) :: center(3)
+        center = [centers(keys%point), 0.0_wp, 0.0_wp] * lu
+        call window%set_camera(center + scales(keys%point) * [-0.05_wp, -2.0_wp, 1.35_wp] * lu, center, &
+                               [0.0_wp, 0.0_wp, 1.0_wp], in_root=.true.)
+    end subroutine view_point
 
     !> The orbit (x0, z0, vy0; if `orbit`, else only the propagation time
     !> changed), its manifolds and zero-velocity curves, computed (the
@@ -284,8 +425,9 @@ contains
         call compute_tubes()
         call system_clock(t1)
         keys%seconds = real(t1 - t0, wp) / rate
-        write(*, '(a,f9.6,a,f6.2,a,i0,a,f5.1,a,f6.3,a,f6.3,a,i0,a)') 'C = ', keys%c, ': period ', keys%period_days, &
-            ' days, Az ', nint(keys%az), ' km, propagated ', keys%days, ' days; continued in ', keys%continued, ' s, manifolds in ', keys%seconds, ' s (', &
+        write(*, '(a,f9.6,a,f6.2,a,i0,a,f5.1,a,es10.3,a,f6.3,a,f6.3,a,i0,a)') 'C = ', keys%c, ': period ', keys%period_days, &
+            ' days, Az ', nint(keys%az), ' km, propagated ', keys%days, ' days, lambda ', keys%lambda_u, &
+            '; continued in ', keys%continued, ' s, manifolds in ', keys%seconds, ' s (', &
             keys%threads, ' threads)'
         call draw()
     end subroutine compute
@@ -299,7 +441,7 @@ contains
         integer :: i, k_, sgn
         s = initial_state()
         call propagate(eom_stm, s, period)
-        call monodromy_vectors(reshape(s(7:42), [6, 6]), vu, vs)
+        call monodromy_vectors(reshape(s(7:42), [6, 6]), vu, vs, keys%lambda_u)
         s = initial_state()
         do i = 1, n_orbit + 1
             orbit(:, i) = s(1:6)
@@ -332,7 +474,7 @@ contains
         !$omp parallel do collapse(2) schedule(dynamic) private(i, j_, k_, l_, w, r, stopped)
         do k_ = 1, n_tubes
             do i = 1, n_around
-                w = orbit(:, 4 * (i - 1) + 1) + side(k_) * offset * dirs(:, i, branch(k_))
+                w = orbit(:, 4 * (i - 1) + 1) + earth_side * offset * dirs(:, i, branch(k_))
                 l_ = 0
                 if (modulo(i - 1, n_around / n_lines) == 0) l_ = (i - 1) / (n_around / n_lines) + 1
                 if (l_ > 0) keys%info(l_, k_) = LineInfo(index=i, n_around=n_around, closest=huge(1.0_wp), jacobi=jacobi(w))

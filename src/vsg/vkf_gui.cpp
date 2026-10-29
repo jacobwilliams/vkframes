@@ -54,6 +54,7 @@ namespace
         BUTTON,
         CHECKBOX,
         SLIDER,
+        COMBO,
         SEPARATOR,
         SAME_LINE
     };
@@ -67,6 +68,9 @@ namespace
         bool follow = false;   // panels: placed at the position every frame (else at first)
         bool value = false;    // checkboxes
         double number = 0.0, low = 0.0, high = 1.0;                // sliders
+        std::string format = "%.4g";                               // sliders: the value shown (printf)
+        int index = 0;                                             // combo boxes: the item chosen (0-based)
+        std::vector<std::string> items;                            // combo boxes
     };
 
     struct Result
@@ -75,6 +79,7 @@ namespace
         bool changed = false;  // checkboxes, sliders: a new value
         bool value = false;
         double number = 0.0;
+        int index = 0;
     };
 } // namespace
 
@@ -150,11 +155,24 @@ namespace
                 case SLIDER:
                 {
                     double v = c.number;
-                    if (ImGui::SliderScalar(c.text.c_str(), ImGuiDataType_Double, &v, &c.low, &c.high, "%.4g"))
+                    if (ImGui::SliderScalar(c.text.c_str(), ImGuiDataType_Double, &v, &c.low, &c.high, c.format.c_str()))
                     {
                         auto& r = gui->results[c.key];
                         r.changed = true;
                         r.number = v;
+                    }
+                    break;
+                }
+                case COMBO:
+                {
+                    int i = c.index;
+                    auto item = [](void* data, int k) { return (*static_cast<std::vector<std::string>*>(data))[k].c_str(); };
+                    if (ImGui::Combo(c.text.c_str(), &i, item, const_cast<std::vector<std::string>*>(&c.items),
+                                     static_cast<int>(c.items.size())))
+                    {
+                        auto& r = gui->results[c.key];
+                        r.changed = true;
+                        r.index = i;
                     }
                     break;
                 }
@@ -361,9 +379,11 @@ VKF_API int vkf_gui_checkbox(void* gui, const char* label, int label_len, int* v
     return changed ? 1 : 0;
 }
 
-// A slider showing *value from low to high: 1 (and *value set) if the user
-// changed it since the last call for it.
-VKF_API int vkf_gui_slider(void* gui, const char* label, int label_len, double* value, double low, double high)
+// A slider showing *value from low to high (as `format`, printf's; empty:
+// "%.4g"): 1 (and *value set) if the user changed it since the last call for
+// it.
+VKF_API int vkf_gui_slider(void* gui, const char* label, int label_len, double* value, double low, double high,
+                           const char* format, int format_len)
 {
     auto g = gui_of(gui);
     if (!g) return 0;
@@ -377,6 +397,38 @@ VKF_API int vkf_gui_slider(void* gui, const char* label, int label_len, double* 
     c.number = *value;
     c.low = low;
     c.high = high;
+    if (format_len > 0) c.format = to_string(format, format_len);
+    add(g, c);
+    return changed ? 1 : 0;
+}
+
+// A combo box (a drop-down menu) of the items (newline-separated), showing
+// item *index (0-based): 1 (and *index set) if the user chose another since
+// the last call for it.
+VKF_API int vkf_gui_combo(void* gui, const char* label, int label_len, int* index, const char* items, int items_len)
+{
+    auto g = gui_of(gui);
+    if (!g) return 0;
+    Command c{COMBO};
+    c.text = to_string(label, label_len);
+    c.key = key_of(g, c.text);
+    auto& r = g->results[c.key];
+    const bool changed = r.changed;
+    if (changed) *index = r.index;
+    r.changed = false;
+    std::string all = to_string(items, items_len), item;
+    for (char ch : all)
+    {
+        if (ch == '\n')
+        {
+            c.items.push_back(item);
+            item.clear();
+        }
+        else
+            item += ch;
+    }
+    c.items.push_back(item);
+    c.index = std::clamp(*index, 0, static_cast<int>(c.items.size()) - 1);
     add(g, c);
     return changed ? 1 : 0;
 }

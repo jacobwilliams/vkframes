@@ -1217,7 +1217,8 @@ Interaction:
       scene, also in embedded windows.
       - Fortran describes the panels immediate-mode between frames
         (`window%gui()`: a `Gui` handle; `begin_panel` / `end_panel`, `text`,
-        `button`, `checkbox`, `slider`, `separator`, `same_line`), e.g. in the
+        `button`, `checkbox`, `slider` (with a display format), `combo` (a
+        drop-down menu), `separator`, `same_line`), e.g. in the
         event handler's `before_draw`. The C++ layer keeps them as a list of
         commands and replays them as ImGui calls during the draw (a node under
         vsgImGui's RenderImGui, last in the render graph), keeping each
