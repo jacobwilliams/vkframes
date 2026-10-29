@@ -5,7 +5,8 @@
 !> Earth and Moon fixed on the x axis); and the zero-velocity curves at the
 !> orbit's Jacobi constant (in the x-y plane: the edges of the region the
 !> orbit's energy can't reach; none for L3's halos, whose energy reaches
-!> everywhere), a Polyhedron of edges only.
+!> everywhere), a Polyhedron of edges only. The five Lagrange points are
+!> marked and labeled (as in the CR3BP demo).
 !>
 !> The halo orbit (northern), about L1, L2 or L3 (a menu), of a z amplitude
 !> (a slider): Richardson's third-order approximation (ported from the
@@ -97,6 +98,10 @@ program halo_manifolds
     type(CurveArtist), target :: halo_curve
     type(DrawableTrajectory), target :: halo_frame
     type(Polyhedron), target :: tubes(n_tubes), zvc
+    type(Trajectory), target :: lagrange                !! the Lagrange points (one point each)
+    type(MarkerArtist), target :: lagrange_dots
+    type(DrawableTrajectory), target :: lagrange_frame
+    type(ReferenceFrame), target :: lagrange_labels(5)
     type(Trajectory), target :: paths(n_lines, n_tubes)
     type(CurveArtist), target :: lines(n_lines, n_tubes)
     type(DrawableTrajectory), target :: line_frames(n_tubes), ring_frame
@@ -182,6 +187,7 @@ program halo_manifolds
     call zvc%set_line_width(1.5_wp)
     call zvc%show_decorations(.false.)
     call zvc%set_pickable(.false.)
+    call add_lagrange_points()
     sun = ReferenceFrame('Sun')
     call sun%set_position([-0.4_wp, -1.0_wp, 0.6_wp] * 1.5e8_wp)
     call sun%set_light_source_enabled(.true.)
@@ -322,6 +328,43 @@ program halo_manifolds
     call window%close()
 
 contains
+
+    !> The Lagrange points, as in the CR3BP demo: crosses (a MarkerArtist,
+    !> not pickable) and their labels (frames' name labels, just above them).
+    subroutine add_lagrange_points()
+        real(wp) :: l(3, 5), gl
+        character(len=2) :: name
+        integer :: k_
+        l = 0.0_wp
+        do k_ = 1, 3
+            call collinear_point(k_, l(1, k_), gl)
+        end do
+        l(:, 4) = [0.5_wp - mu, sqrt(3.0_wp) / 2.0_wp, 0.0_wp]
+        l(:, 5) = [0.5_wp - mu, -sqrt(3.0_wp) / 2.0_wp, 0.0_wp]
+        lagrange = Trajectory()
+        call lagrange%add([(real(k_, wp), k_ = 1, 5)], pos=lu * l)
+        lagrange_dots = MarkerArtist(lagrange, markers=ior(ior(MARKER_START, MARKER_INTERMEDIATE), MARKER_END), &
+                                     size=12.0_wp, color=[1.0_wp, 0.9_wp, 0.4_wp])
+        call lagrange_dots%set_marker_shape(MARKER_PLUS)
+        call lagrange_dots%set_intermediate_type(INTERMEDIATE_DATA)
+        call lagrange_dots%set_intermediate_spacing(1.0_wp)
+        call lagrange_dots%set_pickable(.false.)
+        lagrange_frame = DrawableTrajectory('Lagrange points')
+        call lagrange_frame%show_decorations(.false.)
+        call lagrange_frame%add_artist(lagrange_dots)
+        call lagrange_frame%set_pickable(.false.)
+        if (.not. rotating%add_child(lagrange_frame)) error stop 'add_child failed'
+        do k_ = 1, 5
+            write(name, '(a,i0)') 'L', k_
+            lagrange_labels(k_) = ReferenceFrame(name, color=[1.0_wp, 0.9_wp, 0.4_wp])
+            call lagrange_labels(k_)%show_axes(NO_AXES)
+            call lagrange_labels(k_)%show_axes_labels(NO_AXES)
+            call lagrange_labels(k_)%set_label_size(14)
+            call lagrange_labels(k_)%set_pickable(.false.)
+            call lagrange_labels(k_)%set_position(lu * l(:, k_) + [0.0_wp, 0.035_wp * lu, 0.0_wp])
+            if (.not. rotating%add_child(lagrange_labels(k_))) error stop 'add_child failed'
+        end do
+    end subroutine add_lagrange_points
 
     !> Lagrange point `lib`'s family of halo orbits: the amplitude slider's
     !> range (from the smallest halo's, where Richardson's approximation
