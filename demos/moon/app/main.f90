@@ -5,8 +5,10 @@
 !> `-- --resolution 64`), lit by the Sun (a frame with a light
 !> source) under a starry sky, and a spacecraft in a 100 km polar orbit that
 !> passes over Tycho, its orbit drawn by a CurveArtist. The Moon turns at its
-!> sidereal rate under the inertial orbit. A lander, in Moon-fixed coordinates
-!> (a child of the Moon's frame), coasts in the same 100 km orbit, starts its
+!> sidereal rate under the inertial orbit. A lander (NASA's Apollo Lunar
+!> Module model, data/Models/apollo_lunar_module.glb from `pixi run -e rocky
+!> lander-model`, enlarged to be seen; else a sphere), in Moon-fixed
+!> coordinates (a child of the Moon's frame), coasts in the same 100 km orbit, starts its
 !> descent at t = 1200 s and lands on Tycho's floor north of the central peak
 !> 12 minutes later (constant braking of its horizontal speed; altitude from
 !> 100 km to the ground on a smooth curve, level at both ends), at the
@@ -62,7 +64,11 @@ module moondemo
     ! the lander: coasting, then descending from t_descent for descent_time to its site
     real(wp), parameter :: site_lat = -43.0_wp, site_lon = tycho_lon      !! on Tycho's floor, north of the peak
     real(wp), parameter :: t_descent = 1200.0_wp, descent_time = 720.0_wp  !! s
-    real(wp), parameter :: lander_size = 0.3_wp                            !! km (enlarged to be seen)
+    ! the lander drawn: NASA's Apollo Lunar Module (`pixi run -e rocky lander-model`), else a sphere
+    character(len=*), parameter :: lander_model = 'Models/apollo_lunar_module.glb'
+    real(wp), parameter :: lm_bottom = 0.103_wp, lm_top = 5.115_wp        !! its footpads' bottom, its top (m, up)
+    real(wp), parameter :: lander_height = 0.4_wp                          !! km (its 5 m enlarged to be seen)
+    real(wp), parameter :: lander_size = 0.5_wp * lander_height            !! its center above its footpads (km)
     real(wp), parameter :: lander_color(3) = [0.3_wp, 0.9_wp, 1.0_wp]
     real(wp), parameter :: site_axes_length = 10.0_wp, site_axes_tick = 1.0_wp   !! km (minor ticks: a fifth)
     real(wp), parameter :: observer_east = 3.0_wp, observer_height = 0.05_wp   !! km: from the site, above the ground
@@ -102,7 +108,8 @@ module moondemo
         type(FrameManager) :: scene
         real(wp) :: period = 0.0_wp
         ! the lander (in the Moon's frame)
-        type(Sphere) :: lander
+        type(Model) :: lander                                 !! the LM model, centered on the frame's origin
+        type(Sphere) :: lander_ball                           !! (without the model: a sphere in its frame)
         type(Trajectory) :: descent
         type(DrawableTrajectory) :: descent_frame
         type(CurveArtist) :: descent_curve
@@ -343,14 +350,25 @@ contains
             t = t + merge(10.0_wp, 2.0_wp, t < t_descent)        ! (finer during the descent)
         end do
         call report_clearance()
-        app%lander = Sphere('Lander', radius=lander_size, color=lander_color)
+        app%lander = Model('Lander', color=lander_color)
+        if (len(find_data_file(lander_model)) > 0) then
+            if (.not. app%lander%set_model(find_data_file(lander_model))) error stop 'moon demo: the lander model'
+            ! its center at the origin, its up the frame's z (radial: glTF's y up is read as z up), lander_height tall
+            call app%lander%set_model_pivot([0.0_wp, 0.0_wp, 0.5_wp * (lm_bottom + lm_top)])
+            call app%lander%set_model_scale([1.0_wp, 1.0_wp, 1.0_wp] * lander_height / (lm_top - lm_bottom))
+        else
+            write(*, '(a)') 'moon demo: no lander model (pixi run -e rocky lander-model): a sphere'
+            app%lander_ball = Sphere('Lander body', radius=lander_size, color=lander_color)
+            call app%lander_ball%show_decorations(.false.)
+            if (.not. app%lander%add_child(app%lander_ball)) error stop 'moon demo: could not build the scene'
+        end if
         call app%lander%follow(app%descent, mode=FOLLOW_LIMIT)  ! then stays at the site
-        call app%lander%move_x_axis(o, 4.0_wp * lander_size, body_radius=0.06_wp * lander_size, &
-                                    head_radius=0.16_wp * lander_size)
-        call app%lander%move_y_axis(o, 4.0_wp * lander_size, body_radius=0.06_wp * lander_size, &
-                                    head_radius=0.16_wp * lander_size)
-        call app%lander%move_z_axis(o, 4.0_wp * lander_size, body_radius=0.06_wp * lander_size, &
-                                    head_radius=0.16_wp * lander_size)
+        call app%lander%move_x_axis(o, 1.5_wp * lander_height, body_radius=0.02_wp * lander_height, &
+                                    head_radius=0.05_wp * lander_height)
+        call app%lander%move_y_axis(o, 1.5_wp * lander_height, body_radius=0.02_wp * lander_height, &
+                                    head_radius=0.05_wp * lander_height)
+        call app%lander%move_z_axis(o, 1.5_wp * lander_height, body_radius=0.02_wp * lander_height, &
+                                    head_radius=0.05_wp * lander_height)
         app%descent_curve = CurveArtist(app%descent, color=lander_color, width=2.0_wp)
         app%descent_frame = DrawableTrajectory('Descent')
         call app%descent_frame%show_decorations(.false.)
@@ -474,7 +492,7 @@ contains
         app%views(3) = View(app%inertial, app%spacecraft, lookat=app%moon, frame_type=ABSOLUTE_FRAME)
         call app%views(3)%set_default_view_distance(30.0_wp * sc_size)
         app%views(5) = View(app%inertial, app%lander)
-        call app%views(5)%set_default_view_distance(14.0_wp * lander_size)
+        call app%views(5)%set_default_view_distance(4.0_wp * lander_height)
         call set_base_frame(app%site_frame)                     ! views 4 and 6: Moon-fixed
         ! from the observer at the lander: the view frame's +y turns toward it (z kept up); the eye on the observer
         app%views(7) = View(app%inertial, app%observer, lookat=app%lander)

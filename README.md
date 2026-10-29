@@ -570,7 +570,7 @@ Options (`--view n`, `--windows n`, `--sky n`, `--trace`, `--capture file`,
 - **Terrain:** the Moon's surface from LRO imagery (NASA's Moon Trek, over
   the network) and LOLA's elevation, lit by the Sun, under a starry sky.
 - **Spacecraft:** one in a 100 km polar orbit over Tycho crater; and a
-  lander in the same orbit that descends and lands on Tycho's floor, at the
+  lander (NASA's Apollo Lunar Module model, enlarged to be seen) in the same orbit that descends and lands on Tycho's floor, at the
   terrain's height there. Its altitude above the terrain below it (LOLA's
   heights, not the sphere) is shown as it goes, with a line down to the
   ground and drop lines along its path tracing the terrain it passes over.
@@ -586,6 +586,7 @@ It needs the `rocky` environment and a one-time Rocky build:
 ```sh
 pixi run -e rocky rocky-build     # once: builds Rocky from source into the environment
 pixi run -e rocky moon-data       # once: downloads LOLA's elevation (33 MB) into data/
+pixi run -e rocky lander-model    # once: NASA's Apollo Lunar Module model into data/Models/ (else a sphere)
 pixi run -e rocky moon-demo
 pixi run -e rocky moon-demo -- --view 6 --sun 60
 ```
