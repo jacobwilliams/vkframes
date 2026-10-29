@@ -30,6 +30,18 @@
 !> orbit, its closest approach to the Earth, or its impact, and its Jacobi
 !> constant with its change along it: the integration's error).
 !>
+!> The Jacobi constant: a slider in a GUI panel (top right; Dear ImGui,
+!> WindowProxy%gui) picks another orbit of the family (3.03 to 3.17, from
+!> large halos to small ones near their bifurcation from the planar
+!> Lyapunov orbits): it's found by continuation from the one shown (steps
+!> in C of at most 0.002, each corrected with C held: x0, z0 and vy0
+!> together), then its manifolds and zero-velocity curves are computed and
+!> drawn again (the latest value asked for, once the last is done; the
+!> panel says how long it took). The manifolds' trajectories are propagated
+!> in parallel with OpenMP when built with it: `FPM_FFLAGS="-O3 -fopenmp"
+!> FPM_LDFLAGS=-fopenmp pixi run example halo_manifolds` (about 0.04 s on one
+!> thread, 0.004 s on ten, on an Apple M-series).
+!>
 !> The zero-velocity curves: 2 U(x, y, 0) = C (U the pseudo-potential, C
 !> the Jacobi constant), traced by marching squares on a 600 x 600 grid of
 !> the plane, as segments.
@@ -40,7 +52,8 @@
 !>
 !> Arguments (optional): number of frames to run, then a file to capture the
 !> last frame to; with `--demo-pick`, a trajectory is picked at the start
-!> (for a capture): `pixi run example halo_manifolds -- 60 halo.png --demo-pick`
+!> (for a capture), and with `--jacobi=C` the orbit of Jacobi constant C at
+!> the start: `pixi run example halo_manifolds -- 60 halo.png --demo-pick`
 module halo_cr3bp
 
     use vkframes, only: wp
@@ -49,8 +62,8 @@ module halo_cr3bp
 
     private
 
-    public :: eom, eom_stm, propagate, propagate_to_crossing, correct_halo, monodromy_vectors, jacobi, &
-              zero_velocity_curves
+    public :: eom, eom_stm, propagate, propagate_to_crossing, correct_halo, correct_halo_jacobi, continue_halo, &
+              monodromy_vectors, jacobi, zero_velocity_curves
 
     real(wp), parameter, public :: mu = 0.01215058560962404_wp     !! Earth-Moon mass ratio
     real(wp), parameter, public :: lu = 384400.0_wp                !! length unit (km)
@@ -295,6 +308,71 @@ contains
         period = 2.0_wp * t
     end subroutine correct_halo
 
+    !> A halo orbit as correct_halo's, of Jacobi constant c: x0, z0 and vy0
+    !> corrected together (Newton's method, the steps limited), the third
+    !> condition C(x0, 0, z0, 0, vy0, 0) = c. ok: converged, still a halo
+    !> (z0 > 0; else the inputs are left as they were).
+    subroutine correct_halo_jacobi(x0, z0, vy0, c, period, ok)
+        real(wp), intent(inout) :: x0, z0, vy0
+        real(wp), intent(in) :: c
+        real(wp), intent(out) :: period
+        logical, intent(out) :: ok
+        real(wp) :: s(42), phi(6, 6), acc(6), m(3, 3), f(3), d(3), t, r1, r2, p(3)
+        integer :: iter, j
+        integer, parameter :: params(3) = [1, 3, 5]          ! x0, z0, vy0
+        p = [x0, z0, vy0]
+        ok = .false.
+        period = 0.0_wp
+        do iter = 1, 25
+            s = initial(p(1), p(2), p(3))
+            call propagate_to_crossing(eom_stm, s, 0.5_wp, t)
+            f = [s(4), s(6), jacobi([p(1), 0.0_wp, p(2), 0.0_wp, p(3), 0.0_wp]) - c]
+            if (all(abs(f) < 1.0e-11_wp)) then
+                ok = p(2) > 1.0e-3_wp
+                exit
+            end if
+            phi = reshape(s(7:42), [6, 6])
+            acc = eom(s(1:6))
+            do j = 1, 3
+                m(1:2, j) = [phi(4, params(j)), phi(6, params(j))] - acc([4, 6]) / s(5) * phi(2, params(j))
+            end do
+            r1 = norm2([p(1) + mu, 0.0_wp, p(2)])
+            r2 = norm2([p(1) - 1.0_wp + mu, 0.0_wp, p(2)])
+            m(3, :) = [2.0_wp * p(1) - 2.0_wp * (1.0_wp - mu) * (p(1) + mu) / r1**3 - 2.0_wp * mu * (p(1) - 1.0_wp + mu) / r2**3, &
+                       -2.0_wp * (1.0_wp - mu) * p(2) / r1**3 - 2.0_wp * mu * p(2) / r2**3, -2.0_wp * p(3)]
+            d = -solve(m, f)
+            if (norm2(d) > 0.01_wp) d = d * 0.01_wp / norm2(d)
+            p = p + d
+        end do
+        if (.not. ok) return
+        x0 = p(1)
+        z0 = p(2)
+        vy0 = p(3)
+        period = 2.0_wp * t
+    end subroutine correct_halo_jacobi
+
+    !> From a halo orbit (x0, z0, vy0) to the one of Jacobi constant c, by
+    !> continuation (steps in c of at most 0.002, each corrected). ok: all
+    !> the way (else the last found is kept: c_reached).
+    subroutine continue_halo(x0, z0, vy0, c, period, c_reached, ok)
+        real(wp), intent(inout) :: x0, z0, vy0
+        real(wp), intent(in) :: c
+        real(wp), intent(inout) :: period, c_reached
+        logical, intent(out) :: ok
+        real(wp) :: c0, target, p
+        integer :: n, k
+        c0 = jacobi([x0, 0.0_wp, z0, 0.0_wp, vy0, 0.0_wp])
+        n = max(1, ceiling(abs(c - c0) / 0.002_wp))
+        c_reached = c0
+        do k = 1, n
+            target = c0 + (c - c0) * k / n
+            call correct_halo_jacobi(x0, z0, vy0, target, p, ok)
+            if (.not. ok) return
+            period = p
+            c_reached = target
+        end do
+    end subroutine continue_halo
+
     !> The state at (x0, 0, z0) moving at vy0, with the identity STM.
     pure function initial(x0, z0, vy0) result(s)
         real(wp), intent(in) :: x0, z0, vy0
@@ -323,24 +401,25 @@ contains
         end do
     end subroutine monodromy_vectors
 
-    !> x solving a x = b (Gaussian elimination, partial pivoting).
+    !> x solving a x = b (n x n; Gaussian elimination, partial pivoting).
     pure function solve(a, b) result(x)
-        real(wp), intent(in) :: a(6, 6), b(6)
-        real(wp) :: x(6), m(6, 7), row(7)
-        integer :: i, j, p
-        m(:, 1:6) = a
-        m(:, 7) = b
-        do i = 1, 6
-            p = i - 1 + maxloc(abs(m(i:6, i)), dim=1)
+        real(wp), intent(in) :: a(:,:), b(:)
+        real(wp) :: x(size(b)), m(size(b), size(b) + 1), row(size(b) + 1)
+        integer :: i, j, p, n
+        n = size(b)
+        m(:, 1:n) = a
+        m(:, n + 1) = b
+        do i = 1, n
+            p = i - 1 + maxloc(abs(m(i:n, i)), dim=1)
             row = m(i, :)
             m(i, :) = m(p, :)
             m(p, :) = row
-            do j = i + 1, 6
+            do j = i + 1, n
                 m(j, :) = m(j, :) - m(j, i) / m(i, i) * m(i, :)
             end do
         end do
-        do i = 6, 1, -1
-            x(i) = (m(i, 7) - dot_product(m(i, i+1:6), x(i+1:6))) / m(i, i)
+        do i = n, 1, -1
+            x(i) = (m(i, n + 1) - dot_product(m(i, i+1:n), x(i+1:n))) / m(i, i)
         end do
     end function solve
 
@@ -386,12 +465,21 @@ module halo_manifolds_keys
         logical :: edges = .true., lit = .true., smooth = .true., fading = .true.
         real(wp) :: opacity = 0.6_wp
         integer :: hovered(2) = 0, selected(2) = 0      !! (line, tube), 0: none
+        ! the Jacobi constant's panel: the value asked for (the slider; the
+        ! program computes the orbit and its manifolds again when it changes),
+        ! and the orbit's
+        real(wp) :: c_requested = 0.0_wp, c_min = 3.03_wp, c_max = 3.17_wp
+        real(wp) :: c = 0.0_wp, period_days = 0.0_wp, az = 0.0_wp, seconds = 0.0_wp, continued = 0.0_wp
+        integer :: threads = 1
+        character(len=80) :: status = ''
     contains
         procedure :: key_press => manifold_key
         procedure :: mouse_motion => manifold_motion
         procedure :: button_press => manifold_press
+        procedure :: before_draw => manifold_panel
         procedure :: apply
         procedure :: select => select_line
+        procedure :: clear_selection
     end type ManifoldKeys
 
     real(wp), parameter :: line_width = 1.2_wp, hover_width = 3.0_wp, selected_width = 2.5_wp
@@ -446,6 +534,40 @@ contains
         end select
         call self%apply()
     end subroutine manifold_key
+
+    !> Each frame: the Jacobi constant's panel (top right).
+    subroutine manifold_panel(self, window, t)
+        class(ManifoldKeys), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: t
+        type(Gui) :: g
+        character(len=80) :: text
+        real(wp) :: value
+        g = window%gui()
+        call g%begin_panel('Halo orbit', position=[0.99_wp, 0.92_wp], pivot=[1.0_wp, 0.0_wp])
+        value = self%c_requested
+        if (g%slider('Jacobi constant', value, self%c_min, self%c_max)) self%c_requested = value
+        write(text, '(a,f9.6,a,f6.2,a,i0,a)') 'C = ', self%c, ', period ', self%period_days, ' days, Az ', &
+            nint(self%az), ' km'
+        call g%text(trim(text))
+        write(text, '(a,f6.3,a,f6.3,a,i0,a)') 'orbit continued in ', self%continued, ' s, manifolds in ', &
+            self%seconds, ' s (', self%threads, ' threads)'
+        call g%text(trim(text))
+        if (len_trim(self%status) > 0) call g%text(trim(self%status))
+        call g%end_panel()
+    end subroutine manifold_panel
+
+    !> No trajectory selected (e.g. computed again).
+    subroutine clear_selection(self)
+        class(ManifoldKeys), intent(inout) :: self
+        if (self%selected(1) > 0) call self%lines(self%selected(1), self%selected(2))%set_highlight(HIGHLIGHT_NONE)
+        if (self%hovered(1) > 0) call restyle(self, self%hovered, hovered=.false.)
+        self%selected = 0
+        self%hovered = 0
+        call self%ring%show_contents(.false.)
+        call self%selection%show_name_label(.false.)
+        call self%details%set_text('click a trajectory line for its details')
+    end subroutine clear_selection
 
     !> Hover: the trajectory under the pointer drawn thicker (not while dragging).
     subroutine manifold_motion(self, window, x, y, buttons)
@@ -579,11 +701,13 @@ program halo_manifolds
     use vkframes
     use halo_cr3bp
     use halo_manifolds_keys
+    !$ use omp_lib, only: omp_get_max_threads
 
     implicit none
 
     integer, parameter :: n_around = 72                 !! points around the orbit (the tubes' circumference)
     integer, parameter :: n_along = 240                 !! samples along each trajectory
+    integer, parameter :: n_orbit = 4 * n_around        !! points along the orbit drawn
     real(wp), parameter :: span = 4.5_wp                !! each trajectory's time (time units)
     real(wp), parameter :: offset = 50.0_wp / lu        !! the displacement off the orbit (50 km)
     real(wp), parameter :: re = 6378.137_wp, rm = 1737.4_wp     !! km
@@ -612,13 +736,13 @@ program halo_manifolds
     type(HUDText), target :: legend
     type(ManifoldKeys), target :: keys
     character(len=1024) :: arg, file
-    real(wp) :: x0, z0, vy0, period, s(42), vu(6), vs(6), phi(6, 6), dir(6), w(6), dt, fade
-    real(wp), allocatable :: grid(:,:,:,:), orbit(:,:), dirs(:,:,:), segments(:,:)
-    real(wp) :: c
-    integer, allocatable :: pairs(:,:)
-    real(wp) :: r, times(n_along)
-    integer :: i, j, k, l, frames, frame, sgn, n_orbit, last
-    logical :: running, stopped, demo
+    real(wp) :: x0, z0, vy0, period, c_reached, c_start
+    real(wp) :: orbit(6, n_orbit + 1), dirs(6, n_around, 2), times(n_along)
+    real(wp) :: grid(3, n_around, n_along, n_tubes)
+    integer :: last(n_around, n_tubes)                  !! each trajectory's samples drawn (up to an impact)
+    integer :: j, k, l, frames, frame
+    integer(8) :: tick, tock, rate
+    logical :: running, demo, ok
 
     frames = huge(frames)
     file = ''
@@ -628,120 +752,27 @@ program halo_manifolds
     end if
     if (command_argument_count() >= 2) call get_command_argument(2, file)
     demo = .false.
-    if (command_argument_count() >= 3) then
-        call get_command_argument(3, arg)
-        demo = trim(arg) == '--demo-pick'
-    end if
+    c_start = 0.0_wp
+    do j = 3, command_argument_count()
+        call get_command_argument(j, arg)
+        if (trim(arg) == '--demo-pick') demo = .true.
+        if (arg(1:9) == '--jacobi=') read(arg(10:), *) c_start
+    end do
+    keys%threads = 1
+    !$ keys%threads = omp_get_max_threads()
+    times = [(span * (j - 1) / (n_along - 1) * tu_days, j = 1, n_along)]
 
-    ! the halo orbit, and its monodromy matrix's eigenvectors
+    ! the first halo orbit: from a published initial guess
     x0 = 0.82575887090385_wp
     z0 = 0.08_wp
     vy0 = 0.19369724986446_wp
     call correct_halo(x0, z0, vy0, period)
     write(*, '(a,f12.9,a,f6.3,a,f12.9,a,f9.6,a,f6.2,a)') 'halo orbit: x0 = ', x0, ', z0 = ', z0, ', vy0 = ', vy0, &
         ', period ', period, ' (', period * tu_days, ' days)'
-    s = initial_state()
-    call propagate(eom_stm, s, period)
-    call monodromy_vectors(reshape(s(7:42), [6, 6]), vu, vs)
 
-    ! the orbit, and the eigenvectors carried along it (at n_around points)
-    n_orbit = 4 * n_around
-    allocate(orbit(6, n_orbit + 1), dirs(6, n_around, 2))
-    s = initial_state()
-    dt = period / n_orbit
-    do i = 1, n_orbit + 1
-        orbit(:, i) = s(1:6)
-        if (modulo(i - 1, 4) == 0 .and. i <= n_orbit) then
-            phi = reshape(s(7:42), [6, 6])
-            dirs(:, (i - 1) / 4 + 1, 1) = matmul(phi, vu)
-            dirs(:, (i - 1) / 4 + 1, 2) = matmul(phi, vs)
-        end if
-        if (i <= n_orbit) call propagate(eom_stm, s, dt)
-    end do
-    do k = 1, 2                                         ! each a unit position, + toward the Moon at the start
-        sgn = merge(1, -1, dirs(1, 1, k) > 0.0_wp)
-        do i = 1, n_around
-            dirs(:, i, k) = sgn * dirs(:, i, k) / norm2(dirs(1:3, i, k))
-        end do
-    end do
-
-    ! the tubes: unstable forward, stable backward; toward the Earth. Every
-    ! n_around / n_lines-th trajectory also a line (a CurveArtist: pickable),
-    ! its points in increasing time (the stable ones' toward the orbit: the
-    ! highlight's arrows in the direction of motion), times in days
-    allocate(grid(3, n_around, n_along, n_tubes))
-    allocate(keys%colors(4, n_around * n_along, n_tubes))
-    times = [(direction(1) * span * (j - 1) / (n_along - 1) * tu_days, j = 1, n_along)]
-    do k = 1, n_tubes
-        line_frames(k) = DrawableTrajectory(trim(names(k))//' trajectories')
-        call line_frames(k)%show_decorations(.false.)
-        do i = 1, n_around
-            dir = dirs(:, i, branch(k))
-            w = orbit(:, 4 * (i - 1) + 1) + side(k) * offset * dir
-            stopped = .false.
-            last = n_along
-            l = 0
-            if (modulo(i - 1, n_around / n_lines) == 0) l = (i - 1) / (n_around / n_lines) + 1
-            if (l > 0) then
-                keys%info(l, k) = LineInfo(index=i, n_around=n_around, closest=huge(1.0_wp), jacobi=jacobi(w))
-            end if
-            do j = 1, n_along
-                if (j > 1 .and. .not. stopped) then
-                    call propagate(eom, w, direction(k) * span / (n_along - 1))
-                    stopped = norm2(w(1:3) - [-mu, 0.0_wp, 0.0_wp]) < re / lu .or. &
-                              norm2(w(1:3) - [1.0_wp - mu, 0.0_wp, 0.0_wp]) < rm / lu
-                    if (stopped) last = j
-                    if (l > 0 .and. (j == n_along .or. stopped)) keys%info(l, k)%drift = jacobi(w) - keys%info(l, k)%jacobi
-                end if
-                grid(:, i, j, k) = w(1:3) * lu
-                fade = 1.0_wp - 0.85_wp * real(j - 1, wp) / (n_along - 1)
-                keys%colors(:, i + (j - 1) * n_around, k) = [tube_colors(:, k), fade]
-                if (l > 0 .and. j <= last) then
-                    r = norm2(w(1:3) - [-mu, 0.0_wp, 0.0_wp]) * lu
-                    if (r < keys%info(l, k)%closest) then
-                        keys%info(l, k)%closest = r
-                        keys%info(l, k)%closest_time = times(j)
-                    end if
-                end if
-            end do
-            if (l > 0) then
-                keys%info(l, k)%impact = norm2(w(1:3) - [-mu, 0.0_wp, 0.0_wp]) < re / lu
-                paths(l, k) = Trajectory()
-                if (direction(k) > 0.0_wp) then
-                    do j = 1, last
-                        call paths(l, k)%add(times(j), pos=grid(:, i, j, k))
-                    end do
-                else
-                    do j = last, 1, -1
-                        call paths(l, k)%add(-times(j), pos=grid(:, i, j, k))
-                    end do
-                end if
-                lines(l, k) = CurveArtist(paths(l, k), color=[tube_colors(:, k), 0.7_wp], width=1.2_wp)
-                call line_frames(k)%add_artist(lines(l, k))
-            end if
-        end do
-        tubes(k) = Polyhedron(trim(names(k)), color=tube_colors(:, k))
-        call tubes(k)%set_grid(grid(:, :, :, k), closed_u=.true., lines=[0, 0])
-        call tubes(k)%set_draw_mode(POLY_FACES)
-        call tubes(k)%show_decorations(.false.)
-        call tubes(k)%set_pickable(.false.)
-        keys%names(k) = names(k)
-        keys%line_colors(:, k) = [tube_colors(:, k), 1.0_wp]
-    end do
-
-    ! the zero-velocity curves at the orbit's Jacobi constant: edges only
-    c = jacobi(orbit(:, 1))
-    write(*, '(a,f10.6)') 'Jacobi constant: ', c
-    segments = zero_velocity_curves(c, 1.4_wp, 600) * lu
-    pairs = reshape([(i, i = 1, size(segments, 2))], [2, size(segments, 2) / 2])
-    zvc = Polyhedron('Zero-velocity curves', color=[0.85_wp, 0.85_wp, 0.85_wp, 0.8_wp])
-    call zvc%set_triangles(segments, reshape([integer ::], [3, 0]))
-    call zvc%set_edges(pairs)
-    call zvc%set_draw_mode(POLY_EDGES)
-    call zvc%set_line_width(1.5_wp)
-    call zvc%show_decorations(.false.)
-
-    ! the scene: the rotating frame, the Earth and the Moon on its x axis
+    ! the scene: the rotating frame, the Earth and the Moon on its x axis; the
+    ! orbit, the tubes (and their lines) and the zero-velocity curves (filled
+    ! in by compute)
     rotating = ReferenceFrame('Rotating frame')
     call rotating%show_decorations(.false.)
     earth = Sphere('Earth', radius=re)
@@ -755,13 +786,16 @@ program halo_manifolds
     call moon%show_axes(NO_AXES)
     call moon%show_axes_labels(NO_AXES)
     halo = Trajectory()
-    do i = 1, n_orbit + 1
-        call halo%add(period * (i - 1) / n_orbit, pos=orbit(1:3, i) * lu)
-    end do
     halo_curve = CurveArtist(halo, color=[1.0_wp, 1.0_wp, 1.0_wp], width=2.5_wp)
     halo_frame = DrawableTrajectory('L1 halo orbit')
     call halo_frame%show_decorations(.false.)
     call halo_frame%add_artist(halo_curve)
+    call halo_frame%set_pickable(.false.)
+    zvc = Polyhedron('Zero-velocity curves', color=[0.85_wp, 0.85_wp, 0.85_wp, 0.8_wp])
+    call zvc%set_draw_mode(POLY_EDGES)
+    call zvc%set_line_width(1.5_wp)
+    call zvc%show_decorations(.false.)
+    call zvc%set_pickable(.false.)
     sun = ReferenceFrame('Sun')
     call sun%set_position([-0.4_wp, -1.0_wp, 0.6_wp] * 1.5e8_wp)
     call sun%set_light_source_enabled(.true.)
@@ -770,11 +804,23 @@ program halo_manifolds
     call sun%show_decorations(.false.)
     if (.not. (rotating%add_child(earth) .and. rotating%add_child(moon) .and. rotating%add_child(halo_frame) .and. &
                rotating%add_child(sun) .and. rotating%add_child(zvc))) error stop 'add_child failed'
+    allocate(keys%colors(4, n_around * n_along, n_tubes))
     do k = 1, n_tubes
+        line_frames(k) = DrawableTrajectory(trim(names(k))//' trajectories')
+        call line_frames(k)%show_decorations(.false.)
+        do l = 1, n_lines
+            paths(l, k) = Trajectory()
+            lines(l, k) = CurveArtist(paths(l, k), color=[tube_colors(:, k), 0.7_wp], width=1.2_wp)
+            call line_frames(k)%add_artist(lines(l, k))
+        end do
+        tubes(k) = Polyhedron(trim(names(k)), color=tube_colors(:, k))
+        call tubes(k)%set_draw_mode(POLY_FACES)
+        call tubes(k)%show_decorations(.false.)
+        call tubes(k)%set_pickable(.false.)
+        keys%names(k) = names(k)
+        keys%line_colors(:, k) = [tube_colors(:, k), 1.0_wp]
         if (.not. (rotating%add_child(tubes(k)) .and. rotating%add_child(line_frames(k)))) error stop 'add_child failed'
     end do
-    call halo_frame%set_pickable(.false.)
-    call zvc%set_pickable(.false.)
 
     ! the selection: a ring (a marker at the frame's origin) and a readout,
     ! moved to the point picked
@@ -801,7 +847,9 @@ program halo_manifolds
     keys%details => details
     keys%earth = [-mu * lu, 0.0_wp, 0.0_wp]
     keys%re = re
-    call keys%apply()
+    call compute()
+    keys%c_requested = keys%c
+    if (c_start > 0.0_wp) keys%c_requested = c_start   ! (--jacobi=C: computed in the first frame)
     scene = FrameManager(rotating)
 
     if (.not. window%open(1200, 800, 'vkframes: halo orbit manifolds')) error stop 'could not open a window'
@@ -814,9 +862,7 @@ program halo_manifolds
     legend = HUDText('Earth-Moon L1 halo orbit (white), its manifolds on the Earth side:  1 unstable (orange)   ' // &
                      '2 stable (cyan)   z: zero-velocity curves (gray)' // &
                      new_line('a') // 'click a line: its details (arrows: its motion)    e: trajectory lines    ' // &
-                     'l: lit / unlit    ' // &
-                     's: smooth / flat    ' // &
-                     'c: fading colors / plain    + / -: opacity', &
+                     'l: lit / unlit    s: smooth / flat    c: fading colors / plain    + / -: opacity', &
                      position=[0.01_wp, 0.99_wp], alignment=ALIGN_LEFT_TOP, size=14.0_wp, color=[0.75_wp, 0.75_wp, 0.75_wp])
     call window%add_hud_text(legend)
     details = HUDText('click a trajectory line for its details', position=[0.01_wp, 0.01_wp], &
@@ -830,6 +876,22 @@ program halo_manifolds
         running = window%frame()
         frame = frame + 1
         if (demo .and. frame == 2) call demo_pick()
+        ! the slider moved: the orbit of that Jacobi constant (continued from
+        ! this one), and its manifolds (the latest value asked for, once the
+        ! last is done)
+        if (abs(keys%c_requested - keys%c) > 1.0e-9_wp) then
+            call system_clock(tick, rate)
+            call continue_halo(x0, z0, vy0, keys%c_requested, period, c_reached, ok)
+            call system_clock(tock)
+            keys%continued = real(tock - tick, wp) / rate
+            keys%status = ''
+            if (.not. ok) then
+                write(keys%status, '(a,f9.6)') 'no halo orbit found beyond C = ', c_reached
+                keys%c_requested = c_reached
+            end if
+            call keys%clear_selection()
+            call compute()
+        end if
     end do
     if (len_trim(file) > 0 .and. running) then
         if (window%capture(trim(file))) write(*, '(a)') 'captured '//trim(file)
@@ -837,6 +899,129 @@ program halo_manifolds
     call window%close()
 
 contains
+
+    !> The orbit (x0, z0, vy0), its manifolds and zero-velocity curves,
+    !> computed (the trajectories in parallel) and drawn.
+    subroutine compute()
+        integer(8) :: t0, t1, rate
+        call system_clock(t0, rate)
+        call compute_orbit()
+        call compute_tubes()
+        call system_clock(t1)
+        keys%seconds = real(t1 - t0, wp) / rate
+        write(*, '(a,f9.6,a,f6.2,a,i0,a,f6.3,a,f6.3,a,i0,a)') 'C = ', keys%c, ': period ', keys%period_days, ' days, Az ', &
+            nint(keys%az), ' km; continued in ', keys%continued, ' s, manifolds in ', keys%seconds, ' s (', &
+            keys%threads, ' threads)'
+        call draw()
+    end subroutine compute
+
+    !> The orbit (n_orbit + 1 states over its period) and the manifolds'
+    !> directions at n_around points: the monodromy matrix's eigenvectors
+    !> carried along it by the state transition matrix, each a unit
+    !> position, + toward the Moon at the first point.
+    subroutine compute_orbit()
+        real(wp) :: s(42), vu(6), vs(6), phi(6, 6)
+        integer :: i, k_, sgn
+        s = initial_state()
+        call propagate(eom_stm, s, period)
+        call monodromy_vectors(reshape(s(7:42), [6, 6]), vu, vs)
+        s = initial_state()
+        do i = 1, n_orbit + 1
+            orbit(:, i) = s(1:6)
+            if (modulo(i - 1, 4) == 0 .and. i <= n_orbit) then
+                phi = reshape(s(7:42), [6, 6])
+                dirs(:, (i - 1) / 4 + 1, 1) = matmul(phi, vu)
+                dirs(:, (i - 1) / 4 + 1, 2) = matmul(phi, vs)
+            end if
+            if (i <= n_orbit) call propagate(eom_stm, s, period / n_orbit)
+        end do
+        do k_ = 1, 2
+            sgn = merge(1, -1, dirs(1, 1, k_) > 0.0_wp)
+            do i = 1, n_around
+                dirs(:, i, k_) = sgn * dirs(:, i, k_) / norm2(dirs(1:3, i, k_))
+            end do
+        end do
+        keys%c = jacobi(orbit(:, 1))
+        keys%period_days = period * tu_days
+        keys%az = maxval(abs(orbit(3, :))) * lu
+    end subroutine compute_orbit
+
+    !> The tubes: each trajectory propagated (in parallel: they're
+    !> independent), unstable forward, stable backward, toward the Earth,
+    !> sampled at common times (stopping at the Earth or the Moon); the
+    !> lines' details.
+    subroutine compute_tubes()
+        real(wp) :: w(6), r
+        integer :: i, j_, k_, l_
+        logical :: stopped
+        !$omp parallel do collapse(2) schedule(dynamic) private(i, j_, k_, l_, w, r, stopped)
+        do k_ = 1, n_tubes
+            do i = 1, n_around
+                w = orbit(:, 4 * (i - 1) + 1) + side(k_) * offset * dirs(:, i, branch(k_))
+                l_ = 0
+                if (modulo(i - 1, n_around / n_lines) == 0) l_ = (i - 1) / (n_around / n_lines) + 1
+                if (l_ > 0) keys%info(l_, k_) = LineInfo(index=i, n_around=n_around, closest=huge(1.0_wp), jacobi=jacobi(w))
+                stopped = .false.
+                last(i, k_) = n_along
+                do j_ = 1, n_along
+                    if (j_ > 1 .and. .not. stopped) then
+                        call propagate(eom, w, direction(k_) * span / (n_along - 1))
+                        stopped = norm2(w(1:3) - [-mu, 0.0_wp, 0.0_wp]) < re / lu .or. &
+                                  norm2(w(1:3) - [1.0_wp - mu, 0.0_wp, 0.0_wp]) < rm / lu
+                        if (stopped) last(i, k_) = j_
+                        if (l_ > 0 .and. (j_ == n_along .or. stopped)) &
+                            keys%info(l_, k_)%drift = jacobi(w) - keys%info(l_, k_)%jacobi
+                    end if
+                    grid(:, i, j_, k_) = w(1:3) * lu
+                    keys%colors(:, i + (j_ - 1) * n_around, k_) = &
+                        [tube_colors(:, k_), 1.0_wp - 0.85_wp * real(j_ - 1, wp) / (n_along - 1)]
+                    if (l_ > 0 .and. j_ <= last(i, k_)) then
+                        r = norm2(w(1:3) - [-mu, 0.0_wp, 0.0_wp]) * lu
+                        if (r < keys%info(l_, k_)%closest) then
+                            keys%info(l_, k_)%closest = r
+                            keys%info(l_, k_)%closest_time = direction(k_) * times(j_)
+                        end if
+                    end if
+                end do
+                if (l_ > 0) keys%info(l_, k_)%impact = norm2(w(1:3) - [-mu, 0.0_wp, 0.0_wp]) < re / lu
+            end do
+        end do
+        !$omp end parallel do
+    end subroutine compute_tubes
+
+    !> The orbit, the tubes, their lines (points in increasing time: the
+    !> stable ones' toward the orbit, so the highlight's arrows show the
+    !> motion; times in days) and the zero-velocity curves, drawn again.
+    subroutine draw()
+        real(wp), allocatable :: segments(:,:)
+        integer, allocatable :: pairs(:,:)
+        integer :: i, j_, k_, l_
+        call halo%clear()
+        do i = 1, n_orbit + 1
+            call halo%add(period * (i - 1) / n_orbit * tu_days, pos=orbit(1:3, i) * lu)
+        end do
+        do k_ = 1, n_tubes
+            call tubes(k_)%set_grid(grid(:, :, :, k_), closed_u=.true., lines=[0, 0])
+            do l_ = 1, n_lines
+                i = (l_ - 1) * (n_around / n_lines) + 1
+                call paths(l_, k_)%clear()
+                if (direction(k_) > 0.0_wp) then
+                    do j_ = 1, last(i, k_)
+                        call paths(l_, k_)%add(times(j_), pos=grid(:, i, j_, k_))
+                    end do
+                else
+                    do j_ = last(i, k_), 1, -1
+                        call paths(l_, k_)%add(-times(j_), pos=grid(:, i, j_, k_))
+                    end do
+                end if
+            end do
+        end do
+        segments = zero_velocity_curves(keys%c, 1.4_wp, 600) * lu
+        pairs = reshape([(i, i = 1, size(segments, 2))], [2, size(segments, 2) / 2])
+        call zvc%set_triangles(segments, reshape([integer ::], [3, 0]))
+        call zvc%set_edges(pairs)
+        call keys%apply()                               ! (the tubes' colors and settings again)
+    end subroutine draw
 
     !> (--demo-pick, for a capture) Select a point 3/5 along the 4th unstable
     !> trajectory, where it is on the screen.
@@ -846,7 +1031,7 @@ contains
         if (window%screen_position(p, at)) call keys%select(window, 2.0_wp * at(1) - 1.0_wp, 2.0_wp * at(2) - 1.0_wp)
     end subroutine demo_pick
 
-    !> The corrected halo orbit's initial state, with the identity STM.
+    !> The halo orbit's initial state, with the identity STM.
     function initial_state() result(s_)
         real(wp) :: s_(42)
         integer :: c
