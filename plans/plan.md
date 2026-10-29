@@ -830,6 +830,21 @@ Decided so far:
       also while shown. Surfaces are unlit, transparent, two-sided and write
       no depth (OpenFrames' state). `example/shapes.f90`; tested headless
       (`test/test_shapes.f90`); in the Qt demo.
+- [x] `Polyhedron` (not in OpenFrames): a shape fixed in its frame, from
+      polygons (fans), triangles or a grid of points (closed around either
+      way; lines every n), drawn as faces, edges (unique sides, or the grid's
+      lines) and vertices. Faces lit (flat: vertices per triangle; smooth:
+      area-weighted normals) or unlit, a color per vertex (mesh flag 32),
+      opacity (translucent: depth sorted, writing no depth), two-sided by
+      default (mesh flag 16: no culling, VSG_TWO_SIDED_LIGHTING). Shares
+      vkf_shapes' node helpers (surface_node, generalized for lit surfaces;
+      line_node, marker_node, ShapeNodes). `example/halo_manifolds.f90`
+      (an Earth-Moon L1 halo orbit's Earth-side manifold tubes, and the
+      zero-velocity curves: a Polyhedron of edges only); tested headless.
+      - [ ] Translucent surfaces are sorted per object, not per triangle:
+            overlapping or self-overlapping translucent tubes can blend in
+            the wrong order in places (order-independent transparency would
+            fix it).
 - [x] Lighting (OpenFrames' model): a window's default light (headlight in
       eye coordinates; ambient 0.2, diffuse 1, no specular; `WindowProxy%
       set_light_*`), frame light sources (`ReferenceFrame%

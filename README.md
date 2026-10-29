@@ -131,6 +131,12 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   frame by a callback: for example, lines of sight between spacecraft.
 - **Reference shapes**: `CoordinateAxes` with tick marks, `LatLonGrid`,
   `RadialPlane`, and polyhedral, elliptic and rectangular cones.
+- **Polyhedra and surfaces** (not in OpenFrames): `Polyhedron`, any shape
+  fixed in its frame, from polygons (`set_faces`), triangles
+  (`set_triangles`) or a grid of points (`set_grid`: e.g. a tube of
+  trajectories), drawn as faces, edges and vertices. Faces are lit (flat or
+  smooth) or unlit, in one color or a color per vertex, opaque or
+  translucent, and one- or two-sided.
 - **Shadow cones** (not in OpenFrames): `ShadowCones` shows a celestial
   body's shadow in the light of another (umbra, penumbra and antumbra) as
   transparent cones. They follow the body and are reshaped for its
@@ -303,6 +309,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `earth` | <img src="media/screenshots/examples/earth.jpg" width="160" alt="earth"> | A textured WGS84 Earth and a 3D model following an orbit (`Model`, `Trajectory`, `TrajectoryFollower`), with three views: of the Earth, of the spacecraft, and from the spacecraft toward the Earth. Needs a texture and a model file. |
 | `day_night` | <img src="media/screenshots/examples/day_night.jpg" width="160" alt="day_night"> | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
 | `shapes` | <img src="media/screenshots/examples/shapes.jpg" width="160" alt="shapes"> | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
+| `halo_manifolds` | <img src="media/screenshots/examples/halo_manifolds.jpg" width="160" alt="halo_manifolds"> | The stable and unstable manifolds (Earth side) of an Earth-Moon L1 halo orbit (CR3BP, rotating frame), each a translucent `Polyhedron` grid of trajectories, fading along time, and the zero-velocity curves at its Jacobi constant (a `Polyhedron` of edges only); click a trajectory to highlight it (arrows in its direction of motion) and read its details; keys toggle each tube, the curves, the trajectory lines, lighting, smoothing, the colors and the opacity. |
 | `two_windows` | <img src="media/screenshots/examples/two_windows_1.jpg" width="78" alt="two_windows, window 1"><img src="media/screenshots/examples/two_windows_2.jpg" width="78" alt="two_windows, window 2"> | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
 | `pick_trajectories` | <img src="media/screenshots/examples/pick_trajectories.jpg" width="160" alt="pick_trajectories"> | Picking and callouts: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (a ring and a readout at the point: the time there and the altitude) or the Earth (latitude and longitude), a GUI panel follows the selected orbit's spacecraft (its altitude, trace mode, line width, go to the time picked), a Controls panel sets the time scale and pause, and `g` goes to the time selected. |
 | `highlight_trajectory` | <img src="media/screenshots/examples/highlight_trajectory.jpg" width="160" alt="highlight_trajectory"> | Highlighting a selected trajectory: four Earth orbits (parking, transfer, geostationary, Molniya); the program selects the next every few seconds and a click selects the one under the pointer. The selected orbit pulses, with arrows moving along it from its initial time to its final in a translucent band (`set_highlight`, animated by the GPU); `m` changes the highlight's mode. |

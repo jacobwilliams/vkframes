@@ -18,13 +18,14 @@ program test_shapes
     call check_cones()
     call check_look_at()
     call check_shapes()
+    call check_polyhedra()
     call check_lights()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
         error stop 1
     end if
-    write(*, '(a)') 'PASS: shapes (axes, grid, plane, cones), lights, materials'
+    write(*, '(a)') 'PASS: shapes (axes, grid, plane, cones, polyhedra), lights, materials'
 
 contains
 
@@ -156,6 +157,46 @@ contains
         call later%move_x_axis([0.0_wp, 0.0_wp, 0.0_wp], 5.0_wp)
         call check(root%remove_child(later) .and. root%num_children() == 4, 'remove_child from a shown tree')
     end subroutine check_shapes
+
+    !> Polyhedron: a cube's faces as polygons, a tetrahedron's as triangles,
+    !> a tube as a grid (triangles, edges, bound).
+    subroutine check_polyhedra()
+        type(Polyhedron) :: cube, tet, tube
+        real(wp) :: v(3, 8), c(3), r, grid(3, 6, 4)
+        integer :: i, j
+        v = reshape([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1] * 1.0_wp, [3, 8])
+        cube = Polyhedron('Cube', color=[0.2_wp, 0.6_wp, 1.0_wp])
+        call cube%set_faces(v, [1, 4, 3, 2, 5, 6, 7, 8, 1, 2, 6, 5, 2, 3, 7, 6, 3, 4, 8, 7, 4, 1, 5, 8], [4, 4, 4, 4, 4, 4])
+        call check(cube%num_vertices() == 8 .and. cube%num_triangles() == 12 .and. cube%num_edges() == 12, &
+                   'polyhedron: a cube (polygons: 12 triangles, 12 edges)')
+        call cube%bound(c, r)
+        call check(all(abs(c - 0.5_wp) < 1.0e-12_wp) .and. abs(r - sqrt(0.75_wp)) < 1.0e-12_wp, 'polyhedron: bound')
+        call check(cube%draw_mode() == ior(POLY_FACES, POLY_EDGES) .and. cube%lit() .and. cube%two_sided() .and. &
+                   .not. cube%smooth(), 'polyhedron: defaults')
+        call cube%set_opacity(0.4_wp)
+        call cube%set_vertex_colors(v)                          ! (rgb: the positions)
+        call check(cube%has_vertex_colors() .and. abs(cube%opacity() - 0.4_wp) < 1.0e-12_wp, 'polyhedron: colors, opacity')
+        call cube%set_faces(v, [1, 4, 3, 2], [4])
+        call check(.not. cube%has_vertex_colors() .and. cube%num_triangles() == 2, 'polyhedron: faces again, colors dropped')
+
+        tet = Polyhedron('Tetrahedron')
+        call tet%set_triangles(v(:, [1, 2, 3, 5]), reshape([1, 3, 2, 1, 2, 4, 2, 3, 4, 3, 1, 4], [3, 4]))
+        call check(tet%num_triangles() == 4 .and. tet%num_edges() == 6, 'polyhedron: a tetrahedron (triangles, 6 edges)')
+
+        do j = 1, 4                                             ! 6 around, 4 along
+            do i = 1, 6
+                grid(:, i, j) = [cos(i * pi / 3.0_wp), sin(i * pi / 3.0_wp), real(j, wp)]
+            end do
+        end do
+        tube = Polyhedron('Tube')
+        call tube%set_grid(grid, closed_u=.true.)
+        call check(tube%num_vertices() == 24 .and. tube%num_triangles() == 2 * 6 * 3 .and. &
+                   tube%num_edges() == 6 * 3 + 4 * 6, 'polyhedron: a closed tube (grid)')
+        call tube%set_grid(grid, closed_u=.true., lines=[3, 0])
+        call check(tube%num_edges() == 2 * 3, 'polyhedron: a grid every 3rd line along it')
+        call tube%set_grid(grid, lines=[0, 2])
+        call check(tube%num_triangles() == 2 * 5 * 3 .and. tube%num_edges() == 3 * 5, 'polyhedron: an open grid')
+    end subroutine check_polyhedra
 
     subroutine check_lights()
         type(ReferenceFrame), target :: root, sun

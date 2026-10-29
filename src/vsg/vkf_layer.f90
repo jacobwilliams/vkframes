@@ -650,7 +650,9 @@ module vkf_layer
                                             !! (frames' axes), else lit by the scene's lights with a material
                                             !! (vkf_mesh_material); plus 4 for vertices that change after the mesh is
                                             !! compiled (rewritten in place, then vkf_mesh_vertices_changed); plus 8
-                                            !! for a lit translucent surface (depth sorted: vkf_mesh_set_bound)
+                                            !! for a lit translucent surface (depth sorted: vkf_mesh_set_bound); plus
+                                            !! 16 two-sided (lit: no faces culled); plus 32 a color per vertex
+                                            !! (vkf_mesh_array 5; rgba each one's initial color)
             real(c_float), dimension(4), intent(in) :: rgba  !! color (rgba, 0 to 1; multiplies the texture)
             type(c_ptr), value :: texture, night_texture     !! image handles (vkf_image_read), or null
         end function vkf_mesh_create

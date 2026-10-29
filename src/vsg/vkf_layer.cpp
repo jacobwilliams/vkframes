@@ -1683,6 +1683,7 @@ namespace
         vsg::ref_ptr<vsg::vec3Array> normals;
         vsg::ref_ptr<vsg::vec2Array> texcoords;
         vsg::ref_ptr<vsg::uintArray> indices;
+        vsg::ref_ptr<vsg::vec4Array> colors;              // a color per vertex (flag 32), or one for all
         vsg::ref_ptr<vsg::PhongMaterialValue> material;   // lit meshes: changeable (vkf_mesh_material)
         vsg::ref_ptr<vsg::vec4Value> body;                // lit meshes: x = the sine of the twilight angle
     };
@@ -1699,14 +1700,24 @@ namespace
     };
 
     // Pipeline states of lit translucent surfaces (a translucent Sphere): blended,
-    // front faces only (the back of a closed surface isn't drawn through it),
-    // not writing depth. Drawn in translucent_bin, after the opaque scene.
+    // front faces only (the back of a closed surface isn't drawn through it;
+    // or both, for an open one), not writing depth. Drawn in translucent_bin,
+    // after the opaque scene.
     struct TranslucentStates : public vsg::Visitor
     {
+        VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT;
         void apply(vsg::Object& object) override { object.traverse(*this); }
-        void apply(vsg::RasterizationState& state) override { state.cullMode = VK_CULL_MODE_BACK_BIT; }
+        void apply(vsg::RasterizationState& state) override { state.cullMode = cullMode; }
         void apply(vsg::DepthStencilState& state) override { state.depthWriteEnable = VK_FALSE; }
         void apply(vsg::ColorBlendState& state) override { state.configureAttachments(true); }
+    };
+
+    // Pipeline states of lit opaque two-sided surfaces (an open Polyhedron):
+    // no faces culled (the back lit as the front: VSG_TWO_SIDED_LIGHTING).
+    struct TwoSidedStates : public vsg::Visitor
+    {
+        void apply(vsg::Object& object) override { object.traverse(*this); }
+        void apply(vsg::RasterizationState& state) override { state.cullMode = VK_CULL_MODE_NONE; }
     };
 
     // The bin of translucent meshes (vsg::DepthSorted), drawn after the
@@ -2835,7 +2846,10 @@ VKF_API void* vkf_model_read(const char* filename, int filename_len)
 // (vkf_mesh_material); plus 4 for vertices that change after the mesh is
 // compiled (rewritten in place, then vkf_mesh_vertices_changed); plus 8 for a
 // lit translucent surface (its material's alpha; TranslucentStates, depth
-// sorted with the bound of vkf_mesh_set_bound).
+// sorted with the bound of vkf_mesh_set_bound); plus 16 for a two-sided
+// surface (lit: no faces culled, the back lit as the front; e.g. an open
+// surface); plus 32 for a color per vertex (vkf_mesh_array 5; rgba is then
+// each vertex's initial color).
 VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, void* texture, void* night_texture,
                               int flags)
 {
@@ -2847,7 +2861,9 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         mesh->texcoords = vsg::vec2Array::create(static_cast<uint32_t>(n_vertices));
         mesh->indices = vsg::uintArray::create(static_cast<uint32_t>(n_indices));
         if ((flags & 4) != 0) mesh->vertices->properties.dataVariance = vsg::DYNAMIC_DATA;
-        auto colors = vsg::vec4Array::create(1, to_vec4(rgba));
+        const bool perVertex = (flags & 32) != 0;
+        auto colors = vsg::vec4Array::create(perVertex ? static_cast<uint32_t>(n_vertices) : 1u, to_vec4(rgba));
+        mesh->colors = colors;
 
         const bool unlit = (flags & 1) != 0;
         auto config = vsg::GraphicsPipelineConfigurator::create(
@@ -2863,7 +2879,8 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         bool ok = config->assignArray(arrays, "vsg_Vertex", VK_VERTEX_INPUT_RATE_VERTEX, mesh->vertices) &&
                   config->assignArray(arrays, "vsg_Normal", VK_VERTEX_INPUT_RATE_VERTEX, mesh->normals) &&
                   config->assignArray(arrays, "vsg_TexCoord0", VK_VERTEX_INPUT_RATE_VERTEX, mesh->texcoords) &&
-                  config->assignArray(arrays, "vsg_Color", VK_VERTEX_INPUT_RATE_INSTANCE, colors) &&
+                  config->assignArray(arrays, "vsg_Color",
+                                      perVertex ? VK_VERTEX_INPUT_RATE_VERTEX : VK_VERTEX_INPUT_RATE_INSTANCE, colors) &&
                   config->assignDescriptor("material", mesh->material);
         if (ok && !unlit)                // a body's twilight (none until vkf_mesh_set_twilight)
         {
@@ -2890,12 +2907,23 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
         else if ((flags & 8) != 0)
         {
             TranslucentStates states;
+            states.cullMode = ((flags & 16) != 0) ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
+            config->accept(states);
+        }
+        else if ((flags & 16) != 0)
+        {
+            TwoSidedStates states;
             config->accept(states);
         }
         if (!unlit && (flags & 2) != 0)
         {
             if (!config->shaderHints) config->shaderHints = vsg::ShaderCompileSettings::create();
             config->shaderHints->defines.insert("VKF_VIEW_LIGHTING");
+        }
+        if (!unlit && (flags & 16) != 0)
+        {
+            if (!config->shaderHints) config->shaderHints = vsg::ShaderCompileSettings::create();
+            config->shaderHints->defines.insert("VSG_TWO_SIDED_LIGHTING");
         }
         config->init();
 
@@ -2968,7 +2996,8 @@ VKF_API int vkf_mesh_vertices_changed(void* mesh)
 
 // One of the mesh's arrays, to fill in place: 1 = vertices (3 floats each),
 // 2 = normals (3 floats), 3 = texture coordinates (2 floats), 4 = triangle
-// indices (uint32, 0-based). Valid while the mesh handle exists.
+// indices (uint32, 0-based), 5 = colors (4 floats each: one per vertex with
+// flag 32, else one). Valid while the mesh handle exists.
 VKF_API void* vkf_mesh_array(void* mesh, int which)
 {
     auto m = dynamic_cast<Mesh*>(static_cast<Node*>(mesh));
@@ -2979,6 +3008,7 @@ VKF_API void* vkf_mesh_array(void* mesh, int which)
     case 2: return m->normals->dataPointer();
     case 3: return m->texcoords->dataPointer();
     case 4: return m->indices->dataPointer();
+    case 5: return m->colors->dataPointer();
     default: return nullptr;
     }
 }

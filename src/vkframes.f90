@@ -33,7 +33,8 @@ module vkframes
     use vkf_gui, only: Gui
     use vkf_sky, only: SkySphere, SKY_NONE, SKY_TEXTURE, SKY_STARS
     use vkf_shapes, only: CoordinateAxes, LatLonGrid, RadialPlane, PolyhedralCone, EllipticCone, RectangularCone, &
-                          CONE_NONE, CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE, CONE_ALL
+                          CONE_NONE, CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE, CONE_ALL, &
+                          Polyhedron, POLY_NONE, POLY_FACES, POLY_EDGES, POLY_VERTICES, POLY_ALL
     use vkf_files, only: find_data_file
     use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist, RibbonArtist, DrawableTrajectory, &
                            MARKER_START, MARKER_INTERMEDIATE, MARKER_END, &

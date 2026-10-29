@@ -2,22 +2,29 @@
 !> (axis lines with tick marks), LatLonGrid (latitude and longitude lines on
 !> an ellipsoid), RadialPlane (a transparent disk with circles and radial
 !> lines) and cones (PolyhedralCone, and its EllipticCone and RectangularCone:
-!> e.g. sensor fields of view).
+!> e.g. sensor fields of view); and (not in OpenFrames) Polyhedron, any
+!> surface of polygons or triangles, or a grid of points (e.g. a tube of
+!> trajectories), fixed in its frame, lit or not, opaque or translucent.
 !>
 !> Each is a frame drawing in its own coordinates. Its drawing is made when a
 !> window first shows it and made again when a setting changes (also while
 !> shown; the new nodes are compiled and swapped in). Lines are vkframes'
 !> double-precision lines (widths in window units); tick marks are markers
 !> (MarkerArtist's shapes); surfaces are unlit and transparent, seen from both
-!> sides, and write no depth (as OpenFrames').
+!> sides, and write no depth (as OpenFrames'), except a Polyhedron's when lit.
+!> Surfaces are made by one routine (surface_node), as their lines
+!> (line_node) and points (marker_node).
 module vkf_shapes
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_int32_t, c_float, c_double
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_int32_t, c_float, &
+                                           c_double, c_f_pointer
+    use, intrinsic :: iso_fortran_env, only: int64
     use vkf_math, only: wp, set_rgba, pi, quat_from_matrix, cross
     use vkf_frames, only: ReferenceFrame, X_AXIS, Y_AXIS, Z_AXIS, ALL_AXES
     use vkf_artists, only: MARKER_DISK, MARKER_IMAGE
     use vkf_files, only: find_data_file
     use vkf_layer, only: check_status, vkf_line_create, vkf_marker_create, vkf_mesh_create, vkf_switch_create, &
+                         vkf_mesh_array, vkf_mesh_set_bound, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_compile_node, &
                          vkf_image_read, vkf_image_delete, line_set_points, line_set_style, line_set_segments, &
                          marker_set_style, mesh_arrays
@@ -29,6 +36,10 @@ module vkf_shapes
     !> What a cone draws (OpenFrames' PolyhedralCone::DrawMode; combine with ior).
     integer, parameter, public :: CONE_NONE = 0, CONE_SIDES = 1, CONE_EDGES = 2, CONE_BASE_OUTLINE = 4
     integer, parameter, public :: CONE_ALL = 7              !! CONE_SIDES + CONE_EDGES + CONE_BASE_OUTLINE
+
+    !> What a Polyhedron draws (combine with ior).
+    integer, parameter, public :: POLY_NONE = 0, POLY_FACES = 1, POLY_EDGES = 2, POLY_VERTICES = 4
+    integer, parameter, public :: POLY_ALL = 7              !! POLY_FACES + POLY_EDGES + POLY_VERTICES
 
     !> A shape's nodes: made under the frame's contents, replaced when the
     !> shape changes.
@@ -193,6 +204,61 @@ module vkf_shapes
         module procedure new_rectangular_cone
     end interface RectangularCone
 
+    !> A surface fixed in its frame (not in OpenFrames): vertices and faces,
+    !> given as polygons (set_faces: e.g. a polyhedron's), triangles
+    !> (set_triangles) or a grid of points (set_grid: e.g. a tube of
+    !> trajectories, an invariant manifold). Drawn as faces, edges (the
+    !> polygons' outlines, the triangles' sides, or the grid's lines) and
+    !> vertices (`set_draw_mode`).
+    !>
+    !> Faces: lit by the scene's lights (the default; flat, or smooth across
+    !> the vertices with set_smooth) or unlit (as a cone's sides); in the
+    !> face color, or a color per vertex (set_vertex_colors); opaque, or
+    !> translucent (set_opacity, or the colors' alpha: drawn after the opaque
+    !> scene, sorted by depth, writing none); seen from both sides (the
+    !> default, for open surfaces; set_two_sided(.false.) for a closed one,
+    !> whose back faces are then not drawn through it).
+    !>
+    !> Vertices are single precision on the GPU, relative to the frame: for
+    !> a shape far from the frame's origin, put it in a frame placed near it.
+    type, extends(ReferenceFrame), public :: Polyhedron
+        private
+        real(wp), allocatable :: v(:,:)                     !! vertices (3, n), frame coordinates
+        integer, allocatable :: tri(:,:)                    !! triangles (3, m), vertex numbers (1-based)
+        integer, allocatable :: edge(:,:)                   !! edges (2, k), vertex numbers
+        real(wp), allocatable :: vertex_colors_(:,:)        !! a color per vertex (4, n) (none: the face color)
+        real(wp) :: face_color_(4) = 1.0_wp                 !! faces' color [r, g, b, a]
+        real(wp) :: line_color_(4) = 1.0_wp                 !! edges' color
+        real(wp) :: point_color_(4) = 1.0_wp                !! vertices' color
+        real(wp) :: opacity_ = 1.0_wp                       !! the faces' (times their colors' alpha)
+        real(wp) :: width_ = 1.0_wp                         !! edges' width (window units)
+        real(wp) :: point_size_ = 6.0_wp                    !! vertices' size (window units)
+        integer :: mode = ior(POLY_FACES, POLY_EDGES)       !! an ior of POLY_FACES, POLY_EDGES, POLY_VERTICES
+        logical :: lit_ = .true.                            !! lit by the scene's lights (else unlit, transparent)
+        logical :: smooth_ = .false.                        !! normals smooth across the vertices (else flat faces)
+        logical :: two_sided_ = .true.                      !! both sides drawn (and lit)
+        type(ShapeNodes) :: nodes                           !! the drawing
+    contains
+        procedure :: set_faces, set_triangles, set_grid, set_edges, set_vertices
+        procedure :: num_vertices, num_triangles, num_edges
+        procedure :: set_vertex_colors, remove_vertex_colors, has_vertex_colors
+        procedure :: set_face_color, face_color
+        procedure :: set_line_color => poly_set_line_color, line_color => poly_line_color
+        procedure :: set_point_color, point_color
+        procedure :: set_opacity => poly_set_opacity, opacity => poly_opacity
+        procedure :: set_line_width => poly_set_line_width, line_width => poly_line_width
+        procedure :: set_point_size, point_size
+        procedure :: set_draw_mode => poly_set_draw_mode, draw_mode => poly_draw_mode
+        procedure :: set_lit, lit, set_smooth, smooth, set_two_sided, two_sided
+        procedure :: frame_info => poly_frame_info
+        procedure :: bound => poly_bound
+        procedure :: build_contents => poly_build_contents
+    end type Polyhedron
+
+    interface Polyhedron
+        module procedure new_polyhedron
+    end interface Polyhedron
+
 contains
 
     ! ==================================================================
@@ -260,28 +326,64 @@ contains
         call check_status(line_set_points(node, real(xyz, c_double)), 'shapes')
     end function marker_node
 
-    !> An unlit transparent surface of triangles idx(3, m) (1-based) through
-    !> points xyz(3, n).
-    function surface_node(xyz, idx, rgba) result(node)
+    !> A surface of triangles idx(3, m) (1-based) through points xyz(3, n), of
+    !> color rgba: unlit and transparent (seen from both sides, writing no
+    !> depth: planes, cones' sides), or, given `normals`, lit by the scene's
+    !> lights: opaque, or translucent if an alpha is below 1 (drawn after the
+    !> opaque scene, sorted by depth by the bounding sphere `sphere`);
+    !> `two_sided`: both faces drawn and lit. `colors`: a color per vertex
+    !> (4, n), times rgba.
+    function surface_node(xyz, idx, rgba, normals, colors, two_sided, sphere) result(node)
         real(wp), intent(in) :: xyz(:,:)
-        real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
         integer, intent(in) :: idx(:,:)
+        real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
+        real(wp), intent(in), optional :: normals(:,:)      !! (3, n): lit
+        real(wp), intent(in), optional :: colors(:,:)       !! (4, n)
+        logical, intent(in), optional :: two_sided          !! (lit) both faces (default: front only)
+        real(wp), intent(in), optional :: sphere(4)         !! (lit, translucent) center and radius
         type(c_ptr) :: node
-        real(c_float), dimension(:,:), pointer :: v, normals, uv
+        real(c_float), dimension(:,:), pointer :: v, n, uv, c
         integer(c_int32_t), dimension(:), pointer :: indices
-        integer :: nv, ni
+        integer :: nv, ni, flags, i
+        logical :: lit, translucent
         node = c_null_ptr
         nv = size(xyz, 2)
         ni = size(idx)
         if (nv < 3 .or. ni < 3) return
-        node = vkf_mesh_create(int(nv, c_int), int(ni, c_int), real(rgba, c_float), c_null_ptr, c_null_ptr, 1_c_int)
+        lit = present(normals)
+        flags = 1
+        if (lit) then
+            translucent = rgba(4) < 1.0_wp
+            if (present(colors)) translucent = translucent .or. any(colors(4, :) < 1.0_wp)
+            flags = 0
+            if (translucent) flags = flags + 8
+            if (present(two_sided)) then
+                if (two_sided) flags = flags + 16
+            end if
+        end if
+        if (present(colors)) flags = flags + 32
+        node = vkf_mesh_create(int(nv, c_int), int(ni, c_int), real(rgba, c_float), c_null_ptr, c_null_ptr, &
+                               int(flags, c_int))
         if (.not. c_associated(node)) return
-        call mesh_arrays(node, nv, ni, v, normals, uv, indices)
+        call mesh_arrays(node, nv, ni, v, n, uv, indices)
         v = real(xyz, c_float)
-        normals = 0.0_c_float
-        normals(3, :) = 1.0_c_float
+        if (lit) then
+            n = real(normals, c_float)
+        else
+            n = 0.0_c_float
+            n(3, :) = 1.0_c_float
+        end if
         uv = 0.0_c_float
         indices = int(reshape(idx, [ni]) - 1, c_int32_t)
+        if (present(colors)) then
+            call c_f_pointer(vkf_mesh_array(node, 5_c_int), c, [4, nv])
+            do i = 1, nv
+                c(:, i) = real(colors(:, i) * rgba, c_float)
+            end do
+        end if
+        if (lit .and. iand(flags, 8) /= 0 .and. present(sphere)) &
+            call check_status(vkf_mesh_set_bound(node, real(sphere(1), c_double), real(sphere(2), c_double), &
+                                                 real(sphere(3), c_double), real(sphere(4), c_double)), 'shapes')
     end function surface_node
 
     !> Points along a closed curve, as separate segments: pairs (p(i), p(i+1)).
@@ -1182,5 +1284,570 @@ contains
         character(len=:), allocatable :: info
         info = 'RectangularCone'
     end function rect_frame_info
+
+    ! ==================================================================
+    ! Polyhedron
+
+    !> A polyhedron named `name`, of color `color` (its faces, edges and
+    !> vertices), with no faces yet (set_faces, set_triangles or set_grid).
+    function new_polyhedron(name, color) result(p)
+        character(len=*), intent(in) :: name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
+        type(Polyhedron) :: p
+        p%ReferenceFrame = ReferenceFrame(name, color)
+        p%face_color_ = p%color()
+        p%line_color_ = p%color()
+        p%point_color_ = p%color()
+        allocate(p%v(3, 0), p%tri(3, 0), p%edge(2, 0))
+    end function new_polyhedron
+
+    !> Faces given as polygons: `faces` the vertex numbers (1-based) of each
+    !> polygon in turn, `sizes` how many each has (>= 3; convex, or at least
+    !> star-shaped from its first vertex: drawn as a fan of triangles from
+    !> it); the edges are the polygons' sides. E.g. a cube: 8 vertices, 6
+    !> faces of 4. A face's front: its vertices counterclockwise.
+    subroutine set_faces(self, vertices, faces, sizes)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: vertices(:,:)               !! (3, n), frame coordinates
+        integer, intent(in) :: faces(:)                     !! (sum(sizes)) vertex numbers
+        integer, intent(in) :: sizes(:)                     !! each face's number of vertices
+        integer :: f, k, j, nt, ne, first
+        integer, allocatable :: sides(:,:)
+        self%v = vertices
+        nt = sum(max(sizes - 2, 0))
+        if (allocated(self%tri)) deallocate(self%tri)
+        allocate(self%tri(3, nt), sides(2, sum(sizes)))
+        nt = 0
+        ne = 0
+        first = 0
+        do f = 1, size(sizes)
+            do k = 2, sizes(f) - 1                          ! a fan from the first vertex
+                nt = nt + 1
+                self%tri(:, nt) = [faces(first + 1), faces(first + k), faces(first + k + 1)]
+            end do
+            do k = 1, sizes(f)
+                j = modulo(k, sizes(f)) + 1
+                ne = ne + 1
+                sides(:, ne) = [faces(first + k), faces(first + j)]
+            end do
+            first = first + sizes(f)
+        end do
+        self%edge = unique_edges(sides(:, 1:ne), size(vertices, 2))
+        call drop_colors(self)
+        call make_polyhedron(self)
+    end subroutine set_faces
+
+    !> Faces given as triangles (3, m) of vertex numbers (1-based); the edges
+    !> are their sides (each once).
+    subroutine set_triangles(self, vertices, triangles)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: vertices(:,:)               !! (3, n), frame coordinates
+        integer, intent(in) :: triangles(:,:)               !! (3, m)
+        self%v = vertices
+        self%tri = triangles
+        self%edge = unique_edges(reshape([triangles(1:2, :), triangles(2:3, :), triangles(3:1:-2, :)], &
+                                         [2, 3 * size(triangles, 2)]), size(vertices, 2))
+        call drop_colors(self)
+        call make_polyhedron(self)
+    end subroutine set_triangles
+
+    !> Faces given as a grid of points (3, nu, nv): quadrilaterals between
+    !> neighbours (two triangles each), joined around if `closed_u` (the last
+    !> point i to the first, for each j; e.g. a tube's circumference) or
+    !> `closed_v`. The edges: the grid's lines, those of constant i (along j)
+    !> every lines(1) and of constant j (along i) every lines(2) (default:
+    !> every one; 0 for none).
+    subroutine set_grid(self, points, closed_u, closed_v, lines)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: points(:,:,:)               !! (3, nu, nv), frame coordinates
+        logical, intent(in), optional :: closed_u, closed_v
+        integer, intent(in), optional :: lines(2)
+        integer :: nu, nv, mu, mv, i, j, i2, j2, nt, ne, every(2)
+        logical :: cu, cv
+        nu = size(points, 2)
+        nv = size(points, 3)
+        cu = .false.
+        cv = .false.
+        if (present(closed_u)) cu = closed_u .and. nu > 2
+        if (present(closed_v)) cv = closed_v .and. nv > 2
+        every = 1
+        if (present(lines)) every = max(lines, 0)
+        self%v = reshape(points, [3, nu * nv])
+        mu = merge(nu, nu - 1, cu)                          ! quadrilaterals along i, j
+        mv = merge(nv, nv - 1, cv)
+        if (allocated(self%tri)) deallocate(self%tri)
+        allocate(self%tri(3, 2 * max(mu, 0) * max(mv, 0)))
+        nt = 0
+        do j = 1, mv
+            j2 = modulo(j, nv) + 1
+            do i = 1, mu
+                i2 = modulo(i, nu) + 1
+                self%tri(:, nt + 1) = [at(i, j), at(i2, j), at(i2, j2)]
+                self%tri(:, nt + 2) = [at(i, j), at(i2, j2), at(i, j2)]
+                nt = nt + 2
+            end do
+        end do
+        if (allocated(self%edge)) deallocate(self%edge)
+        allocate(self%edge(2, nu * nv * 2))
+        ne = 0
+        if (every(1) > 0) then                              ! lines of constant i, along j
+            do i = 1, nu
+                if (.not. shown_line(i, nu, every(1), cu)) cycle
+                do j = 1, mv
+                    ne = ne + 1
+                    self%edge(:, ne) = [at(i, j), at(i, modulo(j, nv) + 1)]
+                end do
+            end do
+        end if
+        if (every(2) > 0) then                              ! lines of constant j, along i
+            do j = 1, nv
+                if (.not. shown_line(j, nv, every(2), cv)) cycle
+                do i = 1, mu
+                    ne = ne + 1
+                    self%edge(:, ne) = [at(i, j), at(modulo(i, nu) + 1, j)]
+                end do
+            end do
+        end if
+        self%edge = self%edge(:, 1:ne)
+        call drop_colors(self)
+        call make_polyhedron(self)
+
+    contains
+
+        pure integer function at(i_, j_)
+            integer, intent(in) :: i_, j_
+            at = i_ + (j_ - 1) * nu
+        end function at
+
+        !> Line k of n drawn, every `step` (and the last, if the grid is open).
+        pure logical function shown_line(k, n, step, closed)
+            integer, intent(in) :: k, n, step
+            logical, intent(in) :: closed
+            shown_line = modulo(k - 1, step) == 0 .or. (k == n .and. .not. closed)
+        end function shown_line
+
+    end subroutine set_grid
+
+    !> The edges drawn (2, k) (vertex numbers), in place of the faces' (after
+    !> set_faces, set_triangles or set_grid).
+    subroutine set_edges(self, edges)
+        class(Polyhedron), intent(inout) :: self
+        integer, intent(in) :: edges(:,:)
+        self%edge = edges
+        call make_polyhedron(self)
+    end subroutine set_edges
+
+    !> Move the vertices (3, n), keeping the faces and edges (as many as
+    !> before; e.g. a surface changing in time).
+    subroutine set_vertices(self, vertices)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: vertices(:,:)
+        if (size(vertices, 2) /= size(self%v, 2)) then
+            write(*, '(a)') 'vkframes: Polyhedron '//self%name()//': set_vertices needs as many vertices as before'
+            return
+        end if
+        self%v = vertices
+        call make_polyhedron(self)
+    end subroutine set_vertices
+
+    !> The number of vertices.
+    pure integer function num_vertices(self)
+        class(Polyhedron), intent(in) :: self
+        num_vertices = size(self%v, 2)
+    end function num_vertices
+
+    !> The number of triangles drawn (polygons: as fans).
+    pure integer function num_triangles(self)
+        class(Polyhedron), intent(in) :: self
+        num_triangles = size(self%tri, 2)
+    end function num_triangles
+
+    !> The number of edges.
+    pure integer function num_edges(self)
+        class(Polyhedron), intent(in) :: self
+        num_edges = size(self%edge, 2)
+    end function num_edges
+
+    !> A color per vertex (4, n) or (3, n) ([r, g, b(, a)], 0 to 1), for the
+    !> faces, blended across them (in place of the face color; the opacity
+    !> still applies). Dropped when the faces are set again.
+    subroutine set_vertex_colors(self, colors)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: colors(:,:)
+        integer :: i
+        if (size(colors, 2) /= size(self%v, 2) .or. size(colors, 1) < 3) then
+            write(*, '(a)') 'vkframes: Polyhedron '//self%name()//': set_vertex_colors needs a color per vertex'
+            return
+        end if
+        if (allocated(self%vertex_colors_)) deallocate(self%vertex_colors_)
+        allocate(self%vertex_colors_(4, size(colors, 2)))
+        do i = 1, size(colors, 2)
+            call set_rgba(self%vertex_colors_(:, i), colors(:, i))
+        end do
+        call make_polyhedron(self)
+    end subroutine set_vertex_colors
+
+    !> The face color again, for every vertex.
+    subroutine remove_vertex_colors(self)
+        class(Polyhedron), intent(inout) :: self
+        call drop_colors(self)
+        call make_polyhedron(self)
+    end subroutine remove_vertex_colors
+
+    !> Whether the faces have a color per vertex.
+    pure logical function has_vertex_colors(self)
+        class(Polyhedron), intent(in) :: self
+        has_vertex_colors = allocated(self%vertex_colors_)
+    end function has_vertex_colors
+
+    !> The faces' color (the alpha times the opacity).
+    subroutine set_face_color(self, color)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
+        call set_rgba(self%face_color_, color)
+        call make_polyhedron(self)
+    end subroutine set_face_color
+
+    !> The faces' color [r, g, b, a].
+    pure function face_color(self) result(c)
+        class(Polyhedron), intent(in) :: self
+        real(wp) :: c(4)
+        c = self%face_color_
+    end function face_color
+
+    !> The edges' color.
+    subroutine poly_set_line_color(self, color)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
+        call set_rgba(self%line_color_, color)
+        call make_polyhedron(self)
+    end subroutine poly_set_line_color
+
+    !> The edges' color [r, g, b, a].
+    pure function poly_line_color(self) result(c)
+        class(Polyhedron), intent(in) :: self
+        real(wp) :: c(4)
+        c = self%line_color_
+    end function poly_line_color
+
+    !> The vertices' color (POLY_VERTICES).
+    subroutine set_point_color(self, color)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
+        call set_rgba(self%point_color_, color)
+        call make_polyhedron(self)
+    end subroutine set_point_color
+
+    !> The vertices' color [r, g, b, a].
+    pure function point_color(self) result(c)
+        class(Polyhedron), intent(in) :: self
+        real(wp) :: c(4)
+        c = self%point_color_
+    end function point_color
+
+    !> The faces' opacity (0 to 1; default 1, opaque): below 1 translucent.
+    subroutine poly_set_opacity(self, opacity)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: opacity
+        self%opacity_ = max(0.0_wp, min(1.0_wp, opacity))
+        call make_polyhedron(self)
+    end subroutine poly_set_opacity
+
+    !> The faces' opacity.
+    pure real(wp) function poly_opacity(self)
+        class(Polyhedron), intent(in) :: self
+        poly_opacity = self%opacity_
+    end function poly_opacity
+
+    !> The edges' width (window units; default 1).
+    subroutine poly_set_line_width(self, width)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: width
+        self%width_ = max(0.0_wp, width)
+        call make_polyhedron(self)
+    end subroutine poly_set_line_width
+
+    !> The edges' width (window units).
+    pure real(wp) function poly_line_width(self)
+        class(Polyhedron), intent(in) :: self
+        poly_line_width = self%width_
+    end function poly_line_width
+
+    !> The vertices' size (window units; default 6).
+    subroutine set_point_size(self, size_)
+        class(Polyhedron), intent(inout) :: self
+        real(wp), intent(in) :: size_
+        self%point_size_ = max(0.0_wp, size_)
+        call make_polyhedron(self)
+    end subroutine set_point_size
+
+    !> The vertices' size (window units).
+    pure real(wp) function point_size(self)
+        class(Polyhedron), intent(in) :: self
+        point_size = self%point_size_
+    end function point_size
+
+    !> What to draw: an ior of POLY_FACES, POLY_EDGES, POLY_VERTICES (default
+    !> faces and edges).
+    subroutine poly_set_draw_mode(self, mode)
+        class(Polyhedron), intent(inout) :: self
+        integer, intent(in) :: mode
+        self%mode = mode
+        call make_polyhedron(self)
+    end subroutine poly_set_draw_mode
+
+    !> What is drawn: an ior of POLY_FACES, POLY_EDGES, POLY_VERTICES.
+    pure integer function poly_draw_mode(self)
+        class(Polyhedron), intent(in) :: self
+        poly_draw_mode = self%mode
+    end function poly_draw_mode
+
+    !> Faces lit by the scene's lights (the default), or unlit (their color
+    !> as is, transparent as a cone's sides: writing no depth).
+    subroutine set_lit(self, lit)
+        class(Polyhedron), intent(inout) :: self
+        logical, intent(in) :: lit
+        self%lit_ = lit
+        call make_polyhedron(self)
+    end subroutine set_lit
+
+    !> Whether the faces are lit.
+    pure logical function lit(self)
+        class(Polyhedron), intent(in) :: self
+        lit = self%lit_
+    end function lit
+
+    !> Shading smooth across the vertices (normals averaged over the faces
+    !> around each: a curved surface, e.g. a grid's), or flat faces (the
+    !> default: a polyhedron's).
+    subroutine set_smooth(self, smooth)
+        class(Polyhedron), intent(inout) :: self
+        logical, intent(in) :: smooth
+        self%smooth_ = smooth
+        call make_polyhedron(self)
+    end subroutine set_smooth
+
+    !> Whether the shading is smooth.
+    pure logical function smooth(self)
+        class(Polyhedron), intent(in) :: self
+        smooth = self%smooth_
+    end function smooth
+
+    !> Both sides of the faces drawn and lit (the default: open surfaces), or
+    !> only their fronts (a closed surface, its faces counterclockwise seen
+    !> from outside: translucent, its far side isn't drawn through it).
+    subroutine set_two_sided(self, two_sided)
+        class(Polyhedron), intent(inout) :: self
+        logical, intent(in) :: two_sided
+        self%two_sided_ = two_sided
+        call make_polyhedron(self)
+    end subroutine set_two_sided
+
+    !> Whether both sides are drawn.
+    pure logical function two_sided(self)
+        class(Polyhedron), intent(in) :: self
+        two_sided = self%two_sided_
+    end function two_sided
+
+    !> What kind of frame this is: 'Polyhedron'.
+    function poly_frame_info(self) result(info)
+        class(Polyhedron), intent(in) :: self
+        character(len=:), allocatable :: info
+        info = 'Polyhedron'
+    end function poly_frame_info
+
+    !> The bounding sphere: about the vertices' box's center.
+    subroutine poly_bound(self, center, radius)
+        class(Polyhedron), intent(in) :: self
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
+        call vertices_sphere(self%v, center, radius)
+    end subroutine poly_bound
+
+    subroutine poly_build_contents(self, viewer, group)
+        class(Polyhedron), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
+        self%nodes%contents = group
+        call make_polyhedron(self)
+        self%nodes%shown = c_associated(viewer)
+    end subroutine poly_build_contents
+
+    !> No colors per vertex.
+    subroutine drop_colors(self)
+        type(Polyhedron), intent(inout) :: self
+        if (allocated(self%vertex_colors_)) deallocate(self%vertex_colors_)
+    end subroutine drop_colors
+
+    !> The polyhedron's nodes, made again (if shown).
+    subroutine make_polyhedron(self)
+        class(Polyhedron), intent(inout) :: self
+        type(c_ptr) :: group
+        real(wp) :: rgba(4), sphere(4)
+        real(wp), allocatable :: v(:,:), normals(:,:), colors(:,:), segments(:,:)
+        integer, allocatable :: idx(:,:)
+        integer :: i, k, m
+        if (.not. c_associated(self%nodes%contents)) return
+        group = vkf_switch_create()
+        if (iand(self%mode, POLY_FACES) /= 0 .and. size(self%tri, 2) > 0) then
+            rgba = self%face_color_
+            if (allocated(self%vertex_colors_)) rgba = [1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]
+            rgba(4) = rgba(4) * self%opacity_
+            call vertices_sphere(self%v, sphere(1:3), sphere(4))
+            if (.not. self%lit_) then
+                if (allocated(self%vertex_colors_)) then
+                    call add(group, surface_node(self%v, self%tri, rgba, colors=self%vertex_colors_))
+                else
+                    call add(group, surface_node(self%v, self%tri, rgba))
+                end if
+            else if (self%smooth_) then                          ! shared vertices, normals averaged
+                normals = vertex_normals(self%v, self%tri)
+                if (allocated(self%vertex_colors_)) then
+                    call add(group, surface_node(self%v, self%tri, rgba, normals, self%vertex_colors_, self%two_sided_, &
+                                                 sphere))
+                else
+                    call add(group, surface_node(self%v, self%tri, rgba, normals, two_sided=self%two_sided_, &
+                                                 sphere=sphere))
+                end if
+            else                                                ! flat: each triangle its own vertices
+                m = size(self%tri, 2)
+                allocate(v(3, 3 * m), normals(3, 3 * m), idx(3, m))
+                do k = 1, m
+                    do i = 1, 3
+                        v(:, 3 * (k - 1) + i) = self%v(:, self%tri(i, k))
+                    end do
+                    normals(:, 3 * k - 2) = unit_normal(v(:, 3 * k - 2), v(:, 3 * k - 1), v(:, 3 * k))
+                    normals(:, 3 * k - 1) = normals(:, 3 * k - 2)
+                    normals(:, 3 * k) = normals(:, 3 * k - 2)
+                    idx(:, k) = [3 * k - 2, 3 * k - 1, 3 * k]
+                end do
+                if (allocated(self%vertex_colors_)) then
+                    allocate(colors(4, 3 * m))
+                    do k = 1, m
+                        do i = 1, 3
+                            colors(:, 3 * (k - 1) + i) = self%vertex_colors_(:, self%tri(i, k))
+                        end do
+                    end do
+                    call add(group, surface_node(v, idx, rgba, normals, colors, self%two_sided_, sphere))
+                else
+                    call add(group, surface_node(v, idx, rgba, normals, two_sided=self%two_sided_, sphere=sphere))
+                end if
+            end if
+        end if
+        if (iand(self%mode, POLY_EDGES) /= 0 .and. size(self%edge, 2) > 0) then
+            allocate(segments(3, 2 * size(self%edge, 2)))
+            do k = 1, size(self%edge, 2)
+                segments(:, 2 * k - 1) = self%v(:, self%edge(1, k))
+                segments(:, 2 * k) = self%v(:, self%edge(2, k))
+            end do
+            call add(group, line_node(segments, self%line_color_, self%width_, .true.))
+        end if
+        if (iand(self%mode, POLY_VERTICES) /= 0 .and. size(self%v, 2) > 0) &
+            call add(group, marker_node(self%v, self%point_color_, self%point_size_, MARKER_DISK, 0.0_wp, c_null_ptr))
+        call self%nodes%replace(group)
+    end subroutine make_polyhedron
+
+    !> Edges (2, k) of vertex numbers (1 to n), each once whichever its
+    !> direction (sorted by their smaller vertex, then the larger).
+    function unique_edges(pairs, n) result(edges)
+        integer, intent(in) :: pairs(:,:)
+        integer, intent(in) :: n                            !! the number of vertices
+        integer, allocatable :: edges(:,:)
+        integer(int64), allocatable :: keys(:)
+        integer :: k, m
+        allocate(keys(size(pairs, 2)))
+        keys = int(min(pairs(1, :), pairs(2, :)), int64) * (int(n, int64) + 1) + int(max(pairs(1, :), pairs(2, :)), int64)
+        call sort_keys(keys)
+        allocate(edges(2, size(keys)))
+        m = 0
+        do k = 1, size(keys)
+            if (k > 1) then
+                if (keys(k) == keys(k - 1)) cycle
+            end if
+            m = m + 1
+            edges(:, m) = [int(keys(k) / (int(n, int64) + 1)), int(modulo(keys(k), int(n, int64) + 1))]
+        end do
+        edges = edges(:, 1:m)
+    end function unique_edges
+
+    !> Sort keys, increasing (a bottom-up merge sort).
+    pure subroutine sort_keys(a)
+        integer(int64), intent(inout) :: a(:)
+        integer(int64), allocatable :: b(:)
+        integer :: n, width, lo, mid, hi, i, j, k
+        n = size(a)
+        allocate(b(n))
+        width = 1
+        do while (width < n)
+            do lo = 1, n, 2 * width
+                mid = min(lo + width, n + 1)
+                hi = min(lo + 2 * width, n + 1)
+                i = lo
+                j = mid
+                do k = lo, hi - 1
+                    if (i < mid .and. (j >= hi .or. a(min(i, n)) <= a(min(j, n)))) then
+                        b(k) = a(i)
+                        i = i + 1
+                    else
+                        b(k) = a(j)
+                        j = j + 1
+                    end if
+                end do
+            end do
+            a = b
+            width = 2 * width
+        end do
+    end subroutine sort_keys
+
+    !> Normals per vertex: the faces' around it, weighted by their areas.
+    pure function vertex_normals(v, tri) result(normals)
+        real(wp), intent(in) :: v(:,:)
+        integer, intent(in) :: tri(:,:)
+        real(wp) :: normals(3, size(v, 2)), f(3), len_
+        integer :: k, i
+        normals = 0.0_wp
+        do k = 1, size(tri, 2)
+            f = cross(v(:, tri(2, k)) - v(:, tri(1, k)), v(:, tri(3, k)) - v(:, tri(1, k)))   ! (twice the area)
+            do i = 1, 3
+                normals(:, tri(i, k)) = normals(:, tri(i, k)) + f
+            end do
+        end do
+        do i = 1, size(v, 2)
+            len_ = norm2(normals(:, i))
+            if (len_ > 0.0_wp) then
+                normals(:, i) = normals(:, i) / len_
+            else
+                normals(:, i) = [0.0_wp, 0.0_wp, 1.0_wp]
+            end if
+        end do
+    end function vertex_normals
+
+    !> A triangle's unit normal (counterclockwise: its front), or +z if it has
+    !> no area.
+    pure function unit_normal(a, b, c) result(n)
+        real(wp), intent(in) :: a(3), b(3), c(3)
+        real(wp) :: n(3), len_
+        n = cross(b - a, c - a)
+        len_ = norm2(n)
+        if (len_ > 0.0_wp) then
+            n = n / len_
+        else
+            n = [0.0_wp, 0.0_wp, 1.0_wp]
+        end if
+    end function unit_normal
+
+    !> A sphere around points v (3, n): their box's center, out to the
+    !> farthest (zero for none).
+    pure subroutine vertices_sphere(v, center, radius)
+        real(wp), intent(in) :: v(:,:)
+        real(wp), intent(out) :: center(3), radius
+        integer :: i
+        center = 0.0_wp
+        radius = 0.0_wp
+        if (size(v, 2) == 0) return
+        center = 0.5_wp * (minval(v, dim=2) + maxval(v, dim=2))
+        do i = 1, size(v, 2)
+            radius = max(radius, norm2(v(:, i) - center))
+        end do
+    end subroutine vertices_sphere
 
 end module vkf_shapes
