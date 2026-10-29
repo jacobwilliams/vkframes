@@ -12,8 +12,8 @@
 !> 100 km to the ground on a smooth curve, level at both ends), at the
 !> terrain's height there (TerrainBody%elevation); its path is drawn too,
 !> with its altitude above the terrain below it (a dashed line down to the
-!> ground, the height in its label, which follows it, and in the HUD) and, as it passes, a drop line to the
-!> ground every 10 s of its descent (the terrain's profile under the path:
+!> ground, the height in its label, which follows it, and in the HUD) and,
+!> as it passes, a drop line to the ground every 10 s of its descent (the terrain's profile under the path:
 !> Tycho's rim, then its central peak). At startup the demo prints how
 !> closely the path passes over ground higher than the site.
 !>
@@ -25,11 +25,15 @@
 !> the horizon to its touchdown). The dock sets the time
 !> (scale, pause, reset, and a slider over a day that follows the animation),
 !> the Sun's longitude (the terminator: low Sun, long shadows), the terrain's
-!> lighting (off: the imagery as it is) and the orbit's and descent's curves.
+!> lighting (off: the imagery as it is), the orbit's and descent's curves,
+!> and the base frame of the Moon-fixed views (Tycho, the landing site): the
+!> Moon's center (its axes) or the landing site (a frame on the ground
+!> there: x east, y north, z up), shown with ticked axes (1 km ticks).
 !>
 !> Run with `pixi run -e rocky moon-demo` (after `pixi run -e rocky
 !> rocky-build`, and `pixi run -e rocky moon-data` for the elevation). Options:
-!> `--view n` starts in view n (1 to 7); `--sun degrees` the Sun's longitude;
+!> `--view n` starts in view n (1 to 7); `--site-frame` with the landing
+!> site as the base frame; `--sun degrees` the Sun's longitude;
 !> `--time seconds` the start time; `--capture file` saves the frame
 !> `--capture-frame n` (default 600) as an image; `--quit-after seconds`.
 module moondemo
@@ -60,6 +64,7 @@ module moondemo
     real(wp), parameter :: t_descent = 1200.0_wp, descent_time = 720.0_wp  !! s
     real(wp), parameter :: lander_size = 0.3_wp                            !! km (enlarged to be seen)
     real(wp), parameter :: lander_color(3) = [0.3_wp, 0.9_wp, 1.0_wp]
+    real(wp), parameter :: site_axes_length = 10.0_wp, site_axes_tick = 1.0_wp   !! km (minor ticks: a fifth)
     real(wp), parameter :: observer_east = 3.0_wp, observer_height = 0.05_wp   !! km: from the site, above the ground
     integer, parameter :: n_views = 7
     character(len=20), parameter :: view_names(n_views) = [character(len=20) :: 'Moon', 'Spacecraft', &
@@ -84,7 +89,7 @@ module moondemo
         logical :: slider_held = .false.                       !! the user holds the time slider's handle
         logical :: slider_setting = .false.                    !! the demo moves it (to the time)
         type(HUDText) :: hud_view, hud_time, hud_lander
-        type(QCheckBox) :: show_descent
+        type(QCheckBox) :: show_descent, site_base
         ! the scene
         type(ReferenceFrame) :: inertial                       !! the root: the Moon's center, inertial axes
         type(TerrainBody) :: moon                              !! turns at its sidereal rate
@@ -107,6 +112,9 @@ module moondemo
         type(MarkerArtist) :: drop_foot                       !! where it meets the ground
         type(ReferenceFrame) :: observer                      !! on the ground near the site (Moon-fixed; z up, y north)
         real(wp) :: site_height = 0.0_wp                      !! the ground's at the site (km above the sphere)
+        type(ReferenceFrame) :: site                          !! on the ground at the site (Moon-fixed; x east, y north, z up)
+        type(CoordinateAxes) :: site_axes                     !! ticked, in the site frame
+        logical :: site_frame = .false.                       !! the Moon-fixed views' base: the site (else the Moon)
         ! options
         integer :: start_view = 1
         real(wp) :: start_sun = tycho_lon + 75.0_wp            !! low over Tycho, from the east
@@ -368,8 +376,23 @@ contains
         call app%observer%show_decorations(.false.)
         call app%observer%set_position(surface(site_lat, lon, app%moon%elevation(site_lat, lon) + observer_height))
         call app%observer%set_attitude(quat_from_matrix(local_axes(site_lat, lon)))
+        ! the landing site's frame, with ticked axes (no arrows or labels), shown while it is the base frame
+        app%site = ReferenceFrame('Site')
+        call app%site%show_decorations(.false.)
+        call app%site%set_position(surface(site_lat, site_lon, app%site_height))
+        call app%site%set_attitude(quat_from_matrix(local_axes(site_lat, site_lon)))
+        app%site_axes = CoordinateAxes('Site axes', color=[0.9_wp, 0.9_wp, 0.9_wp])
+        call app%site_axes%set_axis_length(site_axes_length)
+        call app%site_axes%set_tick_spacing(site_axes_tick, site_axes_tick / 5.0_wp)
+        call app%site_axes%set_axis_width(1.5_wp)
+        call app%site_axes%set_tick_size(10.0_wp, 5.0_wp)
+        call app%site_axes%show_name_label(.false.)
+        call app%site_axes%show_axes(NO_AXES)
+        call app%site_axes%show_axes_labels(NO_AXES)
+        call app%site_axes%show_contents(app%site_frame)
         if (.not. (app%moon%add_child(app%lander) .and. app%moon%add_child(app%descent_frame) .and. &
-                   app%moon%add_child(app%observer))) &
+                   app%moon%add_child(app%observer) .and. app%moon%add_child(app%site) .and. &
+                   app%site%add_child(app%site_axes))) &
             error stop 'moon demo: could not build the scene'
 
         if (.not. (app%inertial%add_child(app%moon) .and. app%inertial%add_child(app%sun) .and. &
@@ -394,6 +417,42 @@ contains
         call app%moon%set_attitude(quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], 2.0_wp * pi * t / sidereal_month))
     end subroutine turn_moon
 
+    !> The base frame of the Moon-fixed views (4, Tycho, and 6, the landing
+    !> site): the landing site's frame (`at_site`) or the Moon's; their
+    !> default eyes, centers and ups in its axes, and the views reset to them.
+    !> The site's ticked axes are shown with it.
+    subroutine set_base_frame(at_site)
+        logical, intent(in) :: at_site
+        real(wp) :: eye(3,2), center(3,2), up(3,2), m(3,3), o(3)
+        integer, parameter :: ks(2) = [4, 6]
+        integer :: k
+        ! in the Moon's axes (km)
+        eye(:, 1) = surface(tycho_lat - 2.0_wp, tycho_lon - 0.8_wp, 40.0_wp)
+        center(:, 1) = surface(tycho_lat, tycho_lon, 0.0_wp)
+        up(:, 1) = unit(surface(tycho_lat, tycho_lon, 0.0_wp))
+        eye(:, 2) = surface(site_lat - 0.25_wp, site_lon - 0.12_wp, 4.0_wp)
+        center(:, 2) = surface(site_lat, site_lon, app%site_height)
+        up(:, 2) = unit(surface(site_lat, site_lon, 0.0_wp))
+        app%site_frame = at_site
+        call app%site_axes%show_contents(at_site)
+        if (at_site) then                                        ! into the site's: x' = m^T (x - o)
+            m = local_axes(site_lat, site_lon)
+            o = surface(site_lat, site_lon, app%site_height)
+            eye = matmul(transpose(m), eye - spread(o, 2, 2))
+            center = matmul(transpose(m), center - spread(o, 2, 2))
+            up = matmul(transpose(m), up)
+        end if
+        do k = 1, 2
+            if (at_site) then
+                call app%views(ks(k))%set_view_frame(app%inertial, app%site)
+            else
+                call app%views(ks(k))%set_view_frame(app%inertial, app%moon)
+            end if
+            call app%views(ks(k))%set_default_view_parameters(eye=eye(:, k), center=center(:, k), up=up(:, k))
+            call app%views(ks(k))%reset_view()
+        end do
+    end subroutine set_base_frame
+
     ! ==================================================================
     ! the window
 
@@ -405,16 +464,9 @@ contains
         call app%views(2)%set_default_view_distance(12.0_wp * sc_size)
         app%views(3) = View(app%inertial, app%spacecraft, lookat=app%moon, frame_type=ABSOLUTE_FRAME)
         call app%views(3)%set_default_view_distance(30.0_wp * sc_size)
-        app%views(4) = View(app%inertial, app%moon)                              ! Moon-fixed
-        call app%views(4)%set_default_view_parameters(eye=surface(tycho_lat - 2.0_wp, tycho_lon - 0.8_wp, 40.0_wp), &
-                                                      center=surface(tycho_lat, tycho_lon, 0.0_wp), &
-                                                      up=unit(surface(tycho_lat, tycho_lon, 0.0_wp)))
         app%views(5) = View(app%inertial, app%lander)
         call app%views(5)%set_default_view_distance(14.0_wp * lander_size)
-        app%views(6) = View(app%inertial, app%moon)                              ! Moon-fixed
-        call app%views(6)%set_default_view_parameters(eye=surface(site_lat - 0.25_wp, site_lon - 0.12_wp, 4.0_wp), &
-                                                      center=surface(site_lat, site_lon, app%site_height), &
-                                                      up=unit(surface(site_lat, site_lon, 0.0_wp)))
+        call set_base_frame(app%site_frame)                     ! views 4 and 6: Moon-fixed
         ! from the observer at the lander: the view frame's +y turns toward it (z kept up); the eye on the observer
         app%views(7) = View(app%inertial, app%observer, lookat=app%lander)
         call app%views(7)%set_default_view_parameters(eye=[0.0_wp, 0.0_wp, 0.0_wp], center=[0.0_wp, 1.0_wp, 0.0_wp], &
@@ -762,6 +814,12 @@ contains
         call app%descent_frame%show_contents(checked)
     end subroutine on_show_descent
 
+    subroutine on_site_base(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call set_base_frame(checked)
+    end subroutine on_site_base
+
     subroutine on_show_orbit(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -845,6 +903,10 @@ contains
         call app%show_descent%setChecked(.true.)
         call app%show_descent%toggled%connect(on_show_descent)
         call form%addRow('', app%show_descent)
+        app%site_base = QCheckBox('Base frame at the landing site')
+        call app%site_base%setChecked(app%site_frame)
+        call app%site_base%toggled%connect(on_site_base)
+        call form%addRow('', app%site_base)
 
         call form%addRow(QLabel('<small>Left drag: rotate<br>Right drag: zoom<br>Middle drag: pan<br>' // &
                                 'Wheel: zoom<br>Space: reset the view</small>'))
@@ -881,6 +943,8 @@ program vkframes_moon_demo
             read(arg, *) app%start_view
             app%start_view = max(1, min(n_views, app%start_view))
             i = i + 1
+        case ('--site-frame')
+            app%site_frame = .true.
         case ('--sun')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_sun

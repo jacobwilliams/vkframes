@@ -577,7 +577,9 @@ Options (`--view n`, `--windows n`, `--sky n`, `--trace`, `--capture file`,
 - **Views:** seven, including Tycho close to the surface, and the lander
   seen from the landing site as it comes down.
 - **Dock:** the time, the Sun's longitude (low Sun, long shadows), the
-  terrain's lighting, and the curves.
+  terrain's lighting, the curves, and the base frame of the Moon-fixed
+  views: the Moon's center, or the landing site (x east, y north, z up),
+  shown with ticked axes.
 
 It needs the `rocky` environment and a one-time Rocky build:
 
@@ -588,7 +590,7 @@ pixi run -e rocky moon-demo
 pixi run -e rocky moon-demo -- --view 6 --sun 60
 ```
 
-Options (`--view n`, `--sun degrees`, `--time seconds`, `--capture file`,
+Options (`--view n`, `--site-frame`, `--sun degrees`, `--time seconds`, `--capture file`,
 `--quit-after seconds`) are at the top of
 [demos/moon/app/main.f90](demos/moon/app/main.f90).
 

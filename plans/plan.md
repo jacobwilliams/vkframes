@@ -931,7 +931,9 @@ Decided so far:
       orbiter, and a lander descending into Tycho, Moon-fixed, onto the
       terrain's height; its altitude above the terrain below it shown, with a
       line down to the ground, a curtain of drop lines along its path, and
-      the path's clearance over the central peak printed). Tested
+      the path's clearance over the central peak printed; the Moon-fixed
+      views' base frame: the Moon's or the landing site's, east-north-up on
+      the ground, with ticked axes). Tested
       on macOS.
 - [ ] Rocky, later: one map shown in several windows (now one per window:
       the window that first shows it), Linux and Windows (untested), a
