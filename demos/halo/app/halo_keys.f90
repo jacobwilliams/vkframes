@@ -41,10 +41,14 @@ module halo_manifolds_keys
         logical :: edges = .true., lit = .true., smooth = .true., fading = .true.
         real(wp) :: opacity = 0.6_wp
         integer :: hovered(2) = 0, selected(2) = 0      !! (line, tube), 0: none
-        ! the Jacobi constant's panel: the value asked for (the slider; the
+        ! the panel (the Jacobi constant and the propagation time): the
+        ! Jacobi constant asked for (the slider; the
         ! program computes the orbit and its manifolds again when it changes),
         ! and the orbit's
         real(wp) :: c_requested = 0.0_wp, c_min = 3.03_wp, c_max = 3.17_wp
+        ! the propagation time (days): asked for (the slider; the manifolds
+        ! computed again when it changes), and the manifolds'
+        real(wp) :: days_requested = 0.0_wp, days = 0.0_wp, days_min = 2.0_wp, days_max = 60.0_wp
         real(wp) :: c = 0.0_wp, period_days = 0.0_wp, az = 0.0_wp, seconds = 0.0_wp, continued = 0.0_wp
         integer :: threads = 1
         character(len=80) :: status = ''
@@ -123,6 +127,8 @@ contains
         call g%begin_panel('Halo orbit', position=[0.99_wp, 0.92_wp], pivot=[1.0_wp, 0.0_wp])
         value = self%c_requested
         if (g%slider('Jacobi constant', value, self%c_min, self%c_max)) self%c_requested = value
+        value = self%days_requested
+        if (g%slider('propagation (days)', value, self%days_min, self%days_max)) self%days_requested = value
         write(text, '(a,f9.6,a,f6.2,a,i0,a)') 'C = ', self%c, ', period ', self%period_days, ' days, Az ', &
             nint(self%az), ' km'
         call g%text(trim(text))

@@ -494,9 +494,9 @@ frame) and its invariant manifolds on the Earth's side.
   direction of motion), with a readout at the point clicked and its details
   (its place around the orbit, its closest approach to the Earth, its
   Jacobi constant's drift).
-- A GUI slider picks the Jacobi constant: another orbit of the family (by
-  continuation), its manifolds computed again, in parallel with OpenMP, as
-  the slider moves.
+- GUI sliders pick the Jacobi constant (another orbit of the family, by
+  continuation) and how long the manifolds are propagated (2 to 60 days);
+  the manifolds are computed again, in parallel with OpenMP, as they move.
 - Keys toggle each tube, the curves, the trajectory lines, lighting,
   smoothing, the fading colors and the opacity.
 

@@ -14,8 +14,9 @@
 !> inverse; their eigenvectors (by power iteration), carried along the
 !> orbit by the state transition matrix, give the directions of the
 !> manifolds at each of 72 points. Each tube: those points displaced 50 km
-!> along them toward the Earth (- toward the Moon), propagated 4.5 time
-!> units (about 20 days) forward (unstable) or backward (stable), sampled at
+!> along them toward the Earth (- toward the Moon), propagated (19.5 days
+!> at first: a slider sets it, 2 to 60) forward (unstable) or backward
+!> (stable), sampled at
 !> common times: a grid of points (around the orbit by along the time), a
 !> Polyhedron (set_grid), closed around. Trajectories that reach the Earth
 !> or the Moon stop there.
@@ -39,7 +40,9 @@
 !> drawn again (the latest value asked for, once the last is done; the
 !> panel says how long it took). The manifolds' trajectories are propagated
 !> in parallel with OpenMP (the demo's fpm.toml; about 0.004 s on ten
-!> threads of an Apple M-series, 0.04 s on one).
+!> threads of an Apple M-series, 0.04 s on one). A second slider sets how
+!> long the manifolds are propagated (2 to 60 days): they're computed again
+!> (the orbit kept).
 !>
 !> The zero-velocity curves: 2 U(x, y, 0) = C (U the pseudo-potential, C
 !> the Jacobi constant), traced by marching squares on a 600 x 600 grid of
@@ -52,8 +55,9 @@
 !> Run it with `pixi run halo-demo` (from the vkframes root). Arguments
 !> (optional): number of frames to run, then a file to capture the last
 !> frame to; with `--demo-pick`, a trajectory is picked at the start (for a
-!> capture), and with `--jacobi=C` the orbit of Jacobi constant C at the
-!> start: `pixi run halo-demo 60 halo.png --demo-pick --jacobi=3.1`
+!> capture), with `--jacobi=C` the orbit of Jacobi constant C at the start,
+!> and with `--days=D` the manifolds propagated D days:
+!> `pixi run halo-demo 60 halo.png --demo-pick --jacobi=3.1 --days=30`
 program halo_manifolds
 
     use vkframes
@@ -64,9 +68,8 @@ program halo_manifolds
     implicit none
 
     integer, parameter :: n_around = 72                 !! points around the orbit (the tubes' circumference)
-    integer, parameter :: n_along = 240                 !! samples along each trajectory
+    integer, parameter :: n_along = 360                 !! samples along each trajectory
     integer, parameter :: n_orbit = 4 * n_around        !! points along the orbit drawn
-    real(wp), parameter :: span = 4.5_wp                !! each trajectory's time (time units)
     real(wp), parameter :: offset = 50.0_wp / lu        !! the displacement off the orbit (50 km)
     real(wp), parameter :: re = 6378.137_wp, rm = 1737.4_wp     !! km
     character(len=*), parameter :: names(n_tubes) = [character(len=24) :: 'Unstable', 'Stable']
@@ -94,13 +97,14 @@ program halo_manifolds
     type(HUDText), target :: legend
     type(ManifoldKeys), target :: keys
     character(len=1024) :: arg, file
-    real(wp) :: x0, z0, vy0, period, c_reached, c_start
+    real(wp) :: x0, z0, vy0, period, c_reached, c_start, days_start
+    real(wp) :: span                                    !! each trajectory's time (time units: keys%days)
     real(wp) :: orbit(6, n_orbit + 1), dirs(6, n_around, 2), times(n_along)
     real(wp) :: grid(3, n_around, n_along, n_tubes)
     integer :: last(n_around, n_tubes)                  !! each trajectory's samples drawn (up to an impact)
     integer :: j, k, l, frames, frame
     integer(8) :: tick, tock, rate
-    logical :: running, demo, ok
+    logical :: running, demo, ok, orbit_changed
 
     frames = huge(frames)
     file = ''
@@ -111,14 +115,16 @@ program halo_manifolds
     if (command_argument_count() >= 2) call get_command_argument(2, file)
     demo = .false.
     c_start = 0.0_wp
+    days_start = 0.0_wp
     do j = 3, command_argument_count()
         call get_command_argument(j, arg)
         if (trim(arg) == '--demo-pick') demo = .true.
         if (arg(1:9) == '--jacobi=') read(arg(10:), *) c_start
+        if (arg(1:7) == '--days=') read(arg(8:), *) days_start
     end do
     keys%threads = 1
     !$ keys%threads = omp_get_max_threads()
-    times = [(span * (j - 1) / (n_along - 1) * tu_days, j = 1, n_along)]
+    keys%days_requested = 4.5_wp * tu_days              ! (each trajectory's time: 4.5 time units at first)
 
     ! the first halo orbit: from a published initial guess
     x0 = 0.82575887090385_wp
@@ -205,9 +211,10 @@ program halo_manifolds
     keys%details => details
     keys%earth = [-mu * lu, 0.0_wp, 0.0_wp]
     keys%re = re
-    call compute()
+    call compute(.true.)
     keys%c_requested = keys%c
     if (c_start > 0.0_wp) keys%c_requested = c_start   ! (--jacobi=C: computed in the first frame)
+    if (days_start > 0.0_wp) keys%days_requested = days_start   ! (--days=D: as well)
     scene = FrameManager(rotating)
 
     if (.not. window%open(1200, 800, 'vkframes: halo orbit manifolds')) error stop 'could not open a window'
@@ -237,18 +244,22 @@ program halo_manifolds
         ! the slider moved: the orbit of that Jacobi constant (continued from
         ! this one), and its manifolds (the latest value asked for, once the
         ! last is done)
-        if (abs(keys%c_requested - keys%c) > 1.0e-9_wp) then
+        if (abs(keys%c_requested - keys%c) > 1.0e-9_wp .or. abs(keys%days_requested - keys%days) > 1.0e-9_wp) then
             call system_clock(tick, rate)
-            call continue_halo(x0, z0, vy0, keys%c_requested, period, c_reached, ok)
+            ok = .true.
+            orbit_changed = abs(keys%c_requested - keys%c) > 1.0e-9_wp
+            if (orbit_changed) then
+                call continue_halo(x0, z0, vy0, keys%c_requested, period, c_reached, ok)
+                keys%status = ''
+            end if
             call system_clock(tock)
             keys%continued = real(tock - tick, wp) / rate
-            keys%status = ''
             if (.not. ok) then
                 write(keys%status, '(a,f9.6)') 'no halo orbit found beyond C = ', c_reached
                 keys%c_requested = c_reached
             end if
             call keys%clear_selection()
-            call compute()
+            call compute(orbit_changed)
         end if
     end do
     if (len_trim(file) > 0 .and. running) then
@@ -258,17 +269,23 @@ program halo_manifolds
 
 contains
 
-    !> The orbit (x0, z0, vy0), its manifolds and zero-velocity curves,
-    !> computed (the trajectories in parallel) and drawn.
-    subroutine compute()
+    !> The orbit (x0, z0, vy0; if `orbit`, else only the propagation time
+    !> changed), its manifolds and zero-velocity curves, computed (the
+    !> trajectories in parallel) and drawn.
+    subroutine compute(orbit)
+        logical, intent(in) :: orbit
         integer(8) :: t0, t1, rate
+        integer :: j_
         call system_clock(t0, rate)
-        call compute_orbit()
+        if (orbit) call compute_orbit()
+        keys%days = keys%days_requested
+        span = keys%days / tu_days
+        times = [(span * (j_ - 1) / (n_along - 1) * tu_days, j_ = 1, n_along)]
         call compute_tubes()
         call system_clock(t1)
         keys%seconds = real(t1 - t0, wp) / rate
-        write(*, '(a,f9.6,a,f6.2,a,i0,a,f6.3,a,f6.3,a,i0,a)') 'C = ', keys%c, ': period ', keys%period_days, ' days, Az ', &
-            nint(keys%az), ' km; continued in ', keys%continued, ' s, manifolds in ', keys%seconds, ' s (', &
+        write(*, '(a,f9.6,a,f6.2,a,i0,a,f5.1,a,f6.3,a,f6.3,a,i0,a)') 'C = ', keys%c, ': period ', keys%period_days, &
+            ' days, Az ', nint(keys%az), ' km, propagated ', keys%days, ' days; continued in ', keys%continued, ' s, manifolds in ', keys%seconds, ' s (', &
             keys%threads, ' threads)'
         call draw()
     end subroutine compute
