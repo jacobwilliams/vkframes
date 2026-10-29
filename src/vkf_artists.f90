@@ -348,7 +348,7 @@ module vkf_artists
         integer :: shape_ = MARKER_DISK             !! marker shape: a MARKER_* shape constant
         character(len=:), allocatable :: image_file  !! the marker image file ('': none)
         type(c_ptr) :: image = c_null_ptr           !! the image read from it (owned; null: none)
-        logical :: attenuate = .false.              !! auto-attenuation (see set_auto_attenuate)
+        logical :: attenuate = .true.               !! auto-attenuation (see set_auto_attenuate; on by default)
         logical :: point_colors_ = .false.          !! the trajectory's colors, if any (see set_point_colors)
         ! rendering
         type(c_ptr) :: group = c_null_ptr           !! the artist's group (null until built)
@@ -2246,7 +2246,8 @@ contains
     end function marker_image_file
 
     !> Shrink markers farther from the camera than the trajectory's size
-    !> (OpenFrames' auto-attenuation; see shaders/marker.vert).
+    !> (OpenFrames' auto-attenuation; see shaders/marker.vert). On by default
+    !> (OpenFrames': off).
     subroutine set_auto_attenuate(self, attenuate)
         class(MarkerArtist), intent(inout) :: self
         logical, intent(in) :: attenuate

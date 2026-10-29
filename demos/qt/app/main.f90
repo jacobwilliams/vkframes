@@ -34,7 +34,7 @@
 !> (set_dash_mode, from the dock);
 !> radius vectors (a SegmentArtist at every 12th point) are added to it and
 !> removed while running; markers (a MarkerArtist: start, end, and every 10
-!> minutes) in a shape chosen from the dock, optionally auto-attenuated. The
+!> minutes) in a shape chosen from the dock, auto-attenuated (optionally not). The
 !> sky (a SkySphere, behind the scene in every window) shows the HYG v3 star
 !> catalog (data/Stars_HYGv3.txt, found on VKFRAMES_DATA_PATH, which demo.py
 !> sets) and, with OpenFrames' data, its StarMap.tif texture (chosen from the
@@ -1570,6 +1570,7 @@ contains
         call app%sky_choice%currentIndexChanged%connect(on_sky)
         call form%addRow('Sky', app%sky_choice)
         app%attenuate = QCheckBox('Shrink markers with distance')
+        call app%attenuate%setChecked(.true.)                ! (the markers' default)
         call app%attenuate%toggled%connect(on_attenuate)
         call form%addRow('', app%attenuate)
         app%time_label = QLabel('Simulation time:')

@@ -104,7 +104,8 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     time without touching the trajectory, and points with no vector draw
     nothing.
   - `MarkerArtist`: markers at the start, the end and in between, in
-    OpenFrames' marker shapes, with optional attenuation. Optionally (not in
+    OpenFrames' marker shapes, attenuated with distance by default
+    (`set_auto_attenuate(.false.)` for a constant size). Optionally (not in
     OpenFrames; off by default, `set_point_colors`) each marker is drawn in
     the trajectory's point color there, blended between points.
   - Trace mode: draw only up to the current time: the points whose times
