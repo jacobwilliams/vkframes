@@ -316,8 +316,11 @@ void main()
     uint pattern = uint(trail ? style.trail4.x : style.params.z) & 0xFFFFu;
     float factor = trail ? style.trail4.y : style.params.w;
     bool screenDashes = style.count.z > 0.5;
-    // (screen-locked: pixels along the strip on screen at this vertex)
-    float pixels = (separate ? 0.0 : screen.arc[first]) + (atEnd ? len : 0.0) + along;
+    // (screen-locked: pixels along the strip on screen at this vertex; the
+    // buffer read only then, and guarded: the dummy set's is short)
+    float pixels = 0.0;
+    if (screenDashes)
+        pixels = ((separate || first >= screen.arc.length()) ? 0.0 : screen.arc[first]) + (atEnd ? len : 0.0) + along;
     if (pattern != 0xFFFFu && pattern != 0u) {
         float period = 16.0 * max(factor, 1.0e-3) * pc.viewport.z;
         if (screenDashes)

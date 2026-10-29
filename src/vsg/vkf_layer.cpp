@@ -710,10 +710,23 @@ namespace
     // the new + 128 (8 bits each), the morph's progress (16 bits). False
     // (per-segment sizes) for a line without bounds, or with the eye among its
     // points.
+    // Whether a line's style (11 vec4: see line.vert) draws a dash pattern (its
+    // own, a trail's) or the highlight's arrows: else it needs no dash work
+    // (dash_levels, fixed_dashes, screen_arcs).
+    bool dashed(const vsg::vec4Array& st)
+    {
+        auto on = [](float pattern) {
+            const uint32_t p = static_cast<uint32_t>(pattern) & 0xFFFFu;
+            return p != 0xFFFFu && p != 0u;
+        };
+        if (on(st[1].z) || (static_cast<int>(st[4].x + 0.5f) & 2) != 0) return true;
+        return st[6].z != 0.0f && (on(st[10].x) || on(st[10].z));
+    }
+
     bool dash_levels(LineLod& lod, const vsg::View* view, const vsg::dvec3& eye, const vsg::dmat4& projection,
                      const vsg::dmat4& modelView, const float viewport[4], uint32_t packed[3])
     {
-        if (!lod.hasBound || !lod.style || lod.style->size() < 11 || !view) return false;
+        if (!lod.hasBound || !lod.style || lod.style->size() < 11 || !view || !dashed(*lod.style)) return false;
         const double fx = std::abs(projection[0][0]) * viewport[0], fy = std::abs(projection[1][1]) * viewport[1];
         double pixelsPerUnit;
         if (projection[3][3] == 1.0)
@@ -953,32 +966,44 @@ namespace
     // perUnit 0), (phase 1, perUnit 1, phase 2, perUnit 2) for the dashes, the
     // trail's future's and the arrows; false if not used here.
     bool fixed_dashes(LineLod& lod, const vsg::View* view, const vsg::dvec3& eye, const vsg::dmat4& projection,
-                      const vsg::dmat4& modelView, const float viewport[4], uint32_t first, uint32_t drawn, uint32_t stride,
-                      float out[8])
+                      const vsg::dmat4& modelView, const float viewport[4], uint32_t first, uint32_t drawn, float out[8])
     {
-        if (!lod.fixedDashes || !lod.points || !lod.style || lod.style->size() < 11 || !view || drawn < first + 2) return false;
+        if (!lod.fixedDashes || !lod.points || !lod.style || lod.style->size() < 11 || !view || drawn < first + 2 ||
+            !dashed(*lod.style))
+            return false;
         const float* p = lod.points->data();
         vsg::dmat4 rotation = modelView;
         rotation[3][0] = rotation[3][1] = rotation[3][2] = 0.0;
         const vsg::dmat4 mvp = projection * rotation;
-        // the pivot: the drawn point nearest the view's center (at the level of detail's stride)
+        // the pivot: a drawn point near the view's center, coarse to fine (64
+        // samples, then 64 about the nearest, ...: a few hundred projections
+        // for a million points; any point will do, only nearer is more precise)
         double pivot = 0.0, depth = -1.0, best = std::numeric_limits<double>::max();
-        const uint32_t last = drawn - 1, q = first / stride;
-        for (uint32_t k = 0;; ++k)
+        const uint32_t last = drawn - 1;
+        uint32_t lo = first, hi = last, nearest = first;
+        for (;;)
         {
-            const uint32_t i = (k == 0) ? first : std::min((q + k) * stride, last);
-            const vsg::dvec3 v(double(p[8 * i]) + double(p[8 * i + 4]) - eye.x, double(p[8 * i + 1]) + double(p[8 * i + 5]) - eye.y,
-                               double(p[8 * i + 2]) + double(p[8 * i + 6]) - eye.z);
-            const vsg::dvec4 c = mvp * vsg::dvec4(v, 1.0);
-            const double r = (c.w > 1.0e-6) ? (c.x / c.w) * (c.x / c.w) + (c.y / c.w) * (c.y / c.w)
-                                            : std::numeric_limits<double>::max() / 2;   // (behind: if nothing's in front)
-            if (r < best)
+            const uint32_t step = std::max((hi - lo) / 64u, 1u);
+            for (uint32_t i = lo;; i = std::min(i + step, hi))
             {
-                best = r;
-                pivot = double(p[8 * i + 3]) + double(p[8 * i + 7]);
-                depth = c.w;
+                const vsg::dvec3 v(double(p[8 * i]) + double(p[8 * i + 4]) - eye.x,
+                                   double(p[8 * i + 1]) + double(p[8 * i + 5]) - eye.y,
+                                   double(p[8 * i + 2]) + double(p[8 * i + 6]) - eye.z);
+                const vsg::dvec4 c = mvp * vsg::dvec4(v, 1.0);
+                const double r = (c.w > 1.0e-6) ? (c.x / c.w) * (c.x / c.w) + (c.y / c.w) * (c.y / c.w)
+                                                : std::numeric_limits<double>::max() / 2;   // (behind: if nothing's in front)
+                if (r < best)
+                {
+                    best = r;
+                    nearest = i;
+                    pivot = double(p[8 * i + 3]) + double(p[8 * i + 7]);
+                    depth = c.w;
+                }
+                if (i >= hi) break;
             }
-            if (i >= last) break;
+            if (step == 1) break;
+            lo = (nearest > first + step) ? nearest - step : first;
+            hi = std::min(nearest + step, last);
         }
         const auto& st = *lod.style;
         // each pattern's period (window units: 16 bits of `factor`; the arrows' spacing)
@@ -1054,7 +1079,7 @@ namespace
             uint32_t packed[4] = {0, 0, 0, 0};
             if (lod && visitor.viewDependentState && lod->fixedDashes && lod->strip &&
                 fixed_dashes(*lod, visitor.viewDependentState->view, eye, state->projectionMatrixStack.top(), modelView,
-                             constants + 8, first, drawn, stride, constants + 20))
+                             constants + 8, first, drawn, constants + 20))
                 packed[3] = 2;
             else if (lod && visitor.viewDependentState &&
                      dash_levels(*lod, visitor.viewDependentState->view, eye, state->projectionMatrixStack.top(), modelView,
@@ -1068,7 +1093,8 @@ namespace
             {
                 auto* device = commandBuffer.getDevice();
                 VkDescriptorSet set = VK_NULL_HANDLE;
-                if (lod && lod->screenDashes && lod->strip && drawn >= first + 2)
+                if (lod && lod->screenDashes && lod->strip && drawn >= first + 2 && lod->style && lod->style->size() >= 11 &&
+                    dashed(*lod->style))
                     set = screen_arcs(*lod, visitor, const_cast<vsg::Device*>(device), eye, state->projectionMatrixStack.top(),
                                       modelView, constants + 8, first, drawn, stride);
                 if (set == VK_NULL_HANDLE) set = arc_resources(const_cast<vsg::Device*>(device)).dummy;

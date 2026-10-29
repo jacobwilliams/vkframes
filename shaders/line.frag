@@ -93,7 +93,13 @@ float ramp(float a, float b, float x)
 
 void main()
 {
-    vec2 rate = dashRate(dash), rate2 = dashRate(dash2);      // (in uniform control flow, before any discard)
+    // (in uniform control flow, before any discard: the style is uniform; none for solid lines)
+    vec2 rate = vec2(0.0), rate2 = vec2(0.0);
+    uint pattern = uint(style.params.z) & 0xFFFFu;
+    if ((pattern != 0xFFFFu && pattern != 0u) || style.trail0.z != 0.0) {
+        rate = dashRate(dash);
+        rate2 = dashRate(dash2);
+    }
     vec4 base = fragColor;
     float coverage, fade = 1.0;
     if (style.trail0.z != 0.0) {                                 // a trail: the past's or the future's style
