@@ -540,6 +540,30 @@ Clohessy-Wiltshire equations (closed form, in Fortran).
 pixi run -e qt rpo-demo
 ```
 
+#### Multiple-shooting demo
+
+<img src="media/screenshots/shooting_demo.jpg" alt="An Earth-to-Mars transfer early in the solver's iterations: colored segments from white nodes, red gaps between them, the previous iteration faint" width="300" align="right">
+
+[demos/shooting](demos/shooting): a trajectory optimization program's
+iterations, played back. An Earth-to-Mars transfer (heliocentric two-body,
+230 days) is a chain of segments, each propagated from its own node; a
+multiple-shooting solver (Newton's method on the gaps, with state
+transition matrices; damped while far from the solution) moves the nodes
+until the chain is one continuous trajectory. Every iteration is recorded.
+
+- Each segment a curve in its own color from its node (a white dot), the
+  gaps red lines to the next node (and the miss at Mars), the previous
+  iteration faint. Click a segment (or its row) to select it: arrows run
+  along it.
+- A slider over the iterations, with play and pause; the number of
+  segments, the step fraction, the initial guess's noise and seed (solved
+  again as they change); tables of the segments shown (their gaps) and of
+  the iterations (their largest gaps and steps: click one to show it).
+
+```sh
+pixi run -e qt shooting-demo
+```
+
 #### PySide6 demo
 
 [demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI

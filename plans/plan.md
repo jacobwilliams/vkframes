@@ -565,6 +565,18 @@ Decided so far:
     rendezvous demo's keep-out sphere.
       - [ ] Later: translucent Models and other meshes (the same flag), and
             switching a shown sphere between opaque and translucent.
+  - The multiple-shooting demo (`demos/shooting`, `pixi run -e qt
+    shooting-demo`): a trajectory optimizer's iterations played back. An
+    Earth-to-Mars transfer (heliocentric two-body, AU and days; Mars's orbit
+    inclined) in 2 to 16 segments solved by multiple shooting
+    (`app/shooting.f90`: RK4 with the state transition matrix, Newton's
+    method on the gaps and the miss at Mars, a step fraction while far,
+    full steps after; 5 to 45 iterations, every one recorded). Per segment a
+    CurveArtist (its color; arrows when selected, by a click or its table
+    row), the nodes a MarkerArtist, the gaps a SegmentArtist, the previous
+    iteration faint; a QSlider over the iterations with play (a QTimer),
+    the solver's options (solved again as they change), QTableWidgets of the
+    segments and of the iterations. Tested on macOS.
   - The rendezvous demo (`demos/rpo`, `pixi run -e qt rpo-demo`): RPO in
     the target's LVLH frame (scene x V-bar, y cross-track, z radial up;
     metres) under the Clohessy-Wiltshire equations (`app/cw.f90`: the closed
