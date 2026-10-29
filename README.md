@@ -504,7 +504,8 @@ a vkframes window with a GUI panel (no Qt; OpenMP for the propagation).
   by continuation) and how long the manifolds are propagated (2 to 120
   days); the orbit and its manifolds are computed again, in parallel with
   OpenMP, as they move. The panel shows the orbit's period, amplitude and
-  unstable eigenvalue.
+  unstable eigenvalue, and its buttons center the camera on the Earth, the
+  Moon, the Lagrange point or the point picked.
 - Keys toggle each tube, the curves, the trajectory lines, lighting,
   smoothing, the fading colors and the opacity.
 

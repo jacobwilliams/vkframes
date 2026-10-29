@@ -48,7 +48,9 @@
 !> long it took, and the orbit's period, amplitude and unstable
 !> eigenvalue). The manifolds' trajectories are propagated in parallel with
 !> OpenMP (the demo's fpm.toml; about 0.005 s on ten threads of an Apple
-!> M-series).
+!> M-series). Its buttons fly the camera to the Earth, the Moon, the
+!> Lagrange point or the point picked on a trajectory (centered on it, the
+!> trackball then turning about it, looking from the same direction).
 !>
 !> The zero-velocity curves: 2 U(x, y, 0) = C (U the pseudo-potential, C
 !> the Jacobi constant), traced by marching squares on a 600 x 600 grid of
@@ -62,7 +64,8 @@
 !> (optional): number of frames to run, then a file to capture the last
 !> frame to; with `--demo-pick`, a trajectory is picked at the start (for a
 !> capture), and the panel's settings at the start: `--point=N` (1, 2 or 3),
-!> `--az=KM`, `--jacobi=C`, `--days=D`:
+!> `--az=KM`, `--jacobi=C`, `--days=D`, and the camera centered on
+!> `--center=earth`, `moon` or `point` (the Lagrange point):
 !> `pixi run halo-demo 60 halo.png --point=2 --az=20000 --days=30`
 program halo_manifolds
 
@@ -111,6 +114,7 @@ program halo_manifolds
     real(wp) :: offset                                  !! the displacement off the orbit (offsets: the point's)
     real(wp) :: az_asked                                !! the amplitude last asked for (km)
     integer :: point_start
+    character(len=8) :: center_start                    !! (--center=: earth, moon or point)
     real(wp) :: span                                    !! each trajectory's time (time units: keys%days)
     real(wp) :: orbit(6, n_orbit + 1), dirs(6, n_around, 2), times(n_along)
     real(wp) :: grid(3, n_around, n_along, n_tubes)
@@ -130,6 +134,7 @@ program halo_manifolds
     c_start = 0.0_wp
     days_start = 0.0_wp
     point_start = 1
+    center_start = ''
     az_start = 0.0_wp
     do j = 3, command_argument_count()
         call get_command_argument(j, arg)
@@ -138,6 +143,7 @@ program halo_manifolds
         if (arg(1:7) == '--days=') read(arg(8:), *) days_start
         if (arg(1:8) == '--point=') read(arg(9:), *) point_start
         if (arg(1:5) == '--az=') read(arg(6:), *) az_start
+        if (arg(1:9) == '--center=') center_start = arg(10:)
     end do
     keys%threads = 1
     !$ keys%threads = omp_get_max_threads()
@@ -226,6 +232,8 @@ program halo_manifolds
     keys%ring => ring_frame
     keys%details => details
     keys%earth = [-mu * lu, 0.0_wp, 0.0_wp]
+    keys%moon = [(1.0_wp - mu) * lu, 0.0_wp, 0.0_wp]
+    keys%lu = lu
     keys%re = re
     call compute(.true.)
     keys%c_requested = keys%c
@@ -257,6 +265,16 @@ program halo_manifolds
         running = window%frame()
         frame = frame + 1
         if (demo .and. frame == 2) call demo_pick()
+        if (frame == 2) then                            ! (--center=: as the panel's buttons)
+            select case (trim(center_start))
+            case ('earth')
+                call center_on(keys, window, keys%earth, 0.8_wp)
+            case ('moon')
+                call center_on(keys, window, keys%moon, 0.5_wp)
+            case ('point')
+                call center_on(keys, window, keys%lagrange, merge(1.6_wp, 0.6_wp, keys%point == 3))
+            end select
+        end if
         ! the panel changed (the latest values asked for, once the last are
         ! done): another Lagrange point (its family's first orbit), another
         ! amplitude (Richardson's approximation, corrected), another Jacobi
@@ -318,6 +336,8 @@ contains
         keys%point = lib
         keys%point_requested = lib
         earth_side = merge(1.0_wp, -1.0_wp, lib == 3)
+        call collinear_point(lib, xa, za)
+        keys%lagrange = [xa * lu, 0.0_wp, 0.0_wp]
         offset = offsets(lib)
         keys%days_requested = days_first(lib)
         lo = 0.0_wp                                     ! the smallest feasible amplitude (bisection)

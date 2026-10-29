@@ -12,6 +12,8 @@ module halo_manifolds_keys
     integer, parameter, public :: n_tubes = 2
     integer, parameter, public :: n_lines = 12          !! trajectories drawn as lines (pickable), per tube
 
+    public :: center_on
+
     !> What the readout says about a trajectory drawn as a line.
     type, public :: LineInfo
         integer :: index = 0                            !! its number around the orbit (1 to n_around)
@@ -36,6 +38,9 @@ module halo_manifolds_keys
         type(DrawableTrajectory), pointer :: ring => null()         !! the ring there
         type(HUDText), pointer :: details => null()                 !! the trajectory picked, in detail
         real(wp) :: earth(3) = 0.0_wp, re = 1.0_wp      !! the Earth's center (km) and radius
+        real(wp) :: moon(3) = 0.0_wp                    !! the Moon's center (km)
+        real(wp) :: lagrange(3) = 0.0_wp                !! the Lagrange point's (km)
+        real(wp) :: lu = 1.0_wp                         !! the Earth-Moon distance (km)
         real(wp), allocatable :: colors(:,:,:)          !! each tube's vertex colors (4, n, tube)
         logical :: shown(n_tubes) = .true., curves_shown = .true.
         logical :: edges = .true., lit = .true., smooth = .true., fading = .true.
@@ -148,8 +153,37 @@ contains
             self%seconds, ' s (', self%threads, ' threads)'
         call g%text(trim(text))
         if (len_trim(self%status) > 0) call g%text(trim(self%status))
+        ! the camera: flown to (and then turning about) the Earth, the Moon,
+        ! the Lagrange point or the point picked, looking from where it is
+        call g%separator()
+        call g%text('center on:')
+        call g%same_line()
+        if (g%button('Earth')) call center_on(self, window, self%earth, 0.8_wp)
+        call g%same_line()
+        if (g%button('Moon')) call center_on(self, window, self%moon, 0.5_wp)
+        call g%same_line()
+        if (g%button('L'//achar(iachar('0') + self%point))) &
+            call center_on(self, window, self%lagrange, merge(1.6_wp, 0.6_wp, self%point == 3))
+        if (self%selected(1) > 0) then
+            call g%same_line()
+            if (g%button('the point picked')) call center_on(self, window, self%selection%position(), 0.25_wp)
+        end if
         call g%end_panel()
     end subroutine manifold_panel
+
+    !> Fly the camera to `p` (root frame, km): centered on it (the trackball
+    !> then turns about it), from the direction it looks from now, `distance`
+    !> Earth-Moon distances away.
+    subroutine center_on(self, window, p, distance)
+        type(ManifoldKeys), intent(in) :: self
+        class(WindowProxy), intent(inout) :: window
+        real(wp), intent(in) :: p(3), distance
+        real(wp) :: eye(3), center(3), up(3), d(3)
+        call window%get_camera(eye, center, up, in_root=.true.)
+        d = eye - center
+        if (norm2(d) <= 0.0_wp) d = [0.0_wp, -1.0_wp, 1.0_wp]
+        call window%set_camera(p + distance * self%lu * d / norm2(d), p, up, duration=1.2_wp, in_root=.true.)
+    end subroutine center_on
 
     !> No trajectory selected (e.g. computed again).
     subroutine clear_selection(self)
