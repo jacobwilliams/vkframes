@@ -19,7 +19,9 @@
 !> (each kind's color); on, the start and end in their points' colors, the
 !> intermediate markers in the color at their time (blended between points),
 !> points without a color in the marker's, and colors added later drawn.
-!> Empty trajectories: every artist
+!> Trails: the points in the window about the current time (and the one
+!> beyond each end) drawn, for increasing and decreasing times; none if the
+!> window misses the trajectory; the whole curve without one. Empty trajectories: every artist
 !> draws nothing (and then the points added), a frame follows nothing. Highlights: set on an artist, and
 !> on a DrawableTrajectory for its curve and segment artists.
 program test_artists
@@ -51,6 +53,8 @@ program test_artists
     call check_drawable()
     call check_empty()
     call check_marker_colors()
+    call check_trail(1.0_wp)
+    call check_trail(-1.0_wp)
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
@@ -807,6 +811,39 @@ contains
         call dt%update(0.0_wp)
         call check(c%num_drawn() == 10 .and. m%num_intermediate() == 8, 'empty trajectory: then the points added')
     end subroutine check_empty
+
+    !> A trail's points: past 100 s and future 50 s about t, with points every
+    !> 10 s (times increasing, or decreasing: then the same window in time).
+    subroutine check_trail(dir)
+        real(wp), intent(in) :: dir
+        type(Trajectory), target :: traj
+        type(CurveArtist) :: a
+        real(wp) :: v(3)
+        integer :: i
+        character(len=:), allocatable :: what
+        what = merge('trail (increasing times): ', 'trail (decreasing times): ', dir > 0.0_wp)
+        traj = Trajectory()
+        do i = 1, 200                                  ! point i at time dir * 10 (i - 1)
+            call traj%add(dir * 10.0_wp * real(i - 1, wp), orbit(10.0_wp * real(i, wp)))
+        end do
+        a = CurveArtist(traj)
+        call a%set_trail(100.0_wp, 50.0_wp)
+        call check(a%has_trail(), what//'set')
+        call a%build(c_null_ptr, vkf_switch_create())
+        if (dir > 0.0_wp) then
+            call a%update(505.0_wp)                    ! the window 405 .. 555 s: points 41 (400 s) .. 57 (560 s)
+            call check(a%first_drawn() == 41 .and. a%num_drawn() == 17, what//'the window''s points')
+        else
+            call a%update(-505.0_wp)                   ! the window -605 .. -455 s: points 46 (-450 s) .. 62 (-610 s)
+            call check(a%first_drawn() == 46 .and. a%num_drawn() == 17, what//'the window''s points')
+        end if
+        call check(.not. a%trace_end(v), what//'no tail')
+        call a%update(dir * 1.0e6_wp)                  ! (far after or before: the window misses it)
+        call check(a%num_drawn() == 0, what//'a window off the trajectory: nothing')
+        call a%remove_trail()
+        call a%update(dir * 505.0_wp)
+        call check(.not. a%has_trail() .and. a%num_drawn() == 200, what//'removed: the whole curve')
+    end subroutine check_trail
 
     !> MarkerArtist point colors (read back from the marker buffers).
     subroutine check_marker_colors()

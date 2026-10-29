@@ -41,7 +41,7 @@ module vkf_layer
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
-    public :: vkf_ribbon_create, vkf_line_set_highlight
+    public :: vkf_ribbon_create, vkf_line_set_highlight, vkf_line_set_trail
     public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
@@ -971,6 +971,20 @@ module vkf_layer
             type(c_ptr), value :: line                      !! line handle
             real(c_float), dimension(12), intent(in) :: values
         end function vkf_line_set_highlight
+
+        !> Set a line strip's trail (shaders/line.vert) and upload it: `values`
+        !> are (the distance at the current time as a high/low pair, the
+        !> direction (1, -1; 0: no trail), the color flags), (the past's cutoff
+        !> and fade start, the future's fade start and cutoff: distances from the
+        !> current time's), the past's color (rgba), the future's, (the past's
+        !> dash pattern and factor, the future's). Returns 0, or -1 if `line`
+        !> isn't a line strip.
+        integer(c_int) function vkf_line_set_trail(line, values) bind(C, name="vkf_line_set_trail")
+            import :: c_ptr, c_int, c_float
+            implicit none
+            type(c_ptr), value :: line                      !! line handle
+            real(c_float), dimension(20), intent(in) :: values
+        end function vkf_line_set_trail
 
     end interface
 

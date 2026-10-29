@@ -55,6 +55,18 @@
 // so they run on across the joins; their spacing and speed on screen stay
 // within 0.7 to 1.4 times those given.
 //
+// Trails (style.trail0.z = 1 or -1: a fading trail): the part of a strip
+// within a time window about the current time, in two styles: the past
+// (before the current time) and the future. Fortran gives the distance along
+// the strip at the current time (trail0.xy, a high/low pair) and, as
+// distances from it in the direction of time (trail0.z: the sign of the
+// distance's change with time), the past's cutoff and where its fade starts,
+// where the future's fade starts and its cutoff (trail1). Each vertex gets
+// its distance from the current time's (trailDistance: exact far along the
+// strip, from the high/low pairs); line.frag fades and cuts each pixel by it
+// and draws it in the past's or the future's color and dash pattern (trail2
+// to trail4; the future's dashes from dash2, for its own factor).
+//
 // Colors: the style's, or (lines made by vkf_line_create_colored) each
 // point's times the style's, blended along each segment from its first
 // point's to its second's (OpenFrames' CustomLineSegments).
@@ -90,6 +102,12 @@ layout(set = 0, binding = 1) uniform Style {
     vec4 flow;              // x = highlight flags (1 pulse, 2 arrows), y = arrow spacing (window units),
                             // z = arrow speed (window units per second), w = band width (window units)
     vec4 pulse;             // x = pulse period (s)
+    vec4 trail0;            // x, y = the distance at the current time (high, low), z = direction (0: no trail),
+                            // w = color flags (1: the past's color replaces the line's, 2: the future's)
+    vec4 trail1;            // the past's cutoff, its fade's start, the future's fade's start, its cutoff
+    vec4 trail2;            // the past's color (rgba)
+    vec4 trail3;            // the future's color (rgba)
+    vec4 trail4;            // the past's dash pattern and factor, the future's
 } style;
 
 layout(std430, set = 0, binding = 3) readonly buffer Colors {
@@ -104,6 +122,8 @@ layout(location = 3) flat out vec2 flowPixels;      // pixels per period, of eac
 layout(location = 4) noperspective out float across;    // -1 to 1 across the quad
 layout(location = 5) flat out vec4 highlight;       // x = pulse (0 to 1), y = the line's half width,
                                                     // z = the quad's (pixels), w = highlight flags
+layout(location = 6) out float trailDistance;       // from the current time's, in the direction of time
+layout(location = 7) noperspective out vec3 dash2;  // (trails) the future's dashes, as dash
 
 out gl_PerVertex {
     vec4 gl_Position;
@@ -194,6 +214,8 @@ void main()
         flowPixels = vec2(0.0);
         across = 0.0;
         highlight = vec4(0.0);
+        trailDistance = 0.0;
+        dash2 = vec3(0.0);
         return;
     }
     float ta = 0.0, tb = 1.0;                      // the part drawn, as fractions of the segment
@@ -249,10 +271,24 @@ void main()
     fragColor.rgb = mix(fragColor.rgb, style.highlight.rgb, 0.5 * pulse);
     vec2 perPixel;
     dash = vec3(0.0);
-    uint pattern = uint(style.params.z) & 0xFFFFu;
+    dash2 = vec3(0.0);
+    trailDistance = 0.0;
+    bool trail = style.trail0.z != 0.0 && !separate;
+    uint pattern = uint(trail ? style.trail4.x : style.params.z) & 0xFFFFu;
+    float factor = trail ? style.trail4.y : style.params.w;
     if (pattern != 0xFFFFu && pattern != 0u)
         dash = dashPosition(first, second, corner.x, ta, tb, len, along,
-                            16.0 * max(style.params.w, 1.0e-3) * pc.viewport.z, perPixel);
+                            16.0 * max(factor, 1.0e-3) * pc.viewport.z, perPixel);
+    if (trail) {
+        uint pattern2 = uint(style.trail4.z) & 0xFFFFu;
+        if (pattern2 != 0xFFFFu && pattern2 != 0u)
+            dash2 = dashPosition(first, second, corner.x, ta, tb, len, along,
+                                 16.0 * max(style.trail4.w, 1.0e-3) * pc.viewport.z, perPixel);
+        // the distance from the current time's at this end of the drawn part (high and low parts apart: exact)
+        float s1 = (points.p[2 * first].w - style.trail0.x) + (points.p[2 * first + 1].w - style.trail0.y);
+        float s2 = (points.p[2 * second].w - style.trail0.x) + (points.p[2 * second + 1].w - style.trail0.y);
+        trailDistance = style.trail0.z * mix(s1, s2, atEnd ? tb : ta);
+    }
     flow = vec3(0.0);
     flowPixels = vec2(0.0);
     if ((flags & 2) != 0) {

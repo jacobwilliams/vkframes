@@ -104,6 +104,11 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - Trace mode: draw only up to the current time: the points whose times
     have passed, whatever order they were added in, so a trajectory
     propagated backwards traces correctly as time runs forwards.
+  - Fading trails (not in OpenFrames): only the part of a curve within a
+    time window before and after the current time, each part fading toward
+    its cutoff, with its own color, translucency and dash pattern (e.g. a
+    solid past and a dashed future; `set_trail`, `set_trail_style`). Drawn
+    and faded by the GPU: nothing but a few numbers is uploaded each frame.
   - Level of detail: seen from far away, a curve is drawn from fewer
     points, staying within half a pixel of all of them, chosen per view.
   - `RibbonArtist` (not in OpenFrames): a translucent surface swept out
@@ -303,6 +308,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `colored_orbits` | <img src="media/screenshots/examples/colored_orbits.jpg" width="160" alt="colored_orbits"> | A color per trajectory point: a Molniya orbit colored by altitude (a smooth gradient), and a traced low orbit colored by sunlight (yellow while sunlit, blue in the Earth's umbra, matching the Earth's `ShadowCones`). |
 | `orbit_planes` | <img src="media/screenshots/examples/orbit_planes.jpg" width="160" alt="orbit_planes"> | `RibbonArtist`: orbit planes swept out from the Earth's center, for a low orbit and a geostationary orbit drawn whole, and a Molniya orbit traced as its spacecraft moves. |
 | `trace_directions` | <img src="media/screenshots/examples/trace_directions.jpg" width="160" alt="trace_directions"> | Trace mode with trajectories propagated forwards and backwards: one orbit split at a match point (forward from t01 to tm, backward from t02 to tm, the same state there). As time runs the two trace one continuous history, each sweeping out its orbit's plane (`RibbonArtist`); arrows show each one's propagation direction. Keys reverse the time and toggle trace mode and the planes. |
+| `fading_trails` | <img src="media/screenshots/examples/fading_trails.jpg" width="160" alt="fading_trails"> | Fading trails: three spacecraft drawn only near the current time, a solid trail behind each (fading out) and a dashed, translucent one ahead (`set_trail`, `set_trail_style`); keys toggle the whole orbits and lengthen or shorten the trails. |
 | `thrust_arcs` | <img src="media/screenshots/examples/thrust_arcs.jpg" width="160" alt="thrust_arcs"> | Thrust vectors along a transfer between two circular orbits, with a burn at the start and another at the apoapsis that also changes the plane (`SegmentArtist` with relative ends). The orbit is orange while thrusting, and `+` and `-` change the vectors' scale (a `WindowEventHandler`). |
 | `eclipse` | <img src="media/screenshots/examples/eclipse.jpg" width="160" alt="eclipse"> | `ShadowCones`: a total solar eclipse. The Earth orbits the Sun and the Moon orbits the Earth, and the Moon's umbra reaches the Earth inside its wide penumbra. The Earth's own shadow points away from the Sun. A HUD line shows the umbra's length. |
 | `rocky_map` | <img src="media/screenshots/examples/rocky_map.jpg" width="160" alt="rocky_map"> | Terrain with Rocky (`TerrainBody`; needs the `rocky` environment): the Earth from ReadyMap's tiles, or the Moon from NASA's Moon Trek and LOLA's elevation, from orbit and close to the surface. |
@@ -321,6 +327,7 @@ pixi run example pick_trajectories
 pixi run example highlight_trajectory
 pixi run example record_video -- orbit.mp4 8          # an 8 s video
 pixi run example trace_directions
+pixi run example fading_trails
 pixi run example live_changes
 pixi run example precision
 pixi run example line_of_sight

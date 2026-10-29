@@ -42,7 +42,7 @@ module vkf_line_chain
                          vkf_line_points, vkf_line_points_changed, &
                          vkf_line_set_range, vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, &
                          vkf_compile_node, line_set_style, line_set_pattern, line_set_segments, &
-                         marker_set_style, vkf_line_set_lod, vkf_line_set_highlight
+                         marker_set_style, vkf_line_set_lod, vkf_line_set_highlight, vkf_line_set_trail
 
     implicit none
 
@@ -100,10 +100,11 @@ module vkf_line_chain
                                           0.0_c_float, 40.0_c_float, 50.0_c_float, 12.0_c_float, &
                                           1.5_c_float, 0.0_c_float, 0.0_c_float, 0.0_c_float]
                                                         !! (lines: highlight, see vkf_line_set_highlight)
+        real(c_float) :: trail(20) = 0.0_c_float        !! (strips: the trail, see vkf_line_set_trail; z = 0: none)
     contains
         procedure :: init, set_compile, is_built, is_colored, release, detach
         procedure :: reserve, slice, color_slice, written, draw, draw_range
-        procedure :: set_style, set_pattern, set_marker_style, set_highlight, style_node, point, point_color, distance, num_chunks
+        procedure :: set_style, set_pattern, set_marker_style, set_highlight, set_trail, style_node, point, point_color, distance, num_chunks
         procedure :: set_lod, lod_error, chunk_bounds
     end type LineChain
 
@@ -543,6 +544,20 @@ contains
         end do
     end subroutine set_highlight
 
+    !> For strips, the trail (see vkf_line_set_trail: 20 values; the third 0:
+    !> none), given to every chunk (changed every frame the time does: a few
+    !> floats per chunk uploaded).
+    subroutine set_trail(self, values)
+        class(LineChain), intent(inout) :: self
+        real(c_float), intent(in) :: values(20)
+        integer :: j
+        self%trail = values
+        if (self%kind /= CHAIN_STRIP) return
+        do j = 1, self%n_chunks
+            call check_status(vkf_line_set_trail(self%chunks(j)%line, self%trail), 'trajectory artists')
+        end do
+    end subroutine set_trail
+
     !> Give the chain's style to `line`, a node not in the chain (e.g. a
     !> curve's trace-mode tail, drawn as part of it).
     subroutine style_node(self, line)
@@ -580,6 +595,7 @@ contains
             call check_status(line_set_pattern(line, self%pattern_factor, self%pattern), 'trajectory artists')
             if (self%kind /= CHAIN_RIBBON) &
                 call check_status(vkf_line_set_highlight(line, self%highlight), 'trajectory artists')
+            if (self%kind == CHAIN_STRIP) call check_status(vkf_line_set_trail(line, self%trail), 'trajectory artists')
         end if
     end subroutine apply_style
 

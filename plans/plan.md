@@ -485,6 +485,25 @@ Decided so far:
     The highlight's arrows keep the point order (the propagation's
     direction). `example/trace_directions.f90` (forward and backward to a
     match point); `test_artists` (decreasing times).
+  - Fading trails (`CurveArtist%set_trail(past, future, fade)`,
+    `remove_trail`, `set_trail_style(TRAIL_PAST | TRAIL_FUTURE, color,
+    opacity, factor, pattern)`; not in OpenFrames): only the part within
+    `past` before and `future` after the current time, each part fading
+    over the last `fade` of its window toward its cutoff, in its own color
+    (or the line's with an opacity) and dash pattern. The GPU fades and cuts
+    by the distance along the strip (line.vert: each vertex's distance from
+    the current time's, from the high/low pairs; line.frag: the part's
+    style, a smoothstep fade, a discard beyond the cutoffs, the future's own
+    dash positions); Fortran gives each frame the distance at the current
+    time and at the window's edges (times mapped to distances by
+    interpolating the points about them, extrapolated beyond the ends),
+    `vkf_line_set_trail` (5 vec4 of the style), and the range of points
+    (bisection) with the one beyond each end. Decreasing times: the
+    direction's sign. Replaces trace mode while set. Tested: `test_artists`
+    (the window's points, both time orders); shown in
+    `example/fading_trails.f90`.
+      - [ ] Later: trails for SegmentArtist, RibbonArtist and MarkerArtist
+            (the same window; markers and ribbons faded by time).
   - Translucent spheres (`Sphere%set_opacity`, not in OpenFrames; default 1,
     opaque): below 1 when first shown, the body is drawn lit and blended
     (vkf_mesh_create's flag 8: TranslucentStates, front faces only, no

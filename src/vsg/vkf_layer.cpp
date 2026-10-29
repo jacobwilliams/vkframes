@@ -2783,7 +2783,7 @@ static void* make_line(int capacity, bool colored, bool ribbon = false)
         line->ribbon = ribbon;
         line->points = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         line->points->properties.dataVariance = vsg::DYNAMIC_DATA;
-        line->style = dynamic_vec4_array(6);     // [color, params, (points written, colored), highlight: shaders/line.vert]
+        line->style = dynamic_vec4_array(11);    // [color, params, (points written, colored), highlight, trail: shaders/line.vert]
         line->colored = colored;
         line->colors = vsg::vec4Array::create(colored ? static_cast<uint32_t>(capacity) : 1u, vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         if (colored) line->colors->properties.dataVariance = vsg::DYNAMIC_DATA;
@@ -3128,6 +3128,25 @@ VKF_API int vkf_line_set_highlight(void* line, const float* values)
     if (!l || l->markers || l->style->size() < 6) return -1;
     for (int k = 0; k < 3; ++k)
         l->style->at(3 + k) = vsg::vec4(values[4 * k], values[4 * k + 1], values[4 * k + 2], values[4 * k + 3]);
+    l->style->dirty();
+    return 0;
+}
+
+// A line's trail (shaders/line.vert): 20 floats, (the distance along it at
+// the current time as a high/low pair, the direction (1: distance increasing
+// with time, -1 decreasing; 0: no trail), the color flags (1: the past's
+// color replaces the line's, 2: the future's)), (the past's cutoff and its
+// fade's start, the future's fade's start and its cutoff: distances from the
+// current time's, in that direction), the past's color (rgba; its alpha
+// multiplies the line's if not replacing), the future's, (the past's dash
+// pattern and factor, the future's). Uploaded at once. Returns 0, or -1 if
+// `line` isn't a line strip.
+VKF_API int vkf_line_set_trail(void* line, const float* values)
+{
+    auto l = dynamic_cast<LineStrip*>(static_cast<Node*>(line));
+    if (!l || l->markers || l->ribbon || l->style->size() < 11) return -1;
+    for (int k = 0; k < 5; ++k)
+        l->style->at(6 + k) = vsg::vec4(values[4 * k], values[4 * k + 1], values[4 * k + 2], values[4 * k + 3]);
     l->style->dirty();
     return 0;
 }

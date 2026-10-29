@@ -29,6 +29,16 @@
 !> color); without colors, or with `set_point_colors(.false.)`, in its own
 !> color. Its line buffers hold colors only then.
 !>
+!> Trails (not in OpenFrames): `CurveArtist%set_trail(past, future, fade)`
+!> draws only the part of the curve within `past` before the current time
+!> and `future` after it, each fading out over the last `fade` of its window
+!> toward its cutoff; `set_trail_style(TRAIL_PAST or TRAIL_FUTURE, ...)` gives
+!> each part its own color (or translucency) and dash pattern (e.g. a solid
+!> past and a dashed future). The GPU fades and cuts the line by its distance
+!> along it (shaders/line.vert): each frame only the distances at the current
+!> time and at the window's edges are uploaded (a few floats per chunk), and
+!> the range of points drawn changed. It replaces trace mode while set.
+!>
 !> Highlight (not in OpenFrames; e.g. a trajectory selected by the program or
 !> by picking): `set_highlight` on a curve or segment artist, or on a
 !> DrawableTrajectory for all of them. HIGHLIGHT_PULSE: the line widens and
@@ -108,6 +118,20 @@ module vkf_artists
         end subroutine artist_update
     end interface
 
+    !> the parts of a curve's trail (set_trail_style)
+    integer, parameter, public :: TRAIL_PAST = 1, TRAIL_FUTURE = 2
+
+    !> A curve's trail (see the module documentation and set_trail).
+    type :: TrailStyle
+        logical :: on = .false.
+        real(wp) :: past = 0.0_wp, future = 0.0_wp  !! the window (s before and after the current time; huge: no limit)
+        real(wp) :: fade = 0.25_wp                  !! of each part's window, faded toward its cutoff (0 to 1)
+        real(wp) :: color(4, 2) = 1.0_wp            !! each part's color (if `replace`) [r, g, b, a]
+        logical :: replace(2) = .false.             !! each part in its own color (else the line's)
+        real(wp) :: opacity(2) = 1.0_wp             !! each part's alpha multiplied by it
+        integer :: factor(2) = 1, pattern(2) = int(z'FFFF')  !! each part's dash pattern
+    end type TrailStyle
+
     !> highlights of curve and segment artists (set_highlight; combine by adding)
     integer, parameter, public :: HIGHLIGHT_NONE = 0     !! not highlighted
     integer, parameter, public :: HIGHLIGHT_PULSE = 1    !! the line widens and brightens, and back, over and over
@@ -138,6 +162,7 @@ module vkf_artists
         logical :: lod_ = .true.                    !! level of detail (see set_level_of_detail)
         logical :: point_colors_ = .true.           !! the trajectory's colors, if any (see set_point_colors)
         type(HighlightStyle) :: highlight_          !! (see set_highlight)
+        type(TrailStyle) :: trail_                  !! (see set_trail)
         ! rendering
         type(c_ptr) :: group = c_null_ptr           !! the chain's group (to make it again, colored or not)
         logical :: compile = .false.                !! (chunks made later are compiled)
@@ -157,6 +182,7 @@ module vkf_artists
         procedure :: set_width => curve_set_width, width => curve_width
         procedure :: set_pattern => curve_set_pattern, pattern => curve_pattern
         procedure :: set_highlight => curve_set_highlight, highlight => curve_highlight
+        procedure :: set_trail, remove_trail, has_trail, set_trail_style
         procedure :: set_level_of_detail, level_of_detail, lod_error
         procedure :: set_point_colors, point_colors, drawn_color
         procedure :: build => curve_build
@@ -657,6 +683,61 @@ contains
         mode = self%highlight_%mode
     end function curve_highlight
 
+    !> A trail (see the module documentation): only the part within `past`
+    !> before the current time and `future` after it (s, >= 0; 0: none of
+    !> it; huge(1.0_wp): no limit), each fading out over the last `fade` (0
+    !> to 1, default 0.25) of its window toward its cutoff. Replaces trace
+    !> mode while set.
+    subroutine set_trail(self, past, future, fade)
+        class(CurveArtist), intent(inout) :: self
+        real(wp), intent(in) :: past, future                !! s before and after the current time
+        real(wp), intent(in), optional :: fade              !! of each part's window (default 0.25)
+        self%trail_%on = .true.
+        self%trail_%past = max(0.0_wp, past)
+        self%trail_%future = max(0.0_wp, future)
+        if (present(fade)) self%trail_%fade = max(0.0_wp, min(1.0_wp, fade))
+        self%tail_time = huge(1.0_wp)                       ! (drawn again at the next update)
+    end subroutine set_trail
+
+    !> No trail: the whole curve (or trace mode, if set) again.
+    subroutine remove_trail(self)
+        class(CurveArtist), intent(inout) :: self
+        real(c_float) :: none(20)
+        none = 0.0_c_float                                  ! (direction 0: no trail)
+        self%trail_%on = .false.
+        call self%chain%set_trail(none)
+        self%tail_time = huge(1.0_wp)
+    end subroutine remove_trail
+
+    !> Whether the curve has a trail (set_trail).
+    pure logical function has_trail(self)
+        class(CurveArtist), intent(in) :: self
+        has_trail = self%trail_%on
+    end function has_trail
+
+    !> The style of a trail's part, `which` TRAIL_PAST or TRAIL_FUTURE:
+    !> `color` ([r, g, b] or [r, g, b, a]: drawn in it instead of the line's
+    !> colors), `opacity` (its alpha multiplied by it: translucency, default
+    !> 1), a dash pattern (`factor` and 16 `pattern` bits, as set_pattern;
+    !> default solid). Settings not given are kept.
+    subroutine set_trail_style(self, which, color, opacity, factor, pattern)
+        class(CurveArtist), intent(inout) :: self
+        integer, intent(in) :: which                        !! TRAIL_PAST or TRAIL_FUTURE
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
+        real(wp), intent(in), optional :: opacity           !! 0 to 1
+        integer, intent(in), optional :: factor, pattern    !! window units per bit (>= 1), 16 bits
+        integer :: k
+        k = merge(1, 2, which == TRAIL_PAST)
+        if (present(color)) then
+            call set_rgba(self%trail_%color(:, k), color)
+            self%trail_%replace(k) = .true.
+        end if
+        if (present(opacity)) self%trail_%opacity(k) = max(0.0_wp, min(1.0_wp, opacity))
+        if (present(factor)) self%trail_%factor(k) = max(1, factor)
+        if (present(pattern)) self%trail_%pattern(k) = iand(pattern, int(z'FFFF'))
+        self%tail_time = huge(1.0_wp)
+    end subroutine set_trail_style
+
     !> Level of detail (default on): seen from far away, the curve is drawn
     !> from every 2nd, 4th, ... point (and its last), as many as can be
     !> skipped while staying within half a pixel of all of them, chosen per
@@ -852,6 +933,12 @@ contains
             self%n_written = n
         end if
 
+        if (self%trail_%on) then                       ! a trail: the window about time t
+            if (.not. changed .and. t == self%tail_time) return
+            call draw_trail(self, t)
+            self%tail_time = t
+            return
+        end if
         if (.not. self%trace) then
             self%n_drawn = self%n_written
             self%first_drawn_ = 1
@@ -947,6 +1034,131 @@ contains
             rgba = self%color_
         end if
     end function point_rgba
+
+    !> A trail at time t: the points within its window (and the one beyond
+    !> each end: the GPU cuts the segments at the cutoffs) drawn, and the
+    !> distances along the curve at t and at the window's edges given to the
+    !> shader (see vkf_line_set_trail), as distances from t's in the
+    !> direction of time; times beyond the trajectory's are extrapolated from
+    !> its end segments.
+    subroutine draw_trail(self, t)
+        type(CurveArtist), intent(inout) :: self
+        real(wp), intent(in) :: t
+        real(wp), parameter :: unlimited = 0.5_wp * huge(1.0_wp)
+        real(c_float), parameter :: far = 1.0e30_c_float
+        real(c_float) :: values(20), hi
+        real(wp) :: sgn, lo_key, hi_key, s_now, fade
+        integer :: n, i1, i2, k
+        call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
+        self%tail_shown = .false.
+        n = self%n_written
+        self%n_drawn = 0
+        self%first_drawn_ = 1
+        values = 0.0_c_float
+        if (.not. associated(self%traj) .or. n < 2) then
+            call self%chain%draw_range(1, 0)
+            call self%chain%set_trail(values)
+            return
+        end if
+        sgn = merge(-1.0_wp, 1.0_wp, decreasing_times(self%traj, n))   ! (keys sgn * time increase with the index)
+        lo_key = sgn * t - merge(huge(1.0_wp), self%trail_%past, self%trail_%past >= unlimited)
+        hi_key = sgn * t + merge(huge(1.0_wp), self%trail_%future, self%trail_%future >= unlimited)
+        if (sgn < 0.0_wp) then                              ! (the past is at the larger keys)
+            lo_key = sgn * t - merge(huge(1.0_wp), self%trail_%future, self%trail_%future >= unlimited)
+            hi_key = sgn * t + merge(huge(1.0_wp), self%trail_%past, self%trail_%past >= unlimited)
+        end if
+        if (hi_key < key(1) .or. lo_key > key(n)) then     ! (the window misses the trajectory)
+            call self%chain%draw_range(1, 0)
+            call self%chain%set_trail(values)
+            return
+        end if
+        i1 = max(1, keys_at_most(lo_key))                   ! the last point before the window, or the first
+        i2 = min(n, keys_below(hi_key) + 1)                 ! the first after it, or the last
+        self%first_drawn_ = i1
+        self%n_drawn = i2 - i1 + 1
+        call self%chain%draw_range(i1, i2)
+        s_now = s_at(t)
+        hi = real(s_now, c_float)
+        fade = 1.0_wp - self%trail_%fade
+        values(1:4) = [hi, real(s_now - real(hi, wp), c_float), real(sgn, c_float), &
+                       real(merge(1, 0, self%trail_%replace(1)) + merge(2, 0, self%trail_%replace(2)), c_float)]
+        if (self%trail_%past >= unlimited) then
+            values(5:6) = -far
+        else
+            values(5) = real(sgn * (s_at(t - self%trail_%past) - s_now), c_float)
+            values(6) = real(sgn * (s_at(t - fade * self%trail_%past) - s_now), c_float)
+        end if
+        if (self%trail_%future >= unlimited) then
+            values(7:8) = far
+        else
+            values(7) = real(sgn * (s_at(t + fade * self%trail_%future) - s_now), c_float)
+            values(8) = real(sgn * (s_at(t + self%trail_%future) - s_now), c_float)
+        end if
+        do k = 1, 2                                         ! each part's color (or the line's: then its alpha only)
+            values(9 + 4 * (k - 1):12 + 4 * (k - 1)) = real(self%trail_%color(:, k), c_float)
+            values(12 + 4 * (k - 1)) = real(self%trail_%opacity(k) * merge(self%trail_%color(4, k), 1.0_wp, &
+                                                                           self%trail_%replace(k)), c_float)
+        end do
+        values(17:20) = real([self%trail_%pattern(1), self%trail_%factor(1), self%trail_%pattern(2), &
+                              self%trail_%factor(2)], c_float)
+        call self%chain%set_trail(values)
+
+    contains
+
+        !> Point i's key: its time, increasing with the index.
+        real(wp) function key(i)
+            integer, intent(in) :: i
+            key = sgn * self%traj%time(i)
+        end function key
+
+        !> The number of points with keys <= x (bisection).
+        integer function keys_at_most(x) result(m)
+            real(wp), intent(in) :: x
+            integer :: low, high, mid
+            low = 0
+            high = n + 1
+            do while (high - low > 1)
+                mid = (low + high) / 2
+                if (key(mid) <= x) then
+                    low = mid
+                else
+                    high = mid
+                end if
+            end do
+            m = low
+        end function keys_at_most
+
+        !> The number of points with keys < x (bisection).
+        integer function keys_below(x) result(m)
+            real(wp), intent(in) :: x
+            integer :: low, high, mid
+            low = 0
+            high = n + 1
+            do while (high - low > 1)
+                mid = (low + high) / 2
+                if (key(mid) < x) then
+                    low = mid
+                else
+                    high = mid
+                end if
+            end do
+            m = low
+        end function keys_below
+
+        !> The distance along the curve at time tt: interpolated between the
+        !> points about it (extrapolated beyond the ends).
+        real(wp) function s_at(tt)
+            real(wp), intent(in) :: tt
+            integer :: j
+            real(wp) :: t0, t1
+            j = max(1, min(n - 1, keys_at_most(sgn * tt)))
+            t0 = self%traj%time(j)
+            t1 = self%traj%time(j + 1)
+            s_at = self%chain%distance(j)
+            if (t1 /= t0) s_at = s_at + (tt - t0) / (t1 - t0) * (self%chain%distance(j + 1) - s_at)
+        end function s_at
+
+    end subroutine draw_trail
 
     !> The tail: from point k (the latest passed) to the point interpolated at
     !> time t toward point k2 (the next in time: k + 1, or k - 1 for decreasing
