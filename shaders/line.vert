@@ -31,9 +31,12 @@
 // trajectory. Separate segments start their pattern at their first point, as
 // GL_LINES does.
 //
-// Level of detail (strips): the strip may be drawn at a stride (pc.lod.x):
-// segment i joins points i*stride and the next multiple, or the last point
-// drawn (pc.lod.y points), so that it always ends there. EyeRelative (in
+// Level of detail (strips): the strip may be drawn at a stride (pc.lod.x)
+// from its first point drawn (pc.lod.z, 0-based: a trace of decreasing
+// times starts part-way) to its last (pc.lod.y points): segment 0 joins the
+// first point and the next multiple of the stride, segment i the multiples
+// after (the points the bounds are computed for), the last ending at the
+// last point drawn, so that it always starts and ends there. EyeRelative (in
 // src/vsg/vkf_layer.cpp) picks the stride per view, from the bounds Fortran
 // computes of how far the points skipped are from the segments drawn.
 //
@@ -70,7 +73,7 @@ layout(push_constant) uniform PushConstants {
     vec4 eyeLow;
     vec4 viewport;          // xy = size of the view in framebuffer pixels,
                             // z = framebuffer pixels per window unit (2 on Retina)
-    ivec4 lod;              // x = stride (strips), y = points drawn
+    ivec4 lod;              // x = stride (strips), y = points drawn (up to), z = the first drawn (0-based)
 } pc;
 
 layout(std430, set = 0, binding = 0) readonly buffer Points {
@@ -172,8 +175,10 @@ void main()
     bool separate = style.params.y > 0.5;
     int stride = separate ? 1 : max(pc.lod.x, 1);
     int last = (pc.lod.y > 0) ? pc.lod.y - 1 : 0x7fffffff;  // the last point drawn
-    int first = separate ? 2 * segment : segment * stride;
-    int second = separate ? first + 1 : min(first + stride, last);
+    int from = separate ? 0 : pc.lod.z;                     // the first point drawn
+    int q = from / stride;
+    int first = separate ? 2 * segment : ((segment == 0) ? from : (q + segment) * stride);
+    int second = separate ? first + 1 : min((q + segment + 1) * stride, last);
     vec4 a = mvp * vec4(eyeRelative(first), 1.0);
     vec4 b = mvp * vec4(eyeRelative(second), 1.0);
 
@@ -217,7 +222,8 @@ void main()
     vec2 offset = halfWidth * (corner.y * normal + (2.0 * corner.x - 1.0) * dir);
     float along = atEnd ? halfWidth : -halfWidth;      // (pixels beyond the end point, along the segment)
     // (at the last point drawn, the next one: trace mode's tail continues there)
-    int neighbour = atEnd ? ((second >= last) ? second + 1 : min(second + stride, last)) : first - stride;
+    int previous = (segment == 0) ? -1 : ((segment == 1) ? from : first - stride);  // (none before the first drawn)
+    int neighbour = atEnd ? ((second >= last) ? second + 1 : min(second + stride, last)) : previous;
     bool clipped = atEnd ? (tb < 1.0) : (ta > 0.0);
     if (!separate && neighbour >= 0 && neighbour < int(style.count.x) && !clipped && len > 1.0e-6) {
         vec4 c = mvp * vec4(eyeRelative(neighbour), 1.0);

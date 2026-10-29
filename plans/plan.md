@@ -470,6 +470,21 @@ Decided so far:
       days 0.14 s -> 0.025 s, 20000 over a year 6.4 s -> 1.0 s, the same
       fates. Without OpenMP the `!$` lines are comments: serial.
       - [ ] Untested: OpenMP on Linux (libgomp) and Windows.
+  - Trace mode by time, not by point order: the points whose times are at
+    most the current time (`trace_range`, by bisection: the first points for
+    increasing times, the last for decreasing ones), for curves (the tail
+    from the latest passed toward the next in time), ribbons, segments and
+    markers (the start and end markers at their points' times; the
+    intermediate ones a range). Before, the part from the first point in
+    the trajectory's own time direction was drawn, the complement of the
+    history for a trajectory propagated backwards with time running
+    forwards. `LineChain%draw_range`; a strip drawn from part-way: its first
+    point pushed to line.vert (pc.lod.z), the level of detail's strides
+    from the multiples after it (the bounds' segments), the vertex count
+    from there. `first_drawn` on the artists; picking over the range drawn.
+    The highlight's arrows keep the point order (the propagation's
+    direction). `example/trace_directions.f90` (forward and backward to a
+    match point); `test_artists` (decreasing times).
   - Translucent spheres (`Sphere%set_opacity`, not in OpenFrames; default 1,
     opaque): below 1 when first shown, the body is drawn lit and blended
     (vkf_mesh_create's flag 8: TranslucentStates, front faces only, no

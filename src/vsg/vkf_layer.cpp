@@ -644,7 +644,8 @@ namespace
     struct LineLod
     {
         vsg::ref_ptr<vsg::Draw> draw;         // the strip's draw: its vertex count is set per view
-        uint32_t drawnPoints = 0;             // points 1 .. drawnPoints are drawn (setRange)
+        uint32_t firstPoint = 0;              // points firstPoint + 1 .. drawnPoints are drawn (setRange)
+        uint32_t drawnPoints = 0;
         bool strip = true;                    // (false for separate segments: no level of detail)
         vsg::dvec3 center;                    // bounding sphere of the points written
         double radius = 0.0;
@@ -695,22 +696,27 @@ namespace
             const vsg::dvec3 eye = vsg::inverse(modelView) * vsg::dvec3(0.0, 0.0, 0.0);
 
             // eye high, eye low, viewport (width, height, pixel ratio, time), level of
-            // detail (stride, points drawn: as integers)
+            // detail (stride, points drawn, the first point drawn (0-based): as integers)
             float constants[16] = {};
             for (int i = 0; i < 3; ++i) split(eye[i], constants[i], constants[4 + i]);
             recorded_viewport(visitor, constants + 8);
             constants[11] = animation_time(visitor);
-            uint32_t stride = 1, drawn = 0;
+            uint32_t stride = 1, drawn = 0, first = 0;
             if (lod)
             {
                 drawn = lod->drawnPoints;
-                if (lod->strip && lod->levels > 0 && drawn > 2)
+                first = lod->firstPoint;
+                if (lod->strip && lod->levels > 0 && drawn > first + 2)
                     stride = lod_stride(*lod, eye, state->projectionMatrixStack.top(), modelView, constants + 8);
-                if (lod->strip && lod->draw)
-                    lod->draw->vertexCount = (drawn >= 2) ? 6 * ((drawn - 2) / stride + 1) : 0;
+                if (lod->strip && lod->draw)       // segments from `first`, then on multiples of the stride (line.vert)
+                {
+                    const uint32_t start = (first / stride) * stride;
+                    lod->draw->vertexCount = (drawn >= first + 2) ? 6 * ((drawn - 1 - start + stride - 1) / stride) : 0;
+                }
             }
             std::memcpy(constants + 12, &stride, sizeof(stride));
             std::memcpy(constants + 13, &drawn, sizeof(drawn));
+            std::memcpy(constants + 14, &first, sizeof(first));
             auto& commandBuffer = *state->_commandBuffer;
             vkCmdPushConstants(commandBuffer, pipelineLayout->vk(commandBuffer.deviceID), VK_SHADER_STAGE_VERTEX_BIT,
                                128, sizeof(constants), constants);
@@ -1140,13 +1146,17 @@ namespace
             } else if (segments()) {
                 draw->firstVertex = 6 * ((first - 1) / 2);
                 draw->vertexCount = 6 * (n / 2);
+            } else if (lod) {                // a strip: drawn from lod->firstPoint (EyeRelative: its vertex count)
+                draw->firstVertex = 0;
+                draw->vertexCount = (n >= 2) ? 6 * (n - 1) : 0;
             } else {
                 draw->firstVertex = 6 * (first - 1);
                 draw->vertexCount = (n >= 2) ? 6 * (n - 1) : 0;
             }
             if (lod)
             {
-                lod->drawnPoints = first - 1 + n;        // (strips are drawn from point 1)
+                lod->firstPoint = first - 1;
+                lod->drawnPoints = first - 1 + n;
                 lod->strip = !markers && !ribbon && !segments();
             }
         }

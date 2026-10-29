@@ -102,7 +102,7 @@ module vkf_line_chain
                                                         !! (lines: highlight, see vkf_line_set_highlight)
     contains
         procedure :: init, set_compile, is_built, is_colored, release, detach
-        procedure :: reserve, slice, color_slice, written, draw
+        procedure :: reserve, slice, color_slice, written, draw, draw_range
         procedure :: set_style, set_pattern, set_marker_style, set_highlight, style_node, point, point_color, distance, num_chunks
         procedure :: set_lod, lod_error, chunk_bounds
     end type LineChain
@@ -474,12 +474,28 @@ contains
     subroutine draw(self, k)
         class(LineChain), intent(in) :: self
         integer, intent(in) :: k
-        integer :: j, m
-        do j = 1, self%n_chunks
-            m = max(0, min(self%chunks(j)%capacity, k - self%chunks(j)%first + 1))
-            call check_status(vkf_line_set_range(self%chunks(j)%line, 1_c_int, int(m, c_int)), 'trajectory artists')
-        end do
+        call self%draw_range(1, k)
     end subroutine draw
+
+    !> Draw points i1 .. i2 only (chain indices; none if i2 < i1): e.g. a trace
+    !> of decreasing times, its last points.
+    subroutine draw_range(self, i1, i2)
+        class(LineChain), intent(in) :: self
+        integer, intent(in) :: i1, i2
+        integer :: j, lo, hi
+        do j = 1, self%n_chunks
+            associate (c => self%chunks(j))
+                lo = max(i1, c%first)
+                hi = min(i2, c%first + c%capacity - 1)
+                if (hi >= lo) then
+                    call check_status(vkf_line_set_range(c%line, int(lo - c%first + 1, c_int), int(hi - lo + 1, c_int)), &
+                                      'trajectory artists')
+                else
+                    call check_status(vkf_line_set_range(c%line, 1_c_int, 0_c_int), 'trajectory artists')
+                end if
+            end associate
+        end do
+    end subroutine draw_range
 
     !> For lines, a dash pattern (see line_set_pattern; z'FFFF' solid).
     subroutine set_pattern(self, factor, pattern)

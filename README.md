@@ -101,7 +101,9 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     OpenFrames' marker shapes, with optional attenuation. Optionally (not in
     OpenFrames; off by default, `set_point_colors`) each marker is drawn in
     the trajectory's point color there, blended between points.
-  - Trace mode: draw only up to the current time.
+  - Trace mode: draw only up to the current time: the points whose times
+    have passed, whatever order they were added in, so a trajectory
+    propagated backwards traces correctly as time runs forwards.
   - Level of detail: seen from far away, a curve is drawn from fewer
     points, staying within half a pixel of all of them, chosen per view.
   - `RibbonArtist` (not in OpenFrames): a translucent surface swept out
@@ -300,6 +302,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `line_of_sight` | <img src="media/screenshots/examples/line_of_sight.jpg" width="160" alt="line_of_sight"> | `CustomLineSegments`: five spacecraft in different orbits (LEO, sun-synchronous, GPS, GEO, Molniya), shown as markers, with a line of sight between every pair, recomputed each frame by a callback: clear links in the spacecraft's colors, links the Earth blocks dashed. |
 | `colored_orbits` | <img src="media/screenshots/examples/colored_orbits.jpg" width="160" alt="colored_orbits"> | A color per trajectory point: a Molniya orbit colored by altitude (a smooth gradient), and a traced low orbit colored by sunlight (yellow while sunlit, blue in the Earth's umbra, matching the Earth's `ShadowCones`). |
 | `orbit_planes` | <img src="media/screenshots/examples/orbit_planes.jpg" width="160" alt="orbit_planes"> | `RibbonArtist`: orbit planes swept out from the Earth's center, for a low orbit and a geostationary orbit drawn whole, and a Molniya orbit traced as its spacecraft moves. |
+| `trace_directions` | <img src="media/screenshots/examples/trace_directions.jpg" width="160" alt="trace_directions"> | Trace mode with trajectories propagated forwards and backwards: one orbit split at a match point (forward from t01 to tm, backward from t02 to tm, the same state there). As time runs the two trace one continuous history; arrows show each one's propagation direction. Keys reverse the time and toggle trace mode. |
 | `thrust_arcs` | <img src="media/screenshots/examples/thrust_arcs.jpg" width="160" alt="thrust_arcs"> | Thrust vectors along a transfer between two circular orbits, with a burn at the start and another at the apoapsis that also changes the plane (`SegmentArtist` with relative ends). The orbit is orange while thrusting, and `+` and `-` change the vectors' scale (a `WindowEventHandler`). |
 | `eclipse` | <img src="media/screenshots/examples/eclipse.jpg" width="160" alt="eclipse"> | `ShadowCones`: a total solar eclipse. The Earth orbits the Sun and the Moon orbits the Earth, and the Moon's umbra reaches the Earth inside its wide penumbra. The Earth's own shadow points away from the Sun. A HUD line shows the umbra's length. |
 | `rocky_map` | <img src="media/screenshots/examples/rocky_map.jpg" width="160" alt="rocky_map"> | Terrain with Rocky (`TerrainBody`; needs the `rocky` environment): the Earth from ReadyMap's tiles, or the Moon from NASA's Moon Trek and LOLA's elevation, from orbit and close to the surface. |
@@ -317,6 +320,7 @@ pixi run example camera_tour
 pixi run example pick_trajectories
 pixi run example highlight_trajectory
 pixi run example record_video -- orbit.mp4 8          # an 8 s video
+pixi run example trace_directions
 pixi run example live_changes
 pixi run example precision
 pixi run example line_of_sight

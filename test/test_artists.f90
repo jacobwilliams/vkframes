@@ -2,8 +2,9 @@
 !> drawn (read back from the line buffers) match the trajectory to double
 !> precision after a bulk load, many appends (more line chunks, each uploaded
 !> only while filling), a clear, a changed last point and other data sources;
-!> trace mode draws the points passed and ends at the interpolated point, for
-!> increasing and decreasing times. SegmentArtist: segments at every stride-th
+!> trace mode draws the points with times up to the current time (the first
+!> points for increasing times, the last for decreasing ones) and ends at the
+!> interpolated point. SegmentArtist: segments at every stride-th
 !> point from the start to the end sources, appends, trace mode; relative ends
 !> (a vector per point drawn from the positions, its scale changed, zero
 !> vectors drawn as nothing: both ends the same). MarkerArtist:
@@ -80,7 +81,7 @@ contains
         type(Trajectory), intent(in) :: traj
         integer :: i
         err = 0.0_wp
-        do i = 1, a%num_drawn()
+        do i = a%first_drawn(), a%first_drawn() + a%num_drawn() - 1
             err = max(err, maxval(abs(a%drawn_point(i) - traj%position(i))))
         end do
     end function drawn_error
@@ -276,28 +277,38 @@ contains
         character(len=:), allocatable :: what
         what = merge('trace (increasing times): ', 'trace (decreasing times): ', dir > 0.0_wp)
         traj = Trajectory()
-        do i = 1, 200
+        do i = 1, 200                                  ! point i at time dir * 10 (i - 1)
             call traj%add(dir * 10.0_wp * real(i - 1, wp), orbit(10.0_wp * real(i, wp)))
         end do
         a = CurveArtist(traj)
         call a%set_trace_mode(.true.)
         call a%build(c_null_ptr, vkf_switch_create())
 
-        call a%update(dir * 505.0_wp)                  ! between points 51 and 52
-        call check(a%num_drawn() == 51, what//'points passed')
+        ! between points 51 and 52: the points with times up to it; the tail half way to the next in time
+        call a%update(dir * 505.0_wp)
+        if (dir > 0.0_wp) then
+            call check(a%num_drawn() == 51 .and. a%first_drawn() == 1, what//'points passed (the first ones)')
+        else
+            call check(a%num_drawn() == 149 .and. a%first_drawn() == 52, what//'points passed (the last ones)')
+        end if
         expected = 0.5_wp * (orbit(510.0_wp) + orbit(520.0_wp))
         call check(a%trace_end(v), what//'tail shown')
         call check(maxval(abs(v - expected)) < 1.0e-6_wp, what//'tail ends at the interpolated point')
         call check(drawn_error(a, traj) < 1.0e-6_wp, what//'points drawn')
 
         call a%update(dir * 500.0_wp)                  ! at point 51
-        call check(a%num_drawn() == 51 .and. a%trace_end(v), what//'at a point')
+        if (dir > 0.0_wp) then
+            call check(a%num_drawn() == 51 .and. a%trace_end(v), what//'at a point')
+        else
+            call check(a%num_drawn() == 150 .and. a%first_drawn() == 51 .and. a%trace_end(v), what//'at a point')
+        end if
         call check(maxval(abs(v - orbit(510.0_wp))) < 1.0e-6_wp, what//'at a point: tail of zero length')
 
-        call a%update(-dir * 1.0_wp)                   ! before the first point
+        call a%update(-1.0e6_wp)                       ! before the earliest time
         call check(a%num_drawn() == 0 .and. .not. a%trace_end(v), what//'before the start: nothing')
-        call a%update(dir * 1.0e6_wp)                  ! after the last
-        call check(a%num_drawn() == 200 .and. .not. a%trace_end(v), what//'after the end: everything')
+        call a%update(1.0e6_wp)                        ! after the latest
+        call check(a%num_drawn() == 200 .and. a%first_drawn() == 1 .and. .not. a%trace_end(v), &
+                   what//'after the end: everything')
 
         call a%set_trace_mode(.false.)
         call a%update(dir * 505.0_wp)

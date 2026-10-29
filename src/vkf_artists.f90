@@ -12,12 +12,16 @@
 !> since `set_optional` changes it.
 !>
 !> Trace mode (`set_trace_mode`) draws only the part of the trajectory up to
-!> the current time: the points already passed (a change of the draw ranges, no
-!> upload); a curve adds a two-point tail from the last of them to the point
-!> interpolated at the current time (the only data uploaded each frame). The
-!> part passed is from the first point to the current time, in the
-!> trajectory's time direction (times may decrease: e.g. a trajectory
-!> propagated backwards, shown with time running backwards).
+!> the current time: the points whose times are at most the current time,
+!> whatever order they were added in (a change of the draw ranges, no
+!> upload): for increasing times its first points, for decreasing ones (a
+!> trajectory propagated backwards) its last. A curve adds a two-point tail
+!> from the latest of them to the point interpolated at the current time
+!> (the only data uploaded each frame). So a trajectory propagated forwards
+!> and one propagated backwards to the same state trace one history as time
+!> runs (example/trace_directions.f90); with time running backwards, the
+!> history shrinks back. (A highlight's arrows still run in the order the
+!> points were added: the propagation's direction.)
 !>
 !> Point colors (not in OpenFrames): a CurveArtist draws a trajectory with
 !> colors (Trajectory%add_color, or add's `color`) in them, each segment
@@ -142,7 +146,9 @@ module vkf_artists
         type(c_ptr) :: tail = c_null_ptr            !! the line to the point at the current time (trace mode)
         integer :: n_written = 0                    !! points written to the chain
         integer :: n_drawn = 0                      !! points drawn from it
+        integer :: first_drawn_ = 1                 !! the first of them (trace mode, decreasing times: later)
         logical :: tail_shown = .false.             !! the tail is drawn
+        integer :: tail_from = 0, tail_to = 0       !! the tail: from point tail_from toward tail_to
         real(wp) :: tail_time = huge(1.0_wp)        !! the time the tail was drawn for
     contains
         procedure :: set_trajectory => curve_set_trajectory
@@ -157,6 +163,7 @@ module vkf_artists
         procedure :: update => curve_update
         procedure :: release => curve_release
         procedure :: num_chunks => curve_num_chunks, num_drawn => curve_num_drawn
+        procedure :: first_drawn => curve_first_drawn
         procedure :: drawn_point, drawn_distance, trace_end
     end type CurveArtist
 
@@ -193,6 +200,7 @@ module vkf_artists
         type(LineChain) :: chain                    !! the line buffers (a pair of points per segment)
         integer :: n_written = 0                    !! segments written to the chain
         integer :: n_drawn = 0                      !! segments drawn from it
+        integer :: first_drawn_ = 1                 !! the first of them (trace mode, decreasing times: later)
     contains
         procedure :: set_trajectory => segment_set_trajectory
         procedure :: set_start_x_data, set_start_y_data, set_start_z_data
@@ -209,6 +217,7 @@ module vkf_artists
         procedure :: update => segment_update
         procedure :: release => segment_release
         procedure :: num_chunks => segment_num_chunks, num_drawn => segment_num_drawn
+        procedure :: first_drawn => segment_first_drawn
         procedure :: drawn_segment
     end type SegmentArtist
 
@@ -247,6 +256,7 @@ module vkf_artists
         type(c_ptr) :: tail = c_null_ptr            !! the quad to the point at the current time (trace mode)
         integer :: n_written = 0                    !! trajectory points written to the chain
         integer :: n_drawn = 0                      !! trajectory points drawn from it
+        integer :: first_drawn_ = 1                 !! the first of them (trace mode, decreasing times: later)
         integer :: n_colored = 0                    !! points written with the trajectory's own colors
         logical :: tail_shown = .false.             !! the tail is drawn
         real(wp) :: tail_time = huge(1.0_wp)        !! the time the tail was drawn for
@@ -320,6 +330,7 @@ module vkf_artists
         real(wp), allocatable :: inter_xyz(:,:), inter_t(:)  !! intermediate markers' points and times (1:n_inter)
         real(wp), allocatable :: inter_rgba(:,:)    !! (4, :) their colors (with point colors)
         integer :: n_inter = 0, n_inter_written = 0, n_inter_drawn = 0  !! intermediate markers computed, written, drawn
+        integer :: inter_first = 1                  !! the first intermediate marker drawn (trace, decreasing times: later)
         real(wp) :: next_time = 0.0_wp              !! time of the next marker (INTERMEDIATE_TIME)
         integer :: next_index = 0                   !! where to continue (0: not started)
         real(wp) :: arc = 0.0_wp, prev_arc = 0.0_wp, target = 0.0_wp, prev_point(3) = 0.0_wp
@@ -447,24 +458,51 @@ contains
         self%seen_revision = self%traj%revision()
     end function data_changed
 
-    !> Number of points up to time t, from the first point in the trajectory's
-    !> time direction (at most n).
-    integer function points_passed(traj, t, n) result(k)
+    !> The points of 1 .. n whose times are at most t (trace mode): i1 .. i2
+    !> (none: i2 < i1), the first points for increasing times, the last for
+    !> decreasing ones (by bisection).
+    subroutine trace_range(traj, t, n, i1, i2)
         type(Trajectory), intent(in) :: traj
         real(wp), intent(in) :: t
         integer, intent(in) :: n
-        integer :: status, index
-        status = traj%time_index(t, index)
-        select case (status)
-        case (TIME_OUT_OF_RANGE)
-            k = merge(0, n, index < 1)
-        case (TIME_NOT_FOUND)
-            k = n
-        case default                                    ! found or at a bound: index is the last point passed
-            k = index
-        end select
-        k = max(0, min(n, k))
-    end function points_passed
+        integer, intent(out) :: i1, i2
+        integer :: low, high, mid
+        i1 = 1
+        i2 = 0
+        if (n < 1) return
+        low = 0
+        high = n + 1
+        if (.not. decreasing_times(traj, n)) then       ! points 1 .. low have times <= t
+            do while (high - low > 1)
+                mid = (low + high) / 2
+                if (traj%time(mid) <= t) then
+                    low = mid
+                else
+                    high = mid
+                end if
+            end do
+            i2 = low
+        else                                            ! points high .. n have times <= t
+            do while (high - low > 1)
+                mid = (low + high) / 2
+                if (traj%time(mid) <= t) then
+                    high = mid
+                else
+                    low = mid
+                end if
+            end do
+            i1 = high
+            i2 = n
+        end if
+    end subroutine trace_range
+
+    !> Whether points 1 .. n have decreasing times (a trajectory propagated backwards).
+    logical function decreasing_times(traj, n)
+        type(Trajectory), intent(in) :: traj
+        integer, intent(in) :: n
+        decreasing_times = .false.
+        if (n > 1) decreasing_times = traj%time(n) < traj%time(1)
+    end function decreasing_times
 
     !> Number of points the data sources give: 0 for invalid sources or no
     !> trajectory, huge() if all are zero.
@@ -696,7 +734,15 @@ contains
         curve_num_drawn = self%n_drawn
     end function curve_num_drawn
 
-    !> Point i (1 to num_drawn) as drawn: read back from the line buffers.
+    !> The first point drawn (1, or in trace mode of decreasing times the
+    !> earliest point passed): points first_drawn .. first_drawn + num_drawn - 1.
+    pure integer function curve_first_drawn(self)
+        class(CurveArtist), intent(in) :: self
+        curve_first_drawn = self%first_drawn_
+    end function curve_first_drawn
+
+    !> Point i (of the trajectory's: first_drawn to first_drawn + num_drawn - 1
+    !> drawn) as written: read back from the line buffers.
     function drawn_point(self, i) result(v)
         class(CurveArtist), intent(in) :: self
         integer, intent(in) :: i
@@ -778,7 +824,7 @@ contains
     subroutine curve_update(self, t)
         class(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        integer :: n, i1
+        integer :: n, i1, i2
         logical :: changed, redraw
         if (.not. self%chain%is_built()) return
         n = curve_points(self)
@@ -808,18 +854,29 @@ contains
 
         if (.not. self%trace) then
             self%n_drawn = self%n_written
+            self%first_drawn_ = 1
             call self%chain%draw(self%n_drawn)
             if (c_associated(self%tail)) call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             self%tail_shown = .false.
             self%tail_time = huge(1.0_wp)
             return
         end if
-        ! trace mode: the points passed, and a tail to the point at time t
+        ! trace mode: the points passed (times up to t), and a tail from the
+        ! latest of them to the point at time t
         if (.not. changed .and. t == self%tail_time) return
-        self%n_drawn = 0
-        if (associated(self%traj)) self%n_drawn = points_passed(self%traj, t, self%n_written)
-        call self%chain%draw(self%n_drawn)
-        call update_tail(self, t, self%n_drawn)
+        i1 = 1
+        i2 = 0
+        if (associated(self%traj)) call trace_range(self%traj, t, self%n_written, i1, i2)
+        self%first_drawn_ = i1
+        self%n_drawn = max(0, i2 - i1 + 1)
+        call self%chain%draw_range(i1, i2)
+        if (.not. associated(self%traj)) then
+            call update_tail(self, t, 0, 0)
+        else if (decreasing_times(self%traj, self%n_written)) then
+            call update_tail(self, t, i1, i1 - 1)           ! (toward the next point back: a later time)
+        else
+            call update_tail(self, t, i2, i2 + 1)
+        end if
         self%tail_time = t
     end subroutine curve_update
 
@@ -891,40 +948,45 @@ contains
         end if
     end function point_rgba
 
-    !> The tail: from point k to the point interpolated at time t (none if
-    !> before the first point or at/after the last).
-    subroutine update_tail(self, t, k)
+    !> The tail: from point k (the latest passed) to the point interpolated at
+    !> time t toward point k2 (the next in time: k + 1, or k - 1 for decreasing
+    !> times); none if either isn't a point written (before the start, or
+    !> everything passed).
+    subroutine update_tail(self, t, k, k2)
         type(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        integer, intent(in) :: k
+        integer, intent(in) :: k, k2
         real(c_float), dimension(:,:,:), pointer :: p
-        real(wp) :: t0, t1, frac, xyz(3, 2)
+        real(wp) :: t0, t1, frac, xyz(3, 2), along
         self%tail_shown = .false.
         if (.not. c_associated(self%tail)) return
-        if (k < 1 .or. k >= self%n_written) then
+        if (min(k, k2) < 1 .or. max(k, k2) > self%n_written) then
             call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             return
         end if
         t0 = self%traj%time(k)
-        t1 = self%traj%time(k + 1)
+        t1 = self%traj%time(k2)
         frac = 0.0_wp
         if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
         xyz(:, 1) = self%traj%point(k, self%sources_)
-        xyz(:, 2) = xyz(:, 1) + frac * (self%traj%point(k + 1, self%sources_) - xyz(:, 1))
+        xyz(:, 2) = xyz(:, 1) + frac * (self%traj%point(k2, self%sources_) - xyz(:, 1))
         call line_buffer(self%tail, p)
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:2))
-        call split_distances(self%chain%distance(k) + [0.0_wp, norm2(xyz(:, 2) - xyz(:, 1))], p(4, :, 1:2))
-        call tail_colors(self, k, frac)
+        along = merge(1.0_wp, -1.0_wp, k2 > k) * norm2(xyz(:, 2) - xyz(:, 1))   ! (the distance along: in point order)
+        call split_distances(self%chain%distance(k) + [0.0_wp, along], p(4, :, 1:2))
+        self%tail_from = k
+        self%tail_to = k2
+        call tail_colors(self, k, k2, frac)
         call check_status(vkf_line_points_changed(self%tail, 2_c_int), 'trajectory artists')
         self%tail_shown = .true.
     end subroutine update_tail
 
     !> The tail's colors: from point k's to the color at frac along to point
-    !> k + 1's (white, showing the style's color, if the chain has none).
-    subroutine tail_colors(self, k, frac)
+    !> k2's (white, showing the style's color, if the chain has none).
+    subroutine tail_colors(self, k, k2, frac)
         type(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: k
+        integer, intent(in) :: k, k2
         real(wp), intent(in) :: frac
         real(c_float), dimension(:,:), pointer :: c
         real(wp) :: c0(4), c1(4)
@@ -935,7 +997,7 @@ contains
         call c_f_pointer(data, c, [4, 2])
         if (self%chain%is_colored()) then
             c0 = point_rgba(self, k)
-            c1 = point_rgba(self, k + 1)
+            c1 = point_rgba(self, k2)
             c(:, 1) = real(c0, c_float)
             c(:, 2) = real(c0 + frac * (c1 - c0), c_float)
         else
@@ -1221,8 +1283,15 @@ contains
         segment_num_drawn = self%n_drawn
     end function segment_num_drawn
 
-    !> Segment s (1 to num_drawn; at point 1 + (s-1) stride) as drawn: read back
-    !> from the line buffers.
+    !> The first segment drawn (1, or in trace mode of decreasing times the
+    !> earliest passed): segments first_drawn .. first_drawn + num_drawn - 1.
+    pure integer function segment_first_drawn(self)
+        class(SegmentArtist), intent(in) :: self
+        segment_first_drawn = self%first_drawn_
+    end function segment_first_drawn
+
+    !> Segment s (at point 1 + (s-1) stride; first_drawn to first_drawn +
+    !> num_drawn - 1 drawn) as written: read back from the line buffers.
     subroutine drawn_segment(self, s, a, b)
         class(SegmentArtist), intent(in) :: self
         integer, intent(in) :: s
@@ -1258,7 +1327,7 @@ contains
     subroutine segment_update(self, t)
         class(SegmentArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        integer :: m, s1, k
+        integer :: m, s1, s2, i1, i2
         logical :: changed, redraw
         if (.not. self%chain%is_built()) return
         m = segment_count(self)
@@ -1273,12 +1342,16 @@ contains
         end if
 
         self%n_drawn = self%n_written
-        if (self%trace .and. associated(self%traj)) then  ! the segments at the points passed
-            k = points_passed(self%traj, t, self%traj%num_times())
-            self%n_drawn = 0
-            if (k >= 1) self%n_drawn = min(self%n_written, (k - 1) / self%stride_ + 1)
+        self%first_drawn_ = 1
+        if (self%trace .and. associated(self%traj)) then  ! the segments at the points passed (times up to t)
+            call trace_range(self%traj, t, self%traj%num_times(), i1, i2)
+            s1 = (i1 - 1 + self%stride_ - 1) / self%stride_ + 1
+            s2 = 0
+            if (i2 >= 1) s2 = min(self%n_written, (i2 - 1) / self%stride_ + 1)
+            self%first_drawn_ = s1
+            self%n_drawn = max(0, s2 - s1 + 1)
         end if
-        call self%chain%draw(2 * self%n_drawn)
+        call self%chain%draw_range(2 * self%first_drawn_ - 1, 2 * (self%first_drawn_ + self%n_drawn - 1))
     end subroutine segment_update
 
     !> Number of segments to draw (none if all sources are zero).
@@ -1553,7 +1626,7 @@ contains
     subroutine ribbon_update(self, t)
         class(RibbonArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        integer :: n, i1
+        integer :: n, i1, i2
         logical :: changed, redraw
         if (.not. self%chain%is_built()) return
         n = ribbon_points(self)
@@ -1582,6 +1655,7 @@ contains
 
         if (.not. self%trace) then
             self%n_drawn = self%n_written
+            self%first_drawn_ = 1
             call self%chain%draw(2 * self%n_drawn)
             if (c_associated(self%tail)) call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             self%tail_shown = .false.
@@ -1590,10 +1664,19 @@ contains
         end if
         ! trace mode: the quads passed, and one to the pair at time t
         if (.not. changed .and. t == self%tail_time) return
-        self%n_drawn = 0
-        if (associated(self%traj)) self%n_drawn = points_passed(self%traj, t, self%n_written)
-        call self%chain%draw(2 * self%n_drawn)
-        call update_ribbon_tail(self, t, self%n_drawn)
+        i1 = 1
+        i2 = 0
+        if (associated(self%traj)) call trace_range(self%traj, t, self%n_written, i1, i2)
+        self%first_drawn_ = i1
+        self%n_drawn = max(0, i2 - i1 + 1)
+        call self%chain%draw_range(2 * i1 - 1, 2 * i2)
+        if (.not. associated(self%traj)) then
+            call update_ribbon_tail(self, t, 0, 0)
+        else if (decreasing_times(self%traj, self%n_written)) then
+            call update_ribbon_tail(self, t, i1, i1 - 1)
+        else
+            call update_ribbon_tail(self, t, i2, i2 + 1)
+        end if
         self%tail_time = t
     end subroutine ribbon_update
 
@@ -1650,11 +1733,12 @@ contains
     end subroutine write_ribbon
 
     !> The tail: the quad from the pair at point k to the pair interpolated at
-    !> time t (none if before the first point or at/after the last).
-    subroutine update_ribbon_tail(self, t, k)
+    !> time t toward point k2 (as the curve's tail: none if either isn't a
+    !> point written).
+    subroutine update_ribbon_tail(self, t, k, k2)
         type(RibbonArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        integer, intent(in) :: k
+        integer, intent(in) :: k, k2
         real(c_float), dimension(:,:,:), pointer :: p
         real(c_float), dimension(:,:), pointer :: c
         real(wp) :: t0, t1, frac, xyz(3, 4), c0(4), c1(4)
@@ -1662,18 +1746,18 @@ contains
         type(c_ptr) :: data
         self%tail_shown = .false.
         if (.not. c_associated(self%tail)) return
-        if (k < 1 .or. k >= self%n_written) then
+        if (min(k, k2) < 1 .or. max(k, k2) > self%n_written) then
             call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             return
         end if
         t0 = self%traj%time(k)
-        t1 = self%traj%time(k + 1)
+        t1 = self%traj%time(k2)
         frac = 0.0_wp
         if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
         xyz(:, 1) = self%traj%point(k, self%start_)
         xyz(:, 2) = self%traj%point(k, self%end_)
-        xyz(:, 3) = xyz(:, 1) + frac * (self%traj%point(k + 1, self%start_) - xyz(:, 1))
-        xyz(:, 4) = xyz(:, 2) + frac * (self%traj%point(k + 1, self%end_) - xyz(:, 2))
+        xyz(:, 3) = xyz(:, 1) + frac * (self%traj%point(k2, self%start_) - xyz(:, 1))
+        xyz(:, 4) = xyz(:, 2) + frac * (self%traj%point(k2, self%end_) - xyz(:, 2))
         call line_buffer(self%tail, p)
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:4))
@@ -1682,7 +1766,7 @@ contains
             call c_f_pointer(data, c, [4, 4])
             if (self%chain%is_colored()) then
                 c0 = ribbon_point_rgba(self, k)
-                c1 = ribbon_point_rgba(self, k + 1)
+                c1 = ribbon_point_rgba(self, k2)
                 c(:, 1:2) = spread(real(c0, c_float), 2, 2)
                 c(:, 3:4) = spread(real(c0 + frac * (c1 - c0), c_float), 2, 2)
             else
@@ -2061,7 +2145,7 @@ contains
         case default
             shown = .false.
             if (.not. present(i)) return
-            shown = i >= 1 .and. i <= self%n_inter_drawn
+            shown = i >= self%inter_first .and. i <= self%inter_first + self%n_inter_drawn - 1
             if (shown) v = self%inter%point(i)
         end select
     end function drawn_marker
@@ -2125,6 +2209,7 @@ contains
         self%start_shown = .false.
         self%end_shown = .false.
         self%n_inter_drawn = 0
+        self%inter_first = 1
         call redraw_markers(self)
         call artist_release(self)
     end subroutine marker_release
@@ -2154,8 +2239,8 @@ contains
     subroutine marker_update(self, t)
         class(MarkerArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        logical :: changed, redraw, zero
-        integer :: n, k
+        logical :: changed, redraw, zero, passed_start, passed_end
+        integer :: n
         if (.not. c_associated(self%group)) return
         zero = all(self%sources_%src == SOURCE_ZERO) .or. .not. associated(self%traj)   ! (a marker at the origin)
         if (zero) then
@@ -2186,16 +2271,22 @@ contains
             if (iand(self%markers_, MARKER_INTERMEDIATE) /= 0 .and. .not. zero .and. n > 2) call add_intermediates(self, n)
         end if
 
-        ! what is drawn: everything, or in trace mode what was passed
-        k = n
-        if (self%trace .and. .not. zero) k = points_passed(self%traj, t, n)
-        self%start_shown = iand(self%markers_, MARKER_START) /= 0 .and. n >= 1 .and. k >= 1
+        ! what is drawn: everything, or in trace mode the markers whose times
+        ! have passed (the start and end markers at their points' times)
+        passed_start = .true.
+        passed_end = .true.
+        if (self%trace .and. .not. zero .and. n >= 1) then
+            passed_start = self%traj%time(1) <= t
+            passed_end = self%traj%time(n) <= t
+        end if
+        self%start_shown = iand(self%markers_, MARKER_START) /= 0 .and. n >= 1 .and. passed_start
         call self%start_node%draw(merge(1, 0, self%start_shown))
-        self%end_shown = iand(self%markers_, MARKER_END) /= 0 .and. n > 1 .and. k >= n   ! (trace: once reached)
+        self%end_shown = iand(self%markers_, MARKER_END) /= 0 .and. n > 1 .and. passed_end
         call self%end_node%draw(merge(1, 0, self%end_shown))
+        self%inter_first = 1
         self%n_inter_drawn = self%n_inter_written
-        if (self%trace .and. self%n_inter_written > 0) self%n_inter_drawn = markers_passed(self, t)
-        call self%inter%draw(self%n_inter_drawn)
+        if (self%trace .and. self%n_inter_written > 0) call markers_passed(self, t, self%inter_first, self%n_inter_drawn)
+        call self%inter%draw_range(self%inter_first, self%inter_first + self%n_inter_drawn - 1)
     end subroutine marker_update
 
     !> The color of point i for a start or end marker: the trajectory's (its
@@ -2435,27 +2526,41 @@ contains
         call self%inter%written(i1, i2)
     end subroutine write_intermediates
 
-    !> Number of intermediate markers up to time t (in trajectory order: in the
-    !> trajectory's time direction), by bisection.
-    integer function markers_passed(self, t) result(k)
+    !> The intermediate markers (in trajectory order) whose times are at most
+    !> t: `count` from `first` (the first ones for increasing times, the last
+    !> for decreasing), by bisection.
+    subroutine markers_passed(self, t, first, count)
         type(MarkerArtist), intent(in) :: self
         real(wp), intent(in) :: t
-        real(wp) :: dir
-        integer :: low, high, mid
-        dir = 1.0_wp
-        if (self%traj%num_times() > 1) dir = sign(1.0_wp, self%traj%time(self%traj%num_times()) - self%traj%time(1))
-        low = 0                                           ! markers 1 .. low passed
-        high = self%n_inter_written + 1                   ! markers high .. not passed
-        do while (high - low > 1)
-            mid = (low + high) / 2
-            if (dir * (self%inter_t(mid) - t) <= 0.0_wp) then
-                low = mid
-            else
-                high = mid
-            end if
-        end do
-        k = low
-    end function markers_passed
+        integer, intent(out) :: first, count
+        integer :: low, high, mid, m
+        m = self%n_inter_written
+        low = 0
+        high = m + 1
+        if (.not. decreasing_times(self%traj, self%traj%num_times())) then   ! markers 1 .. low passed
+            do while (high - low > 1)
+                mid = (low + high) / 2
+                if (self%inter_t(mid) <= t) then
+                    low = mid
+                else
+                    high = mid
+                end if
+            end do
+            first = 1
+            count = low
+        else                                              ! markers high .. m passed
+            do while (high - low > 1)
+                mid = (low + high) / 2
+                if (self%inter_t(mid) <= t) then
+                    high = mid
+                else
+                    low = mid
+                end if
+            end do
+            first = high
+            count = m - high + 1
+        end if
+    end subroutine markers_passed
 
     ! ==================================================================
     ! DrawableTrajectory
@@ -2596,31 +2701,33 @@ contains
         integer, intent(inout) :: n                 !! number of hits
         real(wp), dimension(:,:), pointer :: pos
         real(wp) :: extra, lo(3), hi(3), c(3), p0(3), p1(3), px, s, depth, best_px, best_depth, best_s, t0, t1, frac
-        integer :: j, first, count, i1, i2, i, best_i, nd
-        logical :: xyz, tail
+        integer :: j, first, count, i1, i2, i, best_i, best_j, nd, d1, d2
+        logical :: xyz
         type(PickHit) :: h
         if (.not. associated(a%traj) .or. .not. a%chain%is_built()) return
         nd = a%n_drawn
         if (nd < 1) return
+        d1 = a%first_drawn_                                     ! (the points drawn: d1 .. d2)
+        d2 = d1 + nd - 1
         extra = 0.5_wp * a%width_ * cam%pixel_ratio
         xyz = is_position_xyz(a%sources_)
         if (xyz) call a%traj%positions(pos)
         best_px = huge(1.0_wp)
         best_depth = huge(1.0_wp)
         best_i = 0
+        best_j = 0                                              ! (the hit is between points best_i and best_j)
         best_s = 0.0_wp
-        tail = .false.
         if (nd == 1) then                                       ! (a single point)
-            if (point_pick(cam, root_point(1), px, depth, extra)) then
+            if (point_pick(cam, root_point(d1), px, depth, extra)) then
                 best_px = px
                 best_depth = depth
-                best_i = 1
+                best_i = d1
             end if
         end if
         do j = 1, a%chain%num_chunks()                          ! the segments drawn, chunk by chunk
             call a%chain%chunk_bounds(j, first, count, lo, hi)
-            i1 = first
-            i2 = min(first + count - 1, nd)
+            i1 = max(first, d1)
+            i2 = min(first + count - 1, d2)
             if (count < 2 .or. i2 <= i1) cycle
             c = matmul(m(1:3, 1:3), 0.5_wp * (lo + hi)) + m(1:3, 4)
             if (.not. sphere_near(cam, c, 0.5_wp * norm2(hi - lo), extra)) cycle       ! (a chunk far off: skipped)
@@ -2632,27 +2739,28 @@ contains
                         best_px = px
                         best_depth = depth
                         best_i = i
+                        best_j = i + 1
                         best_s = s
                     end if
                 end if
                 p0 = p1
             end do
         end do
-        ! trace mode: the tail from the last point passed to the point at the time drawn
-        if (a%trace .and. a%tail_shown .and. nd < a%traj%num_times()) then
-            t0 = a%traj%time(nd)
-            t1 = a%traj%time(nd + 1)
+        ! trace mode: the tail from the latest point passed to the point at the time drawn
+        if (a%trace .and. a%tail_shown) then
+            t0 = a%traj%time(a%tail_from)
+            t1 = a%traj%time(a%tail_to)
             frac = 0.0_wp
             if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (a%tail_time - t0) / (t1 - t0)))
-            p0 = root_point(nd)
-            p1 = p0 + frac * (root_point(nd + 1) - p0)
+            p0 = root_point(a%tail_from)
+            p1 = p0 + frac * (root_point(a%tail_to) - p0)
             if (segment_pick(cam, p0, p1, px, s, depth, extra)) then
                 if (better(px, depth, best_px, best_depth)) then
                     best_px = px
                     best_depth = depth
-                    best_i = nd
+                    best_i = a%tail_from
+                    best_j = a%tail_to
                     best_s = s * frac
-                    tail = .true.
                 end if
             end if
         end if
@@ -2662,11 +2770,12 @@ contains
         h%artist => a
         h%trajectory => a%traj
         h%index = best_i
+        if (best_j > 0) h%index = min(best_i, best_j)           ! (the point the hit is after, in point order)
         h%local = local_point(best_i)
         h%time = a%traj%time(best_i)
-        if (best_i < a%traj%num_times() .and. (best_i < nd .or. tail)) then
-            h%local = h%local + best_s * (local_point(best_i + 1) - h%local)
-            h%time = h%time + best_s * (a%traj%time(best_i + 1) - h%time)
+        if (best_j > 0) then
+            h%local = h%local + best_s * (local_point(best_j) - h%local)
+            h%time = h%time + best_s * (a%traj%time(best_j) - h%time)
         end if
         h%position = matmul(m(1:3, 1:3), h%local) + m(1:3, 4)
         h%distance = best_depth
@@ -2713,7 +2822,7 @@ contains
         best_depth = huge(1.0_wp)
         best_k = 0
         best_s = 0.0_wp
-        do k = 1, a%n_drawn
+        do k = a%first_drawn_, a%first_drawn_ + a%n_drawn - 1
             call a%drawn_segment(k, a0, b0)
             if (all(a0 == b0)) cycle
             if (segment_pick(cam, matmul(m(1:3, 1:3), a0) + m(1:3, 4), matmul(m(1:3, 1:3), b0) + m(1:3, 4), &
@@ -2765,7 +2874,7 @@ contains
             case (2)
                 if (a%drawn_marker(MARKER_END, v)) call consider(MARKER_END, 0)
             case (3)
-                do k = 1, a%n_inter_drawn
+                do k = a%inter_first, a%inter_first + a%n_inter_drawn - 1
                     if (a%drawn_marker(MARKER_INTERMEDIATE, v, k)) call consider(MARKER_INTERMEDIATE, k)
                 end do
             end select

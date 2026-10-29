@@ -112,6 +112,7 @@ module cr3bp_demo
         real(wp), allocatable :: states(:,:)                   !! (6, n): the cloud's states
         real(wp) :: selected(6) = 0.0_wp                       !! the state picked
         logical :: has_selection = .false.
+        real(wp) :: animation_start = 0.0_wp                   !! the path's earliest time (s): where Animate starts
         logical :: building = .true.                           !! the GUI is being built (no updates yet)
         ! options
         character(len=:), allocatable :: capture
@@ -398,9 +399,12 @@ contains
         if (app%click_near(1) < huge(1.0_wp)) write(*, '(a)') trim(text)
         ! the clock over the path, for the spacecraft (backwards: decreasing times)
         if (app%proxy%is_open()) then
-            call app%proxy%set_time_range(min(0.0_wp, t(size(t)) * tu), max(0.0_wp, t(size(t)) * tu))
-            call app%proxy%set_time_scale(t(size(t)) * tu / 8.0_wp)
-            call app%proxy%set_time(0.0_wp)
+            ! (always forwards in time: a backward propagation is played from its
+            ! earliest time up to the state picked, its trace growing toward it)
+            app%animation_start = min(0.0_wp, t(size(t)) * tu)
+            call app%proxy%set_time_range(app%animation_start, max(0.0_wp, t(size(t)) * tu))
+            call app%proxy%set_time_scale(abs(t(size(t)) * tu) / 8.0_wp)
+            call app%proxy%set_time(app%animation_start)
         end if
     end subroutine propagate_selected
 
@@ -710,12 +714,12 @@ contains
         call app%path_curve%set_trace_mode(checked)
         call app%path_end%set_trace_mode(checked)
         call app%craft%show_contents(checked)
-        if (app%proxy%is_open()) call app%proxy%set_time(0.0_wp)
+        if (app%proxy%is_open()) call app%proxy%set_time(app%animation_start)
     end subroutine on_animate
 
     subroutine on_replay(data)
         class(*), intent(inout), optional :: data
-        if (app%proxy%is_open()) call app%proxy%set_time(0.0_wp)
+        if (app%proxy%is_open()) call app%proxy%set_time(app%animation_start)
     end subroutine on_replay
 
     subroutine on_clear(data)
