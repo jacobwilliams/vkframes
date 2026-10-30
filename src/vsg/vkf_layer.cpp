@@ -1455,9 +1455,14 @@ namespace
     }
 
     // A driver's memory budget (VK_EXT_memory_budget), which VSG trusts when
-    // allocating, ignored if it is implausible (under 1% of its heap):
-    // KosmicKrisp (Mesa 26.2) reports 64 KiB, and VSG then allocates no memory
-    // (silently) for the windows' depth images and the scene.
+    // allocating, ignored if it is implausible (under 10% of its heap; real
+    // drivers report most of it): KosmicKrisp (Mesa 26.2) reports from 64 KiB
+    // to about 300 MB of a 24 GiB heap, varying from run to run, and its
+    // budget then follows its usage, so VSG finds no memory free: it allocated
+    // nothing (silently) for the windows' depth images and the scene, or
+    // later Rocky's terrain tiles failed to compile (Context::reserve:
+    // VK_ERROR_OUT_OF_DEVICE_MEMORY), Rocky drew them anyway, and KosmicKrisp
+    // crashed binding their null descriptor sets.
     void check_memory_budget(vsg::Device& device)
     {
         if (!device.getExtensions()->memory_budget) return;
@@ -1469,7 +1474,7 @@ namespace
         vkGetPhysicalDeviceMemoryProperties2(*device.getPhysicalDevice(), &properties);
         for (uint32_t i = 0; i < properties.memoryProperties.memoryHeapCount; ++i)
         {
-            if (budget.heapBudget[i] < properties.memoryProperties.memoryHeaps[i].size / 100)
+            if (budget.heapBudget[i] < properties.memoryProperties.memoryHeaps[i].size / 10)
             {
                 const_cast<vsg::DeviceExtensions*>(device.getExtensions())->memory_budget = false;   // (heap sizes instead)
                 return;

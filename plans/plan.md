@@ -886,8 +886,11 @@ Decided so far:
       MoltenVK's VK_MVK_macos_surface, so vkframes makes the windows'
       instance and surface itself with VK_EXT_metal_surface (on the window's
       CAMetalLayer; shared devices given after the window is made). A
-      driver's memory budget is ignored when implausible (KosmicKrisp 26.2
-      reports 64 KiB, and VSG then allocated nothing). The validation layer
+      driver's memory budget is ignored when implausible, under 10% of the
+      heap (KosmicKrisp 26.2 reports 64 KiB to about 300 MB of 24 GiB,
+      varying by run, then its usage: VSG allocated nothing, or Rocky's tiles
+      failed to compile and KosmicKrisp crashed binding their null
+      descriptor sets; the threshold was 1%). The validation layer
       and vulkaninfo are in the environment (`VK_INSTANCE_LAYERS=
       VK_LAYER_KHRONOS_validation`).
 - [ ] `WindowProxy%capture` reads the swapchain image after it is presented
