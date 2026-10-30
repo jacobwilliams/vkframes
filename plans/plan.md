@@ -106,7 +106,7 @@ These come from a working demo that ran OpenFrames inside a qt-fortran window.
 | `vsgxchange` | 1.1.14 | Image and model loading: assimp (`.3ds`, `.obj`, glTF), freetype fonts, GDAL, `osg2vsg` for OSG formats |
 | `vsgqt` | 0.5.0 | `QWindow`-based VSG windows for Qt (pre-1.0) |
 | `vsgimgui` | 0.8.0 | Dear ImGui overlay (optional HUD/UI) |
-| `mesa-kosmickrisp` | 26.2.5 | Vulkan on macOS (on Metal 4; Apple silicon, macOS 26+), the driver Khronos recommends since deprecating MoltenVK |
+| `mesa-kosmickrisp` | 26.2.6 | Vulkan on macOS (on Metal 4; Apple silicon, macOS 26+), the driver Khronos recommends since deprecating MoltenVK |
 | `vulkan-loader`, `vulkan-headers` | 1.4.357 | Vulkan |
 | `glslang`, `shaderc`, `spirv-tools` | current | GLSL → SPIR-V |
 | `assimp` | 6.0.5 | Model import (pulled in by vsgxchange) |
@@ -930,7 +930,9 @@ Decided so far:
         plans/upstream/rocky-srs-contains-cxx20.md.
       - vsgXchange's image readers registered before Rocky's GDAL reader
         (GDAL decoded greyscale JPEG as one-channel 0-255 floats: a red
-        Moon). Bug report: plans/upstream/rocky-gdal-reader-before-vsgxchange.md.
+        Moon). Bug report: plans/upstream/rocky-gdal-reader-before-vsgxchange.md
+        (Rocky issue #256, fixed by #261 on main 2026-10-28: the patch can
+        go when the pinned commit moves past it).
       - Rocky's tests and rocky_demo not built (they don't build with libc++
         in C++20; a workaround, not for upstream).
       In its shaders, copies of the two changed (shaders/rocky/shaders, first
@@ -952,7 +954,11 @@ Decided so far:
       on macOS.
 - [ ] Rocky, later: one map shown in several windows (now one per window:
       the window that first shows it), Linux and Windows (untested), a
-      conda-forge recipe, submitting the two bug reports (plans/upstream),
+      conda-forge recipe, submitting the bug reports (plans/upstream:
+      rocky-srs-contains-cxx20.md; rocky-tiles-drawn-after-failed-compile.md,
+      tiles drawn after their descriptors fail to compile, which crashed
+      KosmicKrisp; for Mesa, mesa-kosmickrisp-memory-budget.md, asking for
+      8ede4ccb's budget fix in 26.2), moving the pinned commit past #261,
       removing layers, a vertical exaggeration.
 - [x] Video recording (OpenFrames has only screenshots): `WindowProxy%
       start_recording(file, fps, quality, codec, scale, options, ffmpeg)` /
