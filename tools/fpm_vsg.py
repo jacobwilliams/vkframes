@@ -193,9 +193,14 @@ def windows_settings():
             shutil.rmtree(d, ignore_errors=True)
     # The DLL is passed as a linker input: ld resolves its C symbols directly.
     # (forward slashes: fpm drops backslashes from the link flags of some projects, e.g. demos/cr3bp)
+    cxx = os.environ.get("FPM_CXX") or which("clang++", "g++")
+    cxxflags = ["-DVKF_EXTERNAL_LAYER"]
+    if "clang" in os.path.basename(cxx):
+        # the stubs are empty; MinGW target as fpm's release profile adds -fPIC, an error for MSVC's
+        cxxflags.insert(0, "--target=x86_64-w64-windows-gnu")
     settings = {
-        "FPM_CXX": os.environ.get("FPM_CXX") or which("clang++", "g++"),
-        "FPM_CXXFLAGS": "-DVKF_EXTERNAL_LAYER",
+        "FPM_CXX": cxx,
+        "FPM_CXXFLAGS": " ".join(cxxflags),
         "FPM_LDFLAGS": dll.replace("\\", "/"),
     }
     return settings, os.path.dirname(dll)
