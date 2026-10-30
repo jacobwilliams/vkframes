@@ -206,10 +206,27 @@ Example: a 10,000-point trajectory that gains a point every frame at 60 fps.
 Both rates are small at this size. The balance reverses for large
 trajectories (see [Turning points into GPU data](#turning-points-into-gpu-data)).
 
-- [ ] **Future work:** upload only the range of points that was written.
-  This means a partial buffer copy in the C++ layer. Alternatively, or as
-  well, combine updates to at most about 20 per second as OpenFrames does.
-  `plans/plan.md` also lists this under the efficiency follow-ups.
+- [x] **Measured, not changed (2026-10-29):** uploading only the parts
+  written was tried and measured, and it doesn't pay.
+  - **How:** each chunk was uploaded in 32 KB pages. Each page was a VSG
+    array viewing part of the chunk's array, at its own offset in the same
+    GPU buffer, registered with the viewers' transfer tasks when written,
+    then copied once and dropped.
+  - **Result:** the benchmark's `grow` scenario (1,000 points appended 60
+    times a second, at 100,000 and 1 million points, level of detail on and
+    off, two runs each) was no faster than with whole chunks, and at 1
+    million points with level of detail somewhat slower.
+  - **Why:** on Apple silicon's unified memory, a whole chunk (at most 2 MB)
+    after each change, about 120 MB/s at 60 changes a second, isn't a
+    bottleneck; the pages' bookkeeping cost about what it saved. On a
+    discrete GPU, that rate is still small next to PCIe's bandwidth.
+  - **Pitfall found:** pages registered as dynamic data stay in VSG's
+    transfer task for good, and it scans all of them every frame: tens of
+    thousands after a long run of appends.
+  - **Batching updates** (at most about 20 a second, as OpenFrames does)
+    would add lag for no measured gain, so it wasn't done either.
+  - **Revisit** if a discrete-GPU platform shows uploads in its frame
+    times.
 
 ### Bytes per point
 
@@ -405,8 +422,9 @@ In rough order of benefit, after the benchmark.
 - [x] Leave room when growing for a bulk add
       ([growth](#growth-after-a-bulk-add)).
 - [ ] Profile the first frame ([first frame](#the-first-frame)).
-- [ ] Upload only the range of points written, or limit uploads to about 20
-      per second ([upload rate](#upload-rate-for-small-trajectories-that-grow)).
+- [x] ~~Upload only the range of points written, or limit uploads to about
+      20 per second~~: tried (pages) and measured, no gain on unified memory
+      ([upload rate](#upload-rate-for-small-trajectories-that-grow)).
 - [x] Fill data sources other than x, y, z a range at a time
       ([data sources](#data-sources-other-than-x-y-z)).
 - [x] Cap the first chunk at `max_chunk` points

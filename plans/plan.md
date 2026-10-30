@@ -645,9 +645,12 @@ Decided so far:
 - **Efficiency follow-ups** (trajectories can be very large; see also
   [openframes-compare.md](openframes-compare.md), the comparison with
   OpenFrames and its list of future work):
-  - VSG re-uploads a whole dynamic array when it is marked dirty. Growing
-    trajectories should upload only the appended range, or use fixed-size
-    chunks.
+  - VSG re-uploads a whole dynamic array when it is marked dirty: a growing
+    trajectory's last chunk (at most 65,536 points, 2 MB) after each
+    change. Fixed-size chunks bound it. Uploading only the range written
+    (32 KB pages viewing the chunk's array) was tried on 2026-10-29: no
+    faster on Apple silicon's unified memory, so not kept (see
+    openframes-compare.md, upload rate).
   - Each segment's quad transforms both endpoints in each of its 6
     vertices. Measured, this is only 11 to 16% of a frame, so instancing or
     an indexed layout isn't worth it for now. Most of the time is
