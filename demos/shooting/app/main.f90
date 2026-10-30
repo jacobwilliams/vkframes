@@ -26,11 +26,13 @@
 !> to 1), `--seed k`, `--iteration k` (0: the initial guess; -1: the last),
 !> `--play`, `--select k` (a segment), `--view n` (1 top, 2 oblique),
 !> `--capture file` saves frame `--capture-frame n` (default 120),
-!> `--quit-after seconds`.
+!> `--recreate-surface n` destroys the native window at frame n and creates it
+!> again (a test: the view closes and opens again), `--quit-after seconds`.
 module shooting_demo
 
     use qt
     use vkframes
+    use vkframes_qt, only: forward_mouse, forward_wheel, forward_key, watch_surface
     use shooting
     use iso_c_binding
 
@@ -101,6 +103,7 @@ module shooting_demo
         logical :: start_play = .false.
         character(len=:), allocatable :: capture
         integer :: capture_frame = 120
+        integer :: recreate_frame = -1                            !! (--recreate-surface: a test)
         real(wp) :: quit_after = -1.0_wp
     end type app_t
 
@@ -441,9 +444,12 @@ contains
         call app%events%wheelEvent%connect(on_wheel)
         call app%events%keyPressEvent%connect(on_key_press)
         call app%events%keyReleaseEvent%connect(on_key_release)
+        call watch_surface(app%events, app%proxy)               ! (closed if Qt destroys the native window)
     end subroutine build_window
 
-    !> Open the view (on the window's first expose) and show the scene.
+    !> Open the view (on the window's first expose, or again on a new native
+    !> window: the views, HUD texts and settings are the proxy's already) and
+    !> show the scene.
     subroutine open_view()
         integer :: k
         if (.not. app%proxy%open(app%window%width(), app%window%height(), 'vkframes shooting', &
@@ -451,6 +457,7 @@ contains
             write(*, '(a)') 'shooting demo: could not open the view'
             return
         end if
+        if (app%proxy%num_views() > 0) return                    ! (opened again)
         call app%proxy%set_scene(app%scene)
         call app%proxy%set_event_handler(handler)
         call app%proxy%set_background_color([0.0_wp, 0.0_wp, 0.0_wp])
@@ -483,6 +490,13 @@ contains
         if (allocated(app%capture) .and. app%frame == app%capture_frame) then
             if (app%proxy%capture(app%capture)) write(*, '(a)') 'captured '//app%capture
         end if
+        if (app%frame == app%recreate_frame) then                ! (a test: Qt destroys and remakes the native window)
+            write(*, '(a,i0)') 'shooting demo: native window destroyed and created again at frame ', app%frame
+            call app%window%destroy()
+            call app%window%create()
+            call app%window%show()
+            return
+        end if
         call app%window%requestUpdate()
     end subroutine on_update
 
@@ -497,129 +511,42 @@ contains
     end subroutine on_resize
 
     ! ------------------------------------------------------------------
-    ! mouse and keys, forwarded to the trackball (VSG's conventions)
-
-    integer function vsg_button(qt_button)
-        integer, intent(in) :: qt_button
-        select case (qt_button)
-        case (Qt_LeftButton)
-            vsg_button = 1
-        case (Qt_MiddleButton)
-            vsg_button = 2
-        case (Qt_RightButton)
-            vsg_button = 3
-        case default
-            vsg_button = 0
-        end select
-    end function vsg_button
-
-    integer function vsg_mask(qt_buttons)
-        integer, intent(in) :: qt_buttons
-        vsg_mask = 0
-        if (iand(qt_buttons, Qt_LeftButton) /= 0) vsg_mask = ior(vsg_mask, 256)
-        if (iand(qt_buttons, Qt_MiddleButton) /= 0) vsg_mask = ior(vsg_mask, 512)
-        if (iand(qt_buttons, Qt_RightButton) /= 0) vsg_mask = ior(vsg_mask, 1024)
-    end function vsg_mask
-
-    subroutine forward_mouse(kind, event)
-        integer, intent(in) :: kind
-        type(QMouseEvent), intent(in) :: event
-        real(wp) :: dpr
-        dpr = app%window%devicePixelRatio()
-        call app%proxy%mouse(kind, nint(event%x() * dpr), nint(event%y() * dpr), vsg_mask(event%buttons()), &
-                             vsg_button(event%button()))
-        call event%accept()
-    end subroutine forward_mouse
+    ! mouse and keys, forwarded to the trackball (vkframes_qt: VSG's conventions)
 
     subroutine on_move(event, data)
         type(QMouseEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_MOVE, event)
+        call forward_mouse(app%proxy, app%window, MOUSE_MOVE, event)
     end subroutine on_move
 
     subroutine on_press(event, data)
         type(QMouseEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_PRESS, event)
+        call forward_mouse(app%proxy, app%window, MOUSE_PRESS, event)
     end subroutine on_press
 
     subroutine on_release(event, data)
         type(QMouseEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_RELEASE, event)
+        call forward_mouse(app%proxy, app%window, MOUSE_RELEASE, event)
     end subroutine on_release
 
     subroutine on_wheel(event, data)
         type(QWheelEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        if (event%angleDeltaY() == 0) return
-        call app%proxy%scroll(event%angleDeltaY() / 120.0_wp)     ! (wheel notches: a trackpad's are fractions)
-        call event%accept()
+        call forward_wheel(app%proxy, event)
     end subroutine on_wheel
-
-    !> VSG key symbol for a Qt key (ASCII, or the X11-style codes VSG's trackball uses; 0 if unmapped).
-    subroutine vsg_key(event, symbol, modified_symbol, modifier)
-        type(QKeyEvent), intent(in) :: event
-        integer, intent(out) :: symbol, modified_symbol, modifier
-        character(len=:), allocatable :: text
-        integer :: key, mods
-        key = event%key()
-        mods = event%modifiers()
-        modifier = 0
-        if (iand(mods, Qt_ShiftModifier) /= 0) modifier = ior(modifier, 1)
-        if (iand(mods, Qt_ControlModifier) /= 0) modifier = ior(modifier, 4)
-        if (iand(mods, Qt_AltModifier) /= 0) modifier = ior(modifier, 8)
-        if (iand(mods, Qt_MetaModifier) /= 0) modifier = ior(modifier, 128)
-        select case (key)
-        case (Qt_Key_Left)
-            symbol = int(z'FF51')
-        case (Qt_Key_Up)
-            symbol = int(z'FF52')
-        case (Qt_Key_Right)
-            symbol = int(z'FF53')
-        case (Qt_Key_Down)
-            symbol = int(z'FF54')
-        case (Qt_Key_Home)
-            symbol = int(z'FF50')
-        case (Qt_Key_Escape)
-            symbol = int(z'FF1B')
-        case (Qt_Key_Return)
-            symbol = int(z'FF0D')
-        case (Qt_Key_Space)
-            symbol = 32
-        case (Qt_Key_A:Qt_Key_Z)
-            symbol = key - Qt_Key_A + iachar('a')
-        case default
-            symbol = 0
-            text = event%text()
-            if (len(text) == 1) then
-                if (iachar(text) >= 32 .and. iachar(text) < 127) symbol = iachar(text)
-            end if
-        end select
-        modified_symbol = symbol
-        if (key >= Qt_Key_A .and. key <= Qt_Key_Z .and. iand(modifier, 1) /= 0) modified_symbol = key
-    end subroutine vsg_key
-
-    subroutine forward_key(pressed, event)
-        logical, intent(in) :: pressed
-        type(QKeyEvent), intent(in) :: event
-        integer :: symbol, modified_symbol, modifier
-        call vsg_key(event, symbol, modified_symbol, modifier)
-        if (symbol == 0) return
-        call app%proxy%key(pressed, symbol, modified_symbol, modifier)
-        call event%accept()
-    end subroutine forward_key
 
     subroutine on_key_press(event, data)
         type(QKeyEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        call forward_key(.true., event)
+        call forward_key(app%proxy, .true., event)
     end subroutine on_key_press
 
     subroutine on_key_release(event, data)
         type(QKeyEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        call forward_key(.false., event)
+        call forward_key(app%proxy, .false., event)
     end subroutine on_key_release
 
     ! ==================================================================
@@ -921,6 +848,10 @@ program vkframes_shooting_demo
         case ('--capture-frame')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%capture_frame
+            i = i + 1
+        case ('--recreate-surface')
+            call get_command_argument(i + 1, arg)
+            read(arg, *) app%recreate_frame
             i = i + 1
         case ('--quit-after')
             call get_command_argument(i + 1, arg)

@@ -403,6 +403,20 @@ Decided so far:
     another route.
   - The demo is a separate fpm project (`demos/qt`, pixi environment `qt`:
     `pixi run -e qt qt-demo`); the vkframes library does not depend on Qt.
+  - What the qt-fortran demos share is a small fpm package,
+    `demos/qt_common` (module `vkframes_qt`; vkframes and qt-fortran):
+    Qt's mouse, wheel and key events as VSG's (`forward_mouse`,
+    `forward_wheel`, `forward_key`; a full key table: editing, function
+    F1-F20, modifier and lock keys, the keypad, printable characters as
+    typed), and `watch_surface`: qt-fortran's `surfaceAboutToBeDestroyed`
+    (from 4034a68; Qt destroying the native window: re-parenting,
+    `QWindow%destroy`) closes the WindowProxy while the surface exists. The
+    demo opens it again on the next expose: `WindowProxy%close` keeps the
+    views, HUD texts and settings, and gives the scene to the next viewer
+    (tested in test_events, and in the shooting demo with
+    `--recreate-surface n`; the moon demo's Rocky terrain comes back too).
+    rpo and cr3bp keep their own few keys (the others are the GUI's); the
+    Qt demo's windows close through its close_view (their clocks).
   - Pixel ratio (Qt's devicePixelRatio): passed to `WindowProxy%open`, sizes
     in framebuffer pixels (logical size times the ratio, rounded as Qt
     rounds), and a changed ratio passed to `WindowProxy%resize(...,

@@ -35,6 +35,8 @@ module rpo_demo
 
     use qt
     use vkframes
+    use vkframes_qt, only: qt_forward_mouse => forward_mouse, qt_forward_wheel => forward_wheel, &
+                           watch_surface
     use vkf_text, only: get_font
     use cw, only: Burn, propagate_plan, radial_hops, sort_burns
     use iso_c_binding
@@ -550,6 +552,7 @@ contains
             write(*, '(a)') 'vkframes: could not open the view'
             return
         end if
+        if (app%proxy%num_views() > 0) return                    ! (opened again, on a new native window)
         call app%proxy%set_scene(app%scene)
         call app%proxy%set_background_color([0.02_wp, 0.02_wp, 0.05_wp])
         call app%proxy%add_view(app%overview)
@@ -570,9 +573,17 @@ contains
         end if
     end subroutine open_view
 
+    !> Exposed: start the frame loop; on a new native window (the old one
+    !> destroyed: watch_surface closed the view), open the view again.
     subroutine on_expose(data)
         class(*), intent(inout), optional :: data
-        if (app%window%isExposed() .and. app%proxy%is_open() .and. app%frame == 0) call app%window%requestUpdate()
+        if (.not. app%window%isExposed()) return
+        if (.not. app%proxy%is_open() .and. app%proxy%num_views() > 0) then
+            call open_view()
+            if (app%proxy%is_open()) call app%window%requestUpdate()
+            return
+        end if
+        if (app%proxy%is_open() .and. app%frame == 0) call app%window%requestUpdate()
     end subroutine on_expose
 
     !> A frame (the plan propagated first if it changed), and the next asked for.
@@ -619,36 +630,10 @@ contains
         call app%window%requestUpdate()
     end subroutine on_resize
 
-    integer function vsg_button(qt_button)
-        integer, intent(in) :: qt_button
-        select case (qt_button)
-        case (Qt_LeftButton)
-            vsg_button = 1
-        case (Qt_MiddleButton)
-            vsg_button = 2
-        case (Qt_RightButton)
-            vsg_button = 3
-        case default
-            vsg_button = 0
-        end select
-    end function vsg_button
-
-    integer function vsg_mask(qt_buttons)
-        integer, intent(in) :: qt_buttons
-        vsg_mask = 0
-        if (iand(qt_buttons, Qt_LeftButton) /= 0) vsg_mask = ior(vsg_mask, 256)
-        if (iand(qt_buttons, Qt_MiddleButton) /= 0) vsg_mask = ior(vsg_mask, 512)
-        if (iand(qt_buttons, Qt_RightButton) /= 0) vsg_mask = ior(vsg_mask, 1024)
-    end function vsg_mask
-
     subroutine forward_mouse(kind, event)
         integer, intent(in) :: kind
         type(QMouseEvent), intent(in) :: event
-        real(wp) :: dpr
-        dpr = app%window%devicePixelRatio()
-        call app%proxy%mouse(kind, nint(event%x() * dpr), nint(event%y() * dpr), vsg_mask(event%buttons()), &
-                             vsg_button(event%button()))
-        call event%accept()
+        call qt_forward_mouse(app%proxy, app%window, kind, event)
     end subroutine forward_mouse
 
     subroutine on_move(event, data)
@@ -672,9 +657,7 @@ contains
     subroutine on_wheel(event, data)
         type(QWheelEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        if (event%angleDeltaY() == 0) return
-        call app%proxy%scroll(event%angleDeltaY() / 120.0_wp)     ! (wheel notches: a trackpad's are fractions)
-        call event%accept()
+        call qt_forward_wheel(app%proxy, event)
     end subroutine on_wheel
 
     !> The space bar (reset the view) and v / V (the next and previous view) to vkframes.
@@ -880,6 +863,7 @@ contains
         call app%events%wheelEvent%connect(on_wheel)
         call app%events%keyPressEvent%connect(on_key_press)
         call app%events%keyReleaseEvent%connect(on_key_release)
+        call watch_surface(app%events, app%proxy)               ! (closed if Qt destroys the native window)
         app%stack = QStackedWidget()
         app%startup_message = QLabel('Starting...')
         call app%startup_message%setAlignment(Qt_AlignCenter)

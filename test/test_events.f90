@@ -120,6 +120,8 @@ program test_events
     type(WindowProxy) :: window
     type(View), target :: view_a, view_b
     type(Recorder), target :: rec
+    type(HUDText), target :: label
+    type(View), pointer :: current
     integer(c_int) :: width, height
     integer :: failures
 
@@ -138,6 +140,7 @@ program test_events
     view_b = View(root, craft)
     call window%add_view(view_a)
     call window%add_view(view_b)
+    label = HUDText('events test', position=[0.01_wp, 0.99_wp])
     call check(window%frame(), 'first frame')
     call check(vkf_viewer_size(window%viewer(), width, height) == 0 .and. width > 0 .and. height > 0, 'window size')
 
@@ -210,11 +213,22 @@ program test_events
     call check(window%frame() .and. window%frame(), 'a size again: drawn')
 
     ! the handler closes the window: the frame reports it closed
+    call window%add_hud_text(label)
+    call check(window%frame(), 'a HUD text')
     call window%set_event_handler(rec)
     rec%close_on = KEY_ESCAPE
     call window%key(.true., KEY_ESCAPE, KEY_ESCAPE, 0)
     call check(.not. window%frame(), 'closed by the handler: frame() is false')
     call check(.not. window%is_open(), 'closed by the handler')
+
+    ! opened again (as on a host's new native window): the views, the view
+    ! shown, the HUD text and the scene as before, given to the new viewer
+    current => window%current_view()
+    rec%close_on = -1
+    call check(window%open(320, 240, 'vkframes: events test, again'), 'opened again')
+    call check(window%num_views() == 2 .and. associated(window%current_view(), current), 'opened again: the same views')
+    call check(window%frame() .and. window%frame(), 'opened again: drawn')
+    call window%close()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'

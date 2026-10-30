@@ -354,14 +354,23 @@ contains
     end function open
 
     !> Close the window (waiting for the GPU). The scene is kept, and can be
-    !> shown again in another window.
+    !> shown again in another window. So are the window's settings (views,
+    !> HUD texts, sky, handler, time): `open` again (e.g. on a host's new
+    !> native window, after Qt destroyed the old one) shows them as before.
     subroutine close(self)
         class(WindowProxy), intent(inout) :: self
         logical :: ok
+        integer :: k
         if (self%recording_) ok = self%stop_recording()
         if (c_associated(self%viewer_)) call vkf_viewer_delete(self%viewer_)
         self%viewer_ = c_null_ptr
         self%running = .false.
+        do k = 1, self%n_huds                               ! (made again for the next viewer)
+            if (c_associated(self%huds(k)%node)) call vkf_node_delete(self%huds(k)%node)
+            self%huds(k)%node = c_null_ptr
+        end do
+        self%scene_added = .false.                          ! (the scene, sky and HUD given to the next viewer)
+        self%scene_seen = -1
     end subroutine close
 
     !> Framebuffer pixels per window unit of a host's window (as given to

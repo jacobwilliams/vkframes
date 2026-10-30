@@ -362,9 +362,12 @@ Each demo in [demos/](demos/) is a fuller application with a GUI, and a
 separate fpm project that depends on vkframes (the library itself doesn't
 depend on Qt, Python or OpenMP). Most run vkframes embedded in a host
 window: the GUI toolkit owns the window and forwards its events, and
-vkframes renders into it. The halo manifolds demo instead uses vkframes'
-own window and its built-in GUI panels (Dear ImGui), so it needs no GUI
-toolkit.
+vkframes renders into it. The qt-fortran demos share
+[demos/qt_common](demos/qt_common/src/vkframes_qt.f90): Qt's mouse, wheel
+and key events forwarded as VSG's, and the view closed (then opened again)
+when Qt replaces a window's native surface. The halo manifolds demo instead
+uses vkframes' own window and its built-in GUI panels (Dear ImGui), so it
+needs no GUI toolkit.
 
 #### Qt demo
 

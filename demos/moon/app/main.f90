@@ -47,6 +47,8 @@ module moondemo
 
     use qt
     use vkframes
+    use vkframes_qt, only: qt_forward_mouse => forward_mouse, qt_forward_wheel => forward_wheel, &
+                           qt_forward_key => forward_key, watch_surface
     use iso_c_binding
     implicit none
 
@@ -604,6 +606,7 @@ contains
         call app%events%wheelEvent%connect(on_wheel)
         call app%events%keyPressEvent%connect(on_key_press)
         call app%events%keyReleaseEvent%connect(on_key_release)
+        call watch_surface(app%events, app%proxy)               ! (closed if Qt destroys the native window)
     end subroutine build_window
 
     !> Open the view (on the window's first expose) and show the scene.
@@ -614,6 +617,7 @@ contains
             write(*, '(a)') 'moon demo: could not open the view'
             return
         end if
+        if (app%proxy%num_views() > 0) return                    ! (opened again, on a new native window)
         call app%proxy%set_scene(app%scene)
         call app%proxy%set_event_handler(handler)
         call app%proxy%set_background_color([0.0_wp, 0.0_wp, 0.0_wp])
@@ -697,36 +701,10 @@ contains
     ! ------------------------------------------------------------------
     ! mouse and keys, forwarded to the trackball (VSG's conventions)
 
-    integer function vsg_button(qt_button)
-        integer, intent(in) :: qt_button
-        select case (qt_button)
-        case (Qt_LeftButton)
-            vsg_button = 1
-        case (Qt_MiddleButton)
-            vsg_button = 2
-        case (Qt_RightButton)
-            vsg_button = 3
-        case default
-            vsg_button = 0
-        end select
-    end function vsg_button
-
-    integer function vsg_mask(qt_buttons)
-        integer, intent(in) :: qt_buttons
-        vsg_mask = 0
-        if (iand(qt_buttons, Qt_LeftButton) /= 0) vsg_mask = ior(vsg_mask, 256)
-        if (iand(qt_buttons, Qt_MiddleButton) /= 0) vsg_mask = ior(vsg_mask, 512)
-        if (iand(qt_buttons, Qt_RightButton) /= 0) vsg_mask = ior(vsg_mask, 1024)
-    end function vsg_mask
-
     subroutine forward_mouse(kind, event)
         integer, intent(in) :: kind
         type(QMouseEvent), intent(in) :: event
-        real(wp) :: dpr
-        dpr = app%window%devicePixelRatio()
-        call app%proxy%mouse(kind, nint(event%x() * dpr), nint(event%y() * dpr), vsg_mask(event%buttons()), &
-                             vsg_button(event%button()))
-        call event%accept()
+        call qt_forward_mouse(app%proxy, app%window, kind, event)
     end subroutine forward_mouse
 
     subroutine on_move(event, data)
@@ -750,62 +728,14 @@ contains
     subroutine on_wheel(event, data)
         type(QWheelEvent), intent(in) :: event
         class(*), intent(inout), optional :: data
-        if (event%angleDeltaY() == 0) return
-        call app%proxy%scroll(event%angleDeltaY() / 120.0_wp)     ! (wheel notches: a trackpad's are fractions)
-        call event%accept()
+        call qt_forward_wheel(app%proxy, event)
     end subroutine on_wheel
 
-    !> VSG key symbol for a Qt key (ASCII, or the X11-style codes VSG's trackball uses; 0 if unmapped).
-    subroutine vsg_key(event, symbol, modified_symbol, modifier)
-        type(QKeyEvent), intent(in) :: event
-        integer, intent(out) :: symbol, modified_symbol, modifier
-        character(len=:), allocatable :: text
-        integer :: key, mods
-        key = event%key()
-        mods = event%modifiers()
-        modifier = 0
-        if (iand(mods, Qt_ShiftModifier) /= 0) modifier = ior(modifier, 1)
-        if (iand(mods, Qt_ControlModifier) /= 0) modifier = ior(modifier, 4)
-        if (iand(mods, Qt_AltModifier) /= 0) modifier = ior(modifier, 8)
-        if (iand(mods, Qt_MetaModifier) /= 0) modifier = ior(modifier, 128)
-        select case (key)
-        case (Qt_Key_Left)
-            symbol = int(z'FF51')
-        case (Qt_Key_Up)
-            symbol = int(z'FF52')
-        case (Qt_Key_Right)
-            symbol = int(z'FF53')
-        case (Qt_Key_Down)
-            symbol = int(z'FF54')
-        case (Qt_Key_Home)
-            symbol = int(z'FF50')
-        case (Qt_Key_Escape)
-            symbol = int(z'FF1B')
-        case (Qt_Key_Return)
-            symbol = int(z'FF0D')
-        case (Qt_Key_Space)
-            symbol = 32
-        case (Qt_Key_A:Qt_Key_Z)
-            symbol = key - Qt_Key_A + iachar('a')
-        case default
-            symbol = 0
-            text = event%text()
-            if (len(text) == 1) then
-                if (iachar(text) >= 32 .and. iachar(text) < 127) symbol = iachar(text)
-            end if
-        end select
-        modified_symbol = symbol
-        if (key >= Qt_Key_A .and. key <= Qt_Key_Z .and. iand(modifier, 1) /= 0) modified_symbol = key
-    end subroutine vsg_key
 
     subroutine forward_key(pressed, event)
         logical, intent(in) :: pressed
         type(QKeyEvent), intent(in) :: event
-        integer :: symbol, modified_symbol, modifier
-        call vsg_key(event, symbol, modified_symbol, modifier)
-        if (symbol == 0) return
-        call app%proxy%key(pressed, symbol, modified_symbol, modifier)
-        call event%accept()
+        call qt_forward_key(app%proxy, pressed, event)
     end subroutine forward_key
 
     subroutine on_key_press(event, data)
