@@ -14,7 +14,7 @@ module vkf_layer
 
     private
 
-    public :: vkf_vulkan_device_name
+    public :: vkf_vulkan_device_name, vkf_driver_preload
     public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
     public :: vkf_viewer_set_pixel_ratio
     public :: vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic
@@ -61,6 +61,12 @@ module vkf_layer
             character(kind=c_char), dimension(*), intent(out) :: buf  !! the name (not null-terminated)
             integer(c_int), value :: buflen                           !! the length of `buf`
         end function vkf_vulkan_device_name
+
+        !> Start loading the Vulkan driver, on a thread of its own, for the first window (see
+        !> DriverPreload in vkf_layer.cpp): called when a scene is set up, before its window opens.
+        subroutine vkf_driver_preload() bind(C, name="vkf_driver_preload")
+            implicit none
+        end subroutine vkf_driver_preload
 
         !> A host's window now has `ratio` framebuffer pixels per window unit.
         !> (Qt's devicePixelRatio changed: moved to a screen of another scale, or the display's scaling

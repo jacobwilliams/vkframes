@@ -651,6 +651,17 @@ Decided so far:
     (32 KB pages viewing the chunk's array) was tried on 2026-10-29: no
     faster on Apple silicon's unified memory, so not kept (see
     openframes-compare.md, upload rate).
+  - The first frame (2026-10-29): 0.37 to 0.47 s, with opening the view,
+    down to 0.05 to 0.14 s. Three changes did it: the Vulkan driver is
+    loaded in the background from `FrameManager%set_frame`
+    (`DriverPreload`), the Phong shaders' SPIR-V is cached
+    (`use_cached_shaders`, in `cache_dir`), and meshes with the same states
+    share a pipeline. See openframes-compare.md, the first frame.
+    - [ ] Untested: the preload on Linux and Windows. It should help there
+      too (drivers loaded in the loader's first call), but on Windows a
+      program exiting before the preload's thread is done joins it from
+      vkf.dll's static destructors, during DLL_PROCESS_DETACH (the thread
+      has been ended by then, so the join should return at once).
   - Each segment's quad transforms both endpoints in each of its 6
     vertices. Measured, this is only 11 to 16% of a frame, so instancing or
     an indexed layout isn't worth it for now. Most of the time is

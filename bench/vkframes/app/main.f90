@@ -45,6 +45,7 @@ module vkbench
         real(dp) :: insert_s = 0.0_dp, first_frame_s = 0.0_dp, rss_load = 0.0_dp
         real(dp) :: t_start = 0.0_dp, t0 = 0.0_dp, t1 = 0.0_dp, cpu0 = 0.0_dp, cpu1 = 0.0_dp
         integer :: phase = 0                                 !! 0 first frame, 1 warmup, 2 measuring, 3 done
+        logical :: started = .false.                         !! the view opened (on_expose)
     end type app_t
 
     type(app_t), target, save :: app
@@ -111,11 +112,18 @@ contains
     ! ==================================================================
     ! running
 
-    !> After the window is shown: open the view (no vsync) and start the frames.
-    subroutine on_startup(data)
+    !> When the window is first exposed (as the OpenFrames app starts
+    !> OpenFrames): open the view (no vsync) and start the frames. The first
+    !> frame is timed from here, opening the view included (the Vulkan device
+    !> and swapchain, as OpenFrames' OpenGL context).
+    subroutine on_expose(data)
         class(*), intent(inout), optional :: data
         type(c_ptr) :: font
+        if (app%started .or. .not. app%window%isExposed()) return
+        app%started = .true.
         font = get_font('')                                  ! (as the demos: read before timing the first frame)
+        call app%log%init(2000000)
+        app%t_start = now()
         if (.not. app%proxy%open(app%window%width(), app%window%height(), 'vkframes', &
                                  native_window=app%window%winId(), pixel_ratio=app%window%devicePixelRatio(), &
                                  vsync=app%opt%vsync)) error stop 'could not open the view'
@@ -126,8 +134,6 @@ contains
         call app%proxy%add_view(app%view)
         call app%proxy%set_time_range(app%t(1), app%t(size(app%t)))
         call app%proxy%set_time_scale(20.0_dp)               ! one revolution every 5 s
-        call app%log%init(2000000)
-        app%t_start = now()
         if (app%opt%paced) then                              ! as the demos: a frame per update request
             call app%events%updateRequest%connect(on_update)
             call app%window%requestUpdate()
@@ -136,7 +142,10 @@ contains
             call app%frames%timeout%connect(on_frame)
             call app%frames%start(0)
         end if
-    end subroutine on_startup
+        ! the first frame now (as OpenFrames' render thread starts drawing), not
+        ! after AppKit has finished with the expose (tens of ms on macOS)
+        call on_frame()
+    end subroutine on_expose
 
     !> --paced: a frame, then ask for the next one (at the display's next refresh).
     subroutine on_update(data)
@@ -235,6 +244,7 @@ contains
         call app%main%setCentralWidget(app%container)
         app%events = QtfEventFilter(app%window)
         call app%events%resizeEvent%connect(on_resize)
+        call app%events%exposeEvent%connect(on_expose)
         call show_status('starting')
     end subroutine build_ui
 
@@ -262,8 +272,7 @@ program vkframes_bench
     call parse_options(app%opt)
     call build_scene()
     call build_ui()
-    call app%main%show()
-    call QTimer_singleShot(0, on_startup)
+    call app%main%show()                                    ! (the view is opened when exposed: on_expose)
     ierr = qapp%exec()
 
 end program vkframes_bench

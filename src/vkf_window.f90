@@ -106,7 +106,7 @@ module vkf_window
                          vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, &
                          vkf_viewer_frame_begin, vkf_viewer_frame_draw, vkf_viewer_gui, &
                          vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames, &
-                         vkf_viewer_set_camera_controls
+                         vkf_viewer_set_camera_controls, vkf_driver_preload
 
     implicit none
 
@@ -267,14 +267,17 @@ contains
     function new_frame_manager(frame) result(fm)
         class(ReferenceFrame), intent(in), target, optional :: frame  !! the root frame (not owned)
         type(FrameManager) :: fm
-        if (present(frame)) fm%root => frame
+        if (present(frame)) call fm%set_frame(frame)
     end function new_frame_manager
 
     !> Set the root frame of the scene (not owned: it must stay alive while managed).
+    !> (The scene is for a window: this also starts loading the Vulkan driver for the
+    !> first one, in the background, which can take a few tenths of a second.)
     subroutine fm_set_frame(self, frame)
         class(FrameManager), intent(inout) :: self
         class(ReferenceFrame), intent(in), target :: frame  !! the root frame (not owned)
         self%root => frame
+        call vkf_driver_preload()
     end subroutine fm_set_frame
 
     !> The root frame (null if none).

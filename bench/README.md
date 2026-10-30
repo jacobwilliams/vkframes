@@ -89,7 +89,7 @@ Each run produces one JSON line with these fields:
 |---|---|
 | `lod` | vkframes: whether the curve's level of detail was on (OpenFrames: always `off`, every point drawn). |
 | `insert_s` | Time to add the first `--points` points from Fortran. The data is computed beforehand and isn't timed. |
-| `first_frame_s` | Time from the window starting to its first frame. This includes building the GPU buffers for all the points. |
+| `first_frame_s` | Time from the window's first expose to its first frame. This includes opening the view (vkframes: the Vulkan instance, device and swapchain; OpenFrames: its OpenGL context) and building the GPU buffers for all the points. (Before 2026-10-29, vkframes' was timed from before the window was shown and after the view was opened.) |
 | `fps`, `frame_ms_*` | Frames finished during the measurement: the frame rate, and the frame times (mean, median, 95th and 99th percentiles, maximum). |
 | `append_ms_*` | `grow` only: the time of each append on the GUI thread (mean and maximum). |
 | `cpu_per_wall` | CPU time of the whole process (all threads) divided by wall time, while measuring. |
@@ -289,7 +289,7 @@ the full shaders.
 |---|---|---|
 | Adding 1,000,000 points | 7 ms in bulk, 14 ms one at a time | 14 ms, one at a time |
 | Adding 5,000,000 points | 30 ms in bulk, 80 ms one at a time | 78 ms, one at a time |
-| Time to first frame | 0.17–0.27 s | about 0.03 s at every size |
+| Time to first frame, with opening the view | 0.05 s at 1,000 points, 0.07 s at 1M, 0.14–0.16 s at 5M (0.37–0.47 s before 2026-10-29) | 0.033 s at every size |
 | Slowest append, `grow` (1,000 points each) | 1.7–5.2 ms at 100,000 points; 4.5 ms at 1M; 0.05 ms at 5M | 1.5 ms; 3.2 ms; 0.07 ms |
 | CPU / wall, large trajectories | 0.02–0.15 (limited by the GPU) | 1.3–1.4 (render thread always busy) |
 | Memory with 5,000,000 points (`static`, bulk) | about 900 MB | about 1,000 MB |
@@ -320,9 +320,14 @@ the full shaders.
   million points, from 20 to 49 ms). A copy still happens when the room
   left runs out, once per quarter of the trajectory's size; the slowest
   appends at 100,000 and 1 million points are those copies.
-- **First frame:** vkframes' first frame still takes 0.17 s or more. This is
-  probably pipeline creation and the first upload, while OpenFrames uploads
-  lazily.
+- **First frame:** vkframes' first frame takes 0.05 to 0.14 s, with
+  opening the view, against 0.37 to 0.47 s before. Three things were sped
+  up: loading the Vulkan driver (now in the background, started when the
+  scene is set up), compiling the Phong shaders with glslang (now cached),
+  and creating a pipeline for each mesh (now shared). What's left is
+  creating 7 pipelines (about 40 ms) and, with 5 million points, uploading
+  them all, which OpenGL does lazily. See
+  [the first frame](../plans/openframes-compare.md#the-first-frame).
 - **Memory:** with 5 million points, vkframes uses less than OpenFrames,
   although its process starts about 100 MB larger (the Vulkan driver and
   VSG).

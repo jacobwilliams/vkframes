@@ -45,12 +45,16 @@ using vkf::to_string;
 #include <cstring>
 #include <deque>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
+#include <sstream>
 #include <string>
+#include <thread>
 #include <typeinfo>
 
 #if !defined(_WIN32)
@@ -1547,6 +1551,64 @@ namespace
         return device;
     }
 
+    // The Vulkan driver, loaded ahead of the first window. The loader loads it
+    // in its first call, which on macOS takes 0.1 to 0.25 s, most of opening
+    // the first window: KosmicKrisp's library binds about 3000 symbols with a
+    // lookup through every library loaded before it (in a Qt program, many).
+    // Programs set up their scene before opening a window, so a FrameManager
+    // given its root frame starts loading it (vkf_driver_preload), on a thread
+    // of its own, by making an instance (no extensions; the loader's calls
+    // before an instance exists may be made from any thread). The instance is
+    // kept until the first window has its own, so that the driver stays loaded
+    // in between. A program exiting first waits for the thread.
+    struct DriverPreload
+    {
+        std::thread thread;
+        VkInstance instance = VK_NULL_HANDLE;
+
+        void start()
+        {
+            thread = std::thread([this] {
+                VkApplicationInfo app{VK_STRUCTURE_TYPE_APPLICATION_INFO};
+                app.apiVersion = VK_API_VERSION_1_0;
+                VkInstanceCreateInfo info{VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
+                info.pApplicationInfo = &app;
+                const char* portability = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;   // (a portability driver needs it: MoltenVK)
+                if (vsg::isExtensionSupported(portability))
+                {
+                    info.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+                    info.enabledExtensionCount = 1;
+                    info.ppEnabledExtensionNames = &portability;
+                }
+                if (vkCreateInstance(&info, nullptr, &instance) != VK_SUCCESS) instance = VK_NULL_HANDLE;
+            });
+        }
+
+        // (once the first window's instance exists, and at exit)
+        void finish()
+        {
+            if (thread.joinable()) thread.join();
+            if (instance) vkDestroyInstance(instance, nullptr);
+            instance = VK_NULL_HANDLE;
+        }
+
+        ~DriverPreload() { finish(); }
+    };
+
+    DriverPreload& driver_preload()
+    {
+        static DriverPreload preload;
+        return preload;
+    }
+
+    void preload_driver()
+    {
+        static std::once_flag once;
+        std::call_once(once, [] {
+            if (!shared_device().valid()) driver_preload().start();
+        });
+    }
+
     struct Node
     {
         vsg::ref_ptr<vsg::Node> node;
@@ -1930,8 +1992,8 @@ namespace
 #endif
     }
 
-    // The directory for converted fonts: VKFRAMES_CACHE_DIR, or the user's
-    // cache directory; empty if none.
+    // The directory for converted fonts and compiled shaders:
+    // VKFRAMES_CACHE_DIR, or the user's cache directory; empty if none.
     std::filesystem::path cache_dir()
     {
         namespace fs = std::filesystem;
@@ -1963,13 +2025,15 @@ namespace
         return dir / (font.stem().string() + "-" + std::to_string(key) + ".vsgb");
     }
 
-    // Save a converted font in the cache, safely with other programs using it:
-    // written to a temporary file of this process's own (its id and the time in
-    // its name), then renamed into place, which replaces a file in one step
-    // (readers see the old file or the new one, never part of one). If the rename
-    // fails (on Windows while another program reads the file) or anything else
-    // does, the temporary file is removed and the cache left as it is.
-    void write_font_cache(const vsg::ref_ptr<vsg::Font>& font, const std::filesystem::path& cached)
+    // Save a file in the cache, safely with other programs using it: written
+    // (by `write`, given the path to write) to a temporary file of this
+    // process's own (its id and the time in its name), then renamed into place,
+    // which replaces a file in one step (readers see the old file or the new
+    // one, never part of one). If the rename fails (on Windows while another
+    // program reads the file) or anything else does, the temporary file is
+    // removed and the cache left as it is.
+    template <class Write>
+    void write_cache_file(const std::filesystem::path& cached, Write write)
     {
         namespace fs = std::filesystem;
         std::error_code ec;
@@ -1981,10 +2045,89 @@ namespace
     #endif
         auto tmp = cached;
         tmp.replace_extension(".tmp" + std::to_string(pid) + "-" +
-                              std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) + ".vsgb");
-        const bool written = vsg::write(font, tmp.string(), read_options()) && fs::file_size(tmp, ec) > 0 && !ec;
+                              std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) +
+                              cached.extension().string());
+        const bool written = write(tmp) && fs::file_size(tmp, ec) > 0 && !ec;
         if (written) fs::rename(tmp, cached, ec);
         if (!written || ec) fs::remove(tmp, ec);
+    }
+
+    void write_font_cache(const vsg::ref_ptr<vsg::Font>& font, const std::filesystem::path& cached)
+    {
+        write_cache_file(cached, [&](const std::filesystem::path& tmp) { return vsg::write(font, tmp.string(), read_options()); });
+    }
+
+    // Shader stages compiled from GLSL (vkframes' Phong and PBR fragment
+    // stages, see use_fragment_source, and VSG's vertex stage with them): VSG
+    // compiles them with glslang when their pipeline is first compiled, at
+    // every launch (about 45 ms for a Phong variant, on the first frame).
+    // Instead, their SPIR-V is kept in the cache (cache_dir), named for the
+    // stage, its source and settings and VSG's version, and read from there.
+    // The stages of each pipeline under `root` that have no SPIR-V get it from
+    // the cache, or are compiled here (for Vulkan 1.0, VSG's default: valid
+    // with any instance) and saved. Without a cache directory, VSG compiles
+    // them as before.
+    void use_cached_shaders(vsg::Object& root)
+    {
+        namespace fs = std::filesystem;
+        const auto dir = cache_dir();
+        if (dir.empty()) return;
+        struct Stages : vsg::Visitor
+        {
+            std::vector<vsg::ShaderStages> pipelines;
+            void apply(vsg::Node& node) override { node.traverse(*this); }
+            void apply(vsg::StateGroup& group) override
+            {
+                for (auto& command : group.stateCommands) command->accept(*this);
+                group.traverse(*this);
+            }
+            void apply(vsg::BindGraphicsPipeline& bind) override
+            {
+                if (bind.pipeline) pipelines.push_back(bind.pipeline->stages);
+            }
+        } stages;
+        root.accept(stages);
+
+        auto file_of = [&](const vsg::ShaderStage& stage) {
+            const auto& module = *stage.module;
+            std::ostringstream key;
+            key << stage.stage << '|' << stage.entryPointName << '|' << module.source << '|' << VSG_VERSION_STRING;
+            if (const auto& h = module.hints)
+            {
+                key << '|' << h->vulkanVersion << ',' << h->clientInputVersion << ',' << h->language << ',' << h->defaultVersion
+                    << ',' << h->target << ',' << h->forwardCompatible << ',' << h->generateDebugInfo << ',' << h->optimize;
+                for (const auto& define : h->defines) key << ',' << define;
+            }
+            return dir / "shaders" / (std::to_string(std::hash<std::string>{}(key.str())) + ".spv");
+        };
+        for (auto& pipeline : stages.pipelines)
+        {
+            vsg::ShaderStages uncached;
+            for (auto& stage : pipeline)
+            {
+                if (!stage || !stage->module || !stage->module->code.empty() || stage->module->source.empty()) continue;
+                std::ifstream in(file_of(*stage), std::ios::binary | std::ios::ate);
+                const auto bytes = in ? static_cast<std::size_t>(in.tellg()) : 0;
+                vsg::ShaderModule::SPIRV code(bytes / 4);
+                in.seekg(0);
+                if (bytes >= 20 && bytes % 4 == 0 && in.read(reinterpret_cast<char*>(code.data()), bytes) && code[0] == 0x07230203u)
+                    stage->module->code = std::move(code);
+                else
+                    uncached.push_back(stage);
+            }
+            if (uncached.empty()) continue;
+            vsg::ShaderCompiler compiler;
+            if (!compiler.compile(uncached)) continue;  // (VSG tries again, and reports the errors)
+            for (auto& stage : uncached)
+            {
+                const auto& code = stage->module->code;
+                if (code.empty()) continue;
+                write_cache_file(file_of(*stage), [&](const fs::path& tmp) {
+                    std::ofstream out(tmp, std::ios::binary);
+                    return static_cast<bool>(out.write(reinterpret_cast<const char*>(code.data()), code.size() * 4));
+                });
+            }
+        }
     }
 } // namespace
 
@@ -1994,6 +2137,16 @@ extern "C" {
 VKF_API void* vkf_light_create();
 VKF_API int vkf_light_set(void* light, const float* ambient, const float* diffuse, const float* specular,
                           const double* position);
+
+// Start loading the Vulkan driver for the first window (DriverPreload), unless
+// a window is open already.
+VKF_API void vkf_driver_preload()
+{
+    guarded("vkf_driver_preload", 0, [&]() {
+        preload_driver();
+        return 0;
+    });
+}
 
 // Name of the first Vulkan physical device; returns its length, or -1 on failure.
 // Needs no window, so it checks that the Vulkan loader finds a driver (MoltenVK on macOS).
@@ -2123,6 +2276,7 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         v->viewer->addEventHandler(trackball);
         v->trackball = trackball;
         live_viewers().push_back(v.get());
+        driver_preload().finish();   // (the driver is loaded for the window's instance now)
         return v.release();
     });
 }
@@ -2887,6 +3041,7 @@ VKF_API void* vkf_model_read(const char* filename, int filename_len)
             std::cerr << "vkf_model_read: could not read " << path << std::endl;
             return nullptr;
         }
+        use_cached_shaders(*node);
         auto n = std::make_unique<Node>();
         n->node = node;
         return n.release();
@@ -2988,9 +3143,24 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
             config->shaderHints->defines.insert("VSG_TWO_SIDED_LIGHTING");
         }
         config->init();
+        {
+            // meshes with the same states (a frame's axes, spheres...) share one
+            // pipeline, else each is created on the first frame (3 to 5 ms each
+            // with KosmicKrisp); not their descriptors (copyTo's sharedObjects
+            // would merge equal materials: changing one would change all)
+            static auto shared = vsg::SharedObjects::create();
+            std::scoped_lock<std::recursive_mutex> lock(shared->mutex);
+            shared->share(config->layout->setLayouts);
+            shared->share(config->layout);
+            config->graphicsPipeline->layout = config->layout;
+            shared->share(config->graphicsPipeline);
+            config->bindGraphicsPipeline->pipeline = config->graphicsPipeline;
+            shared->share(config->bindGraphicsPipeline);
+        }
 
         auto stateGroup = vsg::StateGroup::create();
         config->copyTo(stateGroup);
+        use_cached_shaders(*stateGroup);
         auto draw = vsg::VertexIndexDraw::create();
         draw->assignArrays(arrays);
         draw->assignIndices(mesh->indices);

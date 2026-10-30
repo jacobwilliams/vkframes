@@ -24,7 +24,7 @@ items are listed together under [Future work](#future-work) at the end.
   stock OpenFrames doesn't have it.
 - There are a few small inefficiencies on the Fortran side, none of them
   serious. The benchmark found two more: a slow append after a large bulk
-  add, and a slow first frame.
+  add, and a slow first frame. Both are fixed.
 
 ## Measured
 
@@ -110,8 +110,9 @@ How to read it:
 - **Two problems the estimates missed:**
   - A slow append after a large bulk add (20 to 49 ms at 5 million points;
     fixed, now 0.4 ms; see [growth after a bulk add](#growth-after-a-bulk-add)).
-  - The first frame takes 0.14 s or more, against OpenFrames' 0.03 s (still
-    open).
+  - A slow first frame: 0.37 to 0.47 s with opening the window, against
+    OpenFrames' 0.03 s. Now 0.05 to 0.14 s; see
+    [the first frame](#the-first-frame).
 
 The upload estimates (the bytes uploaded) haven't been measured: the
 benchmark measures time, not bytes.
@@ -343,12 +344,56 @@ Measured by the benchmark: this was not in the estimates.
 
 ### The first frame
 
-Measured by the benchmark: vkframes' first frame takes 0.15 to 0.28 s,
-against OpenFrames' 0.03 s. It probably goes to creating pipelines and
-uploading all the points. OpenGL uploads lazily.
+The benchmark measured vkframes' first frame at 0.15 to 0.28 s, against
+OpenFrames' 0.03 s. It timed vkframes from before the window was shown and
+after the view was opened, and OpenFrames from the window's first expose,
+with its OpenGL context created after that. Timed the same way for both,
+from the first expose with opening the view included, vkframes took 0.37 to
+0.47 s.
 
-- [ ] **Future work:** profile the first frame (pipeline creation and
-  compilation, the first upload).
+- [x] **Profiled and sped up (2026-10-29).** The time went to (1,000
+  points; Apple M5, KosmicKrisp):
+  - **Loading the Vulkan driver: 230 to 250 ms**, in the loader's first
+    call. KosmicKrisp's library binds about 3,000 of its symbols (Mesa's
+    weak entry points) with a lookup through every library loaded before
+    it: 86 ms in a bare program, 230 ms with Qt's libraries loaded.
+    - Now `FrameManager%set_frame` starts loading it in the background
+      (`DriverPreload`, `src/vsg/vkf_layer.cpp`: a throwaway instance, kept
+      until the first window has its own). Programs set up their scene
+      before opening a window, so the window's instance is created in about
+      1 ms.
+  - **glslang: about 45 ms.** VSG compiles the Phong shaders from GLSL at
+    every launch: vkframes' copy of its fragment stage replaces the
+    precompiled variants.
+    - The SPIR-V is now kept in the cache (`use_cached_shaders`: with the
+      fonts, in `cache_dir`), named for the stage, its source, its defines
+      and VSG's version. glslang runs once per variant on a machine.
+  - **Pipelines: 21 created, 3 to 10 ms each (about 90 ms).** Each mesh
+    (each frame's axes, each sphere) had a pipeline of its own.
+    - Meshes with the same states now share one (`vkf_mesh_create`, through
+      VSG's `SharedObjects`; their descriptors are not shared, so changing
+      one mesh's material changes only that mesh). That leaves 7 pipelines,
+      about 40 ms.
+  - **Waiting for AppKit after the expose: about 55 ms**, before Qt runs a
+    zero-interval timer. This is the benchmark app's, not vkframes': it now
+    draws its first frame in its expose handler, as OpenFrames' render
+    thread starts drawing at once.
+- **Results**, timed from the first expose with opening the view included:
+
+  | Points | Before | After | OpenFrames |
+  |---|---|---|---|
+  | 1,000 | 0.37–0.39 s | 0.050–0.054 s | 0.034 s |
+  | 1,000,000 | 0.39–0.40 s | 0.070 s | 0.033 s |
+  | 5,000,000 | 0.46–0.47 s | 0.14–0.16 s | 0.033 s |
+
+  - The first launch on a machine, before the shaders are cached, takes
+    about 0.14 s at 1,000 points.
+- **What's left:** about 40 ms of creating 7 pipelines in the driver
+  (SPIR-V translated to Metal), and at 5 million points, uploading 160 MB
+  that OpenGL uploads lazily.
+  - VSG creates pipelines one at a time and without a `VkPipelineCache`.
+    Creating them on several threads, or keeping a pipeline cache, would
+    need changes to VSG's compile traversal. Not worth it for 40 ms.
 
 ## Not about Fortran, but relevant
 
@@ -421,7 +466,8 @@ In rough order of benefit, after the benchmark.
       ([GPU work](#not-about-fortran-but-relevant)).
 - [x] Leave room when growing for a bulk add
       ([growth](#growth-after-a-bulk-add)).
-- [ ] Profile the first frame ([first frame](#the-first-frame)).
+- [x] Profile the first frame, and speed it up: 0.37–0.47 s to
+      0.05–0.14 s ([first frame](#the-first-frame)).
 - [x] ~~Upload only the range of points written, or limit uploads to about
       20 per second~~: tried (pages) and measured, no gain on unified memory
       ([upload rate](#upload-rate-for-small-trajectories-that-grow)).
