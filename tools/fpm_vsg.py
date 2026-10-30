@@ -142,8 +142,10 @@ def unix_settings():
         # C++ runtime, and the Objective-C runtime (the layer's child NSView for embedding)
         ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}", *libs, "-lc++", "-lobjc"]
     else:
-        # --no-as-needed: these come before the objects on fpm's link line
-        ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}", f"-Wl,-rpath-link,{lib}", "-Wl,--no-as-needed", *libs, "-lstdc++"]
+        # --no-as-needed: these come before the objects on fpm's link line; -lpthread: the
+        # layer's std::thread (conda's sysroot has a glibc older than 2.34, its own libpthread)
+        ldflags = [f"-L{lib}", f"-Wl,-rpath,{lib}", f"-Wl,-rpath-link,{lib}", "-Wl,--no-as-needed", *libs, "-lstdc++",
+                   "-lpthread"]
     return {"FPM_CXX": cxx, "FPM_CXXFLAGS": " ".join(cxxflags), "FPM_LDFLAGS": " ".join(ldflags)}, None
 
 
