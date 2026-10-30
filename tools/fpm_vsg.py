@@ -90,6 +90,28 @@ def rocky_installed(pre):
 ROCKY_DEFINES = ["-DVKF_ROCKY", "-DFMT_SHARED", "-DSPDLOG_COMPILED_LIB", "-DSPDLOG_FMT_EXTERNAL", "-DSPDLOG_SHARED_LIB"]
 
 
+def update_dependencies(project_dir):
+    """Run `fpm update` in project_dir if a git dependency is missing or not at the rev in fpm.toml.
+
+    fpm would fetch it itself during the build, but only after qt-fortran's fpm_qt.py has
+    decided whether its shim DLL (Windows) is up to date, so the DLL would be stale.
+    """
+    import tomllib
+    with open(os.path.join(project_dir, "fpm.toml"), "rb") as f:
+        deps = tomllib.load(f).get("dependencies", {})
+    cache = {}
+    cache_file = os.path.join(project_dir, "build", "cache.toml")
+    if os.path.exists(cache_file):
+        with open(cache_file, "rb") as f:
+            cache = tomllib.load(f)
+    stale = [name for name, d in deps.items()
+             if isinstance(d, dict) and "git" in d
+             and (not os.path.isdir(os.path.join(project_dir, "build", "dependencies", name))
+                  or ("rev" in d and cache.get(name, {}).get("obj") != d["rev"]))]
+    if stale:
+        subprocess.check_call(["fpm", "update"], cwd=project_dir)
+
+
 def keep_user_flags(settings):
     """Append FPM_CXXFLAGS / FPM_LDFLAGS already set in the environment."""
     for key in ("FPM_CXXFLAGS", "FPM_LDFLAGS"):

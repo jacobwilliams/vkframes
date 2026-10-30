@@ -27,8 +27,7 @@ def main(argv):
     if not argv or argv[0] not in ("build", "run"):
         sys.exit(__doc__)
     os.chdir(HERE)
-    if not os.path.exists(QT_TOOL):
-        subprocess.check_call(["fpm", "update"])          # fetch qt-fortran
+    fpm_vsg.update_dependencies(HERE)                    # fetch qt-fortran
     settings, dll_dir = fpm_vsg.settings()
     env = dict(os.environ, **settings)
     # vkframes' data files (the Earth's and the Moon's textures), found by name
