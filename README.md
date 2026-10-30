@@ -628,8 +628,9 @@ Options (`--view n`, `--site-frame`, `--sun degrees`, `--time seconds`, `--captu
 
 [bench/](bench/README.md) has two qt-fortran apps that draw the same scene,
 one with vkframes and one with stock OpenFrames, in two scenarios: a large
-static trajectory, and a growing one. On macOS, vkframes draws 10 to 22
-times as many frames as OpenFrames at 1 and 5 million points; the results
+static trajectory, and a growing one. On macOS, vkframes draws 13 to 25
+times as many frames as OpenFrames at 1 and 5 million points (4 to 5 times
+as many drawing every point); the results
 and how they were measured are in [bench/README.md](bench/README.md), and
 the comparison of the two libraries in
 [plans/openframes-compare.md](plans/openframes-compare.md).

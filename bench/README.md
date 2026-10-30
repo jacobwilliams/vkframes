@@ -203,13 +203,13 @@ unaffected; only what reaches the screen is.
 
 ## Results
 
-These results come from macOS 27 on an Apple M5, on 2026-10-27, with stock
+These results come from macOS 27 on an Apple M5, on 2026-10-29, with stock
 OpenFrames and the defaults (10 s measured, 2 s warmup, 60,000 points per
-second in `grow`). They include the improvements of 2026-10-27:
-- mitre joins for lines;
-- growth headroom;
-- chunks capped at 65,536 points;
-- level of detail for curves.
+second in `grow`), on mains power. They include:
+- the improvements of 2026-10-27: mitre joins for lines, growth headroom,
+  chunks capped at 65,536 points, level of detail for curves;
+- the plain line shaders of 2026-10-29 (see
+  [The line shaders' variants](#the-line-shaders-variants)).
 
 (See `plans/openframes-compare.md`.)
 
@@ -217,15 +217,15 @@ vkframes was run with its curve's level of detail on (the default), and off
 (`--no-lod`: every point drawn, as OpenFrames does). OpenFrames has no level
 of detail.
 
-- **Noise.** Frame rates of the same vkframes setting differ by up to a
-  factor of 2 between runs. Ranges are from two runs; single numbers are
-  from one.
+- **Noise.** Settings drawing every point repeat within a few percent
+  between runs. The fastest settings (hundreds of frames per second and up)
+  vary more, so treat those as approximate. The numbers below are from one
+  run.
 - **The display's rate.** Inside a Qt window on macOS, vkframes' frames are
   sometimes held to the display's rate (120 Hz here) even without vsync.
   Core Animation seems to throttle a Metal layer inside Qt's layer tree
-  while the window is visible. Results at 120 fps (marked ≥) are that
-  limit, not vkframes'. That is why `grow` at 100,000 points shows 120 in
-  the second run.
+  while the window is visible. Results at 120 fps would be that limit, not
+  vkframes'. None of this run's were.
 
 The full tables come from `pixi run bench -- --report <file>`.
 
@@ -235,15 +235,46 @@ Frames per second:
 
 | Scenario | Points | vkframes | vkframes, every point | OpenFrames | vkframes / OpenFrames |
 |---|---|---|---|---|---|
-| static | 100,000 | 510–545 | 411 | 400–456 | about 1.2× |
-| static | 1,000,000 | 580–633 | 199 | 57 | 10–11× |
-| static | 5,000,000 | 155–188 | 42 | 10.5–11.2 | 14–17× |
-| grow | 100,000 | ≥ 120–526 | ≥ 120 | 160–163 | (held at 120 in one run) |
-| grow | 1,000,000 | 335–651 | 158 | 40 | 8–16× |
-| grow | 5,000,000 | 123–199 | 40 | 8.9 | 14–22× |
+| static | 100,000 | 1,255 | 1,230 | 360–558 | 2–3× |
+| static | 1,000,000 | 901 | 244 | 57 | 16× (every point: 4.3×) |
+| static | 5,000,000 | 236 | 52 | 11 | 21× (every point: 4.7×) |
+| grow | 100,000 | 1,336 | 566 | 147–175 | 8× |
+| grow | 1,000,000 | 548 | 194 | 41 | 13× (every point: 4.7×) |
+| grow | 5,000,000 | 226 | 49 | 9 | 25× (every point: 5.4×) |
 
-Before the improvements of 2026-10-27, vkframes got 98 and 19.4 fps
-(`static`) and 77 and 17.9 fps (`grow`) at 1 and 5 million points.
+Earlier vkframes figures, at 1 and 5 million points:
+- before the improvements of 2026-10-27: 98 and 19.4 fps (`static`), 77
+  and 17.9 fps (`grow`);
+- on 2026-10-27, drawing every point: 199 and 42 fps (`static`), 158 and 40
+  fps (`grow`);
+- earlier on 2026-10-29, before the plain shaders: 108 and 22 fps (`static`),
+  85 and 21 fps (`grow`). See the next section.
+
+### The line shaders' variants
+
+A rerun on 2026-10-29 found vkframes drawing every point at about half its
+2026-10-27 rate. OpenFrames was unchanged, but it is limited by the CPU and
+vkframes by the GPU, so that showed nothing about the machine.
+- **Ruled out:** mains or battery power, the display, and the driver (Mesa
+  26.2.5 and 26.2.6 gave the same rate).
+- **The cause:** `git bisect` and builds that mixed the line shaders of
+  different commits put the whole loss in the line shaders.
+- **Why:** each feature had added to the shaders: highlight arrows (198 to
+  135 fps at 1 million points, every point drawn), fading trails (to 119)
+  and the highlight's second pass (to 108). Every line paid for all of them,
+  even when it used none: 22 floats passed per vertex instead of 4, and a
+  larger, register-hungry vertex shader. A line draws 6 vertices per point,
+  so with every point drawn that work dominates a frame on Apple's GPU.
+
+The line shaders now come in two variants (`VKF_LINE_PLAIN`, compiled by
+`tools/fpm_vsg.py`):
+- **Plain:** for a line with no dashes, highlight or trail. It passes only
+  the color to the fragment shader, which discards nothing.
+- **Full:** for the rest.
+
+Each line has both pipelines and draws with the one its style needs, each
+frame (`EyeRelative`). In this benchmark every line is plain: 244 fps at 1
+million points, against 108 before and 198 on 2026-10-27.
 
 ### Other measurements
 
@@ -251,17 +282,17 @@ Before the improvements of 2026-10-27, vkframes got 98 and 19.4 fps
 |---|---|---|
 | Adding 1,000,000 points | 7 ms in bulk, 14 ms one at a time | 14 ms, one at a time |
 | Adding 5,000,000 points | 30 ms in bulk, 80 ms one at a time | 78 ms, one at a time |
-| Time to first frame | 0.14–0.29 s | about 0.03 s at every size |
-| Slowest append, `grow` (1,000 points each) | 6.5 ms at 100,000 points; 12 ms at 1M; 0.07 ms at 5M | 1.7 ms; 2.6 ms; 0.06 ms |
-| CPU / wall, large trajectories | 0.02–0.2 (limited by the GPU) | 1.3–1.4 (render thread always busy) |
-| Memory with 5,000,000 points (`static`, bulk) | about 890 MB | about 1,000 MB |
-| Memory with 100,000 points | about 275 MB | about 175 MB |
+| Time to first frame | 0.17–0.27 s | about 0.03 s at every size |
+| Slowest append, `grow` (1,000 points each) | 1.7–5.2 ms at 100,000 points; 4.5 ms at 1M; 0.05 ms at 5M | 1.5 ms; 3.2 ms; 0.07 ms |
+| CPU / wall, large trajectories | 0.02–0.15 (limited by the GPU) | 1.3–1.4 (render thread always busy) |
+| Memory with 5,000,000 points (`static`, bulk) | about 900 MB | about 1,000 MB |
+| Memory with 100,000 points | about 285 MB | about 245 MB |
 
 ### What this shows
 
-- **Drawing large trajectories:** with level of detail, vkframes draws 10 to
-  22 times as many frames as OpenFrames at 1 and 5 million points. Drawing
-  every point, it's still 3.5 to 4.5 times as fast.
+- **Drawing large trajectories:** with level of detail, vkframes draws 13 to
+  25 times as many frames as OpenFrames at 1 and 5 million points. Drawing
+  every point, it's still 4.3 to 5.4 times as fast.
   - vkframes is limited by the GPU, using under 20% CPU.
   - OpenFrames is limited by the CPU. Part of that is because Apple's
     OpenGL runs its line shader's vertex work on the CPU (see
@@ -278,11 +309,11 @@ Before the improvements of 2026-10-27, vkframes got 98 and 19.4 fps
   - OpenFrames' per-point C interface costs about 14 ns per point, the
     same as vkframes adding one point at a time.
   - None of these matter next to frame times.
-- **Appends:** the slow append after a large bulk add is gone (0.07 ms at 5
+- **Appends:** the slow append after a large bulk add is gone (0.05 ms at 5
   million points, from 20 to 49 ms). A copy still happens when the room
-  left runs out, once per quarter of the trajectory's size: the 12 ms
-  append at 1 million points is that copy.
-- **First frame:** vkframes' first frame still takes 0.14 s or more. This is
+  left runs out, once per quarter of the trajectory's size; the slowest
+  appends at 100,000 and 1 million points are those copies.
+- **First frame:** vkframes' first frame still takes 0.17 s or more. This is
   probably pipeline creation and the first upload, while OpenFrames uploads
   lazily.
 - **Memory:** with 5 million points, vkframes uses less than OpenFrames,

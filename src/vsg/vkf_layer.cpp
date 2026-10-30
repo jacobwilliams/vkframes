@@ -381,8 +381,13 @@ namespace
         // glow is faint it doesn't hide what's drawn after it: translucent
         // surfaces), at the line's own depth too (its arrows over it)
         vsg::ref_ptr<vsg::BindGraphicsPipeline> bindGlowPipeline;
+        // lines: plain lines (no dashes, highlight or trail: see plain_line),
+        // drawn by the lean variant of the shaders (line_plain_vert,
+        // line_plain_frag), the same layout and states
+        vsg::ref_ptr<vsg::BindGraphicsPipeline> bindPlainPipeline;
 
-        PointsPipeline(const std::vector<uint32_t>& vert, const std::vector<uint32_t>& frag, PointsKind kind)
+        PointsPipeline(const std::vector<uint32_t>& vert, const std::vector<uint32_t>& frag, PointsKind kind,
+                       const std::vector<uint32_t>* plainVert = nullptr, const std::vector<uint32_t>* plainFrag = nullptr)
         {
             vsg::DescriptorSetLayoutBindings bindings;
             if (kind != PointsKind::skyTexture)
@@ -444,6 +449,14 @@ namespace
                 };
                 bindGlowPipeline = vsg::BindGraphicsPipeline::create(vsg::GraphicsPipeline::create(pipelineLayout, stages, glowStates));
             }
+            if (plainVert && plainFrag)
+            {
+                vsg::ShaderStages plainStages{
+                    vsg::ShaderStage::create(VK_SHADER_STAGE_VERTEX_BIT, "main", vsg::ShaderModule::create(*plainVert)),
+                    vsg::ShaderStage::create(VK_SHADER_STAGE_FRAGMENT_BIT, "main", vsg::ShaderModule::create(*plainFrag)),
+                };
+                bindPlainPipeline = vsg::BindGraphicsPipeline::create(vsg::GraphicsPipeline::create(pipelineLayout, plainStages, states));
+            }
         }
     };
 
@@ -452,7 +465,8 @@ namespace
     // on the order of static destruction).
     PointsPipeline& line_pipeline()
     {
-        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::line_vert, vkf_shaders::line_frag, PointsKind::lines);
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::line_vert, vkf_shaders::line_frag, PointsKind::lines,
+                                                             &vkf_shaders::line_plain_vert, &vkf_shaders::line_plain_frag);
         return *pipeline;
     }
 
@@ -737,6 +751,13 @@ namespace
         };
         if (on(st[1].z) || (static_cast<int>(st[4].x + 0.5f) & 2) != 0) return true;
         return st[6].z != 0.0f && (on(st[10].x) || on(st[10].z));
+    }
+
+    // Whether a line's style can be drawn by the plain shaders: no dash pattern,
+    // no highlight (pulse or arrows), no trail.
+    bool plain_line(const vsg::vec4Array& st)
+    {
+        return !dashed(st) && static_cast<int>(st[4].x + 0.5f) == 0 && st[6].z == 0.0f;
     }
 
     bool dash_levels(LineLod& lod, const vsg::View* view, const vsg::dvec3& eye, const vsg::dmat4& projection,
@@ -1062,6 +1083,8 @@ namespace
         std::shared_ptr<LineLod> lod;          // line strips (null for other geometry)
         bool linePipeline = false;             // drawn by the line pipeline: its set 1 bound (screen lengths)
         int32_t pass = 0;                      // lines: 0 the line, 1 a highlighted line's glow and arrows (pc.lod.w)
+        bool variants = false;                 // lines: two children, the plain and the full pipeline's: one drawn
+                                               // (as the style allows: plain_line); other traversals see both
 
         void traverse(vsg::RecordTraversal& visitor) const override
         {
@@ -1125,7 +1148,10 @@ namespace
             rotationOnly[3][0] = rotationOnly[3][1] = rotationOnly[3][2] = 0.0;
             state->modelviewMatrixStack.push(rotationOnly);
             state->dirty = true;
-            Group::traverse(visitor);
+            if (variants && children.size() == 2 && lod && lod->style && lod->style->size() >= 11)
+                children[plain_line(*lod->style) ? 0 : 1]->accept(visitor);
+            else
+                Group::traverse(visitor);
             state->modelviewMatrixStack.pop();
             state->dirty = true;
         }
@@ -3240,6 +3266,15 @@ static void* make_line(int capacity, bool colored, bool ribbon = false)
         line->draw = vsg::Draw::create(0, 1, 0, 0);
         stateGroup->addChild(line->draw);
         auto eyeRelative = EyeRelative::create(pipeline.pipelineLayout);
+        if (!ribbon && pipeline.bindPlainPipeline)       // plain lines: the lean shaders (both compiled; one drawn)
+        {
+            auto plainGroup = vsg::StateGroup::create();
+            plainGroup->add(pipeline.bindPlainPipeline);
+            plainGroup->add(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.pipelineLayout, 0, descriptorSet));
+            plainGroup->addChild(line->draw);
+            eyeRelative->addChild(plainGroup);
+            eyeRelative->variants = true;
+        }
         line->lod = std::make_shared<LineLod>();
         line->lod->draw = line->draw;
         line->lod->style = line->style;

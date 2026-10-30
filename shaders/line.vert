@@ -87,6 +87,13 @@
 // point's times the style's, blended along each segment from its first
 // point's to its second's (OpenFrames' CustomLineSegments).
 //
+// Plain lines (compiled with VKF_LINE_PLAIN: vkf_shaders::line_plain_vert,
+// with line_plain_frag): no dashes, highlight or trail, so only the color is
+// passed to line.frag. The C++ layer draws a line with this variant whenever
+// its style allows (EyeRelative): with fewer outputs and registers it draws
+// dense lines about twice as fast on Apple's GPU (measured: 1 million points,
+// every one drawn, 108 against 219 frames per second).
+//
 // Points are drawn relative to the eye (RTE) to keep double precision far from
 // the origin (see EyeRelative in src/vsg/vkf_layer.cpp): each point is a (high,
 // low) float pair, the eye position in the same frame is pushed as a pair, and
@@ -141,6 +148,7 @@ layout(std430, set = 0, binding = 3) readonly buffer Colors {
 } colors;
 
 layout(location = 0) out vec4 fragColor;
+#ifndef VKF_LINE_PLAIN
 layout(location = 1) noperspective out vec3 dash;   // along the line, in periods 2^n and 2^(n+1);
                                                     // z = the weight of 2^(n+1)
 layout(location = 2) noperspective out vec3 flow;   // as dash, for the arrows (periods of their spacing), moved
@@ -151,6 +159,7 @@ layout(location = 5) flat out vec4 highlight;       // x = pulse (0 to 1), y = t
 layout(location = 6) out float trailDistance;       // from the current time's, in the direction of time
 layout(location = 7) noperspective out vec3 dash2;  // (trails) the future's dashes, as dash
 layout(location = 8) flat out int pass;              // pc.lod.w
+#endif
 
 out gl_PerVertex {
     vec4 gl_Position;
@@ -246,10 +255,13 @@ void main()
     // clip the segment to the part in front of the eye (w > 0); a separate
     // segment of no length (its two points the same: e.g. a thrust vector
     // where there is no thrust) draws nothing, not a cap's square
-    bool empty = separate && points.p[2 * first] == points.p[2 * second] && points.p[2 * first + 1] == points.p[2 * second + 1];
+    bool empty = false;
+    if (separate)                                  // (the style's, for all vertices: a strip reads nothing more)
+        empty = points.p[2 * first] == points.p[2 * second] && points.p[2 * first + 1] == points.p[2 * second + 1];
     if ((a.w < W_MIN && b.w < W_MIN) || empty) {
         gl_Position = vec4(0.0, 0.0, 0.0, -1.0);   // whole segment behind: outside the clip volume
         fragColor = vec4(0.0);
+#ifndef VKF_LINE_PLAIN
         dash = vec3(0.0);
         flow = vec3(0.0);
         flowPixels = vec2(0.0);
@@ -257,6 +269,8 @@ void main()
         highlight = vec4(0.0);
         trailDistance = 0.0;
         dash2 = vec3(0.0);
+        pass = 0;
+#endif
         return;
     }
     float ta = 0.0, tb = 1.0;                      // the part drawn, as fractions of the segment
@@ -274,9 +288,14 @@ void main()
     vec2 normal = vec2(-dir.y, dir.x);
 
     // highlight: the pulse (0 to 1), the line's half width, the quad's (the band's if wider)
+#ifdef VKF_LINE_PLAIN
+    const int flags = 0;                           // (plain: no highlight)
+    const float pulse = 0.0;
+#else
     float time = pc.viewport.w;
     int flags = int(style.flow.x + 0.5);
     float pulse = ((flags & 1) != 0) ? 0.5 - 0.5 * cos(6.2831853 * time / max(style.pulse.x, 0.05)) : 0.0;
+#endif
     float lineHalfWidth = 0.5 * style.params.x * pc.viewport.z * (1.0 + 0.5 * pulse);
     float halfWidth = ((flags & 2) != 0) ? max(lineHalfWidth, 0.5 * style.flow.w * pc.viewport.z) : lineHalfWidth;
     bool atEnd = corner.x == 1.0;
@@ -308,8 +327,9 @@ void main()
     pos.xy += (offset / halfSize) * pos.w;
 
     gl_Position = pos;
-    pass = pc.lod.w;
     fragColor = (style.count.y > 0.5) ? style.color * colors.c[atEnd ? second : first] : style.color;
+#ifndef VKF_LINE_PLAIN
+    pass = pc.lod.w;
     fragColor.rgb = mix(fragColor.rgb, style.highlight.rgb, 0.5 * pulse);
     vec2 perPixel;
     dash = vec3(0.0);
@@ -355,4 +375,5 @@ void main()
     }
     across = corner.y;
     highlight = vec4(pulse, lineHalfWidth, halfWidth, float(flags));
+#endif
 }

@@ -79,6 +79,19 @@ How to read it:
   as many at 5 million points with every point drawn. With level of detail
   (on by default), it draws 10 to 22 times as many at 1 and 5 million points
   (see `bench/README.md`).
+  - **2026-10-29:** a rerun found every-point drawing back at about half
+    that: each line feature since (highlight arrows, fading trails, the
+    highlight's second pass) had made the line shaders larger for every
+    line (22 floats per vertex passed instead of 4, and more registers).
+    Now a plain line (no dashes, highlight or trail) is drawn by a lean
+    variant of the shaders (`VKF_LINE_PLAIN`), and the others by the full
+    ones. vkframes draws 13 to 25 times as many frames as OpenFrames with
+    level of detail, and 4.3 to 5.4 times as many drawing every point
+    (1 million points: 244 fps, against 108 before and 199 on 2026-10-27).
+  - [ ] **Future work:** the full variant still pays for every feature at
+    once (a dashed line for the highlight's and the trail's outputs). If
+    dashed lines become common, a dashed variant would help them the same
+    way.
   - vkframes is limited by the GPU, at under 10% CPU.
   - OpenFrames is limited by the CPU. On macOS that is partly because
     Apple's OpenGL falls back to the CPU for OpenFrames' line shader. The

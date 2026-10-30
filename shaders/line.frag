@@ -31,6 +31,16 @@ layout(set = 0, binding = 1) uniform Style {
     vec4 trail4;            // the past's dash pattern and factor, the future's
 } style;
 
+#ifdef VKF_LINE_PLAIN
+// a plain line (line.vert's VKF_LINE_PLAIN): its color, nothing discarded
+layout(location = 0) in vec4 fragColor;
+layout(location = 0) out vec4 outColor;
+
+void main()
+{
+    outColor = fragColor;
+}
+#else
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) noperspective in vec3 dash;    // along the line, in periods 2^n and 2^(n+1);
                                                     // z = the weight of 2^(n+1)
@@ -153,3 +163,4 @@ void main()
     if (c.a < 0.01) discard;
     outColor = c;
 }
+#endif

@@ -25,6 +25,8 @@ namespace vkf_shaders
     extern const std::vector<uint32_t> sky_vert;
     extern const std::vector<uint32_t> stars_frag;
     extern const std::vector<uint32_t> stars_vert;
+    extern const std::vector<uint32_t> line_plain_frag;
+    extern const std::vector<uint32_t> line_plain_vert;
 
     extern const char* const standard_pbr_frag_glsl;
     extern const char* const standard_phong_frag_glsl;
