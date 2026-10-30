@@ -15,6 +15,7 @@ module test_events_recorder
         logical :: motion_buttons(3, 64) = .false.
         integer :: key = 0, modifiers = 0, button = 0
         real(wp) :: x = huge(1.0_wp), y = huge(1.0_wp)
+        real(wp) :: press_xy(2) = huge(1.0_wp)              !! the last button press's (a real pointer's motions don't move it)
         logical :: buttons(3) = .false.
         integer :: swallow = -1                             !! a key to say handled
         integer :: draws = 0                                !! before_draw calls
@@ -77,6 +78,7 @@ contains
         self%button_presses = self%button_presses + 1
         self%x = x
         self%y = y
+        self%press_xy = [x, y]
         self%button = button
     end subroutine recorder_button_press
 
@@ -175,7 +177,7 @@ program test_events
     call window%mouse(MOUSE_PRESS, 0, 0, MASK_LEFT, MOUSE_LEFT)
     call check(window%frame(), 'frame')
     call check(rec%button_presses == 1 .and. rec%button == MOUSE_LEFT .and. &
-               near(rec%x, -1.0_wp) .and. near(rec%y, 1.0_wp), 'button press at the top left: (-1, 1)')
+               near(rec%press_xy(1), -1.0_wp) .and. near(rec%press_xy(2), 1.0_wp), 'button press at the top left: (-1, 1)')
     ! (the real pointer over the window can add motions: the ones forwarded are looked for among them)
     rec%motions = 0
     call window%mouse(MOUSE_MOVE, int(width) / 2, int(height) / 2, MASK_LEFT, 0)
