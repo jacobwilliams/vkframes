@@ -1,5 +1,10 @@
 #version 450
 
+// the variant (see line.vert): plain (VKF_LINE_PLAIN), dashed (VKF_LINE_DASHED) or full
+#if !defined(VKF_LINE_PLAIN) && !defined(VKF_LINE_DASHED)
+#define VKF_LINE_FULL
+#endif
+
 // Lines (see line.vert): the style's color, with the dash pattern's gaps
 // discarded. The pattern has two sizes (2^n and 2^(n+1) scene units); each
 // pixel's signed distance to the nearest dash edge (in pixels: the pattern's
@@ -44,6 +49,7 @@ void main()
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) noperspective in vec3 dash;    // along the line, in periods 2^n and 2^(n+1);
                                                     // z = the weight of 2^(n+1)
+#ifdef VKF_LINE_FULL
 layout(location = 2) noperspective in vec3 flow;    // as dash, for the arrows (periods of their spacing), moved
 layout(location = 3) flat in vec2 flowPixels;       // pixels per period, of each size
 layout(location = 4) noperspective in float across; // -1 to 1 across the quad
@@ -52,6 +58,7 @@ layout(location = 5) flat in vec4 highlight;        // x = pulse (0 to 1), y = t
 layout(location = 6) in float trailDistance;        // from the current time's, in the direction of time
 layout(location = 7) noperspective in vec3 dash2;   // (trails) the future's dashes
 layout(location = 8) flat in int pass;              // 0 the line, 1 a highlighted line's glow and arrows
+#endif
 layout(location = 0) out vec4 outColor;
 
 // The signed distance (in bits; > 0 in a dash) from position x (0 to 16, in
@@ -105,6 +112,16 @@ float ramp(float a, float b, float x)
     return (abs(b - a) > 1.0e-6) ? smoothstep(min(a, b), max(a, b), x) : step(a, x);
 }
 
+#ifdef VKF_LINE_DASHED
+// a dashed line (line.vert's VKF_LINE_DASHED: no highlight or trail)
+void main()
+{
+    vec2 rate = dashRate(dash);                                  // (before any discard)
+    float coverage = dashCoverage(uint(style.params.z) & 0xFFFFu, dash, rate);
+    if (coverage <= 0.0) discard;
+    outColor = vec4(fragColor.rgb, fragColor.a * coverage);
+}
+#else
 void main()
 {
     // (in uniform control flow, before any discard: the style is uniform; none for solid lines)
@@ -163,4 +180,5 @@ void main()
     if (c.a < 0.01) discard;
     outColor = c;
 }
+#endif
 #endif

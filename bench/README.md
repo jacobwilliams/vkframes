@@ -52,6 +52,8 @@ Three options change how the apps draw:
   rates then stop at the display's rate.
 - **`--paced`** (vkframes only) keeps vsync off but draws one frame per
   display refresh, from Qt's update requests, as the demos do.
+- **`--dashed`** (vkframes only) dashes the curve (pattern `0F0F`, 4 window
+  units per bit), to measure dashed lines; not part of `run.py`'s runs.
 - **`--no-lod`** (vkframes only) turns off the curve's level of detail, so
   every point is drawn, as OpenFrames does. `run.py` runs vkframes' scenarios
   both ways.
@@ -266,15 +268,20 @@ vkframes by the GPU, so that showed nothing about the machine.
   larger, register-hungry vertex shader. A line draws 6 vertices per point,
   so with every point drawn that work dominates a frame on Apple's GPU.
 
-The line shaders now come in two variants (`VKF_LINE_PLAIN`, compiled by
+The line shaders now come in three variants (compiled by
 `tools/fpm_vsg.py`):
-- **Plain:** for a line with no dashes, highlight or trail. It passes only
-  the color to the fragment shader, which discards nothing.
-- **Full:** for the rest.
+- **Plain** (`VKF_LINE_PLAIN`): for a line with no dashes, highlight or
+  trail. It passes only the color to the fragment shader, which discards
+  nothing.
+- **Dashed** (`VKF_LINE_DASHED`): dashes in any layout, but no highlight or
+  trail. It passes the color and the dash position.
+- **Full:** for highlighted lines and trails.
 
-Each line has both pipelines and draws with the one its style needs, each
-frame (`EyeRelative`). In this benchmark every line is plain: 244 fps at 1
-million points, against 108 before and 198 on 2026-10-27.
+Each line has all three pipelines and draws with the leanest its style
+allows, each frame (`EyeRelative`). In this benchmark every line is plain:
+244 fps at 1 million points, against 108 before and 198 on 2026-10-27. Dashed
+(`--dashed`, 1 million points, every point drawn): 146 fps, against 102 with
+the full shaders.
 
 ### Other measurements
 

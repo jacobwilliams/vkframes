@@ -345,14 +345,17 @@ Decided so far:
   mitre joins between a strip's segments (square caps at its ends, at turns
   over 120 degrees and for separate segments), clipped at `w = ε`. Widths are in window units
   (logical pixels), scaled by the framebuffer/window pixel ratio on Retina.
-  - Two variants of the line shaders (2026-10-29): plain (`VKF_LINE_PLAIN`:
-    no dashes, highlight or trail; only the color passed to the fragment
-    shader, nothing discarded) and full. Each line has both pipelines and
-    draws with the one its style needs, each frame (`EyeRelative`,
-    `plain_line`). Every feature had added outputs and registers to the one
-    shader for every line: with every point drawn, 1 million points fell
-    from 199 to 108 fps on Apple's GPU. With the plain variant: 244 (see
-    bench/README.md). A new line feature goes into the full variant only.
+  - Three variants of the line shaders (2026-10-29): plain
+    (`VKF_LINE_PLAIN`: no dashes, highlight or trail; only the color passed
+    to the fragment shader, nothing discarded), dashed (`VKF_LINE_DASHED`:
+    dashes in any layout, no highlight or trail; the color and the dash
+    position) and full. Each line has all three pipelines and draws with the
+    leanest its style allows, each frame (`EyeRelative`, `line_variant`).
+    Every feature had added outputs and registers to the one shader for
+    every line: with every point drawn, 1 million points fell from 199 to
+    108 fps on Apple's GPU. With the variants: 244 solid, 146 dashed
+    (against 102 with the full shaders; see bench/README.md). A new line
+    feature goes into the full variant only, unless it gets its own.
 - **Line data path:** Fortran writes points straight into the VSG-owned
   storage buffer (`c_f_pointer`, no intermediate copy): 6 floats per point
   (xyz high, xyz low; 24 bytes). Style (color, width) is a separate 32-byte

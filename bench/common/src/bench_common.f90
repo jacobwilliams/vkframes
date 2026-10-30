@@ -49,6 +49,7 @@ module bench_common
         logical :: vsync = .false.                          !! present at the display's refresh [no: as fast as possible]
         logical :: paced = .false.                          !! vkframes: a frame per display update request [no: a zero timer]
         logical :: lod = .true.                             !! vkframes: the curve's level of detail [on]
+        logical :: dashed = .false.                         !! vkframes: the curve dashed (z'0F0F', 4 window units per bit) [solid]
         integer :: width = 1280, height = 800               !! the view's size (logical pixels)
         character(len=:), allocatable :: out                !! results file (JSON lines) [none]
         character(len=:), allocatable :: capture            !! an image of the last frame [none]
@@ -116,6 +117,8 @@ contains
                 opt%paced = .true.
             case ('--no-lod')
                 opt%lod = .false.
+            case ('--dashed')
+                opt%dashed = .true.
             case ('--size')
                 call next_arg(i, arg)
                 read(arg, *) opt%width

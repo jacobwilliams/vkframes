@@ -88,10 +88,11 @@ How to read it:
     ones. vkframes draws 13 to 25 times as many frames as OpenFrames with
     level of detail, and 4.3 to 5.4 times as many drawing every point
     (1 million points: 244 fps, against 108 before and 199 on 2026-10-27).
-  - [ ] **Future work:** the full variant still pays for every feature at
-    once (a dashed line for the highlight's and the trail's outputs). If
-    dashed lines become common, a dashed variant would help them the same
-    way.
+  - [x] **Done (2026-10-29):** a dashed variant too (`VKF_LINE_DASHED`:
+    dashes in any layout, no highlight or trail; the color and the dash
+    position passed). A dashed curve of 1 million points, every point drawn:
+    146 fps, against 102 with the full shaders. Only highlighted lines and
+    trails pay for everything (`bench --dashed`).
   - vkframes is limited by the GPU, at under 10% CPU.
   - OpenFrames is limited by the CPU. On macOS that is partly because
     Apple's OpenGL falls back to the CPU for OpenFrames' line shader. The

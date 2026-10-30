@@ -1,5 +1,10 @@
 #version 450
 
+// the variant: plain (VKF_LINE_PLAIN), dashed (VKF_LINE_DASHED) or full
+#if !defined(VKF_LINE_PLAIN) && !defined(VKF_LINE_DASHED)
+#define VKF_LINE_FULL
+#endif
+
 // Thick lines: each segment is drawn as a screen-space quad (two triangles, 6
 // vertices) of the style's width. A strip joins points i and i+1; with
 // separate segments (style.params.y = 1) segment i joins points 2i and 2i+1.
@@ -87,12 +92,15 @@
 // point's times the style's, blended along each segment from its first
 // point's to its second's (OpenFrames' CustomLineSegments).
 //
-// Plain lines (compiled with VKF_LINE_PLAIN: vkf_shaders::line_plain_vert,
-// with line_plain_frag): no dashes, highlight or trail, so only the color is
-// passed to line.frag. The C++ layer draws a line with this variant whenever
-// its style allows (EyeRelative): with fewer outputs and registers it draws
-// dense lines about twice as fast on Apple's GPU (measured: 1 million points,
-// every one drawn, 108 against 219 frames per second).
+// Variants: plain lines (compiled with VKF_LINE_PLAIN: vkf_shaders::
+// line_plain_vert, with line_plain_frag): no dashes, highlight or trail, so
+// only the color is passed to line.frag; dashed lines (VKF_LINE_DASHED:
+// line_dashed_vert and _frag): dashes (any layout) but no highlight or trail,
+// the color and `dash` passed; the full shaders for the rest (highlights,
+// trails). The C++ layer draws a line with the leanest its style allows
+// (EyeRelative, line_variant): with fewer outputs and registers dense lines
+// draw about twice as fast on Apple's GPU (measured: 1 million points, every
+// one drawn, solid: 108 against 219 frames per second).
 //
 // Points are drawn relative to the eye (RTE) to keep double precision far from
 // the origin (see EyeRelative in src/vsg/vkf_layer.cpp): each point is a (high,
@@ -151,6 +159,8 @@ layout(location = 0) out vec4 fragColor;
 #ifndef VKF_LINE_PLAIN
 layout(location = 1) noperspective out vec3 dash;   // along the line, in periods 2^n and 2^(n+1);
                                                     // z = the weight of 2^(n+1)
+#endif
+#ifdef VKF_LINE_FULL
 layout(location = 2) noperspective out vec3 flow;   // as dash, for the arrows (periods of their spacing), moved
 layout(location = 3) flat out vec2 flowPixels;      // pixels per period, of each size
 layout(location = 4) noperspective out float across;    // -1 to 1 across the quad
@@ -263,6 +273,8 @@ void main()
         fragColor = vec4(0.0);
 #ifndef VKF_LINE_PLAIN
         dash = vec3(0.0);
+#endif
+#ifdef VKF_LINE_FULL
         flow = vec3(0.0);
         flowPixels = vec2(0.0);
         across = 0.0;
@@ -288,8 +300,8 @@ void main()
     vec2 normal = vec2(-dir.y, dir.x);
 
     // highlight: the pulse (0 to 1), the line's half width, the quad's (the band's if wider)
-#ifdef VKF_LINE_PLAIN
-    const int flags = 0;                           // (plain: no highlight)
+#ifndef VKF_LINE_FULL
+    const int flags = 0;                           // (plain, dashed: no highlight)
     const float pulse = 0.0;
 #else
     float time = pc.viewport.w;
@@ -329,13 +341,17 @@ void main()
     gl_Position = pos;
     fragColor = (style.count.y > 0.5) ? style.color * colors.c[atEnd ? second : first] : style.color;
 #ifndef VKF_LINE_PLAIN
-    pass = pc.lod.w;
-    fragColor.rgb = mix(fragColor.rgb, style.highlight.rgb, 0.5 * pulse);
     vec2 perPixel;
     dash = vec3(0.0);
+#ifdef VKF_LINE_FULL
+    pass = pc.lod.w;
+    fragColor.rgb = mix(fragColor.rgb, style.highlight.rgb, 0.5 * pulse);
     dash2 = vec3(0.0);
     trailDistance = 0.0;
     bool trail = style.trail0.z != 0.0 && !separate;
+#else
+    const bool trail = false;                      // (dashed: no trail)
+#endif
     uint pattern = uint(trail ? style.trail4.x : style.params.z) & 0xFFFFu;
     float factor = trail ? style.trail4.y : style.params.w;
     bool screenDashes = style.count.z > 0.5;
@@ -351,6 +367,7 @@ void main()
         else
             dash = dashPosition(first, second, corner.x, ta, tb, len, along, period, pc.dashLevels.x, pc.fixedDash0.zw, perPixel);
     }
+#ifdef VKF_LINE_FULL
     if (trail) {
         uint pattern2 = uint(style.trail4.z) & 0xFFFFu;
         if (pattern2 != 0xFFFFu && pattern2 != 0u) {
@@ -375,5 +392,6 @@ void main()
     }
     across = corner.y;
     highlight = vec4(pulse, lineHalfWidth, halfWidth, float(flags));
+#endif
 #endif
 }

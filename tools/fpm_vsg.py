@@ -198,11 +198,12 @@ def settings():
 
 
 # Shaders also compiled as variants: shaders/<file> as vkf_shaders::<name> with
-# the preprocessor definition given (e.g. lines without dashes, highlights or
-# trails: a lean shader, much faster where vertices dominate).
+# the preprocessor definition given (lines without dashes, highlights or
+# trails, and dashed lines without highlights or trails: leaner shaders, much
+# faster where vertices dominate).
 SHADER_VARIANTS = {
-    "line.vert": [("line_plain_vert", "VKF_LINE_PLAIN")],
-    "line.frag": [("line_plain_frag", "VKF_LINE_PLAIN")],
+    "line.vert": [("line_plain_vert", "VKF_LINE_PLAIN"), ("line_dashed_vert", "VKF_LINE_DASHED")],
+    "line.frag": [("line_plain_frag", "VKF_LINE_PLAIN"), ("line_dashed_frag", "VKF_LINE_DASHED")],
 }
 
 

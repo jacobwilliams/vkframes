@@ -70,6 +70,7 @@ contains
         call hide_decorations(app%earth)
         app%curve = CurveArtist(app%traj, color=[1.0_dp, 0.75_dp, 0.2_dp], width=2.0_dp)
         call app%curve%set_level_of_detail(app%opt%lod)
+        if (app%opt%dashed) call app%curve%set_pattern(4, int(z'0F0F'))
         app%drawing = DrawableTrajectory('Orbit')
         call hide_decorations(app%drawing)
         call app%drawing%add_artist(app%curve)
