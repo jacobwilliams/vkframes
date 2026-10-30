@@ -657,11 +657,12 @@ Decided so far:
     (`DriverPreload`), the Phong shaders' SPIR-V is cached
     (`use_cached_shaders`, in `cache_dir`), and meshes with the same states
     share a pipeline. See openframes-compare.md, the first frame.
-    - [ ] Untested: the preload on Linux and Windows. It should help there
-      too (drivers loaded in the loader's first call), but on Windows a
-      program exiting before the preload's thread is done joins it from
-      vkf.dll's static destructors, during DLL_PROCESS_DETACH (the thread
-      has been ended by then, so the join should return at once).
+    - Linux: built and tested (2026-10-30, `pixi run linux`: lavapipe and
+      Xvfb in Docker); it needs `-lpthread` with conda's glibc.
+    - [ ] Untested: the preload on Windows, where a program exiting before
+      the preload's thread is done joins it from vkf.dll's static
+      destructors, during DLL_PROCESS_DETACH (the thread has been ended by
+      then, so the join should return at once).
   - Each segment's quad transforms both endpoints in each of its 6
     vertices. Measured, this is only 11 to 16% of a frame, so instancing or
     an indexed layout isn't worth it for now. Most of the time is

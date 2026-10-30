@@ -292,6 +292,15 @@ VSG flags and the libraries to link, compiles the shaders, and puts
 `data/` on `VKFRAMES_DATA_PATH`. Run fpm through these tasks rather than
 directly.
 
+To test Linux from a Mac, `pixi run linux` runs a Docker container like
+CI's (Ubuntu, x86_64, Mesa's CPU Vulkan driver and an X server): a shell in
+the repository, or a command such as `pixi run linux pixi run test`. The
+container keeps its own environments and builds, in Docker volumes. Its
+windows are drawn on a virtual display: capture them (most examples take a
+number of frames and a file, e.g. `pixi run example orbit -- 60
+captures/orbit.png`), or see them on the Mac with XQuartz: `pixi run linux
+--xquartz pixi run example orbit_demo`. See `tools/linux_docker.py`.
+
 If fpm reports odd errors or crashes after you pull changes that alter
 derived types, remove its stale objects with `rm -rf build/gfortran_*` and
 build again.

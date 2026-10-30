@@ -2762,7 +2762,12 @@ VKF_API int vkf_viewer_capture(void* viewer, const char* filename, int filename_
         auto device = v->window->getDevice();
         auto swapchain = v->window->getSwapchain();
         const size_t index = v->window->imageIndex();
-        if (!device || !swapchain || index >= swapchain->getImageViews().size()) return -1;
+        if (!device || !swapchain || index >= swapchain->getImageViews().size())
+        {
+            std::cerr << "vkf_viewer_capture: no image drawn to capture (" << (swapchain ? "image " + std::to_string(index) : "no swapchain")
+                      << ")" << std::endl;
+            return -1;
+        }
 
         const VkFormat format = swapchain->getImageFormat();
         const bool bgra = (format == VK_FORMAT_B8G8R8A8_UNORM || format == VK_FORMAT_B8G8R8A8_SRGB);
@@ -2818,8 +2823,14 @@ VKF_API int vkf_viewer_capture(void* viewer, const char* filename, int filename_
             p.a = 255;
         }
 
+        // (into the file's directory, made if it doesn't exist)
+        const auto path = to_string(filename, filename_len);
+        std::error_code ec;
+        if (const auto dir = std::filesystem::path(path).parent_path(); !dir.empty()) std::filesystem::create_directories(dir, ec);
         auto options = vsg::Options::create(vsgXchange::all::create());
-        return vsg::write(pixels, to_string(filename, filename_len), options) ? 0 : -1;
+        if (vsg::write(pixels, path, options)) return 0;
+        std::cerr << "vkf_viewer_capture: could not write " << path << std::endl;
+        return -1;
     });
 }
 
