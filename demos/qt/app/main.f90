@@ -109,13 +109,22 @@
 !> coordinate axes, plane and sensor cone shown; `--los` with the line of
 !> sight between the spacecraft shown; `--shadow` with the Earth's shadow
 !> shown; `--sun-arrow` with the Sun's direction (arrow) shown; `--pattern n` with orbit
-!> pattern n (0 solid, 1 dashed, 2 dotted, 3 dash-dot).
+!> pattern n (0 solid, 1 dashed, 2 dotted, 3 dash-dot); `--diagnostics` with the
+!> diagnostics panel shown.
+!>
+!> Diagnostics (vkf_diagnostics; "Diagnostics" in the dock): a panel at the
+!> right with the main window's frame rate and where a frame's time goes (the
+!> program, waiting for the display, recording, presenting, the GPU), its
+!> image size and the device's memory, the size of its scene graph, the
+!> device and driver, and the versions of vkframes and its libraries; updated
+!> twice a second while shown.
 module vkdemo
 
     use qt
     use vkframes
     use vkframes_qt, only: connect_view, ViewLink, DemoOptions
     use vkf_text, only: get_font
+    use, intrinsic :: iso_fortran_env, only: int64
     use iso_c_binding
     implicit none
 
@@ -268,6 +277,13 @@ module vkdemo
         logical :: start_los = .false.
         logical :: start_shadow = .false.
         logical :: start_sun_arrow = .false.
+        logical :: start_diagnostics = .false.
+        ! diagnostics (vkf_diagnostics)
+        type(QCheckBox) :: diagnostics                         !! shows the diagnostics panel
+        type(QDockWidget) :: diag_dock                         !! the panel, at the right
+        type(QLabel) :: diag_label                             !! its text
+        type(QTimer) :: diag_timer                             !! updates it while shown
+        character(len=:), allocatable :: diag_static           !! its parts that don't change: device, versions
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -1032,6 +1048,144 @@ contains
     end subroutine on_rotation_speed
 
     !> Show or hide the HUD text in all windows.
+    !> The diagnostics panel shown (and updated twice a second) or hidden.
+    subroutine on_diagnostics(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        if (checked) then
+            call update_diagnostics()
+            call app%diag_dock%show()
+            call app%diag_timer%start()
+        else
+            call app%diag_dock%hide()
+            call app%diag_timer%stop()
+        end if
+    end subroutine on_diagnostics
+
+    !> The diagnostics panel shown or hidden by itself (its close button): the
+    !> check box follows.
+    subroutine on_diag_visibility(visible, data)
+        logical, intent(in) :: visible
+        class(*), intent(inout), optional :: data
+        if (app%diagnostics%isChecked() .neqv. visible) call app%diagnostics%setChecked(visible)
+    end subroutine on_diag_visibility
+
+    subroutine on_diag_tick(data)
+        class(*), intent(inout), optional :: data
+        call update_diagnostics()
+    end subroutine on_diag_tick
+
+    !> The diagnostics panel's text, for the main window.
+    subroutine update_diagnostics()
+        type(RenderStats) :: s
+        type(SceneCounts) :: c
+        character(len=:), allocatable :: html, gpu
+        if (.not. app%windows(1)%proxy%is_open()) then
+            call app%diag_label%setText('<small>The view isn''t open yet.</small>')
+            return
+        end if
+        if (.not. allocated(app%diag_static)) app%diag_static = static_diagnostics()
+        s = app%windows(1)%proxy%render_stats()
+        c = app%windows(1)%proxy%scene_counts()
+        gpu = 'not measured'
+        if (s%gpu_ms >= 0.0_wp) gpu = num(s%gpu_ms, '(f0.2)')
+        html = '<table cellspacing="2">' // &
+               heading('Main window') // &
+               row('Frame rate', num(s%fps, '(f0.1)') // ' fps') // &
+               row('Frame time', num(s%frame_ms, '(f0.2)') // ' ms') // &
+               row('Frames drawn', int_text(s%frames)) // &
+               row('Image', int_text(int(s%width, int64)) // ' &times; ' // int_text(int(s%height, int64)) // ' px') // &
+               heading('Last frame (ms)') // &
+               row('Program', num(s%program_ms, '(f0.2)')) // &
+               row('Waiting for the display', num(s%acquire_ms, '(f0.2)')) // &
+               row('Recording, submitting', num(s%record_ms, '(f0.2)')) // &
+               row('Presenting', num(s%present_ms, '(f0.2)')) // &
+               row('GPU', gpu) // &
+               row('GPU memory', memory_text(s%gpu_memory_used, s%gpu_memory_budget)) // &
+               heading('Scene graph') // &
+               row('Nodes', int_text(c%nodes)) // &
+               row('Draw commands', int_text(c%draws)) // &
+               row('Vertices', int_text(c%vertices)) // &
+               app%diag_static // '</table>'
+        call app%diag_label%setText(html)
+    end subroutine update_diagnostics
+
+    !> The diagnostics that don't change: the device, the versions.
+    function static_diagnostics() result(html)
+        character(len=:), allocatable :: html
+        type(DeviceInfo) :: d
+        type(LibraryVersions) :: v
+        d = app%windows(1)%proxy%device_info()
+        v = library_versions()
+        html = heading('Device') // &
+               row('GPU', d%name) // &
+               row('Type', d%kind) // &
+               row('Vulkan', d%vulkan) // &
+               row('Driver', d%driver // ' ' // d%driver_info) // &
+               heading('Versions') // &
+               row('vkframes', v%vkframes) // &
+               row('VulkanSceneGraph', v%vsg) // &
+               row('vsgXchange', v%vsgxchange) // &
+               row('Dear ImGui', v%imgui) // &
+               row('Vulkan headers', v%vulkan_headers) // &
+               row('Vulkan loader', v%vulkan_loader)
+    end function static_diagnostics
+
+    !> A section heading of the diagnostics table.
+    function heading(text) result(html)
+        character(len=*), intent(in) :: text
+        character(len=:), allocatable :: html
+        html = '<tr><td colspan="2" style="padding-top:8px"><b>' // text // '</b></td></tr>'
+    end function heading
+
+    !> A row of the diagnostics table: a label and its value.
+    function row(label, value) result(html)
+        character(len=*), intent(in) :: label, value
+        character(len=:), allocatable :: html
+        html = '<tr><td style="color:#888888; padding-right:12px">' // label // '</td><td>' // trim(value) // '</td></tr>'
+    end function row
+
+    !> A number in a format.
+    function num(x, fmt) result(text)
+        real(wp), intent(in) :: x
+        character(len=*), intent(in) :: fmt
+        character(len=:), allocatable :: text
+        character(len=32) :: buf
+        write(buf, fmt) x
+        text = trim(adjustl(buf))
+        if (text(1:1) == '.') text = '0' // text            ! (f0.d writes 0.25 as .25)
+        if (len(text) > 1) then
+            if (text(1:2) == '-.') text = '-0' // text(2:)
+        end if
+    end function num
+
+    !> An integer, with thousands separated.
+    function int_text(n) result(text)
+        integer(int64), intent(in) :: n
+        character(len=:), allocatable :: text
+        character(len=24) :: buf
+        integer :: k, digits
+        write(buf, '(i0)') n
+        text = ''
+        digits = 0
+        do k = len_trim(buf), 1, -1
+            if (digits > 0 .and. mod(digits, 3) == 0 .and. buf(k:k) /= '-') text = ',' // text
+            text = buf(k:k) // text
+            digits = digits + 1
+        end do
+    end function int_text
+
+    !> Device memory in use and its budget, or why not.
+    function memory_text(used, budget) result(text)
+        real(wp), intent(in) :: used, budget                !! bytes (-1: unknown)
+        character(len=:), allocatable :: text
+        if (budget < 0.0_wp) then
+            text = 'not reported by the driver'
+        else
+            text = num(used / 1048576.0_wp, '(f0.0)') // ' of ' // num(budget / 1048576.0_wp, '(f0.0)') // ' MB'
+        end if
+    end function memory_text
+
     subroutine on_show_hud(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -1265,6 +1419,7 @@ contains
         do k = 2, min(app%start_windows, max_windows)
             call new_window()
         end do
+        if (app%start_diagnostics) call app%diagnostics%setChecked(.true.)
     end subroutine on_startup
 
     !> The main window's startup message, painted now (the GUI thread is busy until the view opens).
@@ -1319,6 +1474,7 @@ contains
     !> (scrolling, when it is taller than the window).
     subroutine build_ui()
         type(QDockWidget) :: dock
+        type(QScrollArea) :: diag_scroll
         type(QScrollArea) :: scroll
         type(QWidget) :: panel
         type(QFormLayout) :: form
@@ -1388,6 +1544,10 @@ contains
         call form%addRow('', app%show_axes)
         call app%show_hud%toggled%connect(on_show_hud)
         call form%addRow('', app%show_hud)
+        app%diagnostics = QCheckBox('Diagnostics')
+        call app%diagnostics%setToolTip('Frame rate, frame times, the GPU, the scene graph, versions')
+        call app%diagnostics%toggled%connect(on_diagnostics)
+        call form%addRow('', app%diagnostics)
         app%show_labels = QCheckBox('Show labels')
         call app%show_labels%setChecked(.true.)
         call app%show_labels%toggled%connect(on_show_labels)
@@ -1495,6 +1655,21 @@ contains
         dock = QDockWidget('Controls', app%main)
         call dock%setWidget(scroll)
         call app%main%addDockWidget(Qt_LeftDockWidgetArea, dock)
+        ! the diagnostics panel, at the right (hidden until asked for)
+        app%diag_label = QLabel('')
+        call app%diag_label%setAlignment(ior(Qt_AlignLeft, Qt_AlignTop))
+        call app%diag_label%setStyleSheet('padding: 8px; font-size: 11px;')
+        diag_scroll = QScrollArea()
+        call diag_scroll%setWidgetResizable(.true.)
+        call diag_scroll%setWidget(app%diag_label)
+        app%diag_dock = QDockWidget('Diagnostics', app%main)
+        call app%diag_dock%setWidget(diag_scroll)
+        call app%main%addDockWidget(Qt_RightDockWidgetArea, app%diag_dock)
+        call app%diag_dock%hide()
+        call app%diag_dock%visibilityChanged%connect(on_diag_visibility)
+        app%diag_timer = QTimer()
+        call app%diag_timer%setInterval(500)
+        call app%diag_timer%timeout%connect(on_diag_tick)
     end subroutine build_ui
 
 end module vkdemo
@@ -1554,6 +1729,8 @@ program vkframes_qt_demo
             app%start_shadow = .true.
         case ('--sun-arrow')
             app%start_sun_arrow = .true.
+        case ('--diagnostics')
+            app%start_diagnostics = .true.
         case ('--sky')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_sky

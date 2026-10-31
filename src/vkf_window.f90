@@ -99,7 +99,7 @@
 !> middle and right buttons move the camera over handles too.
 module vkf_window
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float, c_char
     use, intrinsic :: iso_fortran_env, only: int64
     use vkf_math, only: wp, rigid_inverse, identity_matrix
     use vkf_frames, only: ReferenceFrame, PickHit, PICK_HANDLE
@@ -121,7 +121,9 @@ module vkf_window
                          vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, &
                          vkf_viewer_frame_begin, vkf_viewer_frame_draw, vkf_viewer_gui, &
                          vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames, &
-                         vkf_viewer_set_camera_controls, vkf_driver_preload, vkf_viewer_set_grab
+                         vkf_viewer_set_camera_controls, vkf_driver_preload, vkf_viewer_set_grab, &
+                         vkf_viewer_device_info, vkf_viewer_stats, vkf_viewer_scene_counts
+    use vkf_diagnostics, only: RenderStats, DeviceInfo, SceneCounts
 
     implicit none
 
@@ -244,6 +246,12 @@ module vkf_window
         real(wp) :: record_fps = 30.0_wp                    !! the video's frames per second
         real(wp) :: record_wall = 0.0_wp                    !! the wall time at the start (s)
         integer(int64) :: record_frames = 0_int64           !! frames drawn while recording
+        ! diagnostics (render_stats)
+        real(wp) :: rate_start = -1.0_wp                    !! the wall time the frames are counted from (s; -1: none)
+        integer :: rate_frames = 0                          !! frames since then
+        real(wp) :: fps_ = 0.0_wp                           !! frames per second (the last count's)
+        real(wp) :: frame_ms_ = 0.0_wp                      !! milliseconds between frames (the last count's)
+        real(wp) :: last_frame_ms = 0.0_wp                  !! the last frame()'s duration (ms)
     contains
         procedure :: open, close, is_open, pixel_ratio
         procedure :: set_scene
@@ -251,6 +259,8 @@ module vkf_window
         procedure :: capture
         ! video recording (see the module documentation)
         procedure :: start_recording, stop_recording, is_recording, recorded_frames
+        ! diagnostics (vkf_diagnostics)
+        procedure :: render_stats, device_info, scene_counts
         procedure :: set_background_color, background_color
         ! views (OpenFrames' RenderRectangle)
         procedure :: add_view, remove_view, remove_all_views
@@ -433,8 +443,10 @@ contains
         real(wp) :: t
         integer(c_int) :: status
         integer(c_long_long) :: frames
+        real(wp) :: started
         running = .false.
         if (.not. self%is_open()) return
+        started = wall_time()
         root => null()
         if (associated(self%scene)) root => self%scene%frame()
         if (.not. self%scene_added) then
@@ -472,8 +484,92 @@ contains
             end if
         end if
         if (self%running) call dispatch_events(self)
+        if (self%running) call count_frame(self, started)
         running = self%running .and. self%is_open()
     end function frame
+
+    !> Count a frame for the frame rate (render_stats): its duration, and the
+    !> rate over about half a second.
+    subroutine count_frame(self, started)
+        type(WindowProxy), intent(inout) :: self
+        real(wp), intent(in) :: started                     !! the wall time frame() started (s)
+        real(wp), parameter :: span = 0.5_wp                !! s: the rate's averaging time
+        real(wp) :: now, elapsed
+        now = wall_time()
+        self%last_frame_ms = 1000.0_wp * (now - started)
+        if (self%rate_start < 0.0_wp) then
+            self%rate_start = now
+            self%rate_frames = 0
+            return
+        end if
+        self%rate_frames = self%rate_frames + 1
+        elapsed = now - self%rate_start
+        if (elapsed >= span) then
+            self%fps_ = self%rate_frames / elapsed
+            self%frame_ms_ = 1000.0_wp * elapsed / self%rate_frames
+            self%rate_start = now
+            self%rate_frames = 0
+        end if
+    end subroutine count_frame
+
+    !> The window's frame rate and frame times (see vkf_diagnostics); zeros
+    !> while it isn't open.
+    function render_stats(self) result(stats)
+        class(WindowProxy), intent(in) :: self
+        type(RenderStats) :: stats
+        real(c_double) :: s(9)
+        if (.not. c_associated(self%viewer_)) return
+        if (vkf_viewer_stats(self%viewer_, s, 9_c_int) /= 0) return
+        stats%fps = self%fps_
+        stats%frame_ms = self%frame_ms_
+        stats%frames = int(s(1), int64)
+        stats%acquire_ms = s(2)
+        stats%record_ms = s(3)
+        stats%present_ms = s(4)
+        stats%gpu_ms = s(5)
+        stats%width = nint(s(6))
+        stats%height = nint(s(7))
+        stats%gpu_memory_used = s(8)
+        stats%gpu_memory_budget = s(9)
+        stats%program_ms = max(0.0_wp, self%last_frame_ms - (s(2) + s(3) + s(4)))
+    end function render_stats
+
+    !> The window's Vulkan device and driver (see vkf_diagnostics); '' while it
+    !> isn't open.
+    function device_info(self) result(info)
+        class(WindowProxy), intent(in) :: self
+        type(DeviceInfo) :: info
+        info%name = device_string(1)
+        info%kind = device_string(2)
+        info%vulkan = device_string(3)
+        info%driver = device_string(4)
+        info%driver_info = device_string(5)
+    contains
+        function device_string(which) result(str)
+            integer, intent(in) :: which                    !! 1 the name ... 5 the driver's information
+            character(len=:), allocatable :: str
+            character(kind=c_char, len=256) :: buf
+            integer(c_int) :: n
+            str = ''
+            if (.not. c_associated(self%viewer_)) return
+            n = vkf_viewer_device_info(self%viewer_, int(which, c_int), buf, len(buf, kind=c_int))
+            if (n > 0) str = trim(buf(1:min(int(n), len(buf))))
+        end function device_string
+    end function device_info
+
+    !> The size of the window's scene graph (see vkf_diagnostics): traverses
+    !> it all, for an occasional update, not every frame. Zeros while it isn't
+    !> open.
+    function scene_counts(self) result(counts)
+        class(WindowProxy), intent(in) :: self
+        type(SceneCounts) :: counts
+        real(c_double) :: c(3)
+        if (.not. c_associated(self%viewer_)) return
+        if (vkf_viewer_scene_counts(self%viewer_, c) /= 0) return
+        counts%nodes = int(c(1), int64)
+        counts%draws = int(c(2), int64)
+        counts%vertices = int(c(3), int64)
+    end function scene_counts
 
     !> Render frames until the window is closed (or for `max_frames` frames).
     subroutine run(self, max_frames)

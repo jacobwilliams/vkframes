@@ -86,6 +86,7 @@ namespace vkf
     bool gui_attached(const Gui* gui);
     void gui_frame_done(Gui* gui);
     void gui_delete(Gui* gui, vsg::Viewer& viewer);
+    const char* imgui_version();
 } // namespace vkf
 
 namespace
@@ -1375,6 +1376,97 @@ namespace
         }
     };
 
+    // The GPU's time for a viewer's frames (vkf_viewer_stats): a timestamp
+    // written before its commands and one after them (GpuTimestamp, the first
+    // and last commands of its command graph), in a ring of query pairs: a
+    // pair is read when it comes round again, frames later, without waiting
+    // (VSG has fewer frames in flight than the ring has pairs), so measuring
+    // never stalls a frame. Not measured if the device has no timestamps on
+    // its graphics queue.
+    struct GpuTiming
+    {
+        static constexpr uint32_t pairs = 4;
+        vsg::ref_ptr<vsg::Device> device;
+        VkQueryPool pool = VK_NULL_HANDLE;
+        double nsPerTick = 0.0;                    // the device's timestamp period
+        uint64_t frame = 0;                        // frames recorded
+        std::array<bool, pairs> written{};         // a pair written (not read yet)
+        double lastMs = -1.0;                      // the latest frame read (-1: none)
+
+        explicit GpuTiming(vsg::ref_ptr<vsg::Device> d) :
+            device(d)
+        {
+            const auto& properties = device->getPhysicalDevice()->getProperties();
+            if (!properties.limits.timestampComputeAndGraphics || properties.limits.timestampPeriod <= 0.0f) return;
+            nsPerTick = properties.limits.timestampPeriod;
+            VkQueryPoolCreateInfo info{};
+            info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+            info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+            info.queryCount = 2 * pairs;
+            if (vkCreateQueryPool(*device, &info, nullptr, &pool) != VK_SUCCESS) pool = VK_NULL_HANDLE;
+        }
+        ~GpuTiming()
+        {
+            if (pool) vkDestroyQueryPool(*device, pool, nullptr);
+        }
+
+        // this frame's pair: the one used `pairs` frames ago, read first
+        uint32_t begin()
+        {
+            const uint32_t pair = static_cast<uint32_t>(frame % pairs);
+            if (written[pair])
+            {
+                uint64_t ticks[2] = {0, 0};
+                if (vkGetQueryPoolResults(*device, pool, 2 * pair, 2, sizeof(ticks), ticks, sizeof(uint64_t),
+                                          VK_QUERY_RESULT_64_BIT) == VK_SUCCESS && ticks[1] >= ticks[0])
+                    lastMs = double(ticks[1] - ticks[0]) * nsPerTick * 1e-6;
+                written[pair] = false;
+            }
+            return pair;
+        }
+    };
+
+    // The first (begin) or last command of a viewer's command graph: a
+    // GpuTiming timestamp (see GpuTiming).
+    class GpuTimestamp : public vsg::Inherit<vsg::Command, GpuTimestamp>
+    {
+    public:
+        GpuTimestamp(std::shared_ptr<GpuTiming> t, bool b) :
+            timing(std::move(t)), begin(b) {}
+
+        std::shared_ptr<GpuTiming> timing;
+        bool begin;                    // the first command (else the last)
+
+        void record(vsg::CommandBuffer& commandBuffer) const override
+        {
+            auto& t = *timing;
+            if (!t.pool) return;
+            if (begin)
+            {
+                const uint32_t p = t.begin();
+                vkCmdResetQueryPool(commandBuffer, t.pool, 2 * p, 2);
+                vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, t.pool, 2 * p);
+            }
+            else
+            {
+                const uint32_t p = static_cast<uint32_t>(t.frame % GpuTiming::pairs);
+                vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, t.pool, 2 * p + 1);
+                t.written[p] = true;
+                ++t.frame;
+            }
+        }
+    };
+
+    // A viewer's frame times (vkf_viewer_stats), in milliseconds, of its
+    // last frame drawn.
+    struct FrameTimes
+    {
+        uint64_t frames = 0;           // frames drawn
+        double acquireMs = 0.0;        // waiting for the next swapchain image (advanceToNextFrame)
+        double recordMs = 0.0;         // VSG's update, record and submit
+        double presentMs = 0.0;        // presenting
+    };
+
     struct Viewer
     {
         vsg::ref_ptr<vsg::Viewer> viewer;
@@ -1402,6 +1494,8 @@ namespace
         float zoomSpeed = 1.0f;                // scroll steps scaled by it (vkf_viewer_set_camera_controls)
         bool grabArmed = false;                // a left press takes the mouse from the trackball (vkf_viewer_set_grab)
         bool grabbing = false;                 // taken: until the button is released
+        std::shared_ptr<GpuTiming> gpuTiming;  // the GPU's time per frame (once compiled)
+        FrameTimes times;                      // the last frame's (vkf_viewer_stats)
     };
 
     // Records the window's keyboard and mouse events for Fortran (its event
@@ -2485,6 +2579,10 @@ VKF_API int vkf_viewer_frame_begin(void* viewer)
             set_pixel_ratio(*v->commandGraph, v->pixelRatio);
             if (v->gui) vkf::gui_attach(v->gui, v->window, *v->viewer, *v->commandGraph);   // (on top of the HUD)
             v->commandGraph->addChild(GrabFrame::create(v->window, &v->recorder));      // (after the render pass)
+            // the GPU's time per frame: timestamps around the whole command graph
+            v->gpuTiming = std::make_shared<GpuTiming>(v->window->getOrCreateDevice());
+            v->commandGraph->children.insert(v->commandGraph->children.begin(), GpuTimestamp::create(v->gpuTiming, true));
+            v->commandGraph->addChild(GpuTimestamp::create(v->gpuTiming, false));
             v->viewer->assignRecordAndSubmitTaskAndPresentation({v->commandGraph});
             prepare_views(*v);                                  // (compiled with the scene)
             v->viewer->compile();
@@ -2514,7 +2612,9 @@ VKF_API int vkf_viewer_frame_begin(void* viewer)
         if (v->resizeOwn) v->window->resize();
         v->resizeOwn = false;
 #endif
+        const auto acquireStart = vsg::clock::now();
         if (!v->viewer->advanceToNextFrame()) return 0;
+        v->times.acquireMs = std::chrono::duration<double, std::milli>(vsg::clock::now() - acquireStart).count();
 #if defined(__APPLE__)
         if (!v->childView)
         {
@@ -2546,11 +2646,16 @@ VKF_API int vkf_viewer_frame_draw(void* viewer)
         auto& rec = v->recorder;
         if (rec.active)        // (animations at the video's time)
             set_animation_time(*v->commandGraph, rec.animationStart + static_cast<float>(double(rec.copied) / rec.fps));
+        const auto recordStart = vsg::clock::now();
         v->viewer->update();
         v->viewer->recordAndSubmit();
         if (rec.active && rec.current >= 0 && !v->viewer->recordAndSubmitTasks.empty())
             rec.slots[rec.current].fence = v->viewer->recordAndSubmitTasks.front()->fence();   // (this frame's)
+        const auto presentStart = vsg::clock::now();
         v->viewer->present();
+        v->times.recordMs = std::chrono::duration<double, std::milli>(presentStart - recordStart).count();
+        v->times.presentMs = std::chrono::duration<double, std::milli>(vsg::clock::now() - presentStart).count();
+        ++v->times.frames;
         if (rec.active)        // the frame before (done, or nearly), while this one renders
         {
             if (rec.previous >= 0 && rec.previous != rec.current) write_slot(rec, rec.slots[rec.previous]);
@@ -2572,6 +2677,177 @@ VKF_API void* vkf_viewer_gui(void* viewer, const char* font, int font_len, doubl
         if (!v->gui) v->gui = vkf::gui_create(v->pixelRatio, to_string(font, font_len), static_cast<float>(size));
         if (v->compiled && !vkf::gui_attached(v->gui)) vkf::gui_attach(v->gui, v->window, *v->viewer, *v->commandGraph);
         return v->gui;
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Diagnostics: versions, the device, frame times, the scene graph's size
+
+// A version string: which = 1 VSG, 2 vsgXchange, 3 Dear ImGui, 4 the Vulkan
+// headers vkframes was built with, 5 the Vulkan loader's instance version.
+// Returns its length (written into buf, blank-padded), or -1 if unknown.
+VKF_API int vkf_version(int which, char* buf, int buflen)
+{
+    return guarded("vkf_version", -1, [&]() {
+        auto vulkan = [](uint32_t v) {
+            return std::to_string(VK_API_VERSION_MAJOR(v)) + "." + std::to_string(VK_API_VERSION_MINOR(v)) + "." +
+                   std::to_string(VK_API_VERSION_PATCH(v));
+        };
+        switch (which)
+        {
+        case 1: return to_fortran(VSG_VERSION_STRING, buf, buflen);
+        case 2: return to_fortran(VSGXCHANGE_VERSION_STRING, buf, buflen);
+        case 3: return to_fortran(vkf::imgui_version(), buf, buflen);
+        case 4: return to_fortran(vulkan(VK_HEADER_VERSION_COMPLETE), buf, buflen);
+        case 5:
+        {
+            uint32_t version = VK_API_VERSION_1_0;
+            if (vkEnumerateInstanceVersion(&version) != VK_SUCCESS) return -1;
+            return to_fortran(vulkan(version), buf, buflen);
+        }
+        default: return -1;
+        }
+    });
+}
+
+// The viewer's Vulkan device: which = 1 its name, 2 its type (integrated GPU,
+// discrete GPU, virtual GPU, CPU, other), 3 the Vulkan version it supports,
+// 4 its driver's name, 5 its driver's information (e.g. its version).
+// Returns the length (written into buf, blank-padded), or -1 if unknown.
+VKF_API int vkf_viewer_device_info(void* viewer, int which, char* buf, int buflen)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || !v->window) return -1;
+    return guarded("vkf_viewer_device_info", -1, [&]() {
+        auto device = v->window->getOrCreateDevice();
+        if (!device) return -1;
+        VkPhysicalDeviceDriverProperties driver{};
+        driver.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRIVER_PROPERTIES;
+        VkPhysicalDeviceProperties2 properties{};
+        properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+        properties.pNext = &driver;
+        vkGetPhysicalDeviceProperties2(*device->getPhysicalDevice(), &properties);
+        const auto& p = properties.properties;
+        switch (which)
+        {
+        case 1: return to_fortran(p.deviceName, buf, buflen);
+        case 2:
+            switch (p.deviceType)
+            {
+            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: return to_fortran("integrated GPU", buf, buflen);
+            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: return to_fortran("discrete GPU", buf, buflen);
+            case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU: return to_fortran("virtual GPU", buf, buflen);
+            case VK_PHYSICAL_DEVICE_TYPE_CPU: return to_fortran("CPU", buf, buflen);
+            default: return to_fortran("other", buf, buflen);
+            }
+        case 3:
+            return to_fortran(std::to_string(VK_API_VERSION_MAJOR(p.apiVersion)) + "." + std::to_string(VK_API_VERSION_MINOR(p.apiVersion)) +
+                                  "." + std::to_string(VK_API_VERSION_PATCH(p.apiVersion)),
+                              buf, buflen);
+        case 4: return to_fortran(driver.driverName, buf, buflen);
+        case 5: return to_fortran(driver.driverInfo, buf, buflen);
+        default: return -1;
+        }
+    });
+}
+
+// The viewer's last frame drawn, into stats(1:n) (n at most 9): 1 frames
+// drawn, 2 milliseconds waiting for a swapchain image, 3 recording and
+// submitting (VSG's update, record and submit), 4 presenting, 5 the GPU's
+// time for the frame (-1: not measured), 6 and 7 the framebuffer's width and
+// height (pixels), 8 the device's memory in use and 9 its budget (bytes,
+// device-local heaps; -1 if the driver doesn't say). Returns 0, or -1.
+VKF_API int vkf_viewer_stats(void* viewer, double* stats, int n)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || !stats || n < 1) return -1;
+    return guarded("vkf_viewer_stats", -1, [&]() {
+        double s[9] = {double(v->times.frames), v->times.acquireMs, v->times.recordMs, v->times.presentMs,
+                       v->gpuTiming ? v->gpuTiming->lastMs : -1.0, 0.0, 0.0, -1.0, -1.0};
+        const auto extent = v->window->extent2D();
+        s[5] = extent.width;
+        s[6] = extent.height;
+        if (auto device = v->window->getDevice(); device && device->getExtensions()->memory_budget)
+        {
+            VkPhysicalDeviceMemoryBudgetPropertiesEXT budget{};
+            budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
+            VkPhysicalDeviceMemoryProperties2 properties{};
+            properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
+            properties.pNext = &budget;
+            vkGetPhysicalDeviceMemoryProperties2(*device->getPhysicalDevice(), &properties);
+            s[7] = s[8] = 0.0;
+            for (uint32_t i = 0; i < properties.memoryProperties.memoryHeapCount; ++i)
+                if (properties.memoryProperties.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+                {
+                    s[7] += double(budget.heapUsage[i]);
+                    s[8] += double(budget.heapBudget[i]);
+                }
+        }
+        for (int i = 0; i < std::min(n, 9); ++i) stats[i] = s[i];
+        return 0;
+    });
+}
+
+namespace
+{
+    // Counts a scene graph's nodes, draw commands and vertices (what is
+    // switched off isn't counted: VSG's traversal skips it).
+    class SceneCounter : public vsg::Inherit<vsg::ConstVisitor, SceneCounter>
+    {
+    public:
+        double nodes = 0.0, draws = 0.0, vertices = 0.0;
+
+        void apply(const vsg::Node& node) override
+        {
+            nodes += 1.0;
+            node.traverse(*this);
+        }
+        void apply(const vsg::Draw& draw) override
+        {
+            draws += 1.0;
+            vertices += double(draw.vertexCount) * double(draw.instanceCount);
+        }
+        void apply(const vsg::DrawIndexed& draw) override
+        {
+            draws += 1.0;
+            vertices += double(draw.indexCount) * double(draw.instanceCount);
+        }
+        void apply(const vsg::VertexDraw& draw) override       // (vertex arrays and a draw in one: meshes)
+        {
+            nodes += 1.0;
+            draws += 1.0;
+            vertices += double(draw.vertexCount) * double(draw.instanceCount);
+        }
+        void apply(const vsg::VertexIndexDraw& draw) override
+        {
+            nodes += 1.0;
+            draws += 1.0;
+            vertices += double(draw.indexCount) * double(draw.instanceCount);
+        }
+        void apply(const vsg::Geometry& geometry) override     // (its commands: draws)
+        {
+            nodes += 1.0;
+            for (auto& command : geometry.commands) command->accept(*this);
+        }
+    };
+}
+
+// The size of the viewer's scene graph (its scene and HUD), into counts(1:3):
+// nodes, draw commands, and vertices drawn by them (indices for indexed
+// draws, times instances). Traverses the whole graph: for a diagnostics
+// panel's occasional update, not every frame. Returns 0, or -1.
+VKF_API int vkf_viewer_scene_counts(void* viewer, double* counts)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v || !counts) return -1;
+    return guarded("vkf_viewer_scene_counts", -1, [&]() {
+        auto counter = SceneCounter::create();
+        if (v->scene) v->scene->accept(*counter);
+        if (v->hudScene) v->hudScene->accept(*counter);
+        counts[0] = counter->nodes;
+        counts[1] = counter->draws;
+        counts[2] = counter->vertices;
+        return 0;
     });
 }
 

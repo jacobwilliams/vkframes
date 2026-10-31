@@ -168,6 +168,12 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
   - Vsync by default; `vsync=.false.` renders as fast as possible (for
     measuring).
   - HUD text and screen capture to PNG.
+  - Diagnostics (not in OpenFrames; `vkf_diagnostics`): a window's frame
+    rate and where a frame's time goes (the program, waiting for the
+    display, recording, presenting, and the GPU's time from timestamps),
+    the device's memory, the size of its scene graph, the device and driver,
+    and the versions of vkframes, VSG, vsgXchange, Dear ImGui and Vulkan. The
+    Qt demo shows them in a panel ("Diagnostics", or `--diagnostics`).
   - Video recording (not in OpenFrames, which has only screenshots):
     `start_recording('orbit.mp4', fps=30)` ... `stop_recording()` pipes the
     frames drawn as raw pixels to ffmpeg (conda-forge's, in the pixi

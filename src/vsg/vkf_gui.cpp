@@ -43,6 +43,8 @@ namespace vkf
     bool gui_attached(const Gui* gui);
     void gui_frame_done(Gui* gui);
     void gui_delete(Gui* gui, vsg::Viewer& viewer);
+    // called by vkf_layer.cpp: vkf_version
+    const char* imgui_version();
 } // namespace vkf
 
 namespace
@@ -534,3 +536,9 @@ VKF_API void vkf_gui_same_line(void* gui)
 } // extern "C"
 
 #endif // VKF_EXTERNAL_LAYER
+
+// Dear ImGui's version (its header's), for vkf_version.
+const char* vkf::imgui_version()
+{
+    return IMGUI_VERSION;
+}

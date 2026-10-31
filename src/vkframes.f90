@@ -5,7 +5,7 @@
 !> constants of the vkf_* modules (math, trajectories and followers, the
 !> clock, reference frames and what extends them, windows and views, handles
 !> and the cursor's ray, HUD text and GUI panels, the sky, shapes, artists,
-!> line segments, shadows, terrain, file search, the cache); see each module
+!> line segments, shadows, terrain, file search, the cache, diagnostics); see each module
 !> for its documentation.
 module vkframes
 
@@ -41,6 +41,7 @@ module vkframes
                           Polyhedron, POLY_NONE, POLY_FACES, POLY_EDGES, POLY_VERTICES, POLY_ALL
     use vkf_files, only: find_data_file
     use vkf_cache, only: cache_directory, clear_cache
+    use vkf_diagnostics, only: LibraryVersions, DeviceInfo, RenderStats, SceneCounts, library_versions, vkframes_version
     use vkf_artists, only: TrajectoryArtist, CurveArtist, SegmentArtist, MarkerArtist, RibbonArtist, DrawableTrajectory, &
                            MARKER_START, MARKER_INTERMEDIATE, MARKER_END, &
                            INTERMEDIATE_TIME, INTERMEDIATE_DISTANCE, INTERMEDIATE_DATA, &

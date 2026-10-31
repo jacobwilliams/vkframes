@@ -15,6 +15,7 @@ module vkf_layer
     private
 
     public :: vkf_vulkan_device_name, vkf_driver_preload
+    public :: vkf_version, vkf_viewer_device_info, vkf_viewer_stats, vkf_viewer_scene_counts
     public :: vkf_cache_directory, vkf_cache_clear
     public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
     public :: vkf_viewer_set_pixel_ratio
@@ -54,6 +55,48 @@ module vkf_layer
     public :: vkf_sphere_lod_create, vkf_sphere_lod_add, vkf_sphere_lod_requested
 
     interface
+
+        !> A version string into `buf` (blank-padded): which = 1 VSG, 2 vsgXchange, 3 Dear ImGui, 4 the Vulkan
+        !> headers vkframes was built with, 5 the Vulkan loader's instance version. Returns its length, or -1.
+        integer(c_int) function vkf_version(which, buf, buflen) bind(C, name="vkf_version")
+            import :: c_int, c_char
+            implicit none
+            integer(c_int), value :: which                  !! 1 to 5 (see above)
+            character(kind=c_char), intent(out) :: buf(*)
+            integer(c_int), value :: buflen                 !! the length of `buf`
+        end function vkf_version
+
+        !> The viewer's Vulkan device into `buf` (blank-padded): which = 1 its name, 2 its type, 3 the Vulkan
+        !> version it supports, 4 its driver's name, 5 its driver's information. Returns the length, or -1.
+        integer(c_int) function vkf_viewer_device_info(viewer, which, buf, buflen) bind(C, name="vkf_viewer_device_info")
+            import :: c_ptr, c_int, c_char
+            implicit none
+            type(c_ptr), value :: viewer                    !! viewer handle (vkf_viewer_create)
+            integer(c_int), value :: which                  !! 1 to 5 (see above)
+            character(kind=c_char), intent(out) :: buf(*)
+            integer(c_int), value :: buflen                 !! the length of `buf`
+        end function vkf_viewer_device_info
+
+        !> The viewer's last frame drawn, into stats(1:n) (n at most 9): frames drawn, milliseconds waiting for a
+        !> swapchain image, recording and submitting, presenting, the GPU's time (-1: not measured), the
+        !> framebuffer's width and height, the device memory in use and its budget (bytes; -1: unknown).
+        !> Returns 0, or -1.
+        integer(c_int) function vkf_viewer_stats(viewer, stats, n) bind(C, name="vkf_viewer_stats")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: viewer                    !! viewer handle (vkf_viewer_create)
+            real(c_double), intent(out) :: stats(*)
+            integer(c_int), value :: n                      !! the size of `stats`
+        end function vkf_viewer_stats
+
+        !> The size of the viewer's scene graph into counts: nodes, draw commands, vertices (traverses it all).
+        !> Returns 0, or -1.
+        integer(c_int) function vkf_viewer_scene_counts(viewer, counts) bind(C, name="vkf_viewer_scene_counts")
+            import :: c_ptr, c_int, c_double
+            implicit none
+            type(c_ptr), value :: viewer                    !! viewer handle (vkf_viewer_create)
+            real(c_double), intent(out) :: counts(3)
+        end function vkf_viewer_scene_counts
 
         !> Name of the first Vulkan physical device, into `buf`; returns its length, or -1 on failure.
         !> Needs no window, so it checks that the Vulkan loader finds a driver (MoltenVK on macOS).

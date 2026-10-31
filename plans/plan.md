@@ -911,6 +911,17 @@ Decided so far:
       far plane, so the scene hides it), under a transform with the sky's
       attitude. Tested in `test_sky` (names read) and `live_changes` (shown
       while running); the Qt demo has a "Star names" box.
+- [x] Diagnostics (beyond OpenFrames): `vkf_diagnostics`:
+      `library_versions()` (vkframes, VSG, vsgXchange, Dear ImGui, the Vulkan
+      headers and loader), a window's `device_info()` (device, type, Vulkan
+      version, driver), `render_stats()` (frame rate over half a second; the
+      last frame's program, acquire, record and present times; the GPU's time
+      from timestamps around the command graph, a ring of 4 query pairs read
+      without waiting; device memory from VK_EXT_memory_budget when the
+      driver gives it) and `scene_counts()` (nodes, draws, vertices: a
+      traversal, on demand). `test_diagnostics`; the Qt demo's
+      "Diagnostics" panel. KosmicKrisp gives no memory budget (untested
+      elsewhere: Linux lavapipe, Windows).
 - [x] Constellations (beyond OpenFrames): `SkySphere%set_constellations`
       draws faint lines between the stars of a constellation file
       (`data/inp_Constellation.txt`, Chris Dolan's outlines: "N name", then
