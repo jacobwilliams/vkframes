@@ -1,0 +1,1443 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>quat_to_matrix &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>quat_to_matrix
+      <small>Function</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">18 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_math.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_math.f90.html'>vkf_math.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_math.html'>vkf_math</a></li>
+            <li class="breadcrumb-item active" aria-current="page">quat_to_matrix</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/quat_to_matrix.html#src">quat_to_matrix</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public pure function quat_to_matrix(q) result(m)  
+</h2>
+    
+
+    <p>The 3x3 rotation matrix of the unit quaternion q (columns: the rotated axes).</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~23"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-m~47"></span>
+          real(kind=wp), (3,3)
+        </small>
+      </h3>
+      
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~quat_to_matrix~~CalledByGraph Pages: 1 -->
+<svg id="procquat_to_matrixCalledByGraph" width="641pt" height="249pt"
+ viewBox="0.00 0.00 641.00 249.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~quat_to_matrix~~CalledByGraph" class="graph" transform="scale(0.242317 0.242317) rotate(0) translate(4 1022.13)">
+<title>proc~~quat_to_matrix~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-1022.13 2641.3,-1022.13 2641.3,4 -4,4"/>
+<!-- proc~quat_to_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node1" class="node">
+<title>proc~quat_to_matrix</title>
+<polygon fill="none" stroke="black" points="2637.3,-476.13 2546.28,-476.13 2546.28,-451.87 2637.3,-451.87 2637.3,-476.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2591.79" y="-460.4" font-family="Helvetica,sans-Serif" font-size="10.50">quat_to_matrix</text>
+</g>
+<!-- proc~apply_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node2" class="node">
+<title>proc~apply_attitude</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node2"><a xlink:href="../proc/apply_attitude.html" xlink:title="apply_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="2307.51,-934.13 2220.24,-934.13 2220.24,-909.87 2307.51,-909.87 2307.51,-934.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2263.88" y="-918.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_attitude&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge1" class="edge">
+<title>proc~apply_attitude&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M2307.56,-924.02C2362.55,-924.13 2457.34,-915.48 2510.28,-860 2562.24,-805.55 2583.65,-564.21 2589.23,-487.49"/>
+<polygon fill="#000000" stroke="#000000" points="2592.7,-488 2589.91,-477.78 2585.72,-487.51 2592.7,-488"/>
+</g>
+<!-- proc~apply_name_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node3" class="node">
+<title>proc~apply_name_attitude</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node3"><a xlink:href="../proc/apply_name_attitude.html" xlink:title="apply_name_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="2510.28,-851.13 2387.01,-851.13 2387.01,-826.87 2510.28,-826.87 2510.28,-851.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2448.65" y="-835.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_name_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_name_attitude&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge2" class="edge">
+<title>proc~apply_name_attitude&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M2454.34,-826.52C2474.69,-772.47 2555.39,-558.05 2582.13,-487"/>
+<polygon fill="#000000" stroke="#000000" points="2585.3,-488.53 2585.54,-477.94 2578.74,-486.07 2585.3,-488.53"/>
+</g>
+<!-- proc~camera_between -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node4" class="node">
+<title>proc~camera_between</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node4"><a xlink:href="../proc/camera_between.html" xlink:title="camera_between">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2500.53,-200.13 2396.76,-200.13 2396.76,-175.87 2500.53,-175.87 2500.53,-200.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2448.65" y="-184.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">camera_between</text>
+</a>
+</g>
+</g>
+<!-- proc~camera_between&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge3" class="edge">
+<title>proc~camera_between&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M2456.08,-200.58C2478.12,-243.69 2550.86,-385.91 2579.27,-441.48"/>
+<polygon fill="#000000" stroke="#000000" points="2576.12,-443.01 2583.79,-450.32 2582.36,-439.82 2576.12,-443.01"/>
+</g>
+<!-- proc~frame_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node5" class="node">
+<title>proc~frame_matrix</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node5"><a xlink:href="../proc/frame_matrix.html" xlink:title="frame_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2490.41,-440.13 2406.89,-440.13 2406.89,-415.87 2490.41,-415.87 2490.41,-440.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2448.65" y="-424.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">frame_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~frame_matrix&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge4" class="edge">
+<title>proc~frame_matrix&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M2490.85,-438.51C2504.6,-442.02 2520.15,-445.98 2534.83,-449.73"/>
+<polygon fill="#000000" stroke="#000000" points="2533.81,-453.08 2544.36,-452.16 2535.54,-446.3 2533.81,-453.08"/>
+</g>
+<!-- proc~sphere_pick -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node6" class="node">
+<title>proc~sphere_pick</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node6"><a xlink:href="../proc/sphere_pick.html" xlink:title="Sphere%sphere_pick">
+<polygon fill="#d9534f" stroke="#d9534f" points="2509.53,-398.13 2387.76,-398.13 2387.76,-373.87 2509.53,-373.87 2509.53,-398.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2448.65" y="-382.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%sphere_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_pick&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge5" class="edge">
+<title>proc~sphere_pick&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M2491.07,-398.58C2497.63,-401.08 2504.24,-403.89 2510.28,-407 2530.59,-417.44 2551.58,-432.46 2567.04,-444.47"/>
+<polygon fill="#000000" stroke="#000000" points="2564.69,-447.08 2574.7,-450.54 2569.04,-441.59 2564.69,-447.08"/>
+</g>
+<!-- proc~world_to_view -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node7" class="node">
+<title>proc~world_to_view</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node7"><a xlink:href="../proc/world_to_view.html" xlink:title="View%world_to_view">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1676.33,-532.13 1556.06,-532.13 1556.06,-507.87 1676.33,-507.87 1676.33,-532.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1616.19" y="-516.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">View%world_to_view</text>
+</a>
+</g>
+</g>
+<!-- proc~world_to_view&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge6" class="edge">
+<title>proc~world_to_view&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M1676.53,-508.39C1700.69,-504.11 1728.94,-499.65 1754.7,-497 1774.11,-495 2350.06,-473.11 2534.54,-466.12"/>
+<polygon fill="#000000" stroke="#000000" points="2534.48,-469.63 2544.34,-465.75 2534.22,-462.63 2534.48,-469.63"/>
+</g>
+<!-- proc~frame_to_root -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node48" class="node">
+<title>proc~frame_to_root</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node48"><a xlink:href="../proc/frame_to_root.html" xlink:title="frame_to_root">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1883.6,-572.13 1797.83,-572.13 1797.83,-547.87 1883.6,-547.87 1883.6,-572.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-556.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">frame_to_root</text>
+</a>
+</g>
+</g>
+<!-- proc~world_to_view&#45;&gt;proc~frame_to_root -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge74" class="edge">
+<title>proc~world_to_view&#45;&gt;proc~frame_to_root</title>
+<path fill="none" stroke="#000000" d="M1676.82,-530.72C1710.91,-536.85 1753.3,-544.47 1786.3,-550.4"/>
+<polygon fill="#000000" stroke="#000000" points="1785.59,-553.83 1796.06,-552.15 1786.83,-546.94 1785.59,-553.83"/>
+</g>
+<!-- proc~fly -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node8" class="node">
+<title>proc~fly</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node8"><a xlink:href="../proc/fly.html" xlink:title="fly">
+<polygon fill="#d9534f" stroke="#d9534f" points="1427.3,-450.13 1373.3,-450.13 1373.3,-425.87 1427.3,-425.87 1427.3,-450.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1400.3" y="-434.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fly</text>
+</a>
+</g>
+</g>
+<!-- proc~fly&#45;&gt;proc~camera_between -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge13" class="edge">
+<title>proc~fly&#45;&gt;proc~camera_between</title>
+<path fill="none" stroke="#000000" d="M1406.1,-425.83C1434.88,-355.09 1591.71,0 1839.71,0 1839.71,0 1839.71,0 2052.73,0 2207.74,0 2366.65,-119.54 2424.67,-167.98"/>
+<polygon fill="#000000" stroke="#000000" points="2422.36,-170.6 2432.25,-174.39 2426.88,-165.26 2422.36,-170.6"/>
+</g>
+<!-- proc~fly&#45;&gt;proc~world_to_view -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge18" class="edge">
+<title>proc~fly&#45;&gt;proc~world_to_view</title>
+<path fill="none" stroke="#000000" d="M1427.76,-444.24C1442.6,-448 1461.36,-453.17 1477.68,-459 1513.18,-471.67 1552.36,-489.45 1579.79,-502.54"/>
+<polygon fill="#000000" stroke="#000000" points="1578.16,-505.64 1588.69,-506.83 1581.2,-499.34 1578.16,-505.64"/>
+</g>
+<!-- proc~get_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node9" class="node">
+<title>proc~get_camera</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node9"><a xlink:href="../proc/get_camera.html" xlink:title="WindowProxy%get_camera">
+<polygon fill="#d9534f" stroke="#d9534f" points="1477.68,-572.13 1322.91,-572.13 1322.91,-547.87 1477.68,-547.87 1477.68,-572.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1400.3" y="-556.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%get_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~get_camera&#45;&gt;proc~world_to_view -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge19" class="edge">
+<title>proc~get_camera&#45;&gt;proc~world_to_view</title>
+<path fill="none" stroke="#000000" d="M1468.68,-547.4C1492.89,-542.87 1520.25,-537.75 1544.72,-533.18"/>
+<polygon fill="#000000" stroke="#000000" points="1545.06,-536.68 1554.25,-531.4 1543.77,-529.79 1545.06,-536.68"/>
+</g>
+<!-- proc~home -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node10" class="node">
+<title>proc~home</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node10"><a xlink:href="../proc/home.html" xlink:title="View%home">
+<polygon fill="#d9534f" stroke="#d9534f" points="1438.68,-492.13 1361.91,-492.13 1361.91,-467.87 1438.68,-467.87 1438.68,-492.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1400.3" y="-476.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">View%home</text>
+</a>
+</g>
+</g>
+<!-- proc~home&#45;&gt;proc~world_to_view -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge20" class="edge">
+<title>proc~home&#45;&gt;proc~world_to_view</title>
+<path fill="none" stroke="#000000" d="M1439.04,-487.06C1468.15,-492.5 1509.25,-500.19 1544.43,-506.77"/>
+<polygon fill="#000000" stroke="#000000" points="1543.66,-510.18 1554.13,-508.58 1544.95,-503.3 1543.66,-510.18"/>
+</g>
+<!-- proc~home&#45;&gt;proc~frame_to_root -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge73" class="edge">
+<title>proc~home&#45;&gt;proc~frame_to_root</title>
+<path fill="none" stroke="#000000" d="M1439.01,-473.45C1500.89,-464.57 1626.32,-454.5 1718.7,-499 1740.25,-509.38 1734.19,-526.7 1754.7,-539 1764.38,-544.8 1775.6,-549.01 1786.64,-552.05"/>
+<polygon fill="#000000" stroke="#000000" points="1785.56,-555.39 1796.1,-554.37 1787.22,-548.59 1785.56,-555.39"/>
+</g>
+<!-- proc~local_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node11" class="node">
+<title>proc~local_matrix</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node11"><a xlink:href="../proc/local_matrix.html" xlink:title="ReferenceFrame%local_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2351.01,-693.13 2176.74,-693.13 2176.74,-668.87 2351.01,-668.87 2351.01,-693.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2263.88" y="-677.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%local_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~local_matrix&#45;&gt;proc~frame_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge14" class="edge">
+<title>proc~local_matrix&#45;&gt;proc~frame_matrix</title>
+<path fill="none" stroke="#000000" d="M2273.94,-668.45C2303.11,-628.07 2394.82,-501.12 2431.88,-449.82"/>
+<polygon fill="#000000" stroke="#000000" points="2434.62,-452 2437.64,-441.85 2428.95,-447.91 2434.62,-452"/>
+</g>
+<!-- proc~make_line_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node12" class="node">
+<title>proc~make_line_node</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node12"><a xlink:href="../proc/make_line_node.html" xlink:title="make_line_node">
+<polygon fill="#d9534f" stroke="#d9534f" points="2100.99,-976.13 2002.47,-976.13 2002.47,-951.87 2100.99,-951.87 2100.99,-976.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-960.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_line_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_line_node&#45;&gt;proc~apply_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge7" class="edge">
+<title>proc~make_line_node&#45;&gt;proc~apply_attitude</title>
+<path fill="none" stroke="#000000" d="M2101.47,-954.26C2133.61,-947.84 2175.72,-939.42 2208.87,-932.79"/>
+<polygon fill="#000000" stroke="#000000" points="2209.14,-936.31 2218.26,-930.92 2207.77,-929.44 2209.14,-936.31"/>
+</g>
+<!-- proc~make_name_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node13" class="node">
+<title>proc~make_name_node</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node13"><a xlink:href="../proc/make_name_node.html" xlink:title="make_name_node">
+<polygon fill="#d9534f" stroke="#d9534f" points="2318.76,-851.13 2208.99,-851.13 2208.99,-826.87 2318.76,-826.87 2318.76,-851.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2263.88" y="-835.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_name_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_name_node&#45;&gt;proc~apply_name_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge11" class="edge">
+<title>proc~make_name_node&#45;&gt;proc~apply_name_attitude</title>
+<path fill="none" stroke="#000000" d="M2319.22,-839C2336.82,-839 2356.63,-839 2375.32,-839"/>
+<polygon fill="#000000" stroke="#000000" points="2375.28,-842.5 2385.28,-839 2375.28,-835.5 2375.28,-842.5"/>
+</g>
+<!-- proc~make_star_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node14" class="node">
+<title>proc~make_star_node</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node14"><a xlink:href="../proc/make_star_node.html" xlink:title="make_star_node">
+<polygon fill="#d9534f" stroke="#d9534f" points="2101.37,-892.13 2002.1,-892.13 2002.1,-867.87 2101.37,-867.87 2101.37,-892.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-876.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_star_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;proc~apply_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge8" class="edge">
+<title>proc~make_star_node&#45;&gt;proc~apply_attitude</title>
+<path fill="none" stroke="#000000" d="M2101.73,-889.79C2133.74,-896.19 2175.56,-904.55 2208.57,-911.15"/>
+<polygon fill="#000000" stroke="#000000" points="2207.88,-914.58 2218.37,-913.11 2209.25,-907.71 2207.88,-914.58"/>
+</g>
+<!-- proc~make_star_node&#45;&gt;proc~make_name_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge33" class="edge">
+<title>proc~make_star_node&#45;&gt;proc~make_name_node</title>
+<path fill="none" stroke="#000000" d="M2101.73,-870.44C2130.25,-864.88 2166.56,-857.79 2197.49,-851.76"/>
+<polygon fill="#000000" stroke="#000000" points="2197.99,-855.23 2207.13,-849.88 2196.65,-848.36 2197.99,-855.23"/>
+</g>
+<!-- proc~make_texture_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node15" class="node">
+<title>proc~make_texture_node</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node15"><a xlink:href="../proc/make_texture_node.html" xlink:title="make_texture_node">
+<polygon fill="#d9534f" stroke="#d9534f" points="2109.62,-1018.13 1993.85,-1018.13 1993.85,-993.87 2109.62,-993.87 2109.62,-1018.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-1002.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_texture_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_texture_node&#45;&gt;proc~apply_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge9" class="edge">
+<title>proc~make_texture_node&#45;&gt;proc~apply_attitude</title>
+<path fill="none" stroke="#000000" d="M2109.68,-994.55C2120.14,-991.84 2130.87,-988.66 2140.74,-985 2173.43,-972.87 2208.59,-954.07 2232.76,-940.15"/>
+<polygon fill="#000000" stroke="#000000" points="2234.22,-943.35 2241.09,-935.29 2230.69,-937.31 2234.22,-943.35"/>
+</g>
+<!-- proc~model_frame_bound -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node16" class="node">
+<title>proc~model_frame_bound</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node16"><a xlink:href="../proc/model_frame_bound.html" xlink:title="Model%model_frame_bound">
+<polygon fill="#d9534f" stroke="#d9534f" points="2345.76,-304.13 2181.99,-304.13 2181.99,-279.87 2345.76,-279.87 2345.76,-304.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2263.88" y="-288.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%model_frame_bound</text>
+</a>
+</g>
+</g>
+<!-- proc~model_frame_bound&#45;&gt;proc~frame_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge15" class="edge">
+<title>proc~model_frame_bound&#45;&gt;proc~frame_matrix</title>
+<path fill="none" stroke="#000000" d="M2277.63,-304.59C2306.34,-332.85 2374.49,-399.42 2387.01,-407 2389.92,-408.76 2392.99,-410.4 2396.16,-411.92"/>
+<polygon fill="#000000" stroke="#000000" points="2394.5,-415.02 2405.07,-415.78 2397.29,-408.6 2394.5,-415.02"/>
+</g>
+<!-- proc~place_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node17" class="node">
+<title>proc~place_camera</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node17"><a xlink:href="../proc/place_camera.html" xlink:title="place_camera">
+<polygon fill="#d9534f" stroke="#d9534f" points="1275.29,-512.13 1188.02,-512.13 1188.02,-487.87 1275.29,-487.87 1275.29,-512.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1231.65" y="-496.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">place_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~place_camera&#45;&gt;proc~world_to_view -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge21" class="edge">
+<title>proc~place_camera&#45;&gt;proc~world_to_view</title>
+<path fill="none" stroke="#000000" d="M1275.42,-502.24C1340.64,-505.65 1465.7,-512.18 1544.54,-516.31"/>
+<polygon fill="#000000" stroke="#000000" points="1544.15,-519.79 1554.32,-516.82 1544.51,-512.8 1544.15,-519.79"/>
+</g>
+<!-- proc~place_camera&#45;&gt;proc~fly -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge23" class="edge">
+<title>proc~place_camera&#45;&gt;proc~fly</title>
+<path fill="none" stroke="#000000" d="M1257.5,-487.43C1275.38,-478.69 1300.25,-467.2 1322.91,-459 1335.39,-454.48 1349.31,-450.39 1361.81,-447.04"/>
+<polygon fill="#000000" stroke="#000000" points="1362.55,-450.46 1371.35,-444.56 1360.79,-443.69 1362.55,-450.46"/>
+</g>
+<!-- proc~place_camera&#45;&gt;proc~home -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge25" class="edge">
+<title>proc~place_camera&#45;&gt;proc~home</title>
+<path fill="none" stroke="#000000" d="M1275.57,-494.85C1298.44,-492.1 1326.67,-488.72 1350.39,-485.87"/>
+<polygon fill="#000000" stroke="#000000" points="1350.62,-489.37 1360.13,-484.7 1349.78,-482.42 1350.62,-489.37"/>
+</g>
+<!-- proc~set_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node18" class="node">
+<title>proc~set_attitude</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node18"><a xlink:href="../proc/set_attitude.html" xlink:title="SkySphere%set_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="2121.62,-934.13 1981.85,-934.13 1981.85,-909.87 2121.62,-909.87 2121.62,-934.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-918.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~set_attitude&#45;&gt;proc~apply_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge10" class="edge">
+<title>proc~set_attitude&#45;&gt;proc~apply_attitude</title>
+<path fill="none" stroke="#000000" d="M2121.83,-922C2149.97,-922 2182.02,-922 2208.45,-922"/>
+<polygon fill="#000000" stroke="#000000" points="2208.27,-925.5 2218.27,-922 2208.27,-918.5 2208.27,-925.5"/>
+</g>
+<!-- proc~set_attitude&#45;&gt;proc~apply_name_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge12" class="edge">
+<title>proc~set_attitude&#45;&gt;proc~apply_name_attitude</title>
+<path fill="none" stroke="#000000" d="M2114.18,-909.4C2174.51,-896.98 2269.14,-877.4 2351.01,-860 2359.96,-858.1 2369.38,-856.07 2378.68,-854.07"/>
+<polygon fill="#000000" stroke="#000000" points="2379.41,-857.49 2388.44,-851.95 2377.93,-850.65 2379.41,-857.49"/>
+</g>
+<!-- proc~set_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node19" class="node">
+<title>proc~set_camera</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node19"><a xlink:href="../proc/set_camera.html" xlink:title="WindowProxy%set_camera">
+<polygon fill="#d9534f" stroke="#d9534f" points="1476.93,-614.13 1323.66,-614.13 1323.66,-589.87 1476.93,-589.87 1476.93,-614.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1400.3" y="-598.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%set_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~set_camera&#45;&gt;proc~world_to_view -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge22" class="edge">
+<title>proc~set_camera&#45;&gt;proc~world_to_view</title>
+<path fill="none" stroke="#000000" d="M1451.35,-589.39C1460.19,-586.84 1469.26,-584.01 1477.68,-581 1513.18,-568.33 1552.36,-550.55 1579.79,-537.46"/>
+<polygon fill="#000000" stroke="#000000" points="1581.2,-540.66 1588.69,-533.17 1578.16,-534.36 1581.2,-540.66"/>
+</g>
+<!-- proc~update_model_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node20" class="node">
+<title>proc~update_model_transform</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node20"><a xlink:href="../proc/update_model_transform.html" xlink:title="update_model_transform">
+<polygon fill="#d9534f" stroke="#d9534f" points="2336.76,-157.13 2190.99,-157.13 2190.99,-132.87 2336.76,-132.87 2336.76,-157.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2263.88" y="-141.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update_model_transform</text>
+</a>
+</g>
+</g>
+<!-- proc~update_model_transform&#45;&gt;proc~frame_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge16" class="edge">
+<title>proc~update_model_transform&#45;&gt;proc~frame_matrix</title>
+<path fill="none" stroke="#000000" d="M2275.49,-157.36C2293.54,-178.98 2330.28,-225.7 2351.01,-271 2377.03,-327.85 2344.48,-361.17 2387.01,-407 2389.75,-409.95 2392.91,-412.48 2396.34,-414.66"/>
+<polygon fill="#000000" stroke="#000000" points="2394.69,-417.75 2405.19,-419.21 2397.9,-411.52 2394.69,-417.75"/>
+</g>
+<!-- proc~update_sphere_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node21" class="node">
+<title>proc~update_sphere_transform</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node21"><a xlink:href="../proc/update_sphere_transform.html" xlink:title="update_sphere_transform">
+<polygon fill="#d9534f" stroke="#d9534f" points="2337.89,-409.13 2189.86,-409.13 2189.86,-384.87 2337.89,-384.87 2337.89,-409.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2263.88" y="-393.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update_sphere_transform</text>
+</a>
+</g>
+</g>
+<!-- proc~update_sphere_transform&#45;&gt;proc~frame_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge17" class="edge">
+<title>proc~update_sphere_transform&#45;&gt;proc~frame_matrix</title>
+<path fill="none" stroke="#000000" d="M2338.16,-409.43C2357.22,-412.66 2377.38,-416.08 2395.14,-419.09"/>
+<polygon fill="#000000" stroke="#000000" points="2394.48,-422.53 2404.93,-420.75 2395.65,-415.63 2394.48,-422.53"/>
+</g>
+<!-- proc~frame -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node22" class="node">
+<title>proc~frame</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node22"><a xlink:href="../proc/frame.html" xlink:title="WindowProxy%frame">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="299.42,-705.13 176.15,-705.13 176.15,-680.87 299.42,-680.87 299.42,-705.13"/>
+<text xml:space="preserve" text-anchor="middle" x="237.78" y="-689.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%frame</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~place_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge40" class="edge">
+<title>proc~frame&#45;&gt;proc~place_camera</title>
+<path fill="none" stroke="#000000" d="M253,-680.48C300.54,-639.97 459.72,-515 614.57,-515 614.57,-515 614.57,-515 889.74,-515 991.1,-515 1109.26,-508.3 1176.48,-503.85"/>
+<polygon fill="#000000" stroke="#000000" points="1176.37,-507.37 1186.11,-503.21 1175.9,-500.39 1176.37,-507.37"/>
+</g>
+<!-- proc~sync -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node40" class="node">
+<title>proc~sync</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node40"><a xlink:href="../proc/sync.html" xlink:title="ReferenceFrame%sync">
+<polygon fill="#d9534f" stroke="#d9534f" points="682.08,-776.13 549.06,-776.13 549.06,-751.87 682.08,-751.87 682.08,-776.13"/>
+<text xml:space="preserve" text-anchor="middle" x="615.57" y="-760.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%sync</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~sync -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge56" class="edge">
+<title>proc~frame&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M299.73,-699.21C355.63,-705.53 440.51,-716.73 513.06,-733 531.05,-737.04 550.49,-742.65 567.5,-748"/>
+<polygon fill="#000000" stroke="#000000" points="566.25,-751.27 576.84,-750.99 568.38,-744.61 566.25,-751.27"/>
+</g>
+<!-- proc~realize -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node52" class="node">
+<title>proc~realize</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node52"><a xlink:href="../proc/realize.html" xlink:title="ReferenceFrame%realize">
+<polygon fill="#d9534f" stroke="#d9534f" points="505.56,-766.13 361.29,-766.13 361.29,-741.87 505.56,-741.87 505.56,-766.13"/>
+<text xml:space="preserve" text-anchor="middle" x="433.43" y="-750.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%realize</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~realize -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge79" class="edge">
+<title>proc~frame&#45;&gt;proc~realize</title>
+<path fill="none" stroke="#000000" d="M278.43,-705.49C308.36,-714.92 349.63,-727.92 381.92,-738.09"/>
+<polygon fill="#000000" stroke="#000000" points="380.46,-741.3 391.05,-740.97 382.56,-734.62 380.46,-741.3"/>
+</g>
+<!-- proc~dispatch_events -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node63" class="node">
+<title>proc~dispatch_events</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node63"><a xlink:href="../proc/dispatch_events.html" xlink:title="dispatch_events">
+<polygon fill="#d9534f" stroke="#d9534f" points="481.94,-686.13 384.92,-686.13 384.92,-661.87 481.94,-661.87 481.94,-686.13"/>
+<text xml:space="preserve" text-anchor="middle" x="433.43" y="-670.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dispatch_events</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~dispatch_events -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge85" class="edge">
+<title>proc~frame&#45;&gt;proc~dispatch_events</title>
+<path fill="none" stroke="#000000" d="M299.78,-687.01C323.32,-684.71 350.13,-682.07 373.47,-679.78"/>
+<polygon fill="#000000" stroke="#000000" points="373.5,-683.3 383.11,-678.84 372.82,-676.33 373.5,-683.3"/>
+</g>
+<!-- proc~model_build_contents -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node23" class="node">
+<title>proc~model_build_contents</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node23"><a xlink:href="../proc/model_build_contents.html" xlink:title="Model%model_build_contents">
+<polygon fill="#d9534f" stroke="#d9534f" points="2136.62,-94.14 1966.85,-94.14 1966.85,-69.86 2136.62,-69.86 2136.62,-94.14"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-78.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%model_build_contents</text>
+</a>
+</g>
+</g>
+<!-- proc~model_build_contents&#45;&gt;proc~update_model_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge41" class="edge">
+<title>proc~model_build_contents&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M2108.81,-94.52C2119.46,-97.14 2130.48,-100.02 2140.74,-103 2166.74,-110.55 2195.38,-120.32 2218.39,-128.54"/>
+<polygon fill="#000000" stroke="#000000" points="2217.18,-131.82 2227.78,-131.92 2219.55,-125.24 2217.18,-131.82"/>
+</g>
+<!-- proc~model_pick -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node24" class="node">
+<title>proc~model_pick</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node24"><a xlink:href="../proc/model_pick.html" xlink:title="Model%model_pick">
+<polygon fill="#d9534f" stroke="#d9534f" points="2108.87,-262.13 1994.6,-262.13 1994.6,-237.87 2108.87,-237.87 2108.87,-262.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-246.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%model_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~model_pick&#45;&gt;proc~model_frame_bound -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge39" class="edge">
+<title>proc~model_pick&#45;&gt;proc~model_frame_bound</title>
+<path fill="none" stroke="#000000" d="M2109.32,-261.31C2133.79,-266.2 2162.74,-271.99 2188.88,-277.21"/>
+<polygon fill="#000000" stroke="#000000" points="2187.91,-280.59 2198.4,-279.11 2189.28,-273.72 2187.91,-280.59"/>
+</g>
+<!-- proc~node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node25" class="node">
+<title>proc~node</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node25"><a xlink:href="../proc/node.html" xlink:title="SkySphere%node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1892.97,-976.13 1788.45,-976.13 1788.45,-951.87 1892.97,-951.87 1892.97,-976.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-960.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%node</text>
+</a>
+</g>
+</g>
+<!-- proc~node&#45;&gt;proc~make_line_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge31" class="edge">
+<title>proc~node&#45;&gt;proc~make_line_node</title>
+<path fill="none" stroke="#000000" d="M1893.38,-964C1922.86,-964 1959.95,-964 1990.71,-964"/>
+<polygon fill="#000000" stroke="#000000" points="1990.65,-967.5 2000.65,-964 1990.65,-960.5 1990.65,-967.5"/>
+</g>
+<!-- proc~node&#45;&gt;proc~make_star_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge35" class="edge">
+<title>proc~node&#45;&gt;proc~make_star_node</title>
+<path fill="none" stroke="#000000" d="M1893.21,-956.68C1904.79,-953.6 1916.62,-949.22 1926.72,-943 1947.65,-930.1 1941.74,-913.81 1962.72,-901 1971.29,-895.77 1981.07,-891.84 1990.92,-888.89"/>
+<polygon fill="#000000" stroke="#000000" points="1991.78,-892.28 2000.55,-886.34 1989.99,-885.51 1991.78,-892.28"/>
+</g>
+<!-- proc~node&#45;&gt;proc~make_texture_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge37" class="edge">
+<title>proc~node&#45;&gt;proc~make_texture_node</title>
+<path fill="none" stroke="#000000" d="M1893.38,-974.38C1920.17,-979.76 1953.24,-986.41 1982.14,-992.22"/>
+<polygon fill="#000000" stroke="#000000" points="1981.43,-995.64 1991.92,-994.18 1982.81,-988.78 1981.43,-995.64"/>
+</g>
+<!-- proc~place -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node26" class="node">
+<title>proc~place</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node26"><a xlink:href="../proc/place.html" xlink:title="place">
+<polygon fill="#d9534f" stroke="#d9534f" points="1867.71,-732.13 1813.71,-732.13 1813.71,-707.87 1867.71,-707.87 1867.71,-732.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-716.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">place</text>
+</a>
+</g>
+</g>
+<!-- proc~place&#45;&gt;proc~local_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge26" class="edge">
+<title>proc~place&#45;&gt;proc~local_matrix</title>
+<path fill="none" stroke="#000000" d="M1868.06,-717.56C1926.26,-712.17 2068.31,-699.02 2165.16,-690.05"/>
+<polygon fill="#000000" stroke="#000000" points="2165.3,-693.55 2174.93,-689.14 2164.65,-686.58 2165.3,-693.55"/>
+</g>
+<!-- proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node44" class="node">
+<title>proc~world_matrix</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node44"><a xlink:href="../proc/world_matrix.html" xlink:title="ReferenceFrame%world_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2140.74,-654.13 1962.72,-654.13 1962.72,-629.87 2140.74,-629.87 2140.74,-654.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-638.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%world_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~place&#45;&gt;proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge66" class="edge">
+<title>proc~place&#45;&gt;proc~world_matrix</title>
+<path fill="none" stroke="#000000" d="M1867.98,-712.7C1884.89,-707.83 1907.27,-701.03 1926.72,-694 1955.98,-683.42 1988.39,-669.76 2012.73,-659.1"/>
+<polygon fill="#000000" stroke="#000000" points="2013.85,-662.43 2021.59,-655.19 2011.03,-656.03 2013.85,-662.43"/>
+</g>
+<!-- proc~set_constellations -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node27" class="node">
+<title>proc~set_constellations</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node27"><a xlink:href="../proc/set_constellations.html" xlink:title="SkySphere%set_constellations">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1926.72,-934.13 1754.7,-934.13 1754.7,-909.87 1926.72,-909.87 1926.72,-934.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-918.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_constellations</text>
+</a>
+</g>
+</g>
+<!-- proc~set_constellations&#45;&gt;proc~make_line_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge32" class="edge">
+<title>proc~set_constellations&#45;&gt;proc~make_line_node</title>
+<path fill="none" stroke="#000000" d="M1904.42,-934.6C1931.78,-940.1 1963.71,-946.51 1990.75,-951.95"/>
+<polygon fill="#000000" stroke="#000000" points="1990.04,-955.37 2000.53,-953.91 1991.41,-948.51 1990.04,-955.37"/>
+</g>
+<!-- proc~set_model_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node28" class="node">
+<title>proc~set_model_attitude</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node28"><a xlink:href="../proc/set_model_attitude.html" xlink:title="Model%set_model_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="2129.12,-52.13 1974.35,-52.13 1974.35,-27.87 2129.12,-27.87 2129.12,-52.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-36.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_attitude&#45;&gt;proc~update_model_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge42" class="edge">
+<title>proc~set_model_attitude&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M2117.57,-52.57C2125.52,-54.95 2133.42,-57.75 2140.74,-61 2178.15,-77.63 2216.23,-106.03 2239.7,-125.15"/>
+<polygon fill="#000000" stroke="#000000" points="2237.43,-127.81 2247.36,-131.5 2241.9,-122.43 2237.43,-127.81"/>
+</g>
+<!-- proc~set_model_pivot -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node29" class="node">
+<title>proc~set_model_pivot</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node29"><a xlink:href="../proc/set_model_pivot.html" xlink:title="Model%set_model_pivot">
+<polygon fill="#d9534f" stroke="#d9534f" points="2121.62,-220.13 1981.85,-220.13 1981.85,-195.87 2121.62,-195.87 2121.62,-220.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-204.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_pivot</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_pivot&#45;&gt;proc~update_model_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge43" class="edge">
+<title>proc~set_model_pivot&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M2108.81,-195.48C2119.46,-192.86 2130.48,-189.98 2140.74,-187 2166.74,-179.45 2195.38,-169.68 2218.39,-161.46"/>
+<polygon fill="#000000" stroke="#000000" points="2219.55,-164.76 2227.78,-158.08 2217.18,-158.18 2219.55,-164.76"/>
+</g>
+<!-- proc~set_model_position -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node30" class="node">
+<title>proc~set_model_position</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node30"><a xlink:href="../proc/set_model_position.html" xlink:title="Model%set_model_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="2129.49,-178.13 1973.97,-178.13 1973.97,-153.87 2129.49,-153.87 2129.49,-178.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-162.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_position</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_position&#45;&gt;proc~update_model_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge44" class="edge">
+<title>proc~set_model_position&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M2129.79,-158.3C2145.97,-156.68 2163.1,-154.97 2179.5,-153.33"/>
+<polygon fill="#000000" stroke="#000000" points="2179.61,-156.84 2189.21,-152.36 2178.91,-149.87 2179.61,-156.84"/>
+</g>
+<!-- proc~set_model_scale -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node31" class="node">
+<title>proc~set_model_scale</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node31"><a xlink:href="../proc/set_model_scale.html" xlink:title="Model%set_model_scale">
+<polygon fill="#d9534f" stroke="#d9534f" points="2122.37,-136.13 1981.1,-136.13 1981.1,-111.86 2122.37,-111.86 2122.37,-136.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-120.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_scale</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_scale&#45;&gt;proc~update_model_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge45" class="edge">
+<title>proc~set_model_scale&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M2122.71,-130.99C2140.88,-132.81 2160.65,-134.78 2179.45,-136.66"/>
+<polygon fill="#000000" stroke="#000000" points="2178.89,-140.12 2189.18,-137.64 2179.58,-133.16 2178.89,-140.12"/>
+</g>
+<!-- proc~set_radius -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node32" class="node">
+<title>proc~set_radius</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node32"><a xlink:href="../proc/set_radius.html" xlink:title="Sphere%set_radius">
+<polygon fill="#d9534f" stroke="#d9534f" points="2108.12,-346.13 1995.35,-346.13 1995.35,-321.87 2108.12,-321.87 2108.12,-346.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-330.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_radius</text>
+</a>
+</g>
+</g>
+<!-- proc~set_radius&#45;&gt;proc~update_sphere_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge46" class="edge">
+<title>proc~set_radius&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M2108.34,-346.41C2119.14,-349.06 2130.33,-351.98 2140.74,-355 2166.74,-362.55 2195.38,-372.32 2218.39,-380.54"/>
+<polygon fill="#000000" stroke="#000000" points="2217.18,-383.82 2227.78,-383.92 2219.55,-377.24 2217.18,-383.82"/>
+</g>
+<!-- proc~set_sphere_attitude -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node33" class="node">
+<title>proc~set_sphere_attitude</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node33"><a xlink:href="../proc/set_sphere_attitude.html" xlink:title="Sphere%set_sphere_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="2132.87,-304.13 1970.6,-304.13 1970.6,-279.87 2132.87,-279.87 2132.87,-304.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-288.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_sphere_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sphere_attitude&#45;&gt;proc~update_sphere_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge47" class="edge">
+<title>proc~set_sphere_attitude&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M2117.57,-304.57C2125.52,-306.95 2133.42,-309.75 2140.74,-313 2178.15,-329.63 2216.23,-358.03 2239.7,-377.15"/>
+<polygon fill="#000000" stroke="#000000" points="2237.43,-379.81 2247.36,-383.5 2241.9,-374.43 2237.43,-379.81"/>
+</g>
+<!-- proc~set_sphere_position -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node34" class="node">
+<title>proc~set_sphere_position</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node34"><a xlink:href="../proc/set_sphere_position.html" xlink:title="Sphere%set_sphere_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="2133.24,-472.13 1970.22,-472.13 1970.22,-447.87 2133.24,-447.87 2133.24,-472.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-456.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_sphere_position</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sphere_position&#45;&gt;proc~update_sphere_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge48" class="edge">
+<title>proc~set_sphere_position&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M2108.81,-447.48C2119.46,-444.86 2130.48,-441.98 2140.74,-439 2166.74,-431.45 2195.38,-421.68 2218.39,-413.46"/>
+<polygon fill="#000000" stroke="#000000" points="2219.55,-416.76 2227.78,-410.08 2217.18,-410.18 2219.55,-416.76"/>
+</g>
+<!-- proc~set_sphere_scale -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node35" class="node">
+<title>proc~set_sphere_scale</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node35"><a xlink:href="../proc/set_sphere_scale.html" xlink:title="Sphere%set_sphere_scale">
+<polygon fill="#d9534f" stroke="#d9534f" points="2126.12,-430.13 1977.35,-430.13 1977.35,-405.87 2126.12,-405.87 2126.12,-430.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-414.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_sphere_scale</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sphere_scale&#45;&gt;proc~update_sphere_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge49" class="edge">
+<title>proc~set_sphere_scale&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M2126.52,-410.63C2143.31,-408.95 2161.26,-407.15 2178.45,-405.44"/>
+<polygon fill="#000000" stroke="#000000" points="2178.5,-408.95 2188.11,-404.47 2177.81,-401.98 2178.5,-408.95"/>
+</g>
+<!-- proc~set_star_data -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node36" class="node">
+<title>proc~set_star_data</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node36"><a xlink:href="../proc/set_star_data.html" xlink:title="SkySphere%set_star_data">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1914.72,-892.13 1766.7,-892.13 1766.7,-867.87 1914.72,-867.87 1914.72,-892.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-876.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_star_data</text>
+</a>
+</g>
+</g>
+<!-- proc~set_star_data&#45;&gt;proc~make_star_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge36" class="edge">
+<title>proc~set_star_data&#45;&gt;proc~make_star_node</title>
+<path fill="none" stroke="#000000" d="M1915.11,-880C1939.77,-880 1966.98,-880 1990.52,-880"/>
+<polygon fill="#000000" stroke="#000000" points="1990.23,-883.5 2000.23,-880 1990.23,-876.5 1990.23,-883.5"/>
+</g>
+<!-- proc~set_star_names -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node37" class="node">
+<title>proc~set_star_names</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node37"><a xlink:href="../proc/set_star_names.html" xlink:title="SkySphere%set_star_names">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2131.74,-850.13 1971.72,-850.13 1971.72,-825.87 2131.74,-825.87 2131.74,-850.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-834.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_star_names</text>
+</a>
+</g>
+</g>
+<!-- proc~set_star_names&#45;&gt;proc~make_name_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge34" class="edge">
+<title>proc~set_star_names&#45;&gt;proc~make_name_node</title>
+<path fill="none" stroke="#000000" d="M2132.18,-838.38C2153.65,-838.48 2176.65,-838.59 2197.27,-838.69"/>
+<polygon fill="#000000" stroke="#000000" points="2197.25,-842.19 2207.27,-838.74 2197.29,-835.19 2197.25,-842.19"/>
+</g>
+<!-- proc~set_texture_map -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node38" class="node">
+<title>proc~set_texture_map</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node38"><a xlink:href="../proc/set_texture_map.html" xlink:title="SkySphere%set_texture_map">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1922.97,-1018.13 1758.45,-1018.13 1758.45,-993.87 1922.97,-993.87 1922.97,-1018.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-1002.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_texture_map</text>
+</a>
+</g>
+</g>
+<!-- proc~set_texture_map&#45;&gt;proc~make_texture_node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge38" class="edge">
+<title>proc~set_texture_map&#45;&gt;proc~make_texture_node</title>
+<path fill="none" stroke="#000000" d="M1923.42,-1006C1942.86,-1006 1963.4,-1006 1982.18,-1006"/>
+<polygon fill="#000000" stroke="#000000" points="1982.11,-1009.5 1992.11,-1006 1982.11,-1002.5 1982.11,-1009.5"/>
+</g>
+<!-- proc~sphere_build_contents -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node39" class="node">
+<title>proc~sphere_build_contents</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node39"><a xlink:href="../proc/sphere_build_contents.html" xlink:title="Sphere%sphere_build_contents">
+<polygon fill="#d9534f" stroke="#d9534f" points="2140.37,-388.13 1963.1,-388.13 1963.1,-363.87 2140.37,-363.87 2140.37,-388.13"/>
+<text xml:space="preserve" text-anchor="middle" x="2051.73" y="-372.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%sphere_build_contents</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_build_contents&#45;&gt;proc~update_sphere_transform -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge50" class="edge">
+<title>proc~sphere_build_contents&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M2140.63,-384.78C2153.12,-386.03 2165.94,-387.31 2178.36,-388.55"/>
+<polygon fill="#000000" stroke="#000000" points="2177.83,-392.02 2188.12,-389.53 2178.52,-385.05 2177.83,-392.02"/>
+</g>
+<!-- proc~sync&#45;&gt;proc~local_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge27" class="edge">
+<title>proc~sync&#45;&gt;proc~local_matrix</title>
+<path fill="none" stroke="#000000" d="M680.66,-776.61C735.43,-786.29 816.45,-798 887.74,-798 887.74,-798 887.74,-798 1841.71,-798 1976.46,-798 2013.43,-792.14 2140.74,-748 2175.13,-736.08 2211.3,-715.02 2235.27,-699.68"/>
+<polygon fill="#000000" stroke="#000000" points="2237.01,-702.72 2243.48,-694.33 2233.19,-696.86 2237.01,-702.72"/>
+</g>
+<!-- proc~sync&#45;&gt;proc~sync -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge58" class="edge">
+<title>proc~sync&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M590.68,-776.38C582.57,-785.28 590.87,-794.13 615.57,-794.13 629.08,-794.13 637.68,-791.49 641.38,-787.63"/>
+<polygon fill="#000000" stroke="#000000" points="644.88,-787.57 640.58,-777.89 637.91,-788.14 644.88,-787.57"/>
+</g>
+<!-- proc~time_drag -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node41" class="node">
+<title>proc~time_drag</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node41"><a xlink:href="../proc/time_drag.html" xlink:title="TimeHandle%time_drag">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1910.6,-530.13 1770.83,-530.13 1770.83,-505.87 1910.6,-505.87 1910.6,-530.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-514.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TimeHandle%time_drag</text>
+</a>
+</g>
+</g>
+<!-- proc~time_drag&#45;&gt;proc~local_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge28" class="edge">
+<title>proc~time_drag&#45;&gt;proc~local_matrix</title>
+<path fill="none" stroke="#000000" d="M1896.86,-530.57C1906.86,-533.15 1917.15,-536 1926.72,-539 2023.91,-569.49 2047.37,-580.28 2140.74,-621 2170.92,-634.16 2204.44,-650.78 2228.72,-663.18"/>
+<polygon fill="#000000" stroke="#000000" points="2227.01,-666.24 2237.5,-667.7 2230.21,-660.01 2227.01,-666.24"/>
+</g>
+<!-- proc~time_drag&#45;&gt;proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge68" class="edge">
+<title>proc~time_drag&#45;&gt;proc~world_matrix</title>
+<path fill="none" stroke="#000000" d="M1911.01,-530.25C1916.57,-532.67 1921.9,-535.55 1926.72,-539 1950.79,-556.21 1940.97,-574.94 1962.72,-595 1975.76,-607.02 1992.44,-616.95 2007.77,-624.53"/>
+<polygon fill="#000000" stroke="#000000" points="2006.2,-627.65 2016.74,-628.75 2009.18,-621.32 2006.2,-627.65"/>
+</g>
+<!-- proc~view_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node42" class="node">
+<title>proc~view_camera</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node42"><a xlink:href="../proc/view_camera.html" xlink:title="view_camera">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1272.66,-650.13 1190.64,-650.13 1190.64,-625.87 1272.66,-625.87 1272.66,-650.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1231.65" y="-634.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">view_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~view_camera&#45;&gt;proc~get_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge24" class="edge">
+<title>proc~view_camera&#45;&gt;proc~get_camera</title>
+<path fill="none" stroke="#000000" d="M1249.11,-625.49C1266.6,-612.73 1295.44,-593.13 1322.91,-581 1326.72,-579.32 1330.7,-577.74 1334.75,-576.26"/>
+<polygon fill="#000000" stroke="#000000" points="1335.8,-579.6 1344.15,-573.09 1333.56,-572.97 1335.8,-579.6"/>
+</g>
+<!-- proc~window_pick -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node43" class="node">
+<title>proc~window_pick</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node43"><a xlink:href="../proc/window_pick.html" xlink:title="WindowProxy%window_pick">
+<polygon fill="#d9534f" stroke="#d9534f" points="1132.52,-746.13 974.75,-746.13 974.75,-721.87 1132.52,-721.87 1132.52,-746.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1053.63" y="-730.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%window_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~window_pick&#45;&gt;proc~local_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge29" class="edge">
+<title>proc~window_pick&#45;&gt;proc~local_matrix</title>
+<path fill="none" stroke="#000000" d="M1132.87,-743.28C1202.65,-750.74 1307.63,-760 1399.3,-760 1399.3,-760 1399.3,-760 1841.71,-760 1977.32,-760 2133.34,-719.95 2211.96,-696.88"/>
+<polygon fill="#000000" stroke="#000000" points="2212.94,-700.24 2221.53,-694.04 2210.95,-693.53 2212.94,-700.24"/>
+</g>
+<!-- proc~window_pick&#45;&gt;proc~view_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge61" class="edge">
+<title>proc~window_pick&#45;&gt;proc~view_camera</title>
+<path fill="none" stroke="#000000" d="M1077.64,-721.45C1108.34,-704.7 1162.89,-674.95 1197.88,-655.87"/>
+<polygon fill="#000000" stroke="#000000" points="1199.2,-659.14 1206.3,-651.28 1195.85,-652.99 1199.2,-659.14"/>
+</g>
+<!-- proc~world_matrix&#45;&gt;proc~local_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge30" class="edge">
+<title>proc~world_matrix&#45;&gt;proc~local_matrix</title>
+<path fill="none" stroke="#000000" d="M2120.67,-654.61C2140.79,-658.34 2163.01,-662.47 2183.77,-666.32"/>
+<polygon fill="#000000" stroke="#000000" points="2182.85,-669.71 2193.32,-668.09 2184.13,-662.83 2182.85,-669.71"/>
+</g>
+<!-- proc~world_matrix&#45;&gt;proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge69" class="edge">
+<title>proc~world_matrix&#45;&gt;proc~world_matrix</title>
+<path fill="none" stroke="#000000" d="M2016.42,-654.38C2004.93,-663.28 2016.7,-672.13 2051.73,-672.13 2070.89,-672.13 2083.09,-669.49 2088.33,-665.63"/>
+<polygon fill="#000000" stroke="#000000" points="2091.83,-665.42 2087.21,-655.89 2084.88,-666.22 2091.83,-665.42"/>
+</g>
+<!-- proc~cursor_ray -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node45" class="node">
+<title>proc~cursor_ray</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node45"><a xlink:href="../proc/cursor_ray.html" xlink:title="WindowProxy%cursor_ray">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1127.27,-624.13 980,-624.13 980,-599.87 1127.27,-599.87 1127.27,-624.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1053.63" y="-608.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%cursor_ray</text>
+</a>
+</g>
+</g>
+<!-- proc~cursor_ray&#45;&gt;proc~view_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge59" class="edge">
+<title>proc~cursor_ray&#45;&gt;proc~view_camera</title>
+<path fill="none" stroke="#000000" d="M1127.75,-622.8C1144.93,-625.34 1162.88,-627.99 1178.9,-630.36"/>
+<polygon fill="#000000" stroke="#000000" points="1178.28,-633.8 1188.68,-631.8 1179.3,-626.88 1178.28,-633.8"/>
+</g>
+<!-- proc~drag -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node46" class="node">
+<title>proc~drag</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node46"><a xlink:href="../proc/drag.html" xlink:title="DragHandle%drag">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1286.91,-589.13 1176.39,-589.13 1176.39,-564.87 1286.91,-564.87 1286.91,-589.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1231.65" y="-573.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DragHandle%drag</text>
+</a>
+</g>
+</g>
+<!-- proc~drag&#45;&gt;proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge63" class="edge">
+<title>proc~drag&#45;&gt;proc~world_matrix</title>
+<path fill="none" stroke="#000000" d="M1251.03,-589.48C1268.62,-600.64 1296.32,-616.25 1322.91,-623 1438.63,-652.39 1779.89,-648.75 1950.81,-644.82"/>
+<polygon fill="#000000" stroke="#000000" points="1950.89,-648.32 1960.8,-644.59 1950.72,-641.33 1950.89,-648.32"/>
+</g>
+<!-- proc~fm_update -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node47" class="node">
+<title>proc~fm_update</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node47"><a xlink:href="../proc/fm_update.html" xlink:title="FrameManager%fm_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="513.06,-826.13 353.79,-826.13 353.79,-801.87 513.06,-801.87 513.06,-826.13"/>
+<text xml:space="preserve" text-anchor="middle" x="433.43" y="-810.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">FrameManager%fm_update</text>
+</a>
+</g>
+</g>
+<!-- proc~fm_update&#45;&gt;proc~sync -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge55" class="edge">
+<title>proc~fm_update&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M481.86,-801.47C492.16,-798.71 502.98,-795.79 513.06,-793 528.41,-788.76 545.04,-784.05 560.31,-779.69"/>
+<polygon fill="#000000" stroke="#000000" points="561.04,-783.12 569.69,-777 559.11,-776.39 561.04,-783.12"/>
+</g>
+<!-- proc~frame_to_root&#45;&gt;proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge64" class="edge">
+<title>proc~frame_to_root&#45;&gt;proc~world_matrix</title>
+<path fill="none" stroke="#000000" d="M1883.75,-568.5C1897.63,-571.8 1913.01,-576 1926.72,-581 1959.26,-592.87 1994.54,-610.75 2019.12,-624.09"/>
+<polygon fill="#000000" stroke="#000000" points="2017.18,-627.02 2027.63,-628.77 2020.56,-620.88 2017.18,-627.02"/>
+</g>
+<!-- proc~grab -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node49" class="node">
+<title>proc~grab</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node49"><a xlink:href="../proc/grab.html" xlink:title="DragHandle%grab">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1286.91,-701.13 1176.39,-701.13 1176.39,-676.87 1286.91,-676.87 1286.91,-701.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1231.65" y="-685.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DragHandle%grab</text>
+</a>
+</g>
+</g>
+<!-- proc~grab&#45;&gt;proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge65" class="edge">
+<title>proc~grab&#45;&gt;proc~world_matrix</title>
+<path fill="none" stroke="#000000" d="M1287.17,-687.61C1404.36,-684.36 1688.93,-675.06 1926.72,-656 1934.66,-655.36 1942.88,-654.62 1951.14,-653.82"/>
+<polygon fill="#000000" stroke="#000000" points="1951.29,-657.32 1960.89,-652.83 1950.59,-650.35 1951.29,-657.32"/>
+</g>
+<!-- proc~hover_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node50" class="node">
+<title>proc~hover_handle</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node50"><a xlink:href="../proc/hover_handle.html" xlink:title="hover_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="930.87,-745.13 846.6,-745.13 846.6,-720.87 930.87,-720.87 930.87,-745.13"/>
+<text xml:space="preserve" text-anchor="middle" x="888.74" y="-729.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">hover_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~hover_handle&#45;&gt;proc~window_pick -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge62" class="edge">
+<title>proc~hover_handle&#45;&gt;proc~window_pick</title>
+<path fill="none" stroke="#000000" d="M931.26,-733.25C941.16,-733.32 952.1,-733.38 963.24,-733.45"/>
+<polygon fill="#000000" stroke="#000000" points="962.89,-736.95 972.91,-733.51 962.93,-729.95 962.89,-736.95"/>
+</g>
+<!-- proc~position_of -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node51" class="node">
+<title>proc~position_of</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node51"><a xlink:href="../proc/position_of.html" xlink:title="ReferenceFrame%position_of">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1924.1,-614.13 1757.33,-614.13 1757.33,-589.87 1924.1,-589.87 1924.1,-614.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1840.71" y="-598.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%position_of</text>
+</a>
+</g>
+</g>
+<!-- proc~position_of&#45;&gt;proc~world_matrix -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge67" class="edge">
+<title>proc~position_of&#45;&gt;proc~world_matrix</title>
+<path fill="none" stroke="#000000" d="M1907.56,-614.6C1928.55,-618.62 1951.96,-623.1 1973.68,-627.25"/>
+<polygon fill="#000000" stroke="#000000" points="1972.89,-630.67 1983.37,-629.11 1974.2,-623.79 1972.89,-630.67"/>
+</g>
+<!-- proc~realize&#45;&gt;proc~sync -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge57" class="edge">
+<title>proc~realize&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M505.88,-757.97C516.27,-758.54 527,-759.14 537.5,-759.72"/>
+<polygon fill="#000000" stroke="#000000" points="537.07,-763.2 547.25,-760.26 537.46,-756.21 537.07,-763.2"/>
+</g>
+<!-- proc~realize&#45;&gt;proc~realize -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge80" class="edge">
+<title>proc~realize&#45;&gt;proc~realize</title>
+<path fill="none" stroke="#000000" d="M402.95,-766.38C393.03,-775.28 403.19,-784.13 433.43,-784.13 449.96,-784.13 460.49,-781.49 465.02,-777.63"/>
+<polygon fill="#000000" stroke="#000000" points="468.52,-777.49 464.05,-767.89 461.56,-778.19 468.52,-777.49"/>
+</g>
+<!-- proc~resize -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node53" class="node">
+<title>proc~resize</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node53"><a xlink:href="../proc/resize.html" xlink:title="WindowProxy%resize">
+<polygon fill="#d9534f" stroke="#d9534f" points="121.77,-726.13 0,-726.13 0,-701.87 121.77,-701.87 121.77,-726.13"/>
+<text xml:space="preserve" text-anchor="middle" x="60.89" y="-710.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%resize</text>
+</a>
+</g>
+</g>
+<!-- proc~resize&#45;&gt;proc~frame -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge51" class="edge">
+<title>proc~resize&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M122.07,-706.77C135.8,-705.13 150.51,-703.36 164.68,-701.66"/>
+<polygon fill="#000000" stroke="#000000" points="164.87,-705.16 174.38,-700.49 164.04,-698.21 164.87,-705.16"/>
+</g>
+<!-- proc~run -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node54" class="node">
+<title>proc~run</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node54"><a xlink:href="../proc/run.html" xlink:title="WindowProxy%run">
+<polygon fill="#d9534f" stroke="#d9534f" points="115.4,-684.13 6.38,-684.13 6.38,-659.87 115.4,-659.87 115.4,-684.13"/>
+<text xml:space="preserve" text-anchor="middle" x="60.89" y="-668.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%run</text>
+</a>
+</g>
+</g>
+<!-- proc~run&#45;&gt;proc~frame -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge52" class="edge">
+<title>proc~run&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M115.79,-678.47C131.2,-680.32 148.25,-682.37 164.57,-684.33"/>
+<polygon fill="#000000" stroke="#000000" points="163.88,-687.77 174.22,-685.49 164.71,-680.82 163.88,-687.77"/>
+</g>
+<!-- proc~screen_position -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node55" class="node">
+<title>proc~screen_position</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node55"><a xlink:href="../proc/screen_position.html" xlink:title="WindowProxy%screen_position">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1140.39,-666.13 966.87,-666.13 966.87,-641.87 1140.39,-641.87 1140.39,-666.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1053.63" y="-650.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%screen_position</text>
+</a>
+</g>
+</g>
+<!-- proc~screen_position&#45;&gt;proc~view_camera -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge60" class="edge">
+<title>proc~screen_position&#45;&gt;proc~view_camera</title>
+<path fill="none" stroke="#000000" d="M1140.84,-646.16C1153.91,-644.98 1167.03,-643.78 1179.05,-642.69"/>
+<polygon fill="#000000" stroke="#000000" points="1179.05,-646.2 1188.7,-641.81 1178.42,-639.23 1179.05,-646.2"/>
+</g>
+<!-- proc~set_sky -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node56" class="node">
+<title>proc~set_sky</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node56"><a xlink:href="../proc/set_sky.html" xlink:title="WindowProxy%set_sky">
+<polygon fill="#d9534f" stroke="#d9534f" points="1680.83,-976.13 1551.56,-976.13 1551.56,-951.87 1680.83,-951.87 1680.83,-976.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1616.19" y="-960.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%set_sky</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sky&#45;&gt;proc~node -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge53" class="edge">
+<title>proc~set_sky&#45;&gt;proc~node</title>
+<path fill="none" stroke="#000000" d="M1681.25,-964C1711.31,-964 1747.01,-964 1776.9,-964"/>
+<polygon fill="#000000" stroke="#000000" points="1776.54,-967.5 1786.54,-964 1776.54,-960.5 1776.54,-967.5"/>
+</g>
+<!-- proc~shadow_late_update -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node57" class="node">
+<title>proc~shadow_late_update</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node57"><a xlink:href="../proc/shadow_late_update.html" xlink:title="ShadowCones%shadow_late_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="1718.7,-732.13 1513.68,-732.13 1513.68,-707.87 1718.7,-707.87 1718.7,-732.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1616.19" y="-716.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ShadowCones%shadow_late_update</text>
+</a>
+</g>
+</g>
+<!-- proc~shadow_late_update&#45;&gt;proc~place -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge54" class="edge">
+<title>proc~shadow_late_update&#45;&gt;proc~place</title>
+<path fill="none" stroke="#000000" d="M1719.01,-720C1748.63,-720 1779.16,-720 1802.1,-720"/>
+<polygon fill="#000000" stroke="#000000" points="1801.84,-723.5 1811.84,-720 1801.84,-716.5 1801.84,-723.5"/>
+</g>
+<!-- proc~add_child -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node58" class="node">
+<title>proc~add_child</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node58"><a xlink:href="../proc/add_child.html" xlink:title="ReferenceFrame%add_child">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="317.79,-766.13 157.77,-766.13 157.77,-741.87 317.79,-741.87 317.79,-766.13"/>
+<text xml:space="preserve" text-anchor="middle" x="237.78" y="-750.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~add_child&#45;&gt;proc~realize -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge78" class="edge">
+<title>proc~add_child&#45;&gt;proc~realize</title>
+<path fill="none" stroke="#000000" d="M318.1,-754C328.53,-754 339.25,-754 349.73,-754"/>
+<polygon fill="#000000" stroke="#000000" points="349.48,-757.5 359.48,-754 349.48,-750.5 349.48,-757.5"/>
+</g>
+<!-- proc~dispatch_event -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node59" class="node">
+<title>proc~dispatch_event</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node59"><a xlink:href="../proc/dispatch_event.html" xlink:title="dispatch_event">
+<polygon fill="#d9534f" stroke="#d9534f" points="661.46,-686.13 569.69,-686.13 569.69,-661.87 661.46,-661.87 661.46,-686.13"/>
+<text xml:space="preserve" text-anchor="middle" x="615.57" y="-670.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dispatch_event</text>
+</a>
+</g>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~hover_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge76" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~hover_handle</title>
+<path fill="none" stroke="#000000" d="M661.85,-681.91C701.3,-689.03 759.96,-700.16 810.6,-712 818.59,-713.87 827,-715.99 835.22,-718.16"/>
+<polygon fill="#000000" stroke="#000000" points="834.22,-721.51 844.78,-720.72 836.03,-714.75 834.22,-721.51"/>
+</g>
+<!-- proc~drag_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node60" class="node">
+<title>proc~drag_handle</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node60"><a xlink:href="../proc/drag_handle.html" xlink:title="drag_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="927.87,-624.13 849.6,-624.13 849.6,-599.87 927.87,-599.87 927.87,-624.13"/>
+<text xml:space="preserve" text-anchor="middle" x="888.74" y="-608.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">drag_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~drag_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge82" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~drag_handle</title>
+<path fill="none" stroke="#000000" d="M661.65,-663.69C710.38,-652.55 787.8,-634.85 838.19,-623.33"/>
+<polygon fill="#000000" stroke="#000000" points="838.69,-626.8 847.66,-621.16 837.13,-619.98 838.69,-626.8"/>
+</g>
+<!-- proc~grab_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node61" class="node">
+<title>proc~grab_handle</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node61"><a xlink:href="../proc/grab_handle.html" xlink:title="grab_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="927.87,-667.13 849.6,-667.13 849.6,-642.87 927.87,-642.87 927.87,-667.13"/>
+<text xml:space="preserve" text-anchor="middle" x="888.74" y="-651.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">grab_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~grab_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge83" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~grab_handle</title>
+<path fill="none" stroke="#000000" d="M661.65,-670.84C710.27,-667.43 787.47,-662.03 837.87,-658.49"/>
+<polygon fill="#000000" stroke="#000000" points="837.9,-662 847.63,-657.81 837.41,-655.02 837.9,-662"/>
+</g>
+<!-- proc~release_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_node62" class="node">
+<title>proc~release_handle</title>
+<g id="a_proc~~quat_to_matrix~~CalledByGraph_node62"><a xlink:href="../proc/release_handle.html" xlink:title="release_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="810.6,-745.13 718.08,-745.13 718.08,-720.87 810.6,-720.87 810.6,-745.13"/>
+<text xml:space="preserve" text-anchor="middle" x="764.34" y="-729.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">release_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~release_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge84" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~release_handle</title>
+<path fill="none" stroke="#000000" d="M647.7,-686.51C669.22,-695.17 698.11,-706.78 721.62,-716.23"/>
+<polygon fill="#000000" stroke="#000000" points="720.02,-719.36 730.6,-719.84 722.63,-712.86 720.02,-719.36"/>
+</g>
+<!-- proc~drag_handle&#45;&gt;proc~cursor_ray -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge70" class="edge">
+<title>proc~drag_handle&#45;&gt;proc~cursor_ray</title>
+<path fill="none" stroke="#000000" d="M928.34,-612C940.51,-612 954.47,-612 968.54,-612"/>
+<polygon fill="#000000" stroke="#000000" points="968.3,-615.5 978.3,-612 968.3,-608.5 968.3,-615.5"/>
+</g>
+<!-- proc~drag_handle&#45;&gt;proc~drag -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge72" class="edge">
+<title>proc~drag_handle&#45;&gt;proc~drag</title>
+<path fill="none" stroke="#000000" d="M928.23,-599.79C940.46,-596.38 954.13,-593.05 966.87,-591 1033.62,-580.27 1110.98,-577.25 1164.58,-576.63"/>
+<polygon fill="#000000" stroke="#000000" points="1164.5,-580.13 1174.47,-576.54 1164.44,-573.13 1164.5,-580.13"/>
+</g>
+<!-- proc~grab_handle&#45;&gt;proc~cursor_ray -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge71" class="edge">
+<title>proc~grab_handle&#45;&gt;proc~cursor_ray</title>
+<path fill="none" stroke="#000000" d="M928.11,-643.75C940.46,-640.21 954.22,-636.35 966.87,-633 973.95,-631.12 981.38,-629.21 988.78,-627.35"/>
+<polygon fill="#000000" stroke="#000000" points="989.61,-630.75 998.47,-624.94 987.92,-623.96 989.61,-630.75"/>
+</g>
+<!-- proc~grab_handle&#45;&gt;proc~grab -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge75" class="edge">
+<title>proc~grab_handle&#45;&gt;proc~grab</title>
+<path fill="none" stroke="#000000" d="M928.26,-666.61C940.5,-669.86 954.16,-673.03 966.87,-675 1033.69,-685.33 1111.03,-688.4 1164.62,-689.15"/>
+<polygon fill="#000000" stroke="#000000" points="1164.46,-692.65 1174.5,-689.27 1164.54,-685.65 1164.46,-692.65"/>
+</g>
+<!-- proc~release_handle&#45;&gt;proc~hover_handle -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge77" class="edge">
+<title>proc~release_handle&#45;&gt;proc~hover_handle</title>
+<path fill="none" stroke="#000000" d="M810.92,-733C818.68,-733 826.8,-733 834.74,-733"/>
+<polygon fill="#000000" stroke="#000000" points="834.65,-736.5 844.65,-733 834.65,-729.5 834.65,-736.5"/>
+</g>
+<!-- proc~dispatch_events&#45;&gt;proc~dispatch_event -->
+<g id="proc~~quat_to_matrix~~CalledByGraph_edge81" class="edge">
+<title>proc~dispatch_events&#45;&gt;proc~dispatch_event</title>
+<path fill="none" stroke="#000000" d="M482.23,-674C505.53,-674 533.72,-674 558.09,-674"/>
+<polygon fill="#000000" stroke="#000000" points="557.82,-677.5 567.82,-674 557.82,-670.5 557.82,-677.5"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocquat_to_matrixCalledByGraph = svgPanZoom('#procquat_to_matrixCalledByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">pure function </span><span class="n">quat_to_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">z</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="w"></span>
+<span class="w">        </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">z</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">z</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">x</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end function </span><span class="n">quat_to_matrix</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

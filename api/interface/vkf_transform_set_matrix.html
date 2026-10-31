@@ -1,0 +1,864 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_transform_set_matrix &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_transform_set_matrix
+      <small>Interface</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.8% of total for procedures.">692 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_layer.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_layer.f90.html'>vkf_layer.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_layer.html'>vkf_layer</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_transform_set_matrix</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+    <em>None</em>
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      <h2>interface</h2>
+      
+      <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: interface~~vkf_transform_set_matrix~~CalledByGraph Pages: 1 -->
+<svg id="interfacevkf_transform_set_matrixCalledByGraph" width="641pt" height="449pt"
+ viewBox="0.00 0.00 641.00 449.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph" class="graph" transform="scale(0.531897 0.531897) rotate(0) translate(4 840.27)">
+<title>interface~~vkf_transform_set_matrix~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-840.27 1201.12,-840.27 1201.12,4 -4,4"/>
+<!-- interface~vkf_transform_set_matrix -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node1" class="node">
+<title>interface~vkf_transform_set_matrix</title>
+<polygon fill="none" stroke="black" points="1197.12,-507.27 1051.35,-507.27 1051.35,-483 1197.12,-483 1197.12,-507.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1124.24" y="-491.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_transform_set_matrix</text>
+</g>
+<!-- proc~apply_name_attitude -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node2" class="node">
+<title>proc~apply_name_attitude</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node2"><a xlink:href="../proc/apply_name_attitude.html" xlink:title="apply_name_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="1002.98,-752.27 879.71,-752.27 879.71,-728 1002.98,-728 1002.98,-752.27"/>
+<text xml:space="preserve" text-anchor="middle" x="941.34" y="-736.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_name_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_name_attitude&#45;&gt;interface~vkf_transform_set_matrix -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge1" class="edge">
+<title>proc~apply_name_attitude&#45;&gt;interface~vkf_transform_set_matrix</title>
+<path fill="none" stroke="#000000" d="M954.27,-727.65C969.21,-711.79 995.26,-683.32 1015.35,-657.13 1052.13,-609.2 1090.16,-549.21 1109.75,-517.37"/>
+<polygon fill="#000000" stroke="#000000" points="1112.63,-519.37 1114.87,-509.01 1106.66,-515.71 1112.63,-519.37"/>
+</g>
+<!-- proc~sync -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node3" class="node">
+<title>proc~sync</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node3"><a xlink:href="../proc/sync.html" xlink:title="ReferenceFrame%sync">
+<polygon fill="#d9534f" stroke="#d9534f" points="1007.85,-630.27 874.83,-630.27 874.83,-606 1007.85,-606 1007.85,-630.27"/>
+<text xml:space="preserve" text-anchor="middle" x="941.34" y="-614.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%sync</text>
+</a>
+</g>
+</g>
+<!-- proc~sync&#45;&gt;interface~vkf_transform_set_matrix -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge2" class="edge">
+<title>proc~sync&#45;&gt;interface~vkf_transform_set_matrix</title>
+<path fill="none" stroke="#000000" d="M960.68,-605.66C992.51,-584.02 1058.14,-539.4 1095.54,-513.97"/>
+<polygon fill="#000000" stroke="#000000" points="1097.29,-517.01 1103.59,-508.49 1093.36,-511.22 1097.29,-517.01"/>
+</g>
+<!-- proc~sync&#45;&gt;proc~sync -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge11" class="edge">
+<title>proc~sync&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M910.74,-630.52C900.78,-639.41 910.98,-648.27 941.34,-648.27 957.94,-648.27 968.52,-645.62 973.06,-641.76"/>
+<polygon fill="#000000" stroke="#000000" points="976.57,-641.63 972.09,-632.02 969.6,-642.32 976.57,-641.63"/>
+</g>
+<!-- proc~update_arrow -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node4" class="node">
+<title>proc~update_arrow</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node4"><a xlink:href="../proc/update_arrow.html" xlink:title="update_arrow">
+<polygon fill="#d9534f" stroke="#d9534f" points="983.48,-507.27 899.21,-507.27 899.21,-483 983.48,-483 983.48,-507.27"/>
+<text xml:space="preserve" text-anchor="middle" x="941.34" y="-491.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update_arrow</text>
+</a>
+</g>
+</g>
+<!-- proc~update_arrow&#45;&gt;interface~vkf_transform_set_matrix -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge3" class="edge">
+<title>proc~update_arrow&#45;&gt;interface~vkf_transform_set_matrix</title>
+<path fill="none" stroke="#000000" d="M983.84,-495.13C1000.5,-495.13 1020.32,-495.13 1039.71,-495.13"/>
+<polygon fill="#000000" stroke="#000000" points="1039.54,-498.64 1049.54,-495.14 1039.54,-491.64 1039.54,-498.64"/>
+</g>
+<!-- proc~update_model_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node5" class="node">
+<title>proc~update_model_transform</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node5"><a xlink:href="../proc/update_model_transform.html" xlink:title="update_model_transform">
+<polygon fill="#d9534f" stroke="#d9534f" points="1014.23,-339.27 868.46,-339.27 868.46,-315 1014.23,-315 1014.23,-339.27"/>
+<text xml:space="preserve" text-anchor="middle" x="941.34" y="-323.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update_model_transform</text>
+</a>
+</g>
+</g>
+<!-- proc~update_model_transform&#45;&gt;interface~vkf_transform_set_matrix -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge4" class="edge">
+<title>proc~update_model_transform&#45;&gt;interface~vkf_transform_set_matrix</title>
+<path fill="none" stroke="#000000" d="M955.94,-339.76C987.12,-368.73 1064.02,-440.14 1101.71,-475.14"/>
+<polygon fill="#000000" stroke="#000000" points="1099.15,-477.55 1108.86,-481.79 1103.92,-472.42 1099.15,-477.55"/>
+</g>
+<!-- proc~update_sphere_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node6" class="node">
+<title>proc~update_sphere_transform</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node6"><a xlink:href="../proc/update_sphere_transform.html" xlink:title="update_sphere_transform">
+<polygon fill="#d9534f" stroke="#d9534f" points="1015.35,-129.27 867.33,-129.27 867.33,-105 1015.35,-105 1015.35,-129.27"/>
+<text xml:space="preserve" text-anchor="middle" x="941.34" y="-113.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update_sphere_transform</text>
+</a>
+</g>
+</g>
+<!-- proc~update_sphere_transform&#45;&gt;interface~vkf_transform_set_matrix -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge5" class="edge">
+<title>proc~update_sphere_transform&#45;&gt;interface~vkf_transform_set_matrix</title>
+<path fill="none" stroke="#000000" d="M948.36,-129.71C974.49,-184.31 1078.29,-401.22 1112.35,-472.39"/>
+<polygon fill="#000000" stroke="#000000" points="1109.07,-473.64 1116.54,-481.15 1115.38,-470.61 1109.07,-473.64"/>
+</g>
+<!-- proc~fm_update -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node7" class="node">
+<title>proc~fm_update</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node7"><a xlink:href="../proc/fm_update.html" xlink:title="FrameManager%fm_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="806.21,-710.27 646.94,-710.27 646.94,-686 806.21,-686 806.21,-710.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-694.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">FrameManager%fm_update</text>
+</a>
+</g>
+</g>
+<!-- proc~fm_update&#45;&gt;proc~sync -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge8" class="edge">
+<title>proc~fm_update&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M803.39,-685.52C812.91,-683.14 822.43,-680.36 831.33,-677.13 860.02,-666.73 890.37,-649.75 911.74,-636.67"/>
+<polygon fill="#000000" stroke="#000000" points="913.54,-639.67 920.18,-631.41 909.84,-633.73 913.54,-639.67"/>
+</g>
+<!-- proc~frame -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node8" class="node">
+<title>proc~frame</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node8"><a xlink:href="../proc/frame.html" xlink:title="WindowProxy%frame">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="529.19,-610.27 405.92,-610.27 405.92,-586 529.19,-586 529.19,-610.27"/>
+<text xml:space="preserve" text-anchor="middle" x="467.55" y="-594.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%frame</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~sync -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge9" class="edge">
+<title>proc~frame&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M529.26,-600.71C614.55,-604.32 769.84,-610.91 863.21,-614.87"/>
+<polygon fill="#000000" stroke="#000000" points="862.9,-618.36 873.04,-615.28 863.2,-611.36 862.9,-618.36"/>
+</g>
+<!-- proc~realize -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node11" class="node">
+<title>proc~realize</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node11"><a xlink:href="../proc/realize.html" xlink:title="ReferenceFrame%realize">
+<polygon fill="#d9534f" stroke="#d9534f" points="798.71,-650.27 654.44,-650.27 654.44,-626 798.71,-626 798.71,-650.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-634.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%realize</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~realize -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge31" class="edge">
+<title>proc~frame&#45;&gt;proc~realize</title>
+<path fill="none" stroke="#000000" d="M529.46,-607.61C563.36,-612.89 606.04,-619.53 642.91,-625.27"/>
+<polygon fill="#000000" stroke="#000000" points="642.24,-628.71 652.66,-626.79 643.32,-621.79 642.24,-628.71"/>
+</g>
+<!-- proc~make_name_node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node9" class="node">
+<title>proc~make_name_node</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node9"><a xlink:href="../proc/make_name_node.html" xlink:title="make_name_node">
+<polygon fill="#d9534f" stroke="#d9534f" points="781.46,-794.27 671.69,-794.27 671.69,-770 781.46,-770 781.46,-794.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-778.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_name_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_name_node&#45;&gt;proc~apply_name_attitude -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge6" class="edge">
+<title>proc~make_name_node&#45;&gt;proc~apply_name_attitude</title>
+<path fill="none" stroke="#000000" d="M781.81,-771.43C808.12,-766.24 840.07,-759.93 868.38,-754.34"/>
+<polygon fill="#000000" stroke="#000000" points="868.82,-757.82 877.95,-752.45 867.46,-750.95 868.82,-757.82"/>
+</g>
+<!-- proc~model_build_contents -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node10" class="node">
+<title>proc~model_build_contents</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node10"><a xlink:href="../proc/model_build_contents.html" xlink:title="Model%model_build_contents">
+<polygon fill="#d9534f" stroke="#d9534f" points="811.46,-402.27 641.69,-402.27 641.69,-378 811.46,-378 811.46,-402.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-386.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%model_build_contents</text>
+</a>
+</g>
+</g>
+<!-- proc~model_build_contents&#45;&gt;proc~update_model_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge16" class="edge">
+<title>proc~model_build_contents&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M798.01,-377.55C809.23,-375.06 820.66,-372.25 831.33,-369.13 854.93,-362.25 880.62,-352.47 901.13,-344.08"/>
+<polygon fill="#000000" stroke="#000000" points="902.36,-347.36 910.25,-340.3 899.67,-340.9 902.36,-347.36"/>
+</g>
+<!-- proc~realize&#45;&gt;proc~sync -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge10" class="edge">
+<title>proc~realize&#45;&gt;proc~sync</title>
+<path fill="none" stroke="#000000" d="M799.01,-631.42C819.59,-629.49 842.13,-627.37 863.04,-625.4"/>
+<polygon fill="#000000" stroke="#000000" points="863.33,-628.89 872.96,-624.47 862.68,-621.92 863.33,-628.89"/>
+</g>
+<!-- proc~realize&#45;&gt;proc~realize -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge32" class="edge">
+<title>proc~realize&#45;&gt;proc~realize</title>
+<path fill="none" stroke="#000000" d="M690.64,-650.52C678.94,-659.41 690.91,-668.27 726.57,-668.27 746.07,-668.27 758.49,-665.62 763.82,-661.76"/>
+<polygon fill="#000000" stroke="#000000" points="767.32,-661.54 762.68,-652.02 760.37,-662.36 767.32,-661.54"/>
+</g>
+<!-- proc~set_attitude -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node12" class="node">
+<title>proc~set_attitude</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node12"><a xlink:href="../proc/set_attitude.html" xlink:title="SkySphere%set_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="796.46,-752.27 656.69,-752.27 656.69,-728 796.46,-728 796.46,-752.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-736.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~set_attitude&#45;&gt;proc~apply_name_attitude -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge7" class="edge">
+<title>proc~set_attitude&#45;&gt;proc~apply_name_attitude</title>
+<path fill="none" stroke="#000000" d="M796.94,-740.13C819.66,-740.13 844.96,-740.13 867.9,-740.13"/>
+<polygon fill="#000000" stroke="#000000" points="867.79,-743.64 877.79,-740.14 867.79,-736.64 867.79,-743.64"/>
+</g>
+<!-- proc~set_display_scale -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node13" class="node">
+<title>proc~set_display_scale</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node13"><a xlink:href="../proc/set_display_scale.html" xlink:title="VectorHandle%set_display_scale">
+<polygon fill="#d9534f" stroke="#d9534f" points="818.96,-570.27 634.19,-570.27 634.19,-546 818.96,-546 818.96,-570.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-554.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">VectorHandle%set_display_scale</text>
+</a>
+</g>
+</g>
+<!-- proc~set_display_scale&#45;&gt;proc~update_arrow -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge12" class="edge">
+<title>proc~set_display_scale&#45;&gt;proc~update_arrow</title>
+<path fill="none" stroke="#000000" d="M798.01,-545.55C809.23,-543.06 820.66,-540.25 831.33,-537.13 854.93,-530.25 880.62,-520.47 901.13,-512.08"/>
+<polygon fill="#000000" stroke="#000000" points="902.36,-515.36 910.25,-508.3 899.67,-508.9 902.36,-515.36"/>
+</g>
+<!-- proc~set_head_size -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node14" class="node">
+<title>proc~set_head_size</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node14"><a xlink:href="../proc/set_head_size.html" xlink:title="VectorHandle%set_head_size">
+<polygon fill="#d9534f" stroke="#d9534f" points="809.96,-528.27 643.19,-528.27 643.19,-504 809.96,-504 809.96,-528.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-512.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">VectorHandle%set_head_size</text>
+</a>
+</g>
+</g>
+<!-- proc~set_head_size&#45;&gt;proc~update_arrow -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge13" class="edge">
+<title>proc~set_head_size&#45;&gt;proc~update_arrow</title>
+<path fill="none" stroke="#000000" d="M810.44,-507.96C836.39,-505.39 864.31,-502.64 887.59,-500.34"/>
+<polygon fill="#000000" stroke="#000000" points="887.85,-503.83 897.45,-499.37 887.16,-496.87 887.85,-503.83"/>
+</g>
+<!-- proc~set_model_attitude -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node15" class="node">
+<title>proc~set_model_attitude</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node15"><a xlink:href="../proc/set_model_attitude.html" xlink:title="Model%set_model_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="803.96,-360.27 649.19,-360.27 649.19,-336 803.96,-336 803.96,-360.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-344.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_attitude&#45;&gt;proc~update_model_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge17" class="edge">
+<title>proc~set_model_attitude&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M804.38,-340.55C821.47,-338.87 839.67,-337.07 857,-335.36"/>
+<polygon fill="#000000" stroke="#000000" points="857.14,-338.86 866.74,-334.4 856.45,-331.9 857.14,-338.86"/>
+</g>
+<!-- proc~set_model_pivot -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node16" class="node">
+<title>proc~set_model_pivot</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node16"><a xlink:href="../proc/set_model_pivot.html" xlink:title="Model%set_model_pivot">
+<polygon fill="#d9534f" stroke="#d9534f" points="796.46,-318.27 656.69,-318.27 656.69,-294 796.46,-294 796.46,-318.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-302.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_pivot</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_pivot&#45;&gt;proc~update_model_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge18" class="edge">
+<title>proc~set_model_pivot&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M796.94,-312.98C816.09,-314.87 837.07,-316.94 856.92,-318.9"/>
+<polygon fill="#000000" stroke="#000000" points="856.33,-322.36 866.63,-319.86 857.02,-315.39 856.33,-322.36"/>
+</g>
+<!-- proc~set_model_position -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node17" class="node">
+<title>proc~set_model_position</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node17"><a xlink:href="../proc/set_model_position.html" xlink:title="Model%set_model_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="804.33,-276.27 648.81,-276.27 648.81,-252 804.33,-252 804.33,-276.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-260.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_position</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_position&#45;&gt;proc~update_model_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge19" class="edge">
+<title>proc~set_model_position&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M798.01,-276.72C809.23,-279.21 820.66,-282.02 831.33,-285.13 854.93,-292.02 880.62,-301.8 901.13,-310.19"/>
+<polygon fill="#000000" stroke="#000000" points="899.67,-313.37 910.25,-313.97 902.36,-306.91 899.67,-313.37"/>
+</g>
+<!-- proc~set_model_scale -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node18" class="node">
+<title>proc~set_model_scale</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node18"><a xlink:href="../proc/set_model_scale.html" xlink:title="Model%set_model_scale">
+<polygon fill="#d9534f" stroke="#d9534f" points="797.21,-234.27 655.94,-234.27 655.94,-210 797.21,-210 797.21,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model%set_model_scale</text>
+</a>
+</g>
+</g>
+<!-- proc~set_model_scale&#45;&gt;proc~update_model_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge20" class="edge">
+<title>proc~set_model_scale&#45;&gt;proc~update_model_transform</title>
+<path fill="none" stroke="#000000" d="M797.61,-231.75C809.16,-234.62 820.8,-238.33 831.33,-243.13 865.79,-258.86 899.38,-287.32 919.95,-306.72"/>
+<polygon fill="#000000" stroke="#000000" points="917.48,-309.19 927.11,-313.61 922.34,-304.15 917.48,-309.19"/>
+</g>
+<!-- proc~set_radius -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node19" class="node">
+<title>proc~set_radius</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node19"><a xlink:href="../proc/set_radius.html" xlink:title="Sphere%set_radius">
+<polygon fill="#d9534f" stroke="#d9534f" points="782.96,-192.27 670.19,-192.27 670.19,-168 782.96,-168 782.96,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_radius</text>
+</a>
+</g>
+</g>
+<!-- proc~set_radius&#45;&gt;proc~update_sphere_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge21" class="edge">
+<title>proc~set_radius&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M783.45,-170.61C799.08,-167.47 815.98,-163.61 831.33,-159.13 854.93,-152.25 880.62,-142.47 901.13,-134.08"/>
+<polygon fill="#000000" stroke="#000000" points="902.36,-137.36 910.25,-130.3 899.67,-130.9 902.36,-137.36"/>
+</g>
+<!-- proc~set_sphere_attitude -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node20" class="node">
+<title>proc~set_sphere_attitude</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node20"><a xlink:href="../proc/set_sphere_attitude.html" xlink:title="Sphere%set_sphere_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="807.71,-150.27 645.44,-150.27 645.44,-126 807.71,-126 807.71,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_sphere_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sphere_attitude&#45;&gt;proc~update_sphere_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge22" class="edge">
+<title>proc~set_sphere_attitude&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M808.01,-130.2C823.63,-128.65 840.05,-127.03 855.81,-125.48"/>
+<polygon fill="#000000" stroke="#000000" points="856.02,-128.97 865.63,-124.51 855.34,-122.01 856.02,-128.97"/>
+</g>
+<!-- proc~set_sphere_position -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node21" class="node">
+<title>proc~set_sphere_position</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node21"><a xlink:href="../proc/set_sphere_position.html" xlink:title="Sphere%set_sphere_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="808.08,-108.27 645.06,-108.27 645.06,-84 808.08,-84 808.08,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_sphere_position</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sphere_position&#45;&gt;proc~update_sphere_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge23" class="edge">
+<title>proc~set_sphere_position&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M808.31,-104.1C823.83,-105.64 840.11,-107.24 855.75,-108.79"/>
+<polygon fill="#000000" stroke="#000000" points="855.19,-112.25 865.49,-109.75 855.88,-105.28 855.19,-112.25"/>
+</g>
+<!-- proc~set_sphere_scale -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node22" class="node">
+<title>proc~set_sphere_scale</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node22"><a xlink:href="../proc/set_sphere_scale.html" xlink:title="Sphere%set_sphere_scale">
+<polygon fill="#d9534f" stroke="#d9534f" points="800.96,-66.27 652.19,-66.27 652.19,-42 800.96,-42 800.96,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%set_sphere_scale</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sphere_scale&#45;&gt;proc~update_sphere_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge24" class="edge">
+<title>proc~set_sphere_scale&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M798.01,-66.72C809.23,-69.21 820.66,-72.02 831.33,-75.14 854.93,-82.02 880.62,-91.8 901.13,-100.19"/>
+<polygon fill="#000000" stroke="#000000" points="899.67,-103.37 910.25,-103.97 902.36,-96.91 899.67,-103.37"/>
+</g>
+<!-- proc~set_vector -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node23" class="node">
+<title>proc~set_vector</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node23"><a xlink:href="../proc/set_vector.html" xlink:title="VectorHandle%set_vector">
+<polygon fill="#d9534f" stroke="#d9534f" points="800.58,-486.27 652.56,-486.27 652.56,-462 800.58,-462 800.58,-486.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-470.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">VectorHandle%set_vector</text>
+</a>
+</g>
+</g>
+<!-- proc~set_vector&#45;&gt;proc~update_arrow -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge14" class="edge">
+<title>proc~set_vector&#45;&gt;proc~update_arrow</title>
+<path fill="none" stroke="#000000" d="M800.79,-481.36C829.38,-484.18 861.52,-487.36 887.74,-489.94"/>
+<polygon fill="#000000" stroke="#000000" points="887.16,-493.4 897.45,-490.9 887.84,-486.44 887.16,-493.4"/>
+</g>
+<!-- proc~sphere_build_contents -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node24" class="node">
+<title>proc~sphere_build_contents</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node24"><a xlink:href="../proc/sphere_build_contents.html" xlink:title="Sphere%sphere_build_contents">
+<polygon fill="#d9534f" stroke="#d9534f" points="815.21,-24.27 637.94,-24.27 637.94,0 815.21,0 815.21,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%sphere_build_contents</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_build_contents&#45;&gt;proc~update_sphere_transform -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge25" class="edge">
+<title>proc~sphere_build_contents&#45;&gt;proc~update_sphere_transform</title>
+<path fill="none" stroke="#000000" d="M808.6,-24.74C816.44,-27.08 824.14,-29.85 831.33,-33.13 865.79,-48.86 899.38,-77.32 919.95,-96.72"/>
+<polygon fill="#000000" stroke="#000000" points="917.48,-99.19 927.11,-103.61 922.34,-94.15 917.48,-99.19"/>
+</g>
+<!-- proc~vector_build_contents -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node25" class="node">
+<title>proc~vector_build_contents</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node25"><a xlink:href="../proc/vector_build_contents.html" xlink:title="VectorHandle%vector_build_contents">
+<polygon fill="#d9534f" stroke="#d9534f" points="831.33,-444.27 621.81,-444.27 621.81,-420 831.33,-420 831.33,-444.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.57" y="-428.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">VectorHandle%vector_build_contents</text>
+</a>
+</g>
+</g>
+<!-- proc~vector_build_contents&#45;&gt;proc~update_arrow -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge15" class="edge">
+<title>proc~vector_build_contents&#45;&gt;proc~update_arrow</title>
+<path fill="none" stroke="#000000" d="M798.01,-444.72C809.23,-447.21 820.66,-450.02 831.33,-453.13 854.93,-460.02 880.62,-469.8 901.13,-478.19"/>
+<polygon fill="#000000" stroke="#000000" points="899.67,-481.37 910.25,-481.97 902.36,-474.91 899.67,-481.37"/>
+</g>
+<!-- proc~add_child -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node26" class="node">
+<title>proc~add_child</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node26"><a xlink:href="../proc/add_child.html" xlink:title="ReferenceFrame%add_child">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="547.56,-652.27 387.54,-652.27 387.54,-628 547.56,-628 547.56,-652.27"/>
+<text xml:space="preserve" text-anchor="middle" x="467.55" y="-636.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~add_child&#45;&gt;proc~realize -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge30" class="edge">
+<title>proc~add_child&#45;&gt;proc~realize</title>
+<path fill="none" stroke="#000000" d="M547.76,-639.52C577.84,-639.28 612.17,-639.02 642.59,-638.78"/>
+<polygon fill="#000000" stroke="#000000" points="642.56,-642.28 652.53,-638.7 642.5,-635.28 642.56,-642.28"/>
+</g>
+<!-- proc~make_star_node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node27" class="node">
+<title>proc~make_star_node</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node27"><a xlink:href="../proc/make_star_node.html" xlink:title="make_star_node">
+<polygon fill="#d9534f" stroke="#d9534f" points="517.19,-815.27 417.92,-815.27 417.92,-791 517.19,-791 517.19,-815.27"/>
+<text xml:space="preserve" text-anchor="middle" x="467.55" y="-799.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_star_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;proc~make_name_node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge28" class="edge">
+<title>proc~make_star_node&#45;&gt;proc~make_name_node</title>
+<path fill="none" stroke="#000000" d="M517.5,-799.14C557.96,-795.83 615.78,-791.11 660.2,-787.48"/>
+<polygon fill="#000000" stroke="#000000" points="660.28,-790.98 669.96,-786.68 659.71,-784 660.28,-790.98"/>
+</g>
+<!-- proc~resize -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node28" class="node">
+<title>proc~resize</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node28"><a xlink:href="../proc/resize.html" xlink:title="WindowProxy%resize">
+<polygon fill="#d9534f" stroke="#d9534f" points="300.17,-631.27 178.4,-631.27 178.4,-607 300.17,-607 300.17,-631.27"/>
+<text xml:space="preserve" text-anchor="middle" x="239.28" y="-615.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%resize</text>
+</a>
+</g>
+</g>
+<!-- proc~resize&#45;&gt;proc~frame -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge26" class="edge">
+<title>proc~resize&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M300.62,-613.53C329.41,-610.86 364.08,-607.65 394.26,-604.84"/>
+<polygon fill="#000000" stroke="#000000" points="394.45,-608.34 404.09,-603.93 393.81,-601.37 394.45,-608.34"/>
+</g>
+<!-- proc~run -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node29" class="node">
+<title>proc~run</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node29"><a xlink:href="../proc/run.html" xlink:title="WindowProxy%run">
+<polygon fill="#d9534f" stroke="#d9534f" points="293.79,-589.27 184.77,-589.27 184.77,-565 293.79,-565 293.79,-589.27"/>
+<text xml:space="preserve" text-anchor="middle" x="239.28" y="-573.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%run</text>
+</a>
+</g>
+</g>
+<!-- proc~run&#45;&gt;proc~frame -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge27" class="edge">
+<title>proc~run&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M294.19,-582.14C324.12,-584.92 361.76,-588.41 394.22,-591.42"/>
+<polygon fill="#000000" stroke="#000000" points="393.68,-594.89 403.96,-592.33 394.33,-587.92 393.68,-594.89"/>
+</g>
+<!-- proc~set_star_names -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node30" class="node">
+<title>proc~set_star_names</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node30"><a xlink:href="../proc/set_star_names.html" xlink:title="SkySphere%set_star_names">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="547.56,-773.27 387.54,-773.27 387.54,-749 547.56,-749 547.56,-773.27"/>
+<text xml:space="preserve" text-anchor="middle" x="467.55" y="-757.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_star_names</text>
+</a>
+</g>
+</g>
+<!-- proc~set_star_names&#45;&gt;proc~make_name_node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge29" class="edge">
+<title>proc~set_star_names&#45;&gt;proc~make_name_node</title>
+<path fill="none" stroke="#000000" d="M547.76,-767.61C583.81,-770.55 625.95,-774 660.16,-776.79"/>
+<polygon fill="#000000" stroke="#000000" points="659.68,-780.26 669.93,-777.59 660.25,-773.29 659.68,-780.26"/>
+</g>
+<!-- proc~vector_move_handle_point -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node31" class="node">
+<title>proc~vector_move_handle_point</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node31"><a xlink:href="../proc/vector_move_handle_point.html" xlink:title="VectorHandle%vector_move_handle_point">
+<polygon fill="#d9534f" stroke="#d9534f" points="585.81,-486.27 349.29,-486.27 349.29,-462 585.81,-462 585.81,-486.27"/>
+<text xml:space="preserve" text-anchor="middle" x="467.55" y="-470.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">VectorHandle%vector_move_handle_point</text>
+</a>
+</g>
+</g>
+<!-- proc~vector_move_handle_point&#45;&gt;proc~set_vector -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge33" class="edge">
+<title>proc~vector_move_handle_point&#45;&gt;proc~set_vector</title>
+<path fill="none" stroke="#000000" d="M586.15,-474.13C604.59,-474.13 623.32,-474.13 640.83,-474.13"/>
+<polygon fill="#000000" stroke="#000000" points="640.62,-477.64 650.62,-474.14 640.62,-470.64 640.62,-477.64"/>
+</g>
+<!-- proc~node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node32" class="node">
+<title>proc~node</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node32"><a xlink:href="../proc/node.html" xlink:title="SkySphere%node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="291.54,-836.27 187.02,-836.27 187.02,-812 291.54,-812 291.54,-836.27"/>
+<text xml:space="preserve" text-anchor="middle" x="239.28" y="-820.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%node</text>
+</a>
+</g>
+</g>
+<!-- proc~node&#45;&gt;proc~make_star_node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge34" class="edge">
+<title>proc~node&#45;&gt;proc~make_star_node</title>
+<path fill="none" stroke="#000000" d="M291.91,-819.34C325.92,-816.19 370.59,-812.04 406.24,-808.73"/>
+<polygon fill="#000000" stroke="#000000" points="406.33,-812.24 415.96,-807.83 405.68,-805.27 406.33,-812.24"/>
+</g>
+<!-- proc~set_star_data -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node33" class="node">
+<title>proc~set_star_data</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node33"><a xlink:href="../proc/set_star_data.html" xlink:title="SkySphere%set_star_data">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="313.29,-794.27 165.27,-794.27 165.27,-770 313.29,-770 313.29,-794.27"/>
+<text xml:space="preserve" text-anchor="middle" x="239.28" y="-778.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_star_data</text>
+</a>
+</g>
+</g>
+<!-- proc~set_star_data&#45;&gt;proc~make_star_node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge35" class="edge">
+<title>proc~set_star_data&#45;&gt;proc~make_star_node</title>
+<path fill="none" stroke="#000000" d="M313.74,-788.95C343.69,-791.73 377.87,-794.9 406.31,-797.54"/>
+<polygon fill="#000000" stroke="#000000" points="405.92,-801.02 416.2,-798.46 406.56,-794.05 405.92,-801.02"/>
+</g>
+<!-- proc~set_sky -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_node34" class="node">
+<title>proc~set_sky</title>
+<g id="a_interface~~vkf_transform_set_matrix~~CalledByGraph_node34"><a xlink:href="../proc/set_sky.html" xlink:title="WindowProxy%set_sky">
+<polygon fill="#d9534f" stroke="#d9534f" points="129.27,-836.27 0,-836.27 0,-812 129.27,-812 129.27,-836.27"/>
+<text xml:space="preserve" text-anchor="middle" x="64.63" y="-820.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%set_sky</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sky&#45;&gt;proc~node -->
+<g id="interface~~vkf_transform_set_matrix~~CalledByGraph_edge36" class="edge">
+<title>proc~set_sky&#45;&gt;proc~node</title>
+<path fill="none" stroke="#000000" d="M129.43,-824.13C144.43,-824.13 160.41,-824.13 175.38,-824.13"/>
+<polygon fill="#000000" stroke="#000000" points="175.07,-827.64 185.07,-824.14 175.07,-820.64 175.07,-827.64"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var paninterfacevkf_transform_set_matrixCalledByGraph = svgPanZoom('#interfacevkf_transform_set_matrixCalledByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+      <h2>public  function vkf_transform_set_matrix(transform, m) bind(C, name="vkf_transform_set_matrix")  
+</h2>
+
+    
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-transform"></span>
+              type(c_ptr),
+            </td>
+<td></td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>transform</strong></td>
+            <td>
+                <p>transform handle (vkf_transform_create)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~20"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(4,4)
+            </td>
+            <td>::</td>
+            <td><strong>m</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <h3>Return Value <span class="anchor" id="variable-vkf_transform_set_matrix"></span><small>integer(kind=c_int)</small></h3>
+    
+    <h3>Description</h3>
+    <p>Set a transform node's matrix. Returns 0, or -1 on failure (not a transform).</p>
+    <br>
+
+ </div>
+</div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

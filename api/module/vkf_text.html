@@ -1,0 +1,1520 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_text &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_text
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.9% of total for modules and submodules.">110 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_text.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_text.f90.html'>vkf_text.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_text</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_text.html#variable-vsg_baseline">VSG_BASELINE</a>
+            <a class="list-group-item" href="../module/vkf_text.html#variable-vsg_bottom">VSG_BOTTOM</a>
+            <a class="list-group-item" href="../module/vkf_text.html#variable-vsg_center">VSG_CENTER</a>
+            <a class="list-group-item" href="../module/vkf_text.html#variable-vsg_left">VSG_LEFT</a>
+            <a class="list-group-item" href="../module/vkf_text.html#variable-vsg_right">VSG_RIGHT</a>
+            <a class="list-group-item" href="../module/vkf_text.html#variable-vsg_top">VSG_TOP</a>
+            <a class="list-group-item" href="../module/vkf_text.html#variable-default_font">default_font</a>
+            <a class="list-group-item" href="../module/vkf_text.html#variable-fonts">fonts</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_text.html#type-font_entry">font_entry</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_text.html#proc-find_font">find_font</a>
+            <a class="list-group-item" href="../module/vkf_text.html#proc-get_font">get_font</a>
+            <a class="list-group-item" href="../module/vkf_text.html#proc-label_create">label_create</a>
+            <a class="list-group-item" href="../module/vkf_text.html#proc-label_set_layout">label_set_layout</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_text.html#proc-vsg_alignment">vsg_alignment</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Text for vkframes: fonts (found by name on a search path, read once) and
+labels (text that always faces the screen).</p>
+<p>A font is given as a file name (e.g. 'DejaVuSans.ttf', the default) or a
+path. A name is looked for in, in order: the directories of the
+VKFRAMES_FONT_PATH environment variable (separated by ':' or ';'), the
+<code>fonts</code> directory of the active conda/pixi environment (where pixi installs
+DejaVu), and the usual system font directories of macOS, Linux and Windows.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_files.html'>vkf_files</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_text~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_textUsesGraph" width="288pt" height="130pt"
+ viewBox="0.00 0.00 288.00 130.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_text~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 126.32)">
+<title>module~~vkf_text~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-126.32 283.54,-126.32 283.54,4 -4,4"/>
+<!-- module~vkf_text -->
+<g id="module~~vkf_text~~UsesGraph_node1" class="node">
+<title>module~vkf_text</title>
+<polygon fill="none" stroke="black" points="279.54,-87.27 225.54,-87.27 225.54,-63 279.54,-63 279.54,-87.27"/>
+<text xml:space="preserve" text-anchor="middle" x="252.54" y="-71.54" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_text</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_text~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_text~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="88.02,-107.27 5.25,-107.27 5.25,-83 88.02,-83 88.02,-107.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-91.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_text~~UsesGraph_edge1" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M238.51,-87.43C226.75,-97.62 208.43,-111.34 189.54,-117.14 156.61,-127.24 117.89,-120.03 89.23,-111.25"/>
+<polygon fill="#000000" stroke="#000000" points="90.41,-107.95 79.82,-108.18 88.24,-114.61 90.41,-107.95"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_text~~UsesGraph_node3" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_text~~UsesGraph_node3"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="186.54,-108.27 132.27,-108.27 132.27,-84 186.54,-84 186.54,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_text~~UsesGraph_edge2" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.18,-81.21C216.75,-83.15 207.25,-85.34 198.18,-87.43"/>
+<polygon fill="#000000" stroke="#000000" points="197.46,-84.01 188.5,-89.66 199.03,-90.83 197.46,-84.01"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_text~~UsesGraph_node4" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_text~~UsesGraph_node4"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.16,-66.27 129.65,-66.27 129.65,-42 189.16,-42 189.16,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_text~~UsesGraph_edge3" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.18,-69.06C217.52,-67.3 208.97,-65.33 200.66,-63.41"/>
+<polygon fill="#000000" stroke="#000000" points="201.59,-60.03 191.06,-61.2 200.02,-66.85 201.59,-60.03"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_text~~UsesGraph_node5" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_text~~UsesGraph_node5"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_text~~UsesGraph_edge4" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M233.53,-62.69C220.43,-53.63 202.45,-41.2 187.6,-30.93"/>
+<polygon fill="#000000" stroke="#000000" points="189.83,-28.22 179.62,-25.42 185.85,-33.98 189.83,-28.22"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_text~~UsesGraph_edge5" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.3,-64.91C118,-69.09 104.79,-73.98 92.34,-78.59"/>
+<polygon fill="#000000" stroke="#000000" points="91.23,-75.27 83.07,-82.02 93.66,-81.83 91.23,-75.27"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_text~~UsesGraph_node6" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_text~~UsesGraph_node6"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-24.27 0,-24.27 0,0 93.27,0 93.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_text~~UsesGraph_edge6" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-12.13C121.52,-12.13 113.21,-12.13 104.84,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="104.98,-8.64 94.98,-12.14 104.98,-15.64 104.98,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_text~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_textUsedByGraph" width="630pt" height="512pt"
+ viewBox="0.00 0.00 630.00 512.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_text~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 508.27)">
+<title>module~~vkf_text~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-508.27 625.6,-508.27 625.6,4 -4,4"/>
+<!-- module~vkf_text -->
+<g id="module~~vkf_text~~UsedByGraph_node1" class="node">
+<title>module~vkf_text</title>
+<polygon fill="none" stroke="black" points="54,-446.27 0,-446.27 0,-422 54,-422 54,-446.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-430.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_text</text>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_node2" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node2"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="160.02,-426.27 90,-426.27 90,-402 160.02,-402 160.02,-426.27"/>
+<text xml:space="preserve" text-anchor="middle" x="125.01" y="-410.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_text~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M89.62,-421.3C81.81,-422.93 73.48,-424.66 65.55,-426.31"/>
+<polygon fill="#000000" stroke="#000000" points="64.88,-422.88 55.8,-428.34 66.3,-429.73 64.88,-422.88"/>
+</g>
+<!-- module~vkf_sky -->
+<g id="module~~vkf_text~~UsedByGraph_node3" class="node">
+<title>module~vkf_sky</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node3"><a xlink:href="../module/vkf_sky.html" xlink:title="vkf_sky">
+<polygon fill="#337ab7" stroke="#337ab7" points="405.3,-504.27 351.3,-504.27 351.3,-480 405.3,-480 405.3,-504.27"/>
+<text xml:space="preserve" text-anchor="middle" x="378.3" y="-488.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_text~~UsedByGraph_edge2" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M350.85,-490.49C305,-487.54 207.83,-480.83 126.01,-472.13"/>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_text~~UsedByGraph_node4" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node4"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="524.21,-344.27 451.94,-344.27 451.94,-320 524.21,-320 524.21,-344.27"/>
+<text xml:space="preserve" text-anchor="middle" x="488.07" y="-328.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_text~~UsedByGraph_edge3" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M477.2,-344.55C464.63,-359.39 441.41,-383.63 415.56,-395.13 348.51,-424.98 324.45,-405.82 251.53,-414.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M249.53,-414.13C189.59,-423.41 186.4,-477.76 126.01,-472.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M124.01,-472.13C101.33,-470.02 77.51,-460.65 59.27,-451.74"/>
+<polygon fill="#000000" stroke="#000000" points="61.07,-448.73 50.58,-447.29 57.89,-454.96 61.07,-448.73"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge14" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M249.53,-414.13C223.92,-417.05 195.13,-417.23 171.79,-416.6"/>
+<polygon fill="#000000" stroke="#000000" points="172.1,-413.11 161.98,-416.27 171.86,-420.1 172.1,-413.11"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_text~~UsedByGraph_edge16" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M478.61,-344.69C460.36,-371.8 417.05,-436.09 394.13,-470.12"/>
+<polygon fill="#000000" stroke="#000000" points="391.25,-468.13 388.56,-478.38 397.05,-472.04 391.25,-468.13"/>
+</g>
+<!-- module~vkf_handles -->
+<g id="module~~vkf_text~~UsedByGraph_node6" class="node">
+<title>module~vkf_handles</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node6"><a xlink:href="../module/vkf_handles.html" xlink:title="vkf_handles">
+<polygon fill="#337ab7" stroke="#337ab7" points="415.56,-302.27 341.04,-302.27 341.04,-278 415.56,-278 415.56,-302.27"/>
+<text xml:space="preserve" text-anchor="middle" x="378.3" y="-286.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_text~~UsedByGraph_edge22" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M454.74,-319.53C444.51,-315.55 433.03,-311.08 422.19,-306.85"/>
+<polygon fill="#000000" stroke="#000000" points="423.61,-303.65 413.02,-303.28 421.07,-310.17 423.61,-303.65"/>
+</g>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_text~~UsedByGraph_node7" class="node">
+<title>module~vkf_hud</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node7"><a xlink:href="../module/vkf_hud.html" xlink:title="vkf_hud">
+<polygon fill="#337ab7" stroke="#337ab7" points="405.3,-386.27 351.3,-386.27 351.3,-362 405.3,-362 405.3,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="378.3" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_text~~UsedByGraph_edge24" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M454.74,-344.74C442.56,-349.48 428.62,-354.92 416.06,-359.81"/>
+<polygon fill="#000000" stroke="#000000" points="414.92,-356.5 406.87,-363.39 417.46,-363.02 414.92,-356.5"/>
+</g>
+<!-- module~vkf_view -->
+<g id="module~~vkf_text~~UsedByGraph_node14" class="node">
+<title>module~vkf_view</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node14"><a xlink:href="../module/vkf_view.html" xlink:title="vkf_view">
+<polygon fill="#337ab7" stroke="#337ab7" points="406.56,-222.27 350.04,-222.27 350.04,-198 406.56,-198 406.56,-222.27"/>
+<text xml:space="preserve" text-anchor="middle" x="378.3" y="-206.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_text~~UsedByGraph_edge34" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M475.94,-319.54C457.45,-298.61 420.22,-256.46 397.75,-231.03"/>
+<polygon fill="#000000" stroke="#000000" points="400.45,-228.79 391.21,-223.62 395.21,-233.43 400.45,-228.79"/>
+</g>
+<!-- module~vkf_artists -->
+<g id="module~~vkf_text~~UsedByGraph_node5" class="node">
+<title>module~vkf_artists</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node5"><a xlink:href="../module/vkf_artists.html" xlink:title="vkf_artists">
+<polygon fill="#337ab7" stroke="#337ab7" points="282.92,-343.27 218.15,-343.27 218.15,-319 282.92,-319 282.92,-343.27"/>
+<text xml:space="preserve" text-anchor="middle" x="250.53" y="-327.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge4" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M224.27,-343.75C215.18,-348.57 204.97,-354.31 196.02,-360.13 179.97,-370.58 162.94,-383.66 149.7,-394.34"/>
+<polygon fill="#000000" stroke="#000000" points="147.49,-391.62 141.96,-400.65 151.92,-397.04 147.49,-391.62"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge5" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M340.78,-280.68C314.14,-275.92 278.2,-274.1 251.53,-290.13"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_text~~UsedByGraph_edge19" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M340.58,-302.1C326,-306.86 309.13,-312.36 294.02,-317.28"/>
+<polygon fill="#000000" stroke="#000000" points="293.24,-313.86 284.82,-320.28 295.41,-320.51 293.24,-313.86"/>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge6" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M350.87,-370.59C325.12,-367.97 285.08,-366.08 251.53,-374.13"/>
+</g>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_text~~UsedByGraph_node8" class="node">
+<title>module~vkf_line_segments</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node8"><a xlink:href="../module/vkf_line_segments.html" xlink:title="vkf_line_segments">
+<polygon fill="#337ab7" stroke="#337ab7" points="305.04,-252.27 196.02,-252.27 196.02,-228 305.04,-228 305.04,-252.27"/>
+<text xml:space="preserve" text-anchor="middle" x="250.53" y="-236.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge7" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.4,-252.74C215.41,-258.82 204.25,-266.82 196.02,-276.13 165.21,-310.98 144.05,-361.82 133.58,-391.08"/>
+<polygon fill="#000000" stroke="#000000" points="130.31,-389.82 130.36,-400.41 136.93,-392.1 130.31,-389.82"/>
+</g>
+<!-- module~vkf_model -->
+<g id="module~~vkf_text~~UsedByGraph_node9" class="node">
+<title>module~vkf_model</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node9"><a xlink:href="../module/vkf_model.html" xlink:title="vkf_model">
+<polygon fill="#337ab7" stroke="#337ab7" points="283.67,-114.27 217.4,-114.27 217.4,-90 283.67,-90 283.67,-114.27"/>
+<text xml:space="preserve" text-anchor="middle" x="250.53" y="-98.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge8" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M236.72,-114.42C224.61,-126.71 206.74,-146.68 196.02,-167.13 156.14,-243.29 136.61,-344.89 129.41,-390.37"/>
+<polygon fill="#000000" stroke="#000000" points="125.96,-389.74 127.92,-400.15 132.88,-390.79 125.96,-389.74"/>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_text~~UsedByGraph_node10" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node10"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="524.58,-123.27 451.56,-123.27 451.56,-99 524.58,-99 524.58,-123.27"/>
+<text xml:space="preserve" text-anchor="middle" x="488.07" y="-107.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge9" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M470.95,-98.67C429.53,-68.24 318,3.42 251.53,-52.13"/>
+</g>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_text~~UsedByGraph_node12" class="node">
+<title>module~vkf_sphere</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node12"><a xlink:href="../module/vkf_sphere.html" xlink:title="vkf_sphere">
+<polygon fill="#337ab7" stroke="#337ab7" points="412.56,-24.27 344.04,-24.27 344.04,0 412.56,0 412.56,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="378.3" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_text~~UsedByGraph_edge30" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M476.03,-98.6C462.48,-83.52 438.45,-57.77 415.56,-38.13 412.94,-35.89 410.13,-33.64 407.28,-31.45"/>
+<polygon fill="#000000" stroke="#000000" points="409.56,-28.78 399.43,-25.66 405.41,-34.41 409.56,-28.78"/>
+</g>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_text~~UsedByGraph_node13" class="node">
+<title>module~vkf_terrain</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node13"><a xlink:href="../module/vkf_terrain.html" xlink:title="vkf_terrain">
+<polygon fill="#337ab7" stroke="#337ab7" points="412.56,-142.27 344.04,-142.27 344.04,-118 412.56,-118 412.56,-142.27"/>
+<text xml:space="preserve" text-anchor="middle" x="378.3" y="-126.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_text~~UsedByGraph_edge32" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M451.18,-117.46C442.49,-118.99 433.08,-120.65 424.04,-122.25"/>
+<polygon fill="#000000" stroke="#000000" points="423.57,-118.78 414.33,-123.96 424.79,-125.67 423.57,-118.78"/>
+</g>
+<!-- module~vkf_shapes -->
+<g id="module~~vkf_text~~UsedByGraph_node11" class="node">
+<title>module~vkf_shapes</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node11"><a xlink:href="../module/vkf_shapes.html" xlink:title="vkf_shapes">
+<polygon fill="#337ab7" stroke="#337ab7" points="413.31,-344.27 343.29,-344.27 343.29,-320 413.31,-320 413.31,-344.27"/>
+<text xml:space="preserve" text-anchor="middle" x="378.3" y="-328.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge10" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M344.91,-344.68C319.78,-353.99 283.87,-366.37 251.53,-374.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M249.53,-374.13C222.95,-380.52 193.82,-389.83 170.54,-397.87"/>
+<polygon fill="#000000" stroke="#000000" points="169.66,-394.47 161.38,-401.07 171.97,-401.07 169.66,-394.47"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_text~~UsedByGraph_edge20" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M342.93,-331.86C327.95,-331.74 310.23,-331.6 294.4,-331.48"/>
+<polygon fill="#000000" stroke="#000000" points="294.81,-327.98 284.78,-331.4 294.75,-334.98 294.81,-327.98"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge11" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M343.76,-15.74C316.29,-20.22 277.81,-30.17 251.53,-52.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M249.53,-52.13C228.77,-69.48 212.19,-59.45 196.02,-81.13 158.95,-130.85 135.6,-322.96 128.39,-390.5"/>
+<polygon fill="#000000" stroke="#000000" points="124.95,-389.78 127.39,-400.09 131.91,-390.51 124.95,-389.78"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge12" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M343.83,-138.27C303.44,-149.75 235.98,-174.44 196.02,-219.13 151.14,-269.33 134.46,-350.38 128.74,-390.32"/>
+<polygon fill="#000000" stroke="#000000" points="125.29,-389.67 127.46,-400.04 132.23,-390.58 125.29,-389.67"/>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge13" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M359.85,-222.62C340.28,-236.58 310.55,-257.71 305.04,-261.13 282.06,-275.4 274.71,-276.2 251.53,-290.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M249.53,-290.13C227.77,-303.22 215.95,-294.41 196.02,-310.13 168.27,-332.03 147.55,-368.01 136.11,-391.38"/>
+<polygon fill="#000000" stroke="#000000" points="132.98,-389.82 131.89,-400.36 139.31,-392.8 132.98,-389.82"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_text~~UsedByGraph_node15" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_text~~UsedByGraph_node15"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="621.6,-222.27 560.58,-222.27 560.58,-198 621.6,-198 621.6,-222.27"/>
+<text xml:space="preserve" text-anchor="middle" x="591.09" y="-206.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_text~~UsedByGraph_edge15" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M588.97,-222.63C584.63,-263.07 565.18,-391.31 489.07,-452.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-452.13C439.42,-490.22 257.42,-448.99 171.47,-426.61"/>
+<polygon fill="#000000" stroke="#000000" points="172.52,-423.27 161.96,-424.11 170.73,-430.04 172.52,-423.27"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_text~~UsedByGraph_edge17" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-452.13C466.63,-468.48 438.85,-478.57 416.61,-484.53"/>
+<polygon fill="#000000" stroke="#000000" points="415.89,-481.11 407.03,-486.92 417.58,-487.9 415.89,-481.11"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_text~~UsedByGraph_edge18" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M579.66,-222.73C562.33,-243.66 527.43,-285.81 506.37,-311.24"/>
+<polygon fill="#000000" stroke="#000000" points="503.94,-308.69 500.26,-318.62 509.33,-313.15 503.94,-308.69"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_text~~UsedByGraph_edge21" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C452.27,-213.91 370.36,-250.02 341.04,-269.13 322.35,-281.32 323.21,-291.18 305.04,-304.13 300.56,-307.33 295.65,-310.35 290.68,-313.14"/>
+<polygon fill="#000000" stroke="#000000" points="289.05,-310.04 281.85,-317.81 292.32,-316.23 289.05,-310.04"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_text~~UsedByGraph_edge23" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C447.42,-213.85 447.64,-240.53 415.56,-264.13 412.57,-266.34 409.42,-268.63 406.28,-270.9"/>
+<polygon fill="#000000" stroke="#000000" points="404.37,-267.96 398.3,-276.64 408.46,-273.65 404.37,-267.96"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_text~~UsedByGraph_edge25" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C416.32,-216.76 464.24,-301.37 415.56,-353.13 415.09,-353.63 414.61,-354.12 414.12,-354.6"/>
+<polygon fill="#000000" stroke="#000000" points="412.09,-351.74 406.44,-360.7 416.45,-357.22 412.09,-351.74"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_text~~UsedByGraph_edge26" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C454.09,-213.22 448.35,-193.85 415.56,-189.13 382.78,-184.42 373.06,-180.65 341.04,-189.13 317.63,-195.34 293.94,-209.25 276.81,-220.98"/>
+<polygon fill="#000000" stroke="#000000" points="274.91,-218.04 268.78,-226.68 278.96,-223.75 274.91,-218.04"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_model -->
+<g id="module~~vkf_text~~UsedByGraph_edge27" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_model</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M560.39,-208.54C540.22,-207.85 512.97,-207.68 489.07,-210.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C432.36,-215.76 463.86,-135.44 415.56,-109.13 378.68,-89.05 329.91,-89.77 295.16,-93.99"/>
+<polygon fill="#000000" stroke="#000000" points="294.88,-90.5 285.45,-95.33 295.83,-97.43 294.88,-90.5"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_text~~UsedByGraph_edge28" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M577.3,-197.6C560.29,-180.93 530.04,-151.29 509.77,-131.42"/>
+<polygon fill="#000000" stroke="#000000" points="512.43,-129.13 502.84,-124.63 507.53,-134.13 512.43,-129.13"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shapes -->
+<g id="module~~vkf_text~~UsedByGraph_edge29" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shapes</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C432.31,-215.27 456.18,-274.06 415.56,-311.13 414.81,-311.82 414.03,-312.5 413.23,-313.16"/>
+<polygon fill="#000000" stroke="#000000" points="411.41,-310.16 405.32,-318.83 415.49,-315.85 411.41,-310.16"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_text~~UsedByGraph_edge31" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M586.05,-197.77C577.81,-174.23 557.09,-122.41 524.58,-90.13 495.87,-61.62 454.58,-40.82 423.35,-27.9"/>
+<polygon fill="#000000" stroke="#000000" points="424.75,-24.69 414.17,-24.23 422.15,-31.19 424.75,-24.69"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_text~~UsedByGraph_edge33" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C447.42,-213.85 447.64,-179.74 415.56,-156.13 412.57,-153.93 409.42,-151.64 406.28,-149.37"/>
+<polygon fill="#000000" stroke="#000000" points="408.46,-146.62 398.3,-143.63 404.37,-152.31 408.46,-146.62"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_text~~UsedByGraph_edge35" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-210.13C464.33,-212.27 438.78,-212.36 418.27,-211.88"/>
+<polygon fill="#000000" stroke="#000000" points="418.44,-208.39 408.34,-211.59 418.23,-215.39 418.44,-208.39"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsg_baseline"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VSG_BASELINE</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>(vertical: the base line)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsg_bottom"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VSG_BOTTOM</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>(vertical: bottom)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsg_center"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VSG_CENTER</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>horizontal or vertical: center</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsg_left"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VSG_LEFT</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>(horizontal: left)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsg_right"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VSG_RIGHT</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>(horizontal: right)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsg_top"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VSG_TOP</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>(vertical: top)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_font"></span>
+              character(len=*),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>default_font</strong></td>
+<td> =</td>
+                <td>&#39;DejaVuSans.ttf&#39;</td>
+            <td>
+                <p>the font used when none is given</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fonts"></span>
+              type(<a href='../type/font_entry.html'>font_entry</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable, save
+            </td>
+            <td>::</td>
+            <td><strong>fonts</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>Fonts read so far (each is read once; kept for the whole run).</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-font_entry"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/font_entry.html'>font_entry</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A font read (or looked for) by name.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-font~12"></span>
+              type(c_ptr),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>font</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>its handle (null: not found or not read)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~27"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the font's name as given ('' replaced by default_font)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-find_font"></span> <h3>public  function <a href='../proc/find_font.html'>find_font</a>(name) result(path)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The path of font <code>name</code> (a file name or a path), or '' if not found.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~28"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-get_font"></span> <h3>public  function <a href='../proc/get_font.html'>get_font</a>(name) result(font)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The font handle for <code>name</code> (found with <code>find_font</code>, read on first use);
+the default font if <code>name</code> is ''; null if it cannot be found or read.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~29"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(c_ptr)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-label_create"></span> <h3>public  function <a href='../proc/label_create.html'>label_create</a>(text, position, rgba, size, max_size, alignment, font_name) result(node)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A label node: <code>text</code> at <code>position</code> in color <code>rgba</code>, in font <code>font_name</code>
+('' for the default), aligned by <code>alignment</code> (an ALIGN_* constant of
+vkf_frames). <code>size</code> &gt; 0: <code>size</code> window units tall; <code>size</code> &lt; 0: -size
+scene units tall, but at most <code>max_size</code> window units on screen. Null if
+the font is missing.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-text~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>text</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+            <td>
+<p>(the coordinates of the node it is put under)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~32"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>color [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>0: height in window units; &lt; 0: -height in scene units</p><a href="../proc/label_create.html#variable-size~21" class="pull-right"><emph>Read more&hellip;</emph></a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_size~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_size</strong></td>
+            <td>
+<p>for size &lt; 0: the largest height on screen (window units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alignment~6"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alignment</strong></td>
+            <td>
+<p>an ALIGN_* constant of vkf_frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-font_name"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>font_name</strong></td>
+            <td>
+<p>font file ('' for the default)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(c_ptr)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-label_set_layout"></span> <h3>public  function <a href='../proc/label_set_layout.html'>label_set_layout</a>(node, position, size, max_size, alignment) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Change label <code>node</code>'s position, size, maximum size and alignment (as
+label_create's), in place. False on failure.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-node~22"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>node</strong></td>
+            <td>
+<p>a label_create node</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~22"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~22"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_size~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_size</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alignment~7"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alignment</strong></td>
+            <td>
+<p>an ALIGN_* constant of vkf_frames</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-vsg_alignment"></span> <h3>private pure subroutine <a href='../proc/vsg_alignment.html'>vsg_alignment</a>(alignment, h, v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The horizontal and vertical alignments of vsg::StandardLayout for an ALIGN_*
+constant (vkf_frames: 0 left-top ... 8 right-bottom, 9 to 11 base line).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alignment~8"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alignment</strong></td>
+            <td>
+<p>an ALIGN_* constant of vkf_frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-h~24"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>h</strong></td>
+            <td>
+<p>VSG_* horizontal and vertical alignments</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~53"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong></td>
+            <td>
+<p>VSG_* horizontal and vertical alignments</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

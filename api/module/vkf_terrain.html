@@ -1,0 +1,2987 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_terrain &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_terrain
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 1.9% of total for modules and submodules.">248 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_terrain.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_terrain.f90.html'>vkf_terrain.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_terrain</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-elevation_heights">ELEVATION_HEIGHTS</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-elevation_mapbox">ELEVATION_MAPBOX</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-elevation_terrarium">ELEVATION_TERRARIUM</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-layer_gdal">LAYER_GDAL</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-layer_geodetic">LAYER_GEODETIC</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-layer_mercator">LAYER_MERCATOR</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-layer_tms">LAYER_TMS</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-earth_radius">earth_radius</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#variable-moon_radius">moon_radius</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_terrain.html#interface-terrainbody">TerrainBody</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_terrain.html#type-maplayer">MapLayer</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#type-terrainbody">TerrainBody</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-body_radius">body_radius</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-elevation">elevation</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-lighting">lighting</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-new_terrain_body">new_terrain_body</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-num_layers">num_layers</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-profile">profile</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-rocky_available">rocky_available</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-terrain_frame_info">terrain_frame_info</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-units_per_meter">units_per_meter</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-add_elevation_layer">add_elevation_layer</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-add_image_layer">add_image_layer</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-add_layer">add_layer</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-apply_layer">apply_layer</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-apply_settings">apply_settings</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-make_map">make_map</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-set_lighting">set_lighting</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-terrain_bound">terrain_bound</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-terrain_build_contents">terrain_build_contents</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-terrain_pick">terrain_pick</a>
+            <a class="list-group-item" href="../module/vkf_terrain.html#proc-terrain_update">terrain_update</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Maps and terrain: a celestial body drawn from map layers by Rocky
+(https://github.com/pelicanmapping/rocky; optional: <code>rocky_available()</code>),
+e.g. the Earth from tile services, or the Moon with NASA's imagery and
+LOLA's elevation. An addition to OpenFrames, which has only textured
+spheres.</p>
+<p>The body is centered on its frame's origin, in body-fixed axes (z through
+the north pole, x through longitude 0), so the frame's attitude turns it.
+Its shape and coordinates come from Rocky's tiling profile: '' (Rocky's
+default) or 'global-geodetic' for the Earth (WGS84), 'moon' for the Moon
+(a sphere of 1737.4 km), or another of Rocky's profiles. Rocky works in
+meters; the body is drawn at <code>units_per_meter</code> scene units per meter
+(default 1e-3: kilometers, as vkframes' examples).</p>
+<p>Layers (<code>add_image_layer</code>, <code>add_elevation_layer</code>) are tiled sources Rocky
+pages in as the view needs them: a TMS service (LAYER_TMS), a file or
+service GDAL reads (LAYER_GDAL; a file is found with find_data_file, e.g.
+data/'s moon_lola_ldem16.tif from <code>pixi run -e rocky moon-data</code>), or a
+{z}/{x}/{y} URL template of geodetic tiles on the body (LAYER_GEODETIC: 2 x
+1 tiles at level 0, rows from the top, as WMTS and NASA's Moon Trek) or of
+web Mercator tiles (LAYER_MERCATOR: OpenStreetMap-style). Elevation is in
+meters (ELEVATION_HEIGHTS) or encoded in RGB (ELEVATION_MAPBOX,
+ELEVATION_TERRARIUM). Layers can be added before or after the body is
+shown.</p>
+<p>Lighting: lit by the scene's lights as a Sphere (a frame's light source, e.g.
+the Sun, or the window's light; <code>set_lighting(.false.)</code> shows the imagery
+as it is). The frame's color is the color where no imagery covers the body.</p>
+<p>The map is made for a window that shows the body (Rocky's tiles are loaded
+through that window's viewer, and the map is drawn in that window only);
+when that window closes, it is made again for one still open (other
+windows then show it). Headless (no viewer), the body has no map.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_files.html'>vkf_files</a></li>
+                  <li class="list-inline-item"><a href='vkf_pick.html'>vkf_pick</a></li>
+                  <li class="list-inline-item"><a href='vkf_frames.html'>vkf_frames</a></li>
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_terrain~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_terrainUsesGraph" width="641pt" height="337pt"
+ viewBox="0.00 0.00 641.00 337.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_terrain~~UsesGraph" class="graph" transform="scale(0.95512 0.95512) rotate(0) translate(4 348.55)">
+<title>module~~vkf_terrain~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-348.55 667.12,-348.55 667.12,4 -4,4"/>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_terrain~~UsesGraph_node1" class="node">
+<title>module~vkf_terrain</title>
+<polygon fill="none" stroke="black" points="663.12,-104.27 594.6,-104.27 594.6,-80 663.12,-80 663.12,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="628.86" y="-88.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_terrain</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_terrain~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-184.27 129.27,-184.27 129.27,-160 212.04,-160 212.04,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_terrain~~UsesGraph_edge1" class="edge">
+<title>module~vkf_terrain&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-332.13C338.95,-347.85 307.83,-353.67 248.04,-313.13 206.97,-285.29 186.06,-227.87 177.15,-195.56"/>
+<polygon fill="#000000" stroke="#000000" points="180.57,-194.79 174.68,-185.98 173.79,-196.54 180.57,-194.79"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_terrain~~UsesGraph_node3" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node3"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="317.31,-304.27 263.04,-304.27 263.04,-280 317.31,-280 317.31,-304.27"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-288.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_terrain~~UsesGraph_edge2" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-254.13C475.04,-291.29 470.35,-319 411.44,-332.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-332.13C377.56,-339.24 342.23,-324.12 318.56,-310.48"/>
+<polygon fill="#000000" stroke="#000000" points="320.53,-307.58 310.16,-305.38 316.9,-313.56 320.53,-307.58"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_terrain~~UsesGraph_node4" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node4"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="558.6,-104.27 488.58,-104.27 488.58,-80 558.6,-80 558.6,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="523.59" y="-88.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_terrain~~UsesGraph_edge3" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M594.33,-92.13C586.73,-92.13 578.54,-92.13 570.53,-92.13"/>
+<polygon fill="#000000" stroke="#000000" points="570.53,-88.64 560.53,-92.14 570.53,-95.64 570.53,-88.64"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_terrain~~UsesGraph_node5" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node5"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="319.93,-224.27 260.41,-224.27 260.41,-200 319.93,-200 319.93,-224.27"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-208.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_terrain~~UsesGraph_edge4" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M623.27,-104.73C611.62,-135.01 577.94,-212.45 524.59,-254.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-254.13C483.66,-284.55 460.34,-247.11 411.44,-254.13"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_node6" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node6"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-85.27 140.52,-85.27 140.52,-61 200.79,-61 200.79,-85.27"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-69.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_edge5" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-52.13C474.97,-39 460.65,-56.45 411.44,-52.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-52.13C357.08,-47.54 343.71,-53.99 291.17,-52.13"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_terrain~~UsesGraph_node7" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node7"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="437.58,-24.27 383.31,-24.27 383.31,0 437.58,0 437.58,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_terrain~~UsesGraph_edge6" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M599.89,-79.53C579.4,-70.74 550.72,-59.34 524.59,-52.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-52.13C497.51,-45.22 469.98,-35.33 448.6,-27.12"/>
+<polygon fill="#000000" stroke="#000000" points="450.02,-23.92 439.44,-23.55 447.48,-30.44 450.02,-23.92"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_terrain~~UsesGraph_edge7" class="edge">
+<title>module~vkf_frames&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.1,-104.33C520.02,-137.55 509.18,-229.73 452.58,-268.13 414.42,-294.02 288.97,-254.37 248.04,-233.13 227.33,-222.39 206.84,-205.6 192.3,-192.35"/>
+<polygon fill="#000000" stroke="#000000" points="194.86,-189.96 185.17,-185.68 190.08,-195.07 194.86,-189.96"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_terrain~~UsesGraph_edge10" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M520.04,-104.7C511.85,-140.97 482.51,-243.93 411.44,-254.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-254.13C377.32,-258.75 342.54,-243.77 319.07,-230.44"/>
+<polygon fill="#000000" stroke="#000000" points="321.12,-227.59 310.73,-225.48 317.53,-233.6 321.12,-227.59"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_edge11" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M499.13,-79.67C477.18,-68.99 443.11,-54.91 411.44,-52.13"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_terrain~~UsesGraph_edge12" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M506.31,-79.73C500.68,-75.44 494.35,-70.58 488.58,-66.13 472.53,-53.76 469.17,-49.79 452.58,-38.13 449.13,-35.71 445.46,-33.24 441.78,-30.84"/>
+<polygon fill="#000000" stroke="#000000" points="443.79,-27.97 433.48,-25.52 440.02,-33.86 443.79,-27.97"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_terrain~~UsesGraph_node9" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node9"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="448.08,-104.27 372.81,-104.27 372.81,-80 448.08,-80 448.08,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-88.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_terrain~~UsesGraph_edge8" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.34,-92.13C479.36,-92.13 469.5,-92.13 459.94,-92.13"/>
+<polygon fill="#000000" stroke="#000000" points="460,-88.64 450,-92.14 460,-95.64 460,-88.64"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_terrain~~UsesGraph_node10" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node10"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="452.58,-184.27 368.31,-184.27 368.31,-160 452.58,-160 452.58,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_terrain~~UsesGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M507.33,-104.57C493.35,-115.8 471.95,-132.59 452.58,-146.13 449.12,-148.55 445.45,-151.02 441.77,-153.42"/>
+<polygon fill="#000000" stroke="#000000" points="440.01,-150.39 433.47,-158.73 443.78,-156.29 440.01,-150.39"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_terrain~~UsesGraph_node11" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node11"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="437.44,-226.27 383.44,-226.27 383.44,-202 437.44,-202 437.44,-226.27"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-210.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_terrain~~UsesGraph_edge13" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.62,-104.47C506.13,-125.09 482.62,-166.88 452.58,-193.13 450.95,-194.56 449.21,-195.92 447.39,-197.21"/>
+<polygon fill="#000000" stroke="#000000" points="445.86,-194.04 439.2,-202.28 449.54,-199.99 445.86,-194.04"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_terrain~~UsesGraph_node12" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node12"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="332.31,-106.27 248.04,-106.27 248.04,-82 332.31,-82 332.31,-106.27"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-90.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_terrain~~UsesGraph_edge14" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.14,-104.64C476.96,-108.11 464.38,-111.4 452.58,-113.13 415.52,-118.57 405.49,-117.65 368.31,-113.13 360.21,-112.15 351.74,-110.61 343.5,-108.82"/>
+<polygon fill="#000000" stroke="#000000" points="344.47,-105.45 333.94,-106.6 342.89,-112.27 344.47,-105.45"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_terrain~~UsesGraph_edge15" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.13,-202.25C247.79,-198.05 233.08,-193.04 219.24,-188.33"/>
+<polygon fill="#000000" stroke="#000000" points="220.41,-185.03 209.81,-185.12 218.15,-191.66 220.41,-185.03"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_terrain~~UsesGraph_node8" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_terrain~~UsesGraph_node8"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-105.27 0,-105.27 0,-81 93.27,-81 93.27,-105.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-89.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_terrain~~UsesGraph_edge16" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-77.98C129.43,-79.73 116.96,-81.77 104.7,-83.78"/>
+<polygon fill="#000000" stroke="#000000" points="104.36,-80.29 95.06,-85.36 105.49,-87.2 104.36,-80.29"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_edge17" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M387.94,-24.63C364.78,-36.82 326.48,-53.38 291.17,-52.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-52.13C263.13,-51.22 234.31,-56.27 211.73,-61.65"/>
+<polygon fill="#000000" stroke="#000000" points="211.18,-58.17 202.34,-64 212.89,-64.96 211.18,-58.17"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_edge18" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.77,-79.57C362.43,-68.3 325.4,-53.34 291.17,-52.13"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_terrain~~UsesGraph_edge19" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.35,-92.76C363.39,-92.91 353.64,-93.08 344.12,-93.24"/>
+<polygon fill="#000000" stroke="#000000" points="344.12,-89.74 334.18,-93.41 344.24,-96.74 344.12,-89.74"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_terrain~~UsesGraph_edge20" class="edge">
+<title>module~vkf_geometry&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368,-163.2C356.5,-161.11 343.97,-159.18 332.31,-158.13 295.01,-154.78 285.34,-154.75 248.04,-158.13 240.1,-158.86 231.75,-159.99 223.61,-161.31"/>
+<polygon fill="#000000" stroke="#000000" points="223.04,-157.86 213.79,-163.02 224.24,-164.75 223.04,-157.86"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_terrain~~UsesGraph_edge21" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.35,-184.68C359.22,-189.12 344.41,-194.13 331.06,-198.65"/>
+<polygon fill="#000000" stroke="#000000" points="330.05,-195.29 321.7,-201.81 332.29,-201.92 330.05,-195.29"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_edge22" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M400.67,-159.53C384.13,-136 348.52,-86.53 332.31,-73.13 316.48,-60.06 311.69,-52.86 291.17,-52.13"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_terrain~~UsesGraph_edge23" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-172.13C268.67,-164.31 244.64,-163.07 223.68,-164.25"/>
+<polygon fill="#000000" stroke="#000000" points="223.59,-160.74 213.9,-165.01 224.14,-167.72 223.59,-160.74"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_terrain~~UsesGraph_edge24" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M390.44,-226.67C371.3,-239.29 341.54,-258.92 319.6,-273.39"/>
+<polygon fill="#000000" stroke="#000000" points="317.81,-270.37 311.39,-278.8 321.67,-276.22 317.81,-270.37"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_terrain~~UsesGraph_edge25" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.2,-213.69C368.05,-213.43 348.67,-213.11 331.61,-212.82"/>
+<polygon fill="#000000" stroke="#000000" points="331.82,-209.32 321.77,-212.65 331.71,-216.32 331.82,-209.32"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_edge26" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.01,-205.14C358.96,-196.86 322.53,-184.09 291.17,-172.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-172.13C247.14,-156.11 209.5,-118.24 188.69,-94.26"/>
+<polygon fill="#000000" stroke="#000000" points="191.43,-92.07 182.3,-86.69 186.08,-96.59 191.43,-92.07"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_terrain~~UsesGraph_edge27" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M269,-106.69C262.3,-110.92 254.82,-115.69 248.04,-120.13 231.69,-130.86 213.6,-143.16 199.13,-153.1"/>
+<polygon fill="#000000" stroke="#000000" points="197.25,-150.15 191,-158.7 201.22,-155.91 197.25,-150.15"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_terrain~~UsesGraph_edge29" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.74,-86.73C236.24,-84.68 223.77,-82.45 212.32,-80.4"/>
+<polygon fill="#000000" stroke="#000000" points="213.23,-77.01 202.77,-78.69 212,-83.9 213.23,-77.01"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_terrain~~UsesGraph_edge28" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.76,-94.27C215.48,-94.35 169.52,-94.38 129.27,-94.13 121.37,-94.09 113.04,-94.01 104.84,-93.92"/>
+<polygon fill="#000000" stroke="#000000" points="104.95,-90.43 94.91,-93.81 104.87,-97.43 104.95,-90.43"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_terrainUsesGraph = svgPanZoom('#modulevkf_terrainUsesGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_terrain~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_terrainUsedByGraph" width="283pt" height="52pt"
+ viewBox="0.00 0.00 283.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_terrain~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_terrain~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 278.56,-48.27 278.56,4 -4,4"/>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_terrain~~UsedByGraph_node1" class="node">
+<title>module~vkf_terrain</title>
+<polygon fill="none" stroke="black" points="68.52,-44.27 0,-44.27 0,-20 68.52,-20 68.52,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.26" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_terrain</text>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_terrain~~UsedByGraph_node2" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_terrain~~UsedByGraph_node2"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="177.54,-24.27 104.52,-24.27 104.52,0 177.54,0 177.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="141.03" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_terrain~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M104.27,-18.96C96.45,-20.45 88.08,-22.05 79.97,-23.6"/>
+<polygon fill="#000000" stroke="#000000" points="79.4,-20.15 70.23,-25.46 80.71,-27.02 79.4,-20.15"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_terrain~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_terrain~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="274.56,-44.27 213.54,-44.27 213.54,-20 274.56,-20 274.56,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="244.05" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_terrain~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M213.05,-32.69C201.9,-32.87 189.14,-33.05 177.54,-33.13 145.09,-33.38 136.97,-33.37 104.52,-33.13 96.59,-33.08 88.15,-32.98 79.99,-32.88"/>
+<polygon fill="#000000" stroke="#000000" points="80.29,-29.38 70.24,-32.74 80.19,-36.38 80.29,-29.38"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_terrain~~UsedByGraph_edge3" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M213.29,-26.24C205.68,-24.74 197.32,-23.08 189.09,-21.45"/>
+<polygon fill="#000000" stroke="#000000" points="189.98,-18.06 179.5,-19.55 188.62,-24.93 189.98,-18.06"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-elevation_heights"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ELEVATION_HEIGHTS</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>elevation encodings
+heights in meters</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-elevation_mapbox"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ELEVATION_MAPBOX</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>Mapbox Terrain-RGB</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-elevation_terrarium"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ELEVATION_TERRARIUM</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>Terrarium RGB</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-layer_gdal"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>LAYER_GDAL</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>a file or service GDAL reads</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-layer_geodetic"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>LAYER_GEODETIC</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>a {z}/{x}/{y} URL template of geodetic tiles</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-layer_mercator"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>LAYER_MERCATOR</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>a {z}/{x}/{y} URL template of web Mercator tiles</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-layer_tms"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>LAYER_TMS</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>layer sources (see the module documentation)
+a TMS service</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-earth_radius"></span>
+              real(kind=wp),
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>earth_radius</strong></td>
+<td> =</td>
+                <td>6378137.0_wp</td>
+            <td>
+                <p>m (WGS84)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-moon_radius"></span>
+              real(kind=wp),
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>moon_radius</strong></td>
+<td> =</td>
+                <td>1737400.0_wp</td>
+            <td>
+                <p>m</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-terrainbody"></span>
+      <h3>public        interface <a href='../interface/terrainbody.html'>TerrainBody</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The TerrainBody constructor: <code>TerrainBody(...)</code> makes one (see <code>new_terrain_body</code> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_terrain_body.html'>new_terrain_body</a>(name, profile, units_per_meter, color) result(b)  
+
+    </h3>
+    
+  <p>A body named <code>name</code> in Rocky's tiling profile <code>profile</code> (default '':
+the Earth; 'moon': the Moon), drawn at <code>units_per_meter</code> scene units per
+meter (default 1e-3), in color <code>color</code> where it has no imagery ([r, g, b]
+or [r, g, b, a]; default the frame's).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-profile~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>profile</strong></td>
+            <td>
+<p>Rocky's tiling profile (default '')</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-units_per_meter~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>units_per_meter</strong></td>
+            <td>
+<p>scene units per meter (default 1e-3)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/terrainbody.html'>TerrainBody</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-maplayer"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/maplayer.html'>MapLayer</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A map layer as given (applied when the map is made).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-elevation"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>elevation</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>(true: an elevation layer; false: an image layer)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-encoding"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>encoding</strong></td>
+<td> =</td>
+                <td>ELEVATION_HEIGHTS</td>
+            <td>
+<p>(elevation: an ELEVATION_* constant)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>source</strong></td>
+<td> =</td>
+                <td>LAYER_TMS</td>
+            <td>
+<p>a LAYER_* constant</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-uri"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>uri</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>URL, URL template or file</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-terrainbody"></span>
+      <h3>
+        type, public, extends(<a href='../type/referenceframe.html'>ReferenceFrame</a>)&nbsp;::&nbsp;
+        <a href='../type/terrainbody.html'>TerrainBody</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A body drawn from map layers by Rocky (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-layers"></span>
+              type(<a href='../type/maplayer.html'>MapLayer</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>layers</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(capacity): the layers, in the order added</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lighting_"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lighting_</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>lit by the scene's lights</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-map"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>map</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>Rocky's map node (null: not made)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-map_group"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>map_group</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the group the map is in (once shown)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_layers"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_layers</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of layers</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-profile_"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>profile_</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Rocky's tiling profile ('': the Earth)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-units_per_meter_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>units_per_meter_</strong></td>
+<td> =</td>
+                <td>1.0e-3_wp</td>
+            <td>
+<p>scene units per meter</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The TerrainBody constructor: <code>TerrainBody(...)</code> makes one (see <code>new_terrain_body</code> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_terrain_body.html'>new_terrain_body</a></strong>
+                    (name, profile, units_per_meter, color)
+                  </td>
+                  <td><p>A body named <code>name</code> in Rocky's tiling profile <code>profile</code> (default '':
+the Earth; 'moon': the Moon), drawn at <code>units_per_meter</code> scene units per
+meter (default 1e-3), in color <code>color</code> where it has no imagery ([r, g, b]
+or [r, g, b, a]; default the frame's).</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-add_child'>add_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-add_elevation_layer'>add_elevation_layer</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-add_image_layer'>add_image_layer</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-attitude~5'>attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_labels_shown'>axes_labels_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_shown'>axes_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axis_label'>axis_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-body_radius'>body_radius</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-bound'>bound</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/terrain_bound.html'>terrain_bound</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-build_contents'>build_contents</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/terrain_build_contents.html'>terrain_build_contents</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child~3'>child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child_index'>child_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-color~37'>color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-contents_shown'>contents_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-detach'>detach</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-elevation~2'>elevation</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follow~3'>follow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follower'>follower</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-frame_info'>frame_info</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/terrain_frame_info.html'>terrain_frame_info</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-frame_string'>frame_string</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-has_light_source'>has_light_source</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-is_following'>is_following</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_alignment'>label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_font'>label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_size'>label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-late_update~2'>late_update</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_ambient~2'>light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_diffuse~2'>light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_source_enabled'>light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_specular~2'>light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-lighting'>lighting</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-local_matrix'>local_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_x_axis'>move_x_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_y_axis'>move_y_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_z_axis'>move_z_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name~14'>name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_on_top'>name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_shown'>name_label_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-node~17'>node</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_children'>num_children</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-num_layers'>num_layers</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_parents'>num_parents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent~4'>parent</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent_index'>parent_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-pick'>pick</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/terrain_pick.html'>terrain_pick</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-pickable~3'>pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position~17'>position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position_of'>position_of</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-profile'>profile</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-realize'>realize</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-remove_child'>remove_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-reposition_axes'>reposition_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_attitude~2'>set_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_color~8'>set_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_alignment'>set_label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_font'>set_label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_size'>set_label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_ambient~2'>set_light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_diffuse~2'>set_light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_source_enabled'>set_light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_specular~2'>set_light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-set_lighting'>set_lighting</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name'>set_name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name_label_on_top'>set_name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_pickable~2'>set_pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_position~2'>set_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_x_label'>set_x_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_y_label'>set_y_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_z_label'>set_z_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes'>show_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes_labels'>show_axes_labels</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_contents'>show_contents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_decorations'>show_decorations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_name_label'>show_name_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-sync~3'>sync</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-unfollow'>unfollow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-units_per_meter'>units_per_meter</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/terrainbody.html#boundprocedure-update~2'>update</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/terrain_update.html'>terrain_update</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-world_matrix'>world_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-body_radius"></span> <h3>private pure function <a href='../proc/body_radius.html'>body_radius</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's equatorial radius in scene units (from its profile: the
+Moon's for 'moon', else the Earth's).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~124"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-elevation"></span> <h3>private  function <a href='../proc/elevation.html'>elevation</a>(self, lat, lon, found) result(h)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The height of the terrain (scene units, above the body's sphere or
+ellipsoid) at latitude and longitude <code>lat</code>, <code>lon</code> (degrees), from the
+last elevation layer added that is a file (LAYER_GDAL), read directly
+(also before the body is shown); <code>found</code> is false (and the height 0)
+without such a layer or data there, or without Rocky.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~125"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lat"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lat</strong></td>
+            <td>
+<p>latitude and longitude (degrees)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lon"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lon</strong></td>
+            <td>
+<p>latitude and longitude (degrees)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-found"></span>
+              logical,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>found</strong></td>
+            <td>
+<p>false if there is no height there</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-lighting"></span> <h3>private pure function <a href='../proc/lighting.html'>lighting</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if the body is lit by the scene's lights.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~121"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_terrain_body"></span> <h3>private  function <a href='../proc/new_terrain_body.html'>new_terrain_body</a>(name, profile, units_per_meter, color) result(b)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A body named <code>name</code> in Rocky's tiling profile <code>profile</code> (default '':
+the Earth; 'moon': the Moon), drawn at <code>units_per_meter</code> scene units per
+meter (default 1e-3), in color <code>color</code> where it has no imagery ([r, g, b]
+or [r, g, b, a]; default the frame's).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-profile~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>profile</strong></td>
+            <td>
+<p>Rocky's tiling profile (default '')</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-units_per_meter~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>units_per_meter</strong></td>
+            <td>
+<p>scene units per meter (default 1e-3)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/terrainbody.html'>TerrainBody</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_layers"></span> <h3>private pure function <a href='../proc/num_layers.html'>num_layers</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of layers (image and elevation).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~119"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-profile"></span> <h3>private  function <a href='../proc/profile.html'>profile</a>(self) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Rocky's tiling profile ('': Rocky's default, the Earth).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~122"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-rocky_available"></span> <h3>public  function <a href='../proc/rocky_available.html'>rocky_available</a>()  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Whether vkframes was built with Rocky (the <code>rocky</code> pixi environment).</p>
+
+  <h4>Arguments</h4>
+    <em>None</em>
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-terrain_frame_info"></span> <h3>private  function <a href='../proc/terrain_frame_info.html'>terrain_frame_info</a>(self) result(info)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The kind of frame: 'TerrainBody'.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~127"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-units_per_meter"></span> <h3>private pure function <a href='../proc/units_per_meter.html'>units_per_meter</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Scene units per meter the body is drawn at.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~123"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_elevation_layer"></span> <h3>private  subroutine <a href='../proc/add_elevation_layer.html'>add_elevation_layer</a>(self, uri, source, encoding)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add an elevation layer: <code>uri</code> of a <code>source</code> kind (LAYER_<em>; default
+LAYER_TMS), heights in meters or <code>encoding</code> (ELEVATION_</em>; default
+ELEVATION_HEIGHTS).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~117"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-uri~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>uri</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>source</strong></td>
+            <td>
+<p>a LAYER_* constant (default LAYER_TMS)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-encoding~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>encoding</strong></td>
+            <td>
+<p>an ELEVATION_* constant (default ELEVATION_HEIGHTS)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_image_layer"></span> <h3>private  subroutine <a href='../proc/add_image_layer.html'>add_image_layer</a>(self, uri, source)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add an image layer: <code>uri</code> (a URL, URL template or file) of a <code>source</code>
+kind (LAYER_*; default LAYER_TMS). Layers added later are drawn on top.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~116"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-uri~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>uri</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>source</strong></td>
+            <td>
+<p>a LAYER_* constant (default LAYER_TMS)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_layer"></span> <h3>private  subroutine <a href='../proc/add_layer.html'>add_layer</a>(self, layer)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Keep <code>layer</code>, and add it to the map if it is made.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~118"></span>
+              type(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-layer~3"></span>
+              type(<a href='../type/maplayer.html'>MapLayer</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>layer</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_layer"></span> <h3>private  subroutine <a href='../proc/apply_layer.html'>apply_layer</a>(self, layer)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add <code>layer</code> to the map (a file found on VKFRAMES_DATA_PATH).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~132"></span>
+              type(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-layer~4"></span>
+              type(<a href='../type/maplayer.html'>MapLayer</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>layer</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_settings"></span> <h3>private  subroutine <a href='../proc/apply_settings.html'>apply_settings</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Give the lighting and the frame's color to the map (if made).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~131"></span>
+              type(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-make_map"></span> <h3>private  subroutine <a href='../proc/make_map.html'>make_map</a>(self, viewer)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The map (in the contents group) for <code>viewer</code>, with the settings and layers.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~129"></span>
+              type(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~3"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_lighting"></span> <h3>private  subroutine <a href='../proc/set_lighting.html'>set_lighting</a>(self, lit)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Light the body with the scene's lights (default), or show its imagery as it is.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~120"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lit"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lit</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-terrain_bound"></span> <h3>private  subroutine <a href='../proc/terrain_bound.html'>terrain_bound</a>(self, center, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's bounding sphere (frame coordinates): its equatorial radius, at the origin.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~126"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-terrain_build_contents"></span> <h3>private  subroutine <a href='../proc/terrain_build_contents.html'>terrain_build_contents</a>(self, viewer, group)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The map, made for the viewer showing the body (none headless or without Rocky).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~128"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~2"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>a window's viewer handle (null: headless)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-group"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+            <td>
+<p>the group node to build under</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-terrain_pick"></span> <h3>private  subroutine <a href='../proc/terrain_pick.html'>terrain_pick</a>(self, cam, to_root, hits, n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Picked on a sphere of the body's radius (not the terrain's heights), with
+the latitude and longitude of the point hit; else the frame's origin.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~133"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~8"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+<p>the cursor's ray and the pick's settings</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-to_root"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>to_root</strong>(4,4)</td>
+            <td>
+<p>the frame's transform to the root frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hits"></span>
+              type(<a href='../type/pickhit.html'>PickHit</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>hits</strong>(:)</td>
+            <td>
+<p>hits so far (grown as needed)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~19"></span>
+              integer,
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>number of hits in hits</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-terrain_update"></span> <h3>private recursive subroutine <a href='../proc/terrain_update.html'>terrain_update</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Each frame: if the map's window has closed (the map was released with
+it), the map again for a window still open (compiled for the windows
+running), then the frame's update.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~130"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>simulation time (s)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

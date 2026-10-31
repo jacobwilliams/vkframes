@@ -1,0 +1,1350 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_gui &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_gui
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.8% of total for modules and submodules.">98 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_gui.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_gui.f90.html'>vkf_gui.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_gui</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_gui.html#type-gui">Gui</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-button">button</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-checkbox">checkbox</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-combo">combo</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-is_valid">is_valid</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-slider">slider</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-begin_panel">begin_panel</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-end_panel">end_panel</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-same_line">same_line</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-separator">separator</a>
+            <a class="list-group-item" href="../module/vkf_gui.html#proc-text">text</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>GUI panels in a window (not in OpenFrames): Dear ImGui panels, buttons,
+checkboxes and sliders, drawn flat on top of the scene, through vsgImGui.</p>
+<p>A window's Gui (<code>WindowProxy%gui()</code>, made on first use) is described
+immediate-mode, each frame (e.g. in the event handler's <code>before_draw</code>, or
+in the frame loop before <code>frame()</code>): panels (<code>begin_panel</code> ... <code>end_panel</code>)
+holding text, buttons, checkboxes, sliders, combo boxes (drop-down
+menus), separators. A widget's call gives what the user did with it at the
+frame before: <code>button</code> is true once after a click; <code>checkbox</code>, <code>slider</code>
+and <code>combo</code> change the value given (and are true then). What isn't described in a frame isn't shown in it.</p>
+<p>A panel is placed where ImGui puts it (and can be moved), or at a position
+(0 to 1 across the window, y up, as HUD text), at first or every frame
+(<code>follow</code>): e.g. next to a picked object, kept at its screen position
+(WindowProxy%screen_position). A title starting with '##' gives no title
+bar (a callout). Clicks, drags and keys over a panel go to it: the camera,
+the event handler and picking don't get them. The GUI is scaled by the
+window's pixel ratio. A Gui is a handle (copies are the same GUI), valid
+while its window is open.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_gui~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_guiUsesGraph" width="288pt" height="94pt"
+ viewBox="0.00 0.00 288.00 94.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_gui~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 90.27)">
+<title>module~~vkf_gui~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-90.27 283.54,-90.27 283.54,4 -4,4"/>
+<!-- module~vkf_gui -->
+<g id="module~~vkf_gui~~UsesGraph_node1" class="node">
+<title>module~vkf_gui</title>
+<polygon fill="none" stroke="black" points="279.54,-66.27 225.54,-66.27 225.54,-42 279.54,-42 279.54,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="252.54" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_gui</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_gui~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_gui~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="88.02,-86.27 5.25,-86.27 5.25,-62 88.02,-62 88.02,-86.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-70.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_gui&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_gui~~UsesGraph_edge1" class="edge">
+<title>module~vkf_gui&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.17,-65.19C214.34,-69.17 201.54,-73.16 189.54,-75.14 159.97,-80.01 126.47,-80.02 99.45,-78.7"/>
+<polygon fill="#000000" stroke="#000000" points="99.99,-75.22 89.8,-78.15 99.58,-82.21 99.99,-75.22"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_gui~~UsesGraph_node3" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_gui~~UsesGraph_node3"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.16,-66.27 129.65,-66.27 129.65,-42 189.16,-42 189.16,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_gui&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_gui~~UsesGraph_edge2" class="edge">
+<title>module~vkf_gui&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.18,-54.13C217.61,-54.13 209.16,-54.13 200.94,-54.13"/>
+<polygon fill="#000000" stroke="#000000" points="201.1,-50.64 191.09,-54.14 201.09,-57.64 201.1,-50.64"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_gui~~UsesGraph_node4" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_gui~~UsesGraph_node4"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_gui&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_gui~~UsesGraph_edge3" class="edge">
+<title>module~vkf_gui&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.18,-41.99C216.72,-38.09 207.17,-33.69 198.06,-29.49"/>
+<polygon fill="#000000" stroke="#000000" points="199.58,-26.33 189.03,-25.33 196.65,-32.69 199.58,-26.33"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_gui~~UsesGraph_edge4" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.3,-59.39C120.08,-61.06 109.58,-62.95 99.26,-64.81"/>
+<polygon fill="#000000" stroke="#000000" points="98.91,-61.32 89.69,-66.54 100.16,-68.21 98.91,-61.32"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_gui~~UsesGraph_node5" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_gui~~UsesGraph_node5"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-24.27 0,-24.27 0,0 93.27,0 93.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_gui~~UsesGraph_edge5" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-12.13C121.52,-12.13 113.21,-12.13 104.84,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="104.98,-8.64 94.98,-12.14 104.98,-15.64 104.98,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_gui~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_guiUsedByGraph" width="267pt" height="52pt"
+ viewBox="0.00 0.00 267.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_gui~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_gui~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 263.29,-48.27 263.29,4 -4,4"/>
+<!-- module~vkf_gui -->
+<g id="module~~vkf_gui~~UsedByGraph_node1" class="node">
+<title>module~vkf_gui</title>
+<polygon fill="none" stroke="black" points="54,-44.27 0,-44.27 0,-20 54,-20 54,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_gui</text>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_gui~~UsedByGraph_node2" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_gui~~UsedByGraph_node2"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="162.27,-24.27 90,-24.27 90,0 162.27,0 162.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="126.13" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_gui -->
+<g id="module~~vkf_gui~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_gui</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M89.52,-19.47C81.73,-21.07 73.47,-22.77 65.61,-24.39"/>
+<polygon fill="#000000" stroke="#000000" points="65.06,-20.93 55.97,-26.38 66.47,-27.79 65.06,-20.93"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_gui~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_gui~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="259.29,-44.27 198.27,-44.27 198.27,-20 259.29,-20 259.29,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="228.78" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_gui -->
+<g id="module~~vkf_gui~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_gui</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M197.78,-32.69C186.63,-32.87 173.87,-33.05 162.27,-33.13 130.15,-33.38 122.12,-33.39 90,-33.13 82.12,-33.07 73.67,-32.96 65.63,-32.84"/>
+<polygon fill="#000000" stroke="#000000" points="65.81,-29.34 55.76,-32.68 65.7,-36.34 65.81,-29.34"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_gui~~UsedByGraph_edge3" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M197.86,-26.19C190.21,-24.67 181.8,-23 173.54,-21.36"/>
+<polygon fill="#000000" stroke="#000000" points="174.42,-17.96 163.93,-19.45 173.05,-24.83 174.42,-17.96"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-gui"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/gui.html'>Gui</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A window's GUI panels (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-handle"></span>
+              type(c_ptr),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>handle</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the window's GUI in the C++ layer (null: none)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-begin_panel'>begin_panel</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-button'>button</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-checkbox'>checkbox</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-combo'>combo</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-end_panel'>end_panel</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-is_valid'>is_valid</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-same_line'>same_line</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-separator'>separator</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-slider'>slider</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/gui.html#boundprocedure-text~2'>text</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-button"></span> <h3>private  function <a href='../proc/button.html'>button</a>(self, label)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A button: true once after it was clicked.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~65"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-label~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>label</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-checkbox"></span> <h3>private  function <a href='../proc/checkbox.html'>checkbox</a>(self, label, value) result(changed)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A checkbox showing <code>value</code>: true (and <code>value</code> changed) after the user
+changed it.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~66"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-label~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>label</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-value"></span>
+              logical,
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>value</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-combo"></span> <h3>private  function <a href='../proc/combo.html'>combo</a>(self, label, index, items) result(changed)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A combo box (a drop-down menu) of <code>items</code> (trailing blanks trimmed),
+showing item <code>index</code> (1-based): true (and <code>index</code> changed) after the
+user chose another.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~68"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-label~6"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>label</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-index~3"></span>
+              integer,
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>index</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-items"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>items</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_valid"></span> <h3>private pure function <a href='../proc/is_valid.html'>is_valid</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>False if the window has no GUI (not open).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~61"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-slider"></span> <h3>private  function <a href='../proc/slider.html'>slider</a>(self, label, value, low, high, format) result(changed)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A slider showing <code>value</code>, from <code>low</code> to <code>high</code>: true (and <code>value</code>
+changed) after the user moved it. <code>format</code>: how the value is shown
+(printf's, e.g. '%.0f km'; default '%.4g').</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~67"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-label~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>label</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-value~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>value</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-low"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>low</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-high"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>high</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-format"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>format</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-begin_panel"></span> <h3>private  subroutine <a href='../proc/begin_panel.html'>begin_panel</a>(self, title, position, pivot, follow)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A panel titled <code>title</code> ('##name': no title bar), with the widgets up to
+<code>end_panel</code>. <code>position</code> ([x, y], 0 to 1 across the window, y up; default:
+where ImGui puts it) is where its point <code>pivot</code> is ([0, 0], the default:
+its top left; [0.5, 1]: the middle of its bottom); with <code>follow</code>, every
+frame (and it can't be moved), else at first.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~62"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-title"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>title</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(2)</td>
+            <td>
+<p>[x, y] (0 to 1 across the window, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pivot"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pivot</strong>(2)</td>
+            <td>
+<p>the panel's point at <code>position</code> (0 to 1, from its top left)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-follow"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>follow</strong></td>
+            <td>
+<p>place it every frame (default false: at first)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-end_panel"></span> <h3>private  subroutine <a href='../proc/end_panel.html'>end_panel</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>End the panel started by <code>begin_panel</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~63"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-same_line"></span> <h3>private  subroutine <a href='../proc/same_line.html'>same_line</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The next widget on the same line as the last.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~70"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-separator"></span> <h3>private  subroutine <a href='../proc/separator.html'>separator</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A horizontal separator line.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~69"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-text"></span> <h3>private  subroutine <a href='../proc/text.html'>text</a>(self, line)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A line of text.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~64"></span>
+              class(<a href='../type/gui.html'>Gui</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,3075 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_line_segments &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_line_segments
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.1% of total for modules and submodules.">269 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_line_segments.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_line_segments.f90.html'>vkf_line_segments.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_line_segments</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_segments.html#interface-customlinesegments">CustomLineSegments</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#absints-0"
+         aria-expanded="false" aria-controls="absints-0">
+         <h4 class="card-header bg-primary text-white">Abstract Interfaces</h4>
+      </a>
+      <div id="absints-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_segments.html#interface-segments_compute">segments_compute</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_segments.html#type-customlinesegments">CustomLineSegments</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#type-linesegmentscallback">LineSegmentsCallback</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-line_width">line_width</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-new_custom_line_segments">new_custom_line_segments</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-num_drawn~2">num_drawn</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-num_segments">num_segments</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-segment_color~2">segment_color</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-segments_frame_info">segments_frame_info</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-apply_style">apply_style</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-clear_callback">clear_callback</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-clear_segments">clear_segments</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-drawn_segment~2">drawn_segment</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-pattern">pattern</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-rgba">rgba</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-segment">segment</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-segments_bound">segments_bound</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-segments_build_contents">segments_build_contents</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-segments_late_update">segments_late_update</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-segments_set_color">segments_set_color</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-set_callback">set_callback</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-set_line_width">set_line_width</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-set_pattern">set_pattern</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-set_segments">set_segments</a>
+            <a class="list-group-item" href="../module/vkf_line_segments.html#proc-write_segments~2">write_segments</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Custom line segments, as OpenFrames' CustomLineSegments: a frame drawing
+line segments whose endpoints and colors (one per endpoint, blended along
+the segment) are set by the program (<code>set_segments</code>), or computed each
+frame by a callback (<code>set_callback</code>): e.g. lines of sight between
+spacecraft, or links between ground stations and satellites.</p>
+<p>The endpoints are in the frame's own coordinates (the frame can move like
+any other); <code>position_of(other)</code> gives another frame's origin in them. The
+callback, an extension of the abstract LineSegmentsCallback (OpenFrames'
+CustomLineSegments::Callback), is called once per scene update with the
+simulation time, after the whole tree has been updated
+(ReferenceFrame%late_update), so the positions of other frames are those
+for that time whatever their place in the tree; it sets the segments with
+<code>set_segments</code>. Setting the same segments again uploads nothing.</p>
+<p>The segments are drawn by a LineChain of separate segments (vkf_line_chain:
+thick lines in window units, square caps, dash patterns, points kept to
+double precision), with a color per point (vkf_line_create_colored).
+Without colors, the segments take the frame's color (<code>set_color</code>).
+(OpenFrames' custom line shader, setLineShader, isn't available: it would
+need GLSL compiled at run time.)</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_frames.html'>vkf_frames</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_line_chain.html'>vkf_line_chain</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_line_segments~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_line_segmentsUsesGraph" width="641pt" height="363pt"
+ viewBox="0.00 0.00 641.00 363.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_line_segments~~UsesGraph" class="graph" transform="scale(0.897923 0.897923) rotate(0) translate(4 400.71)">
+<title>module~~vkf_line_segments~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-400.71 709.87,-400.71 709.87,4 -4,4"/>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_line_segments~~UsesGraph_node1" class="node">
+<title>module~vkf_line_segments</title>
+<polygon fill="none" stroke="black" points="705.87,-79.47 596.85,-79.47 596.85,-55.2 705.87,-55.2 705.87,-79.47"/>
+<text xml:space="preserve" text-anchor="middle" x="651.36" y="-63.74" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_line_segments</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-112.47 129.27,-112.47 129.27,-88.2 212.04,-88.2 212.04,-112.47"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-96.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge1" class="edge">
+<title>module~vkf_line_segments&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M633.5,-54.82C610.72,-38.96 568.17,-13.01 526.84,-7.34"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M524.84,-7.34C475.41,-0.56 461.92,-14.74 412.57,-7.34"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M410.57,-7.34C338.65,3.45 313.75,4.83 248.04,-26.34 222.99,-38.22 201.04,-61.63 187.18,-78.95"/>
+<polygon fill="#000000" stroke="#000000" points="184.59,-76.58 181.26,-86.64 190.13,-80.85 184.59,-76.58"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_line_segments~~UsesGraph_node3" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node3"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="560.85,-79.47 490.83,-79.47 490.83,-55.2 560.85,-55.2 560.85,-79.47"/>
+<text xml:space="preserve" text-anchor="middle" x="525.84" y="-63.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge2" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M596.54,-67.34C588.6,-67.34 580.48,-67.34 572.71,-67.34"/>
+<polygon fill="#000000" stroke="#000000" points="572.79,-63.84 562.79,-67.34 572.79,-70.84 572.79,-63.84"/>
+</g>
+<!-- module~vkf_line_chain -->
+<g id="module~~vkf_line_segments~~UsesGraph_node4" class="node">
+<title>module~vkf_line_chain</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node4"><a xlink:href="../module/vkf_line_chain.html" xlink:title="vkf_line_chain">
+<polygon fill="#337ab7" stroke="#337ab7" points="454.83,-59.47 368.31,-59.47 368.31,-35.2 454.83,-35.2 454.83,-59.47"/>
+<text xml:space="preserve" text-anchor="middle" x="411.57" y="-43.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_chain</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_line_chain -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge3" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_line_chain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M524.84,-7.34C495.11,-3.26 463.03,-16.64 440.81,-29.01"/>
+<polygon fill="#000000" stroke="#000000" points="439.2,-25.89 432.35,-33.97 442.74,-31.93 439.2,-25.89"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_node5" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node5"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-310.47 140.52,-310.47 140.52,-286.2 200.79,-286.2 200.79,-310.47"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-294.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge4" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M644.45,-79.82C624.07,-121.57 552.64,-257.88 454.83,-332.34 379.84,-389.43 334.58,-416.68 248.04,-379.34 220.38,-367.4 198.09,-339.98 184.88,-320.35"/>
+<polygon fill="#000000" stroke="#000000" points="187.99,-318.72 179.64,-312.2 182.1,-322.5 187.99,-318.72"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge5" class="edge">
+<title>module~vkf_frames&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M509.72,-54.84C489.24,-39.01 450.82,-13.08 412.57,-7.34"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M524.55,-79.87C523.03,-117.74 513.55,-232.48 454.83,-299.34 441.24,-314.81 428.92,-305.82 412.57,-318.34"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M410.57,-318.34C368.44,-350.6 343.74,-311.05 291.17,-318.34"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_line_segments~~UsesGraph_node7" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node7"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="449.2,-290.47 373.93,-290.47 373.93,-266.2 449.2,-266.2 449.2,-290.47"/>
+<text xml:space="preserve" text-anchor="middle" x="411.57" y="-274.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge6" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.66,-79.54C516.62,-110.55 497.25,-193.83 454.83,-248.34 451.85,-252.17 448.24,-255.72 444.41,-258.94"/>
+<polygon fill="#000000" stroke="#000000" points="442.35,-256.11 436.45,-264.91 446.55,-261.71 442.35,-256.11"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_line_segments~~UsesGraph_node8" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node8"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="453.7,-198.47 369.43,-198.47 369.43,-174.2 453.7,-174.2 453.7,-198.47"/>
+<text xml:space="preserve" text-anchor="middle" x="411.57" y="-182.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge7" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M514.86,-79.84C501.68,-96.12 477.47,-125.25 454.83,-148.34 448.85,-154.44 442.07,-160.76 435.73,-166.46"/>
+<polygon fill="#000000" stroke="#000000" points="433.78,-163.52 428.6,-172.76 438.41,-168.76 433.78,-163.52"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_line_segments~~UsesGraph_node9" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node9"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="319.93,-92.47 260.41,-92.47 260.41,-68.2 319.93,-68.2 319.93,-92.47"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-76.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge8" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M490.36,-69.26C448.06,-71.61 376.45,-75.59 331.6,-78.09"/>
+<polygon fill="#000000" stroke="#000000" points="331.56,-74.59 321.77,-78.64 331.95,-81.58 331.56,-74.59"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_line_segments~~UsesGraph_node10" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node10"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="317.31,-370.47 263.04,-370.47 263.04,-346.2 317.31,-346.2 317.31,-370.47"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-354.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge10" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M410.57,-318.34C386.64,-336.66 353.85,-346.85 328.69,-352.35"/>
+<polygon fill="#000000" stroke="#000000" points="328.32,-348.86 319.21,-354.26 329.7,-355.72 328.32,-348.86"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_line_segments~~UsesGraph_node11" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node11"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="438.57,-139.47 384.57,-139.47 384.57,-115.2 438.57,-115.2 438.57,-139.47"/>
+<text xml:space="preserve" text-anchor="middle" x="411.57" y="-123.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge11" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M501.3,-79.92C485.29,-88.48 463.85,-99.93 446.06,-109.44"/>
+<polygon fill="#000000" stroke="#000000" points="444.58,-106.26 437.41,-114.06 447.88,-112.44 444.58,-106.26"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_line_segments~~UsesGraph_node12" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node12"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="332.31,-290.47 248.04,-290.47 248.04,-266.2 332.31,-266.2 332.31,-290.47"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-274.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge12" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M521.7,-79.94C514.41,-106.82 493.9,-170.34 454.83,-207.34 437.28,-223.96 380.32,-246.7 338.51,-261.92"/>
+<polygon fill="#000000" stroke="#000000" points="337.35,-258.62 329.13,-265.3 339.72,-265.2 337.35,-258.62"/>
+</g>
+<!-- module~vkf_line_chain&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge13" class="edge">
+<title>module~vkf_line_chain&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M367.83,-35.24C344.2,-30.85 314.91,-29.33 291.17,-40.34"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-40.34C270.91,-48.81 266.06,-50.35 248.04,-59.34 233.44,-66.62 217.52,-75.08 204,-82.42"/>
+<polygon fill="#000000" stroke="#000000" points="202.62,-79.19 195.53,-87.05 205.98,-85.33 202.62,-79.19"/>
+</g>
+<!-- module~vkf_line_chain&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge15" class="edge">
+<title>module~vkf_line_chain&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-40.34C270.91,-48.81 261.38,-44.25 248.04,-59.34 219.01,-92.2 188.4,-221.18 176.65,-274.78"/>
+<polygon fill="#000000" stroke="#000000" points="173.27,-273.86 174.57,-284.37 180.11,-275.34 173.27,-273.86"/>
+</g>
+<!-- module~vkf_line_chain&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge14" class="edge">
+<title>module~vkf_line_chain&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.14,-59.07C356.15,-62.38 343.15,-65.97 331.3,-69.25"/>
+<polygon fill="#000000" stroke="#000000" points="330.53,-65.83 321.83,-71.87 332.4,-72.58 330.53,-65.83"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_line_segments~~UsesGraph_node6" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node6"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-290.47 0,-290.47 0,-266.2 93.27,-266.2 93.27,-290.47"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-274.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge16" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-293.5C129.43,-291.74 116.96,-289.7 104.7,-287.69"/>
+<polygon fill="#000000" stroke="#000000" points="105.49,-284.27 95.06,-286.11 104.36,-291.18 105.49,-284.27"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge17" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.82,-290.92C359.06,-300.88 323.66,-313.84 291.17,-318.34"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge18" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.45,-278.34C364.1,-278.34 353.88,-278.34 343.93,-278.34"/>
+<polygon fill="#000000" stroke="#000000" points="343.95,-274.84 333.95,-278.34 343.95,-281.84 343.95,-274.84"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge19" class="edge">
+<title>module~vkf_geometry&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M369.23,-193.49C335.17,-197.46 286.4,-198.59 248.04,-181.34 220.7,-169.04 198.44,-141.9 185.15,-122.43"/>
+<polygon fill="#000000" stroke="#000000" points="188.1,-120.54 179.7,-114.07 182.23,-124.36 188.1,-120.54"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge21" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M403.12,-198.77C387.32,-224.85 350.4,-284.14 332.31,-299.34 316.89,-312.29 311.12,-315.57 291.17,-318.34"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-318.34C263.4,-321.91 234.58,-317.15 211.94,-311.38"/>
+<polygon fill="#000000" stroke="#000000" points="213.07,-308.05 202.5,-308.8 211.22,-314.81 213.07,-308.05"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge20" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396.4,-173.76C376.03,-155.67 338.23,-122.11 313.92,-100.53"/>
+<polygon fill="#000000" stroke="#000000" points="316.26,-97.92 306.45,-93.9 311.61,-103.16 316.26,-97.92"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge22" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.13,-85.28C249.09,-87.16 236.16,-89.36 223.65,-91.49"/>
+<polygon fill="#000000" stroke="#000000" points="223.1,-88.03 213.83,-93.16 224.28,-94.93 223.1,-88.03"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge23" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M264.54,-345.76C247.69,-337.16 225.12,-325.64 206.45,-316.1"/>
+<polygon fill="#000000" stroke="#000000" points="208.1,-313.02 197.61,-311.59 204.92,-319.25 208.1,-313.02"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge24" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M384.09,-124.35C345.51,-119.99 273.07,-111.8 223.61,-106.21"/>
+<polygon fill="#000000" stroke="#000000" points="224.02,-102.73 213.69,-105.09 223.24,-109.69 224.02,-102.73"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge27" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M393,-139.91C351.58,-169.56 247.6,-243.98 198.34,-279.24"/>
+<polygon fill="#000000" stroke="#000000" points="196.57,-276.2 190.48,-284.86 200.65,-281.89 196.57,-276.2"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge26" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M384.07,-116.91C368.37,-110.73 348.17,-102.78 330.63,-95.87"/>
+<polygon fill="#000000" stroke="#000000" points="332.1,-92.69 321.51,-92.28 329.54,-99.2 332.1,-92.69"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_line_segments~~UsesGraph_node13" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_line_segments~~UsesGraph_node13"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="317.31,-172.47 263.04,-172.47 263.04,-148.2 317.31,-148.2 317.31,-172.47"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-156.74" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge25" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M384.07,-134.66C367.76,-139.17 346.61,-145.02 328.61,-149.99"/>
+<polygon fill="#000000" stroke="#000000" points="327.76,-146.59 319.06,-152.63 329.63,-153.34 327.76,-146.59"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge28" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M264.45,-265.75C258.59,-261.98 252.69,-257.47 248.04,-252.34 212.86,-213.53 189.77,-155.55 178.89,-123.58"/>
+<polygon fill="#000000" stroke="#000000" points="182.24,-122.54 175.8,-114.13 175.59,-124.73 182.24,-122.54"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge30" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.74,-285.39C236.24,-287.35 223.77,-289.47 212.32,-291.42"/>
+<polygon fill="#000000" stroke="#000000" points="212.04,-287.91 202.77,-293.04 213.21,-294.82 212.04,-287.91"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_line_segments~~UsesGraph_edge29" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.54,-277.7C236.04,-277.55 223.56,-277.41 212.04,-277.34 175.25,-277.1 166.06,-277.11 129.27,-277.34 121.37,-277.39 113.04,-277.46 104.84,-277.55"/>
+<polygon fill="#000000" stroke="#000000" points="104.87,-274.05 94.91,-277.66 104.95,-281.05 104.87,-274.05"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_line_segmentsUsesGraph = svgPanZoom('#modulevkf_line_segmentsUsesGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_line_segments~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_line_segmentsUsedByGraph" width="214pt" height="32pt"
+ viewBox="0.00 0.00 214.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_line_segments~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>module~~vkf_line_segments~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 210.04,-28.27 210.04,4 -4,4"/>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_line_segments~~UsedByGraph_node1" class="node">
+<title>module~vkf_line_segments</title>
+<polygon fill="none" stroke="black" points="109.02,-24.27 0,-24.27 0,0 109.02,0 109.02,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="54.51" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_line_segments</text>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_line_segments~~UsedByGraph_node2" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_line_segments~~UsedByGraph_node2"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="206.04,-24.27 145.02,-24.27 145.02,0 206.04,0 206.04,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="175.53" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_line_segments~~UsedByGraph_edge1" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M144.8,-12.13C137.42,-12.13 129.21,-12.13 120.85,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="120.92,-8.64 110.92,-12.14 120.92,-15.64 120.92,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-customlinesegments"></span>
+      <h3>public        interface <a href='../interface/customlinesegments.html'>CustomLineSegments</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The CustomLineSegments constructor: <code>CustomLineSegments(...)</code> makes one (see <code>new_custom_line_segments</code> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_custom_line_segments.html'>new_custom_line_segments</a>(name, color, width) result(s)  
+
+    </h3>
+    
+  <p>Line segments named <code>name</code>, of <code>color</code> (for segments set without
+colors; default white) and <code>width</code> (window units; default 1).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~7"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~26"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+<p>line width (window units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/customlinesegments.html'>CustomLineSegments</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Abstract Interfaces</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="interface-segments_compute"></span><h3>abstract interface
+        
+    </h3></div>
+    <ul class="list-group">
+      <li class="list-group-item">
+            <h3>
+    private  subroutine segments_compute(self, segments, t)  
+
+    </h3>
+  <p>Set <code>segments</code>' segments for simulation time t (with set_segments).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~321"></span>
+              class(<a href='../type/linesegmentscallback.html'>LineSegmentsCallback</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-segments"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>segments</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~37"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+                <p>simulation time (s)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+      </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-customlinesegments"></span>
+      <h3>
+        type, public, extends(<a href='../type/referenceframe.html'>ReferenceFrame</a>)&nbsp;::&nbsp;
+        <a href='../type/customlinesegments.html'>CustomLineSegments</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Line segments with a color per endpoint (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~19"></span>
+              real(kind=wp),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(3, n): their endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~11"></span>
+              real(kind=wp),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(3, n): their endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-callback"></span>
+              class(<a href='../type/linesegmentscallback.html'>LineSegmentsCallback</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>callback</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>computes the segments each frame (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-chain~6"></span>
+              type(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>chain</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>draws the segments (separate, colored)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-changed~11"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>changed</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>to write and upload at the next update</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_a"></span>
+              real(kind=c_float),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>color_a</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(4, n), or not allocated: the frame's color</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_b"></span>
+              real(kind=c_float),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>color_b</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(4, n), or not allocated: the frame's color</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~42"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>segments</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_drawn~3"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_drawn</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>segments written to the chain (drawn)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern_~3"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern_</strong></td>
+<td> =</td>
+                <td>int(z&#39;FFFF&#39;)</td>
+            <td>
+<p>16-bit dash pattern (z'FFFF': solid)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern_factor~3"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern_factor</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+<p>window units per bit of the dash pattern</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width_~3"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width_</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>line width (window units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The CustomLineSegments constructor: <code>CustomLineSegments(...)</code> makes one (see <code>new_custom_line_segments</code> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_custom_line_segments.html'>new_custom_line_segments</a></strong>
+                    (name, color, width)
+                  </td>
+                  <td><p>Line segments named <code>name</code>, of <code>color</code> (for segments set without
+colors; default white) and <code>width</code> (window units; default 1).</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-add_child'>add_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-attitude~5'>attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_labels_shown'>axes_labels_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_shown'>axes_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axis_label'>axis_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-bound~2'>bound</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/segments_bound.html'>segments_bound</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-build_contents~3'>build_contents</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/segments_build_contents.html'>segments_build_contents</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child~3'>child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child_index'>child_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-clear_callback'>clear_callback</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-clear_segments'>clear_segments</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-color~37'>color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-contents_shown'>contents_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-detach'>detach</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-drawn_segment~2'>drawn_segment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follow~3'>follow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follower'>follower</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-frame_info~3'>frame_info</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/segments_frame_info.html'>segments_frame_info</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-frame_string'>frame_string</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-has_light_source'>has_light_source</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-is_following'>is_following</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_alignment'>label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_font'>label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_size'>label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-late_update'>late_update</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/segments_late_update.html'>segments_late_update</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_ambient~2'>light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_diffuse~2'>light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_source_enabled'>light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_specular~2'>light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-line_width'>line_width</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-local_matrix'>local_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_x_axis'>move_x_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_y_axis'>move_y_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_z_axis'>move_z_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name~14'>name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_on_top'>name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_shown'>name_label_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-node~17'>node</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_children'>num_children</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-num_drawn~4'>num_drawn</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_parents'>num_parents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-num_segments'>num_segments</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent~4'>parent</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent_index'>parent_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-pattern~7'>pattern</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-pick~7'>pick</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-pickable~3'>pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position~17'>position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position_of'>position_of</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-realize'>realize</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-remove_child'>remove_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-reposition_axes'>reposition_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-segment'>segment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_attitude~2'>set_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-set_callback'>set_callback</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-set_color~4'>set_color</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/segments_set_color.html'>segments_set_color</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_alignment'>set_label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_font'>set_label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_size'>set_label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_ambient~2'>set_light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_diffuse~2'>set_light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_source_enabled'>set_light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_specular~2'>set_light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-set_line_width'>set_line_width</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name'>set_name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name_label_on_top'>set_name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-set_pattern~3'>set_pattern</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_pickable~2'>set_pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_position~2'>set_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/customlinesegments.html#boundprocedure-set_segments'>set_segments</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_x_label'>set_x_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_y_label'>set_y_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_z_label'>set_z_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes'>show_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes_labels'>show_axes_labels</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_contents'>show_contents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_decorations'>show_decorations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_name_label'>show_name_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-sync~3'>sync</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-unfollow'>unfollow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-update~11'>update</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-world_matrix'>world_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-linesegmentscallback"></span>
+      <h3>
+        type, public, abstract&nbsp;::&nbsp;
+        <a href='../type/linesegmentscallback.html'>LineSegmentsCallback</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Computes a CustomLineSegments' segments each frame: extend it with a
+<code>compute</code> procedure, which calls <code>segments%set_segments</code> (OpenFrames'
+CustomLineSegments::Callback). The program owns the callback object (it
+must stay alive while set).</p>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure(<a href='../interface/segments_compute.html'>segments_compute</a>), public, deferred ::
+  <strong><a href='../type/linesegmentscallback.html#boundprocedure-compute'>compute</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-line_width"></span> <h3>private pure function <a href='../proc/line_width.html'>line_width</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Line width (window units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~332"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_custom_line_segments"></span> <h3>private  function <a href='../proc/new_custom_line_segments.html'>new_custom_line_segments</a>(name, color, width) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Line segments named <code>name</code>, of <code>color</code> (for segments set without
+colors; default white) and <code>width</code> (window units; default 1).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~7"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~26"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+<p>line width (window units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/customlinesegments.html'>CustomLineSegments</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_drawn~2"></span> <h3>private pure function <a href='../proc/num_drawn~2.html'>num_drawn</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Segments drawn now (0 until shown and updated).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~327"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_segments"></span> <h3>private pure function <a href='../proc/num_segments.html'>num_segments</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of segments set.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~323"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segment_color~2"></span> <h3>private  function <a href='../proc/segment_color~2.html'>segment_color</a>(self, c, i) result(rgba4)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Color i of <code>c</code> (color_a or color_b), or the frame's color if <code>c</code> is not allocated.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~325"></span>
+              type(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c~18"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>c</strong>(:,:)</td>
+            <td>
+<p>(4, n): [r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~39"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segments_frame_info"></span> <h3>private  function <a href='../proc/segments_frame_info.html'>segments_frame_info</a>(self) result(info)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The kind of frame: 'CustomLineSegments'.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~336"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_style"></span> <h3>private  subroutine <a href='../proc/apply_style.html'>apply_style</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Give the line width and dash pattern to the chain (if built).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~339"></span>
+              type(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-clear_callback"></span> <h3>private  subroutine <a href='../proc/clear_callback.html'>clear_callback</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Stop computing the segments with a callback (they stay as last set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~330"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-clear_segments"></span> <h3>private  subroutine <a href='../proc/clear_segments.html'>clear_segments</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Remove all segments.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~328"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-drawn_segment~2"></span> <h3>private  subroutine <a href='../proc/drawn_segment~2.html'>drawn_segment</a>(self, i, a, b, color_a, color_b)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Segment i as drawn (read back from the GPU buffers, for checks): its
+endpoints and colors.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~326"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~40"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~22"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(3)</td>
+            <td>
+<p>endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~14"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(3)</td>
+            <td>
+<p>endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_a~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_a</strong>(4)</td>
+            <td>
+<p>color at a: [r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_b~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_b</strong>(4)</td>
+            <td>
+<p>color at b: [r, g, b, a]</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-pattern"></span> <h3>private pure subroutine <a href='../proc/pattern.html'>pattern</a>(self, factor, bits)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The dash pattern (see <code>set_pattern</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~334"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-factor~8"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>factor</strong></td>
+            <td>
+<p>window units per bit</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bits~3"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bits</strong></td>
+            <td>
+<p>16 bits, bit 0 first (65535: solid)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-rgba"></span> <h3>private pure subroutine <a href='../proc/rgba.html'>rgba</a>(c, out)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Colors c (3 or 4 rows) into rgba(4, n) (alpha 1 if not given).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c~17"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>c</strong>(:,:)</td>
+            <td>
+<p>(3 or 4, n): [r, g, b(, a)] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-out"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>out</strong>(:,:)</td>
+            <td>
+<p>(4, n): [r, g, b, a]</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segment"></span> <h3>private  subroutine <a href='../proc/segment.html'>segment</a>(self, i, a, b, color_a, color_b)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Segment i: its endpoints, and their colors (rgba).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~324"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~38"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(3)</td>
+            <td>
+<p>endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~13"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(3)</td>
+            <td>
+<p>endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_a~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_a</strong>(4)</td>
+            <td>
+<p>color at a: [r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_b~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_b</strong>(4)</td>
+            <td>
+<p>color at b: [r, g, b, a]</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segments_bound"></span> <h3>private  subroutine <a href='../proc/segments_bound.html'>segments_bound</a>(self, center, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The segments' bounding sphere (frame coordinates).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~337"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segments_build_contents"></span> <h3>private  subroutine <a href='../proc/segments_build_contents.html'>segments_build_contents</a>(self, viewer, group)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The chain of separate segments with a color per point, under <code>group</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~338"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~10"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>a window's viewer handle (null: headless)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-group~11"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+            <td>
+<p>the group node to draw under</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segments_late_update"></span> <h3>private recursive subroutine <a href='../proc/segments_late_update.html'>segments_late_update</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>After the tree's update for time t: the callback's segments (all frames
+at their positions for t), written and uploaded if they changed.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~340"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~38"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>simulation time (s)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segments_set_color"></span> <h3>private  subroutine <a href='../proc/segments_set_color.html'>segments_set_color</a>(self, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The frame's color: also that of segments set without colors.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~335"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~27"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_callback"></span> <h3>private  subroutine <a href='../proc/set_callback.html'>set_callback</a>(self, callback)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Compute the segments each frame with <code>callback</code> (see the module
+documentation; it must stay alive while set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~329"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-callback~2"></span>
+              class(<a href='../type/linesegmentscallback.html'>LineSegmentsCallback</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>callback</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_line_width"></span> <h3>private  subroutine <a href='../proc/set_line_width.html'>set_line_width</a>(self, width)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Line width (window units: logical pixels).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~331"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~10"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+<p>(window units; &gt;= 0)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_pattern"></span> <h3>private  subroutine <a href='../proc/set_pattern.html'>set_pattern</a>(self, factor, pattern)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Dash pattern: OpenGL's line stipple (16 bits, bit 0 first, each <code>factor</code>
+window units; 65535: solid), as CurveArtist%set_pattern.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~333"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-factor~7"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>factor</strong></td>
+            <td>
+<p>window units per bit (&gt;= 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern~8"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern</strong></td>
+            <td>
+<p>16 bits, bit 0 first (65535: solid)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_segments"></span> <h3>private  subroutine <a href='../proc/set_segments.html'>set_segments</a>(self, a, b, color_a, color_b)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The segments: from a(:, i) to b(:, i) (frame coordinates), colored
+color_a(:, i) at a and color_b(:, i) at b ([r, g, b] or [r, g, b, a]
+columns; one of them for both ends; neither: the frame's color). Setting
+the same segments again changes nothing (no upload).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~322"></span>
+              class(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(:,:)</td>
+            <td>
+<p>(3, n): first endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(:,:)</td>
+            <td>
+<p>(3, n): second endpoints (frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_a~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_a</strong>(:,:)</td>
+            <td>
+<p>(3 or 4, n): colors at a, [r, g, b(, a)] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_b~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_b</strong>(:,:)</td>
+            <td>
+<p>(3 or 4, n): colors at b, [r, g, b(, a)] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-write_segments~2"></span> <h3>private  subroutine <a href='../proc/write_segments~2.html'>write_segments</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The segments into the chain: segment i as points 2i-1 (a) and 2i (b),
+with their colors; uploaded, and drawn.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~341"></span>
+              type(<a href='../type/customlinesegments.html'>CustomLineSegments</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

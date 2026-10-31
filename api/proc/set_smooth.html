@@ -1,0 +1,906 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>set_smooth &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>set_smooth
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">6 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_shapes.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_shapes.f90.html'>vkf_shapes.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_shapes.html'>vkf_shapes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">set_smooth</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/set_smooth.html#src">set_smooth</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine set_smooth(self, smooth)  
+</h2>
+    
+
+    <p>Shading smooth across the vertices (normals averaged over the faces
+around each: a curved surface, e.g. a grid's), or flat faces (the
+default: a polyhedron's).</p>
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/polyhedron.html'>Polyhedron</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~778"></span>
+              class(<a href='../type/polyhedron.html'>Polyhedron</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-smooth~2"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>smooth</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~set_smooth~~CallsGraph Pages: 1 -->
+<svg id="procset_smoothCallsGraph" width="641pt" height="524pt"
+ viewBox="0.00 0.00 641.00 524.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~set_smooth~~CallsGraph" class="graph" transform="scale(0.796174 0.796174) rotate(0) translate(4 654.27)">
+<title>proc~~set_smooth~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-654.27 801.1,-654.27 801.1,4 -4,4"/>
+<!-- proc~set_smooth -->
+<g id="proc~~set_smooth~~CallsGraph_node1" class="node">
+<title>proc~set_smooth</title>
+<polygon fill="none" stroke="black" points="141.27,-293.27 0,-293.27 0,-269 141.27,-269 141.27,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="70.63" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50">Polyhedron%set_smooth</text>
+</g>
+<!-- proc~make_polyhedron -->
+<g id="proc~~set_smooth~~CallsGraph_node2" class="node">
+<title>proc~make_polyhedron</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node2"><a xlink:href="../proc/make_polyhedron.html" xlink:title="make_polyhedron">
+<polygon fill="#d9534f" stroke="#d9534f" points="284.04,-293.27 177.27,-293.27 177.27,-269 284.04,-269 284.04,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="230.65" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_polyhedron</text>
+</a>
+</g>
+</g>
+<!-- proc~set_smooth&#45;&gt;proc~make_polyhedron -->
+<g id="proc~~set_smooth~~CallsGraph_edge1" class="edge">
+<title>proc~set_smooth&#45;&gt;proc~make_polyhedron</title>
+<path fill="none" stroke="#000000" d="M141.4,-281.13C149.4,-281.13 157.53,-281.13 165.45,-281.13"/>
+<polygon fill="#000000" stroke="#000000" points="165.36,-284.64 175.36,-281.14 165.36,-277.64 165.36,-284.64"/>
+</g>
+<!-- interface~vkf_switch_create -->
+<g id="proc~~set_smooth~~CallsGraph_node3" class="node">
+<title>interface~vkf_switch_create</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node3"><a xlink:href="../interface/vkf_switch_create.html" xlink:title="vkf_switch_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="436.18,-608.27 331.66,-608.27 331.66,-584 436.18,-584 436.18,-608.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-592.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_switch_create</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;interface~vkf_switch_create -->
+<g id="proc~~set_smooth~~CallsGraph_edge2" class="edge">
+<title>proc~make_polyhedron&#45;&gt;interface~vkf_switch_create</title>
+<path fill="none" stroke="#000000" d="M231.58,-293.75C232,-338.6 239.5,-492.12 320.04,-575.13 320.76,-575.88 321.5,-576.59 322.27,-577.28"/>
+<polygon fill="#000000" stroke="#000000" points="319.91,-579.9 330.08,-582.87 323.99,-574.2 319.91,-579.9"/>
+</g>
+<!-- proc~add -->
+<g id="proc~~set_smooth~~CallsGraph_node4" class="node">
+<title>proc~add</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node4"><a xlink:href="../proc/add.html" xlink:title="add">
+<polygon fill="#d9534f" stroke="#d9534f" points="410.92,-566.27 356.92,-566.27 356.92,-542 410.92,-542 410.92,-566.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-550.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">add</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~add -->
+<g id="proc~~set_smooth~~CallsGraph_edge3" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~add</title>
+<path fill="none" stroke="#000000" d="M232.3,-293.64C235.08,-334.19 249.36,-463.51 320.04,-533.13 327.05,-540.04 336.4,-544.68 345.74,-547.79"/>
+<polygon fill="#000000" stroke="#000000" points="344.53,-551.09 355.1,-550.38 346.39,-544.34 344.53,-551.09"/>
+</g>
+<!-- proc~line_node -->
+<g id="proc~~set_smooth~~CallsGraph_node5" class="node">
+<title>proc~line_node</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node5"><a xlink:href="../proc/line_node.html" xlink:title="line_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="415.56,-377.27 352.29,-377.27 352.29,-353 415.56,-353 415.56,-377.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-361.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~line_node -->
+<g id="proc~~set_smooth~~CallsGraph_edge4" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~line_node</title>
+<path fill="none" stroke="#000000" d="M254.3,-293.71C279.85,-307.9 321.6,-331.08 350.57,-347.17"/>
+<polygon fill="#000000" stroke="#000000" points="348.85,-350.22 359.29,-352.01 352.25,-344.1 348.85,-350.22"/>
+</g>
+<!-- proc~marker_node -->
+<g id="proc~~set_smooth~~CallsGraph_node6" class="node">
+<title>proc~marker_node</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node6"><a xlink:href="../proc/marker_node.html" xlink:title="marker_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="425.31,-293.27 342.54,-293.27 342.54,-269 425.31,-269 425.31,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~marker_node -->
+<g id="proc~~set_smooth~~CallsGraph_edge5" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~marker_node</title>
+<path fill="none" stroke="#000000" d="M284.14,-281.13C299.37,-281.13 315.99,-281.13 331.17,-281.13"/>
+<polygon fill="#000000" stroke="#000000" points="330.95,-284.64 340.95,-281.14 330.95,-277.64 330.95,-284.64"/>
+</g>
+<!-- proc~replace -->
+<g id="proc~~set_smooth~~CallsGraph_node7" class="node">
+<title>proc~replace</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node7"><a xlink:href="../proc/replace.html" xlink:title="ShapeNodes%replace">
+<polygon fill="#d9534f" stroke="#d9534f" points="447.81,-524.27 320.04,-524.27 320.04,-500 447.81,-500 447.81,-524.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-508.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ShapeNodes%replace</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~replace -->
+<g id="proc~~set_smooth~~CallsGraph_edge6" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~replace</title>
+<path fill="none" stroke="#000000" d="M239.79,-293.55C264.26,-330.92 337.43,-442.66 368.6,-490.27"/>
+<polygon fill="#000000" stroke="#000000" points="365.52,-491.94 373.92,-498.39 371.37,-488.1 365.52,-491.94"/>
+</g>
+<!-- proc~surface_node -->
+<g id="proc~~set_smooth~~CallsGraph_node8" class="node">
+<title>proc~surface_node</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node8"><a xlink:href="../proc/surface_node.html" xlink:title="surface_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="425.68,-190.27 342.16,-190.27 342.16,-166 425.68,-166 425.68,-190.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-174.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">surface_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~surface_node -->
+<g id="proc~~set_smooth~~CallsGraph_edge7" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~surface_node</title>
+<path fill="none" stroke="#000000" d="M250.2,-268.51C276.54,-250.57 324.97,-217.6 355.47,-196.83"/>
+<polygon fill="#000000" stroke="#000000" points="357.15,-199.92 363.45,-191.4 353.21,-194.13 357.15,-199.92"/>
+</g>
+<!-- proc~unit_normal -->
+<g id="proc~~set_smooth~~CallsGraph_node9" class="node">
+<title>proc~unit_normal</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node9"><a xlink:href="../proc/unit_normal.html" xlink:title="unit_normal">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="421.56,-106.27 346.29,-106.27 346.29,-82 421.56,-82 421.56,-106.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-90.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">unit_normal</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~unit_normal -->
+<g id="proc~~set_smooth~~CallsGraph_edge8" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~unit_normal</title>
+<path fill="none" stroke="#000000" d="M234.82,-268.69C243.25,-238.02 269.18,-158.14 320.04,-115.14 324.54,-111.33 329.75,-108.21 335.22,-105.65"/>
+<polygon fill="#000000" stroke="#000000" points="336.51,-108.9 344.5,-101.94 333.92,-102.4 336.51,-108.9"/>
+</g>
+<!-- proc~vertex_normals -->
+<g id="proc~~set_smooth~~CallsGraph_node10" class="node">
+<title>proc~vertex_normals</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node10"><a xlink:href="../proc/vertex_normals.html" xlink:title="vertex_normals">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="430.56,-148.27 337.29,-148.27 337.29,-124 430.56,-124 430.56,-148.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-132.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vertex_normals</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~vertex_normals -->
+<g id="proc~~set_smooth~~CallsGraph_edge9" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~vertex_normals</title>
+<path fill="none" stroke="#000000" d="M237.26,-268.59C249.01,-243.69 278.6,-187.79 320.04,-157.13 322.19,-155.55 324.46,-154.07 326.82,-152.71"/>
+<polygon fill="#000000" stroke="#000000" points="328.17,-155.95 335.56,-148.36 325.05,-149.68 328.17,-155.95"/>
+</g>
+<!-- proc~vertices_sphere -->
+<g id="proc~~set_smooth~~CallsGraph_node11" class="node">
+<title>proc~vertices_sphere</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node11"><a xlink:href="../proc/vertices_sphere.html" xlink:title="vertices_sphere">
+<polygon fill="#d9534f" stroke="#d9534f" points="431.31,-64.27 336.54,-64.27 336.54,-40 431.31,-40 431.31,-64.27"/>
+<text xml:space="preserve" text-anchor="middle" x="383.92" y="-48.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vertices_sphere</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~vertices_sphere -->
+<g id="proc~~set_smooth~~CallsGraph_edge10" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~vertices_sphere</title>
+<path fill="none" stroke="#000000" d="M233.37,-268.56C238.91,-232.69 259.65,-128.9 320.04,-73.14 321.93,-71.39 323.97,-69.79 326.12,-68.32"/>
+<polygon fill="#000000" stroke="#000000" points="327.79,-71.4 334.78,-63.44 324.35,-65.3 327.79,-71.4"/>
+</g>
+<!-- interface~vkf_node_add_child -->
+<g id="proc~~set_smooth~~CallsGraph_node18" class="node">
+<title>interface~vkf_node_add_child</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node18"><a xlink:href="../interface/vkf_node_add_child.html" xlink:title="vkf_node_add_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="609.7,-608.27 493.93,-608.27 493.93,-584 609.7,-584 609.7,-608.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-592.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~set_smooth~~CallsGraph_edge11" class="edge">
+<title>proc~add&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M411.21,-560.79C432.33,-566.14 462.84,-573.86 489.95,-580.72"/>
+<polygon fill="#000000" stroke="#000000" points="488.91,-584.07 499.46,-583.13 490.63,-577.28 488.91,-584.07"/>
+</g>
+<!-- interface~vkf_node_delete -->
+<g id="proc~~set_smooth~~CallsGraph_node19" class="node">
+<title>interface~vkf_node_delete</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node19"><a xlink:href="../interface/vkf_node_delete.html" xlink:title="vkf_node_delete">
+<polygon fill="#a7506f" stroke="#a7506f" points="601.08,-650.27 502.56,-650.27 502.56,-626 601.08,-626 601.08,-650.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-634.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_delete</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~set_smooth~~CallsGraph_edge12" class="edge">
+<title>proc~add&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M411.15,-559.5C423.02,-562.76 436.83,-567.75 447.81,-575.13 468.21,-588.86 463.28,-603.6 483.81,-617.13 486.35,-618.81 489.02,-620.35 491.79,-621.78"/>
+<polygon fill="#000000" stroke="#000000" points="490.18,-624.89 500.73,-625.83 493.07,-618.52 490.18,-624.89"/>
+</g>
+<!-- proc~check_status -->
+<g id="proc~~set_smooth~~CallsGraph_node21" class="node">
+<title>proc~check_status</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node21"><a xlink:href="../proc/check_status.html" xlink:title="check_status">
+<polygon fill="#d9534f" stroke="#d9534f" points="591.7,-482.27 511.93,-482.27 511.93,-458 591.7,-458 591.7,-482.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-466.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_status</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;proc~check_status -->
+<g id="proc~~set_smooth~~CallsGraph_edge13" class="edge">
+<title>proc~add&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M411.15,-548.77C423.02,-545.51 436.83,-540.52 447.81,-533.13 468.21,-519.41 463.28,-504.67 483.81,-491.13 489.03,-487.7 494.84,-484.79 500.8,-482.35"/>
+<polygon fill="#000000" stroke="#000000" points="501.97,-485.65 510.18,-478.94 499.58,-479.07 501.97,-485.65"/>
+</g>
+<!-- interface~vkf_line_create -->
+<g id="proc~~set_smooth~~CallsGraph_node13" class="node">
+<title>interface~vkf_line_create</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node13"><a xlink:href="../interface/vkf_line_create.html" xlink:title="vkf_line_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="597.33,-440.27 506.31,-440.27 506.31,-416 597.33,-416 597.33,-440.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-424.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_create</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;interface~vkf_line_create -->
+<g id="proc~~set_smooth~~CallsGraph_edge14" class="edge">
+<title>proc~line_node&#45;&gt;interface~vkf_line_create</title>
+<path fill="none" stroke="#000000" d="M412.34,-377.63C432.03,-386.4 459.3,-398.12 483.81,-407.13 488.25,-408.77 492.89,-410.39 497.55,-411.97"/>
+<polygon fill="#000000" stroke="#000000" points="496.4,-415.27 506.99,-415.07 498.58,-408.62 496.4,-415.27"/>
+</g>
+<!-- proc~line_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_smooth~~CallsGraph_edge15" class="edge">
+<title>proc~line_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M396.22,-377.47C413.46,-395.61 448.11,-429.45 483.81,-449.13 489.15,-452.08 494.96,-454.67 500.85,-456.94"/>
+<polygon fill="#000000" stroke="#000000" points="499.44,-460.16 510.03,-460.18 501.77,-453.56 499.44,-460.16"/>
+</g>
+<!-- proc~line_set_points -->
+<g id="proc~~set_smooth~~CallsGraph_node23" class="node">
+<title>proc~line_set_points</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node23"><a xlink:href="../proc/line_set_points.html" xlink:title="line_set_points">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="596.58,-272.27 507.06,-272.27 507.06,-248 596.58,-248 596.58,-272.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-256.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_points</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_points -->
+<g id="proc~~set_smooth~~CallsGraph_edge16" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_points</title>
+<path fill="none" stroke="#000000" d="M396.22,-352.8C413.46,-334.66 448.11,-300.82 483.81,-281.13 487.72,-278.98 491.89,-277.01 496.15,-275.22"/>
+<polygon fill="#000000" stroke="#000000" points="497.37,-278.5 505.46,-271.66 494.87,-271.96 497.37,-278.5"/>
+</g>
+<!-- proc~line_set_segments -->
+<g id="proc~~set_smooth~~CallsGraph_node24" class="node">
+<title>proc~line_set_segments</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node24"><a xlink:href="../proc/line_set_segments.html" xlink:title="line_set_segments">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="606.33,-356.27 497.31,-356.27 497.31,-332 606.33,-332 606.33,-356.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-340.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_segments</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_segments -->
+<g id="proc~~set_smooth~~CallsGraph_edge17" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_segments</title>
+<path fill="none" stroke="#000000" d="M415.74,-361.23C435.4,-358.75 461.62,-355.43 485.73,-352.37"/>
+<polygon fill="#000000" stroke="#000000" points="486.01,-355.87 495.49,-351.14 485.13,-348.92 486.01,-355.87"/>
+</g>
+<!-- proc~line_set_style -->
+<g id="proc~~set_smooth~~CallsGraph_node25" class="node">
+<title>proc~line_set_style</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node25"><a xlink:href="../proc/line_set_style.html" xlink:title="line_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="592.83,-398.27 510.81,-398.27 510.81,-374 592.83,-374 592.83,-398.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-382.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_style -->
+<g id="proc~~set_smooth~~CallsGraph_edge18" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_style</title>
+<path fill="none" stroke="#000000" d="M415.74,-369.04C439.11,-371.99 471.76,-376.13 499.1,-379.59"/>
+<polygon fill="#000000" stroke="#000000" points="498.59,-383.05 508.95,-380.84 499.47,-376.11 498.59,-383.05"/>
+</g>
+<!-- interface~vkf_marker_create -->
+<g id="proc~~set_smooth~~CallsGraph_node14" class="node">
+<title>interface~vkf_marker_create</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node14"><a xlink:href="../interface/vkf_marker_create.html" xlink:title="vkf_marker_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="607.08,-230.27 496.56,-230.27 496.56,-206 607.08,-206 607.08,-230.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-214.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_marker_create</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_node&#45;&gt;interface~vkf_marker_create -->
+<g id="proc~~set_smooth~~CallsGraph_edge19" class="edge">
+<title>proc~marker_node&#45;&gt;interface~vkf_marker_create</title>
+<path fill="none" stroke="#000000" d="M412.34,-268.64C432.03,-259.87 459.3,-248.15 483.81,-239.13 488.25,-237.5 492.89,-235.88 497.55,-234.3"/>
+<polygon fill="#000000" stroke="#000000" points="498.58,-237.65 506.99,-231.2 496.4,-231 498.58,-237.65"/>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_smooth~~CallsGraph_edge20" class="edge">
+<title>proc~marker_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M400.92,-293.55C415.02,-305.24 435.22,-323.94 447.81,-344.13 473.91,-386 448.47,-414.72 483.81,-449.13 488.8,-453.99 494.89,-457.73 501.35,-460.6"/>
+<polygon fill="#000000" stroke="#000000" points="499.69,-463.71 510.28,-463.91 502.13,-457.15 499.69,-463.71"/>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~line_set_points -->
+<g id="proc~~set_smooth~~CallsGraph_edge21" class="edge">
+<title>proc~marker_node&#45;&gt;proc~line_set_points</title>
+<path fill="none" stroke="#000000" d="M425.51,-276C446.51,-273.34 472.48,-270.05 495.31,-267.16"/>
+<polygon fill="#000000" stroke="#000000" points="495.6,-270.65 505.08,-265.93 494.72,-263.71 495.6,-270.65"/>
+</g>
+<!-- proc~marker_set_style -->
+<g id="proc~~set_smooth~~CallsGraph_node26" class="node">
+<title>proc~marker_set_style</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node26"><a xlink:href="../proc/marker_set_style.html" xlink:title="marker_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="602.58,-314.27 501.06,-314.27 501.06,-290 602.58,-290 602.58,-314.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-298.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~marker_set_style -->
+<g id="proc~~set_smooth~~CallsGraph_edge22" class="edge">
+<title>proc~marker_node&#45;&gt;proc~marker_set_style</title>
+<path fill="none" stroke="#000000" d="M425.51,-286.27C444.7,-288.7 468.02,-291.65 489.32,-294.35"/>
+<polygon fill="#000000" stroke="#000000" points="488.71,-297.8 499.07,-295.58 489.59,-290.86 488.71,-297.8"/>
+</g>
+<!-- interface~vkf_compile_node -->
+<g id="proc~~set_smooth~~CallsGraph_node12" class="node">
+<title>interface~vkf_compile_node</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node12"><a xlink:href="../interface/vkf_compile_node.html" xlink:title="vkf_compile_node">
+<polygon fill="#a7506f" stroke="#a7506f" points="605.58,-566.27 498.06,-566.27 498.06,-542 605.58,-542 605.58,-566.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-550.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_compile_node</text>
+</a>
+</g>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~set_smooth~~CallsGraph_edge23" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M434.7,-524.74C452.09,-529.14 471.8,-534.13 489.99,-538.73"/>
+<polygon fill="#000000" stroke="#000000" points="489.06,-542.11 499.61,-541.17 490.78,-535.32 489.06,-542.11"/>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~set_smooth~~CallsGraph_edge24" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M431.95,-524.66C437.51,-527.05 442.94,-529.86 447.81,-533.13 468.21,-546.86 463.28,-561.6 483.81,-575.13 485.76,-576.42 487.79,-577.63 489.88,-578.77"/>
+<polygon fill="#000000" stroke="#000000" points="488.12,-581.81 498.65,-582.95 491.13,-575.49 488.12,-581.81"/>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~set_smooth~~CallsGraph_edge25" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M435.83,-524.76C440.17,-527.1 444.25,-529.86 447.81,-533.13 477.69,-560.65 453.67,-589.9 483.81,-617.13 486.4,-619.47 489.24,-621.55 492.25,-623.39"/>
+<polygon fill="#000000" stroke="#000000" points="490.48,-626.42 500.98,-627.85 493.66,-620.18 490.48,-626.42"/>
+</g>
+<!-- interface~vkf_node_remove_child -->
+<g id="proc~~set_smooth~~CallsGraph_node20" class="node">
+<title>interface~vkf_node_remove_child</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node20"><a xlink:href="../interface/vkf_node_remove_child.html" xlink:title="vkf_node_remove_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="619.83,-524.27 483.81,-524.27 483.81,-500 619.83,-500 619.83,-524.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-508.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_remove_child</text>
+</a>
+</g>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_remove_child -->
+<g id="proc~~set_smooth~~CallsGraph_edge26" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_remove_child</title>
+<path fill="none" stroke="#000000" d="M448.12,-512.13C455.96,-512.13 464.05,-512.13 472.09,-512.13"/>
+<polygon fill="#000000" stroke="#000000" points="471.87,-515.64 481.87,-512.14 471.87,-508.64 471.87,-515.64"/>
+</g>
+<!-- proc~replace&#45;&gt;proc~check_status -->
+<g id="proc~~set_smooth~~CallsGraph_edge27" class="edge">
+<title>proc~replace&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M434.7,-499.53C455.57,-494.25 479.8,-488.12 500.71,-482.82"/>
+<polygon fill="#000000" stroke="#000000" points="501.32,-486.28 510.15,-480.43 499.6,-479.49 501.32,-486.28"/>
+</g>
+<!-- interface~vkf_mesh_array -->
+<g id="proc~~set_smooth~~CallsGraph_node15" class="node">
+<title>interface~vkf_mesh_array</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node15"><a xlink:href="../interface/vkf_mesh_array.html" xlink:title="vkf_mesh_array">
+<polygon fill="#a7506f" stroke="#a7506f" points="774.22,-179.27 678.7,-179.27 678.7,-155 774.22,-155 774.22,-179.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.46" y="-163.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_array</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;interface~vkf_mesh_array -->
+<g id="proc~~set_smooth~~CallsGraph_edge28" class="edge">
+<title>proc~surface_node&#45;&gt;interface~vkf_mesh_array</title>
+<path fill="none" stroke="#000000" d="M426,-176.81C486.04,-174.87 598.05,-171.25 666.76,-169.03"/>
+<polygon fill="#000000" stroke="#000000" points="666.84,-172.53 676.72,-168.71 666.62,-165.53 666.84,-172.53"/>
+</g>
+<!-- interface~vkf_mesh_create -->
+<g id="proc~~set_smooth~~CallsGraph_node16" class="node">
+<title>interface~vkf_mesh_create</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node16"><a xlink:href="../interface/vkf_mesh_create.html" xlink:title="vkf_mesh_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="602.2,-108.27 501.43,-108.27 501.43,-84 602.2,-84 602.2,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_create</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;interface~vkf_mesh_create -->
+<g id="proc~~set_smooth~~CallsGraph_edge29" class="edge">
+<title>proc~surface_node&#45;&gt;interface~vkf_mesh_create</title>
+<path fill="none" stroke="#000000" d="M425.93,-167.86C433.54,-165.02 441.17,-161.49 447.81,-157.13 467.81,-144.02 463.68,-130.06 483.81,-117.14 486.06,-115.69 488.42,-114.34 490.85,-113.07"/>
+<polygon fill="#000000" stroke="#000000" points="492.13,-116.34 499.77,-108.99 489.22,-109.97 492.13,-116.34"/>
+</g>
+<!-- interface~vkf_mesh_set_bound -->
+<g id="proc~~set_smooth~~CallsGraph_node17" class="node">
+<title>interface~vkf_mesh_set_bound</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node17"><a xlink:href="../interface/vkf_mesh_set_bound.html" xlink:title="vkf_mesh_set_bound">
+<polygon fill="#a7506f" stroke="#a7506f" points="612.7,-66.27 490.93,-66.27 490.93,-42 612.7,-42 612.7,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_set_bound</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;interface~vkf_mesh_set_bound -->
+<g id="proc~~set_smooth~~CallsGraph_edge30" class="edge">
+<title>proc~surface_node&#45;&gt;interface~vkf_mesh_set_bound</title>
+<path fill="none" stroke="#000000" d="M425.87,-169.97C433.82,-166.94 441.6,-162.8 447.81,-157.13 477.21,-130.31 454.16,-101.69 483.81,-75.14 484.74,-74.3 485.7,-73.5 486.7,-72.73"/>
+<polygon fill="#000000" stroke="#000000" points="488.45,-75.76 495.02,-67.45 484.7,-69.85 488.45,-75.76"/>
+</g>
+<!-- proc~surface_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_smooth~~CallsGraph_edge31" class="edge">
+<title>proc~surface_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M397.48,-190.52C411.98,-205.59 435.41,-232.47 447.81,-260.13 482.77,-338.17 426.93,-385.28 483.81,-449.13 488.55,-454.45 494.61,-458.44 501.15,-461.42"/>
+<polygon fill="#000000" stroke="#000000" points="499.68,-464.61 510.27,-464.8 502.11,-458.04 499.68,-464.61"/>
+</g>
+<!-- proc~mesh_arrays -->
+<g id="proc~~set_smooth~~CallsGraph_node27" class="node">
+<title>proc~mesh_arrays</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node27"><a xlink:href="../proc/mesh_arrays.html" xlink:title="mesh_arrays">
+<polygon fill="#d9534f" stroke="#d9534f" points="591.7,-150.27 511.93,-150.27 511.93,-126 591.7,-126 591.7,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">mesh_arrays</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;proc~mesh_arrays -->
+<g id="proc~~set_smooth~~CallsGraph_edge32" class="edge">
+<title>proc~surface_node&#45;&gt;proc~mesh_arrays</title>
+<path fill="none" stroke="#000000" d="M425.93,-168.25C448.55,-162.79 476.8,-155.98 500.72,-150.22"/>
+<polygon fill="#000000" stroke="#000000" points="501.34,-153.67 510.24,-147.92 499.7,-146.86 501.34,-153.67"/>
+</g>
+<!-- proc~cross -->
+<g id="proc~~set_smooth~~CallsGraph_node22" class="node">
+<title>proc~cross</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node22"><a xlink:href="../proc/cross.html" xlink:title="cross">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="578.82,-24.27 524.82,-24.27 524.82,0 578.82,0 578.82,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="551.82" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cross</text>
+</a>
+</g>
+</g>
+<!-- proc~unit_normal&#45;&gt;proc~cross -->
+<g id="proc~~set_smooth~~CallsGraph_edge33" class="edge">
+<title>proc~unit_normal&#45;&gt;proc~cross</title>
+<path fill="none" stroke="#000000" d="M421.98,-85.28C430.85,-82.22 440.01,-78.25 447.81,-73.14 467.81,-60.02 463.68,-46.06 483.81,-33.13 492.85,-27.33 503.61,-23.03 513.83,-19.89"/>
+<polygon fill="#000000" stroke="#000000" points="514.43,-23.36 523.14,-17.33 512.57,-16.61 514.43,-23.36"/>
+</g>
+<!-- proc~vertex_normals&#45;&gt;proc~cross -->
+<g id="proc~~set_smooth~~CallsGraph_edge34" class="edge">
+<title>proc~vertex_normals&#45;&gt;proc~cross</title>
+<path fill="none" stroke="#000000" d="M430.74,-125.96C436.95,-123.17 442.88,-119.64 447.81,-115.14 477.21,-88.31 454.16,-59.69 483.81,-33.13 492.01,-25.79 502.77,-21.01 513.26,-17.91"/>
+<polygon fill="#000000" stroke="#000000" points="514.06,-21.31 522.93,-15.51 512.38,-14.52 514.06,-21.31"/>
+</g>
+<!-- interface~vkf_line_points -->
+<g id="proc~~set_smooth~~CallsGraph_node28" class="node">
+<title>interface~vkf_line_points</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node28"><a xlink:href="../interface/vkf_line_points.html" xlink:title="vkf_line_points">
+<polygon fill="#a7506f" stroke="#a7506f" points="771.22,-240.27 681.7,-240.27 681.7,-216 771.22,-216 771.22,-240.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.46" y="-224.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_points</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_points&#45;&gt;interface~vkf_line_points -->
+<g id="proc~~set_smooth~~CallsGraph_edge35" class="edge">
+<title>proc~line_set_points&#45;&gt;interface~vkf_line_points</title>
+<path fill="none" stroke="#000000" d="M596.83,-251.98C619.07,-247.86 646.28,-242.81 669.94,-238.43"/>
+<polygon fill="#000000" stroke="#000000" points="670.55,-241.87 679.74,-236.61 669.27,-234.99 670.55,-241.87"/>
+</g>
+<!-- interface~vkf_line_points_changed -->
+<g id="proc~~set_smooth~~CallsGraph_node29" class="node">
+<title>interface~vkf_line_points_changed</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node29"><a xlink:href="../interface/vkf_line_points_changed.html" xlink:title="vkf_line_points_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="797.1,-282.27 655.83,-282.27 655.83,-258 797.1,-258 797.1,-282.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.46" y="-266.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_points_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_points&#45;&gt;interface~vkf_line_points_changed -->
+<g id="proc~~set_smooth~~CallsGraph_edge36" class="edge">
+<title>proc~line_set_points&#45;&gt;interface~vkf_line_points_changed</title>
+<path fill="none" stroke="#000000" d="M596.83,-262.68C611.28,-263.52 627.83,-264.48 644.14,-265.42"/>
+<polygon fill="#000000" stroke="#000000" points="643.67,-268.9 653.86,-265.99 644.07,-261.91 643.67,-268.9"/>
+</g>
+<!-- interface~vkf_line_style -->
+<g id="proc~~set_smooth~~CallsGraph_node30" class="node">
+<title>interface~vkf_line_style</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node30"><a xlink:href="../interface/vkf_line_style.html" xlink:title="vkf_line_style">
+<polygon fill="#a7506f" stroke="#a7506f" points="767.47,-366.27 685.45,-366.27 685.45,-342 767.47,-342 767.47,-366.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.46" y="-350.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_smooth~~CallsGraph_edge37" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M606.5,-347.24C627.88,-348.48 652.39,-349.9 673.59,-351.13"/>
+<polygon fill="#000000" stroke="#000000" points="673.29,-354.62 683.48,-351.7 673.7,-347.63 673.29,-354.62"/>
+</g>
+<!-- interface~vkf_line_style_changed -->
+<g id="proc~~set_smooth~~CallsGraph_node31" class="node">
+<title>interface~vkf_line_style_changed</title>
+<g id="a_proc~~set_smooth~~CallsGraph_node31"><a xlink:href="../interface/vkf_line_style_changed.html" xlink:title="vkf_line_style_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="793.35,-324.27 659.58,-324.27 659.58,-300 793.35,-300 793.35,-324.27"/>
+<text xml:space="preserve" text-anchor="middle" x="726.46" y="-308.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_smooth~~CallsGraph_edge38" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M606.5,-334.19C619.7,-331.74 634.09,-329.07 648.16,-326.46"/>
+<polygon fill="#000000" stroke="#000000" points="648.67,-329.93 657.86,-324.67 647.39,-323.05 648.67,-329.93"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_smooth~~CallsGraph_edge39" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M593.3,-378.63C617.43,-374.16 648.3,-368.44 674.14,-363.65"/>
+<polygon fill="#000000" stroke="#000000" points="674.56,-367.13 683.75,-361.87 673.28,-360.25 674.56,-367.13"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_smooth~~CallsGraph_edge40" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M593.31,-376.48C602.34,-373.5 611.66,-369.76 619.83,-365.13 638.46,-354.59 637.14,-343.58 655.83,-333.13 658.48,-331.66 661.24,-330.27 664.07,-328.97"/>
+<polygon fill="#000000" stroke="#000000" points="665.26,-332.27 673.17,-325.22 662.59,-325.8 665.26,-332.27"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_smooth~~CallsGraph_edge41" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M594.61,-314.72C618.61,-321.95 648.92,-331.08 674.33,-338.73"/>
+<polygon fill="#000000" stroke="#000000" points="673.21,-342.05 683.8,-341.58 675.23,-335.35 673.21,-342.05"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_smooth~~CallsGraph_edge42" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M602.76,-305.03C616.94,-305.85 632.73,-306.76 648.13,-307.66"/>
+<polygon fill="#000000" stroke="#000000" points="647.55,-311.13 657.74,-308.21 647.96,-304.14 647.55,-311.13"/>
+</g>
+<!-- proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array -->
+<g id="proc~~set_smooth~~CallsGraph_edge43" class="edge">
+<title>proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array</title>
+<path fill="none" stroke="#000000" d="M592,-144.72C614.25,-148.45 642.55,-153.21 667.35,-157.37"/>
+<polygon fill="#000000" stroke="#000000" points="666.53,-160.78 676.97,-158.99 667.69,-153.88 666.53,-160.78"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocset_smoothCallsGraph = svgPanZoom('#procset_smoothCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">set_smooth</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">smooth</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">Polyhedron</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">smooth</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">smooth_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">smooth</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">make_polyhedron</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">set_smooth</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

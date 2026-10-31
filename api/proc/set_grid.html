@@ -1,0 +1,1033 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>set_grid &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>set_grid
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.1% of total for procedures.">65 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_shapes.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_shapes.f90.html'>vkf_shapes.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_shapes.html'>vkf_shapes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">set_grid</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/set_grid.html#src">set_grid</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine set_grid(self, points, closed_u, closed_v, lines)  
+</h2>
+    
+
+    <p>Faces given as a grid of points (3, nu, nv): quadrilaterals between
+neighbours (two triangles each), joined around if <code>closed_u</code> (the last
+point i to the first, for each j; e.g. a tube's circumference) or
+<code>closed_v</code>. The edges: the grid's lines, those of constant i (along j)
+every lines(1) and of constant j (along i) every lines(2) (default:
+every one; 0 for none).</p>
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/polyhedron.html'>Polyhedron</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~753"></span>
+              class(<a href='../type/polyhedron.html'>Polyhedron</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-points~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>points</strong>(:,:,:)</td>
+            <td>
+                <p>(3, nu, nv), frame coordinates</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-closed_u"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>closed_u</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-closed_v"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>closed_v</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lines~5"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lines</strong>(2)</td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~set_grid~~CallsGraph Pages: 1 -->
+<svg id="procset_gridCallsGraph" width="641pt" height="537pt"
+ viewBox="0.00 0.00 641.00 537.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~set_grid~~CallsGraph" class="graph" transform="scale(0.815159 0.815159) rotate(0) translate(4 654.27)">
+<title>proc~~set_grid~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-654.27 782.35,-654.27 782.35,4 -4,4"/>
+<!-- proc~set_grid -->
+<g id="proc~~set_grid~~CallsGraph_node1" class="node">
+<title>proc~set_grid</title>
+<polygon fill="none" stroke="black" points="122.52,-314.27 0,-314.27 0,-290 122.52,-290 122.52,-314.27"/>
+<text xml:space="preserve" text-anchor="middle" x="61.26" y="-298.53" font-family="Helvetica,sans-Serif" font-size="10.50">Polyhedron%set_grid</text>
+</g>
+<!-- proc~drop_colors -->
+<g id="proc~~set_grid~~CallsGraph_node2" class="node">
+<title>proc~drop_colors</title>
+<g id="a_proc~~set_grid~~CallsGraph_node2"><a xlink:href="../proc/drop_colors.html" xlink:title="drop_colors">
+<polygon fill="#d9534f" stroke="#d9534f" points="248.41,-335.27 175.39,-335.27 175.39,-311 248.41,-311 248.41,-335.27"/>
+<text xml:space="preserve" text-anchor="middle" x="211.9" y="-319.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">drop_colors</text>
+</a>
+</g>
+</g>
+<!-- proc~set_grid&#45;&gt;proc~drop_colors -->
+<g id="proc~~set_grid~~CallsGraph_edge1" class="edge">
+<title>proc~set_grid&#45;&gt;proc~drop_colors</title>
+<path fill="none" stroke="#000000" d="M122.72,-310.68C136.52,-312.63 150.98,-314.67 164.11,-316.52"/>
+<polygon fill="#000000" stroke="#000000" points="163.36,-319.95 173.75,-317.89 164.34,-313.02 163.36,-319.95"/>
+</g>
+<!-- proc~make_polyhedron -->
+<g id="proc~~set_grid~~CallsGraph_node3" class="node">
+<title>proc~make_polyhedron</title>
+<g id="a_proc~~set_grid~~CallsGraph_node3"><a xlink:href="../proc/make_polyhedron.html" xlink:title="make_polyhedron">
+<polygon fill="#d9534f" stroke="#d9534f" points="265.29,-293.27 158.52,-293.27 158.52,-269 265.29,-269 265.29,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="211.9" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_polyhedron</text>
+</a>
+</g>
+</g>
+<!-- proc~set_grid&#45;&gt;proc~make_polyhedron -->
+<g id="proc~~set_grid~~CallsGraph_edge2" class="edge">
+<title>proc~set_grid&#45;&gt;proc~make_polyhedron</title>
+<path fill="none" stroke="#000000" d="M122.72,-293.59C130.7,-292.47 138.89,-291.31 146.93,-290.17"/>
+<polygon fill="#000000" stroke="#000000" points="147.22,-293.67 156.63,-288.8 146.24,-286.74 147.22,-293.67"/>
+</g>
+<!-- interface~vkf_switch_create -->
+<g id="proc~~set_grid~~CallsGraph_node4" class="node">
+<title>interface~vkf_switch_create</title>
+<g id="a_proc~~set_grid~~CallsGraph_node4"><a xlink:href="../interface/vkf_switch_create.html" xlink:title="vkf_switch_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="417.43,-608.27 312.91,-608.27 312.91,-584 417.43,-584 417.43,-608.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-592.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_switch_create</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;interface~vkf_switch_create -->
+<g id="proc~~set_grid~~CallsGraph_edge3" class="edge">
+<title>proc~make_polyhedron&#45;&gt;interface~vkf_switch_create</title>
+<path fill="none" stroke="#000000" d="M255.74,-293.48C259.36,-295.88 262.65,-298.73 265.29,-302.13 340.36,-398.79 223.41,-480.73 301.29,-575.13 302.08,-576.09 302.91,-577 303.78,-577.87"/>
+<polygon fill="#000000" stroke="#000000" points="301.3,-580.38 311.36,-583.72 305.58,-574.84 301.3,-580.38"/>
+</g>
+<!-- proc~add -->
+<g id="proc~~set_grid~~CallsGraph_node5" class="node">
+<title>proc~add</title>
+<g id="a_proc~~set_grid~~CallsGraph_node5"><a xlink:href="../proc/add.html" xlink:title="add">
+<polygon fill="#d9534f" stroke="#d9534f" points="392.17,-566.27 338.17,-566.27 338.17,-542 392.17,-542 392.17,-566.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-550.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">add</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~add -->
+<g id="proc~~set_grid~~CallsGraph_edge4" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~add</title>
+<path fill="none" stroke="#000000" d="M255.66,-293.55C259.3,-295.93 262.61,-298.76 265.29,-302.13 329.98,-383.45 234.23,-453.77 301.29,-533.13 307.87,-540.93 317.44,-545.84 327.13,-548.94"/>
+<polygon fill="#000000" stroke="#000000" points="325.95,-552.25 336.51,-551.34 327.69,-545.47 325.95,-552.25"/>
+</g>
+<!-- proc~line_node -->
+<g id="proc~~set_grid~~CallsGraph_node6" class="node">
+<title>proc~line_node</title>
+<g id="a_proc~~set_grid~~CallsGraph_node6"><a xlink:href="../proc/line_node.html" xlink:title="line_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="396.81,-377.27 333.54,-377.27 333.54,-353 396.81,-353 396.81,-377.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-361.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~line_node -->
+<g id="proc~~set_grid~~CallsGraph_edge5" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~line_node</title>
+<path fill="none" stroke="#000000" d="M246.85,-293.67C253.08,-296.27 259.45,-299.14 265.29,-302.13 290.73,-315.2 318.04,-332.9 337.49,-346.21"/>
+<polygon fill="#000000" stroke="#000000" points="335.44,-349.05 345.66,-351.87 339.43,-343.29 335.44,-349.05"/>
+</g>
+<!-- proc~marker_node -->
+<g id="proc~~set_grid~~CallsGraph_node7" class="node">
+<title>proc~marker_node</title>
+<g id="a_proc~~set_grid~~CallsGraph_node7"><a xlink:href="../proc/marker_node.html" xlink:title="marker_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="406.56,-293.27 323.79,-293.27 323.79,-269 406.56,-269 406.56,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~marker_node -->
+<g id="proc~~set_grid~~CallsGraph_edge6" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~marker_node</title>
+<path fill="none" stroke="#000000" d="M265.39,-281.13C280.62,-281.13 297.24,-281.13 312.42,-281.13"/>
+<polygon fill="#000000" stroke="#000000" points="312.2,-284.64 322.2,-281.14 312.2,-277.64 312.2,-284.64"/>
+</g>
+<!-- proc~replace -->
+<g id="proc~~set_grid~~CallsGraph_node8" class="node">
+<title>proc~replace</title>
+<g id="a_proc~~set_grid~~CallsGraph_node8"><a xlink:href="../proc/replace.html" xlink:title="ShapeNodes%replace">
+<polygon fill="#d9534f" stroke="#d9534f" points="429.06,-524.27 301.29,-524.27 301.29,-500 429.06,-500 429.06,-524.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-508.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ShapeNodes%replace</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~replace -->
+<g id="proc~~set_grid~~CallsGraph_edge7" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~replace</title>
+<path fill="none" stroke="#000000" d="M253.79,-293.69C257.98,-296.06 261.93,-298.85 265.29,-302.13 294.35,-330.51 284.21,-349.28 301.29,-386.13 318.3,-422.85 339.6,-464.76 352.53,-489.8"/>
+<polygon fill="#000000" stroke="#000000" points="349.28,-491.12 356.99,-498.39 355.49,-487.9 349.28,-491.12"/>
+</g>
+<!-- proc~surface_node -->
+<g id="proc~~set_grid~~CallsGraph_node9" class="node">
+<title>proc~surface_node</title>
+<g id="a_proc~~set_grid~~CallsGraph_node9"><a xlink:href="../proc/surface_node.html" xlink:title="surface_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="406.93,-190.27 323.41,-190.27 323.41,-166 406.93,-166 406.93,-190.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-174.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">surface_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~surface_node -->
+<g id="proc~~set_grid~~CallsGraph_edge8" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~surface_node</title>
+<path fill="none" stroke="#000000" d="M231.45,-268.51C257.79,-250.57 306.22,-217.6 336.72,-196.83"/>
+<polygon fill="#000000" stroke="#000000" points="338.4,-199.92 344.7,-191.4 334.46,-194.13 338.4,-199.92"/>
+</g>
+<!-- proc~unit_normal -->
+<g id="proc~~set_grid~~CallsGraph_node10" class="node">
+<title>proc~unit_normal</title>
+<g id="a_proc~~set_grid~~CallsGraph_node10"><a xlink:href="../proc/unit_normal.html" xlink:title="unit_normal">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="402.81,-106.27 327.54,-106.27 327.54,-82 402.81,-82 402.81,-106.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-90.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">unit_normal</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~unit_normal -->
+<g id="proc~~set_grid~~CallsGraph_edge9" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~unit_normal</title>
+<path fill="none" stroke="#000000" d="M216.07,-268.69C224.5,-238.02 250.43,-158.14 301.29,-115.14 305.79,-111.33 311,-108.21 316.47,-105.65"/>
+<polygon fill="#000000" stroke="#000000" points="317.76,-108.9 325.75,-101.94 315.17,-102.4 317.76,-108.9"/>
+</g>
+<!-- proc~vertex_normals -->
+<g id="proc~~set_grid~~CallsGraph_node11" class="node">
+<title>proc~vertex_normals</title>
+<g id="a_proc~~set_grid~~CallsGraph_node11"><a xlink:href="../proc/vertex_normals.html" xlink:title="vertex_normals">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="411.81,-148.27 318.54,-148.27 318.54,-124 411.81,-124 411.81,-148.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-132.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vertex_normals</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~vertex_normals -->
+<g id="proc~~set_grid~~CallsGraph_edge10" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~vertex_normals</title>
+<path fill="none" stroke="#000000" d="M218.51,-268.59C230.26,-243.69 259.85,-187.79 301.29,-157.13 303.44,-155.55 305.71,-154.07 308.07,-152.71"/>
+<polygon fill="#000000" stroke="#000000" points="309.42,-155.95 316.81,-148.36 306.3,-149.68 309.42,-155.95"/>
+</g>
+<!-- proc~vertices_sphere -->
+<g id="proc~~set_grid~~CallsGraph_node12" class="node">
+<title>proc~vertices_sphere</title>
+<g id="a_proc~~set_grid~~CallsGraph_node12"><a xlink:href="../proc/vertices_sphere.html" xlink:title="vertices_sphere">
+<polygon fill="#d9534f" stroke="#d9534f" points="412.56,-64.27 317.79,-64.27 317.79,-40 412.56,-40 412.56,-64.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.17" y="-48.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vertices_sphere</text>
+</a>
+</g>
+</g>
+<!-- proc~make_polyhedron&#45;&gt;proc~vertices_sphere -->
+<g id="proc~~set_grid~~CallsGraph_edge11" class="edge">
+<title>proc~make_polyhedron&#45;&gt;proc~vertices_sphere</title>
+<path fill="none" stroke="#000000" d="M214.62,-268.56C220.16,-232.69 240.9,-128.9 301.29,-73.14 303.18,-71.39 305.22,-69.79 307.37,-68.32"/>
+<polygon fill="#000000" stroke="#000000" points="309.04,-71.4 316.03,-63.44 305.6,-65.3 309.04,-71.4"/>
+</g>
+<!-- interface~vkf_node_add_child -->
+<g id="proc~~set_grid~~CallsGraph_node19" class="node">
+<title>interface~vkf_node_add_child</title>
+<g id="a_proc~~set_grid~~CallsGraph_node19"><a xlink:href="../interface/vkf_node_add_child.html" xlink:title="vkf_node_add_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="590.95,-608.27 475.18,-608.27 475.18,-584 590.95,-584 590.95,-608.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-592.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~set_grid~~CallsGraph_edge12" class="edge">
+<title>proc~add&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M392.46,-560.79C413.58,-566.14 444.09,-573.86 471.2,-580.72"/>
+<polygon fill="#000000" stroke="#000000" points="470.16,-584.07 480.71,-583.13 471.88,-577.28 470.16,-584.07"/>
+</g>
+<!-- interface~vkf_node_delete -->
+<g id="proc~~set_grid~~CallsGraph_node20" class="node">
+<title>interface~vkf_node_delete</title>
+<g id="a_proc~~set_grid~~CallsGraph_node20"><a xlink:href="../interface/vkf_node_delete.html" xlink:title="vkf_node_delete">
+<polygon fill="#a7506f" stroke="#a7506f" points="582.33,-650.27 483.81,-650.27 483.81,-626 582.33,-626 582.33,-650.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-634.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_delete</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~set_grid~~CallsGraph_edge13" class="edge">
+<title>proc~add&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M392.4,-559.5C404.27,-562.76 418.08,-567.75 429.06,-575.13 449.46,-588.86 444.53,-603.6 465.06,-617.13 467.6,-618.81 470.27,-620.35 473.04,-621.78"/>
+<polygon fill="#000000" stroke="#000000" points="471.43,-624.89 481.98,-625.83 474.32,-618.52 471.43,-624.89"/>
+</g>
+<!-- proc~check_status -->
+<g id="proc~~set_grid~~CallsGraph_node22" class="node">
+<title>proc~check_status</title>
+<g id="a_proc~~set_grid~~CallsGraph_node22"><a xlink:href="../proc/check_status.html" xlink:title="check_status">
+<polygon fill="#d9534f" stroke="#d9534f" points="572.95,-482.27 493.18,-482.27 493.18,-458 572.95,-458 572.95,-482.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-466.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_status</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;proc~check_status -->
+<g id="proc~~set_grid~~CallsGraph_edge14" class="edge">
+<title>proc~add&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M392.4,-548.77C404.27,-545.51 418.08,-540.52 429.06,-533.13 449.46,-519.41 444.53,-504.67 465.06,-491.13 470.28,-487.7 476.09,-484.79 482.05,-482.35"/>
+<polygon fill="#000000" stroke="#000000" points="483.22,-485.65 491.43,-478.94 480.83,-479.07 483.22,-485.65"/>
+</g>
+<!-- interface~vkf_line_create -->
+<g id="proc~~set_grid~~CallsGraph_node14" class="node">
+<title>interface~vkf_line_create</title>
+<g id="a_proc~~set_grid~~CallsGraph_node14"><a xlink:href="../interface/vkf_line_create.html" xlink:title="vkf_line_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="578.58,-440.27 487.56,-440.27 487.56,-416 578.58,-416 578.58,-440.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-424.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_create</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;interface~vkf_line_create -->
+<g id="proc~~set_grid~~CallsGraph_edge15" class="edge">
+<title>proc~line_node&#45;&gt;interface~vkf_line_create</title>
+<path fill="none" stroke="#000000" d="M393.59,-377.63C413.28,-386.4 440.55,-398.12 465.06,-407.13 469.5,-408.77 474.14,-410.39 478.8,-411.97"/>
+<polygon fill="#000000" stroke="#000000" points="477.65,-415.27 488.24,-415.07 479.83,-408.62 477.65,-415.27"/>
+</g>
+<!-- proc~line_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_grid~~CallsGraph_edge16" class="edge">
+<title>proc~line_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M377.47,-377.47C394.71,-395.61 429.36,-429.45 465.06,-449.13 470.4,-452.08 476.21,-454.67 482.1,-456.94"/>
+<polygon fill="#000000" stroke="#000000" points="480.69,-460.16 491.28,-460.18 483.02,-453.56 480.69,-460.16"/>
+</g>
+<!-- proc~line_set_points -->
+<g id="proc~~set_grid~~CallsGraph_node24" class="node">
+<title>proc~line_set_points</title>
+<g id="a_proc~~set_grid~~CallsGraph_node24"><a xlink:href="../proc/line_set_points.html" xlink:title="line_set_points">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="577.83,-272.27 488.31,-272.27 488.31,-248 577.83,-248 577.83,-272.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-256.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_points</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_points -->
+<g id="proc~~set_grid~~CallsGraph_edge17" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_points</title>
+<path fill="none" stroke="#000000" d="M377.47,-352.8C394.71,-334.66 429.36,-300.82 465.06,-281.13 468.97,-278.98 473.14,-277.01 477.4,-275.22"/>
+<polygon fill="#000000" stroke="#000000" points="478.62,-278.5 486.71,-271.66 476.12,-271.96 478.62,-278.5"/>
+</g>
+<!-- proc~line_set_segments -->
+<g id="proc~~set_grid~~CallsGraph_node25" class="node">
+<title>proc~line_set_segments</title>
+<g id="a_proc~~set_grid~~CallsGraph_node25"><a xlink:href="../proc/line_set_segments.html" xlink:title="line_set_segments">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="587.58,-356.27 478.56,-356.27 478.56,-332 587.58,-332 587.58,-356.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-340.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_segments</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_segments -->
+<g id="proc~~set_grid~~CallsGraph_edge18" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_segments</title>
+<path fill="none" stroke="#000000" d="M396.99,-361.23C416.65,-358.75 442.87,-355.43 466.98,-352.37"/>
+<polygon fill="#000000" stroke="#000000" points="467.26,-355.87 476.74,-351.14 466.38,-348.92 467.26,-355.87"/>
+</g>
+<!-- proc~line_set_style -->
+<g id="proc~~set_grid~~CallsGraph_node26" class="node">
+<title>proc~line_set_style</title>
+<g id="a_proc~~set_grid~~CallsGraph_node26"><a xlink:href="../proc/line_set_style.html" xlink:title="line_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="574.08,-398.27 492.06,-398.27 492.06,-374 574.08,-374 574.08,-398.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-382.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_style -->
+<g id="proc~~set_grid~~CallsGraph_edge19" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_style</title>
+<path fill="none" stroke="#000000" d="M396.99,-369.04C420.36,-371.99 453.01,-376.13 480.35,-379.59"/>
+<polygon fill="#000000" stroke="#000000" points="479.84,-383.05 490.2,-380.84 480.72,-376.11 479.84,-383.05"/>
+</g>
+<!-- interface~vkf_marker_create -->
+<g id="proc~~set_grid~~CallsGraph_node15" class="node">
+<title>interface~vkf_marker_create</title>
+<g id="a_proc~~set_grid~~CallsGraph_node15"><a xlink:href="../interface/vkf_marker_create.html" xlink:title="vkf_marker_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="588.33,-230.27 477.81,-230.27 477.81,-206 588.33,-206 588.33,-230.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-214.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_marker_create</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_node&#45;&gt;interface~vkf_marker_create -->
+<g id="proc~~set_grid~~CallsGraph_edge20" class="edge">
+<title>proc~marker_node&#45;&gt;interface~vkf_marker_create</title>
+<path fill="none" stroke="#000000" d="M393.59,-268.64C413.28,-259.87 440.55,-248.15 465.06,-239.13 469.5,-237.5 474.14,-235.88 478.8,-234.3"/>
+<polygon fill="#000000" stroke="#000000" points="479.83,-237.65 488.24,-231.2 477.65,-231 479.83,-237.65"/>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_grid~~CallsGraph_edge21" class="edge">
+<title>proc~marker_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M382.17,-293.55C396.27,-305.24 416.47,-323.94 429.06,-344.13 455.16,-386 429.72,-414.72 465.06,-449.13 470.05,-453.99 476.14,-457.73 482.6,-460.6"/>
+<polygon fill="#000000" stroke="#000000" points="480.94,-463.71 491.53,-463.91 483.38,-457.15 480.94,-463.71"/>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~line_set_points -->
+<g id="proc~~set_grid~~CallsGraph_edge22" class="edge">
+<title>proc~marker_node&#45;&gt;proc~line_set_points</title>
+<path fill="none" stroke="#000000" d="M406.76,-276C427.76,-273.34 453.73,-270.05 476.56,-267.16"/>
+<polygon fill="#000000" stroke="#000000" points="476.85,-270.65 486.33,-265.93 475.97,-263.71 476.85,-270.65"/>
+</g>
+<!-- proc~marker_set_style -->
+<g id="proc~~set_grid~~CallsGraph_node27" class="node">
+<title>proc~marker_set_style</title>
+<g id="a_proc~~set_grid~~CallsGraph_node27"><a xlink:href="../proc/marker_set_style.html" xlink:title="marker_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="583.83,-314.27 482.31,-314.27 482.31,-290 583.83,-290 583.83,-314.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-298.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~marker_set_style -->
+<g id="proc~~set_grid~~CallsGraph_edge23" class="edge">
+<title>proc~marker_node&#45;&gt;proc~marker_set_style</title>
+<path fill="none" stroke="#000000" d="M406.76,-286.27C425.95,-288.7 449.27,-291.65 470.57,-294.35"/>
+<polygon fill="#000000" stroke="#000000" points="469.96,-297.8 480.32,-295.58 470.84,-290.86 469.96,-297.8"/>
+</g>
+<!-- interface~vkf_compile_node -->
+<g id="proc~~set_grid~~CallsGraph_node13" class="node">
+<title>interface~vkf_compile_node</title>
+<g id="a_proc~~set_grid~~CallsGraph_node13"><a xlink:href="../interface/vkf_compile_node.html" xlink:title="vkf_compile_node">
+<polygon fill="#a7506f" stroke="#a7506f" points="586.83,-566.27 479.31,-566.27 479.31,-542 586.83,-542 586.83,-566.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-550.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_compile_node</text>
+</a>
+</g>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~set_grid~~CallsGraph_edge24" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M415.95,-524.74C433.34,-529.14 453.05,-534.13 471.24,-538.73"/>
+<polygon fill="#000000" stroke="#000000" points="470.31,-542.11 480.86,-541.17 472.03,-535.32 470.31,-542.11"/>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~set_grid~~CallsGraph_edge25" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M413.2,-524.66C418.76,-527.05 424.19,-529.86 429.06,-533.13 449.46,-546.86 444.53,-561.6 465.06,-575.13 467.01,-576.42 469.04,-577.63 471.13,-578.77"/>
+<polygon fill="#000000" stroke="#000000" points="469.37,-581.81 479.9,-582.95 472.38,-575.49 469.37,-581.81"/>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~set_grid~~CallsGraph_edge26" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M417.08,-524.76C421.42,-527.1 425.5,-529.86 429.06,-533.13 458.94,-560.65 434.92,-589.9 465.06,-617.13 467.65,-619.47 470.49,-621.55 473.5,-623.39"/>
+<polygon fill="#000000" stroke="#000000" points="471.73,-626.42 482.23,-627.85 474.91,-620.18 471.73,-626.42"/>
+</g>
+<!-- interface~vkf_node_remove_child -->
+<g id="proc~~set_grid~~CallsGraph_node21" class="node">
+<title>interface~vkf_node_remove_child</title>
+<g id="a_proc~~set_grid~~CallsGraph_node21"><a xlink:href="../interface/vkf_node_remove_child.html" xlink:title="vkf_node_remove_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="601.08,-524.27 465.06,-524.27 465.06,-500 601.08,-500 601.08,-524.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-508.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_remove_child</text>
+</a>
+</g>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_remove_child -->
+<g id="proc~~set_grid~~CallsGraph_edge27" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_remove_child</title>
+<path fill="none" stroke="#000000" d="M429.37,-512.13C437.21,-512.13 445.3,-512.13 453.34,-512.13"/>
+<polygon fill="#000000" stroke="#000000" points="453.12,-515.64 463.12,-512.14 453.12,-508.64 453.12,-515.64"/>
+</g>
+<!-- proc~replace&#45;&gt;proc~check_status -->
+<g id="proc~~set_grid~~CallsGraph_edge28" class="edge">
+<title>proc~replace&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M415.95,-499.53C436.82,-494.25 461.05,-488.12 481.96,-482.82"/>
+<polygon fill="#000000" stroke="#000000" points="482.57,-486.28 491.4,-480.43 480.85,-479.49 482.57,-486.28"/>
+</g>
+<!-- interface~vkf_mesh_array -->
+<g id="proc~~set_grid~~CallsGraph_node16" class="node">
+<title>interface~vkf_mesh_array</title>
+<g id="a_proc~~set_grid~~CallsGraph_node16"><a xlink:href="../interface/vkf_mesh_array.html" xlink:title="vkf_mesh_array">
+<polygon fill="#a7506f" stroke="#a7506f" points="755.47,-179.27 659.95,-179.27 659.95,-155 755.47,-155 755.47,-179.27"/>
+<text xml:space="preserve" text-anchor="middle" x="707.71" y="-163.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_array</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;interface~vkf_mesh_array -->
+<g id="proc~~set_grid~~CallsGraph_edge29" class="edge">
+<title>proc~surface_node&#45;&gt;interface~vkf_mesh_array</title>
+<path fill="none" stroke="#000000" d="M407.25,-176.81C467.29,-174.87 579.3,-171.25 648.01,-169.03"/>
+<polygon fill="#000000" stroke="#000000" points="648.09,-172.53 657.97,-168.71 647.87,-165.53 648.09,-172.53"/>
+</g>
+<!-- interface~vkf_mesh_create -->
+<g id="proc~~set_grid~~CallsGraph_node17" class="node">
+<title>interface~vkf_mesh_create</title>
+<g id="a_proc~~set_grid~~CallsGraph_node17"><a xlink:href="../interface/vkf_mesh_create.html" xlink:title="vkf_mesh_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="583.45,-108.27 482.68,-108.27 482.68,-84 583.45,-84 583.45,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_create</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;interface~vkf_mesh_create -->
+<g id="proc~~set_grid~~CallsGraph_edge30" class="edge">
+<title>proc~surface_node&#45;&gt;interface~vkf_mesh_create</title>
+<path fill="none" stroke="#000000" d="M407.18,-167.86C414.79,-165.02 422.42,-161.49 429.06,-157.13 449.06,-144.02 444.93,-130.06 465.06,-117.14 467.31,-115.69 469.67,-114.34 472.1,-113.07"/>
+<polygon fill="#000000" stroke="#000000" points="473.38,-116.34 481.02,-108.99 470.47,-109.97 473.38,-116.34"/>
+</g>
+<!-- interface~vkf_mesh_set_bound -->
+<g id="proc~~set_grid~~CallsGraph_node18" class="node">
+<title>interface~vkf_mesh_set_bound</title>
+<g id="a_proc~~set_grid~~CallsGraph_node18"><a xlink:href="../interface/vkf_mesh_set_bound.html" xlink:title="vkf_mesh_set_bound">
+<polygon fill="#a7506f" stroke="#a7506f" points="593.95,-66.27 472.18,-66.27 472.18,-42 593.95,-42 593.95,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_set_bound</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;interface~vkf_mesh_set_bound -->
+<g id="proc~~set_grid~~CallsGraph_edge31" class="edge">
+<title>proc~surface_node&#45;&gt;interface~vkf_mesh_set_bound</title>
+<path fill="none" stroke="#000000" d="M407.12,-169.97C415.07,-166.94 422.85,-162.8 429.06,-157.13 458.46,-130.31 435.41,-101.69 465.06,-75.14 465.99,-74.3 466.95,-73.5 467.95,-72.73"/>
+<polygon fill="#000000" stroke="#000000" points="469.7,-75.76 476.27,-67.45 465.95,-69.85 469.7,-75.76"/>
+</g>
+<!-- proc~surface_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_grid~~CallsGraph_edge32" class="edge">
+<title>proc~surface_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M378.73,-190.52C393.23,-205.59 416.66,-232.47 429.06,-260.13 464.02,-338.17 408.18,-385.28 465.06,-449.13 469.8,-454.45 475.86,-458.44 482.4,-461.42"/>
+<polygon fill="#000000" stroke="#000000" points="480.93,-464.61 491.52,-464.8 483.36,-458.04 480.93,-464.61"/>
+</g>
+<!-- proc~mesh_arrays -->
+<g id="proc~~set_grid~~CallsGraph_node28" class="node">
+<title>proc~mesh_arrays</title>
+<g id="a_proc~~set_grid~~CallsGraph_node28"><a xlink:href="../proc/mesh_arrays.html" xlink:title="mesh_arrays">
+<polygon fill="#d9534f" stroke="#d9534f" points="572.95,-150.27 493.18,-150.27 493.18,-126 572.95,-126 572.95,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">mesh_arrays</text>
+</a>
+</g>
+</g>
+<!-- proc~surface_node&#45;&gt;proc~mesh_arrays -->
+<g id="proc~~set_grid~~CallsGraph_edge33" class="edge">
+<title>proc~surface_node&#45;&gt;proc~mesh_arrays</title>
+<path fill="none" stroke="#000000" d="M407.18,-168.25C429.8,-162.79 458.05,-155.98 481.97,-150.22"/>
+<polygon fill="#000000" stroke="#000000" points="482.59,-153.67 491.49,-147.92 480.95,-146.86 482.59,-153.67"/>
+</g>
+<!-- proc~cross -->
+<g id="proc~~set_grid~~CallsGraph_node23" class="node">
+<title>proc~cross</title>
+<g id="a_proc~~set_grid~~CallsGraph_node23"><a xlink:href="../proc/cross.html" xlink:title="cross">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="560.07,-24.27 506.07,-24.27 506.07,0 560.07,0 560.07,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="533.07" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cross</text>
+</a>
+</g>
+</g>
+<!-- proc~unit_normal&#45;&gt;proc~cross -->
+<g id="proc~~set_grid~~CallsGraph_edge34" class="edge">
+<title>proc~unit_normal&#45;&gt;proc~cross</title>
+<path fill="none" stroke="#000000" d="M403.23,-85.28C412.1,-82.22 421.26,-78.25 429.06,-73.14 449.06,-60.02 444.93,-46.06 465.06,-33.13 474.1,-27.33 484.86,-23.03 495.08,-19.89"/>
+<polygon fill="#000000" stroke="#000000" points="495.68,-23.36 504.39,-17.33 493.82,-16.61 495.68,-23.36"/>
+</g>
+<!-- proc~vertex_normals&#45;&gt;proc~cross -->
+<g id="proc~~set_grid~~CallsGraph_edge35" class="edge">
+<title>proc~vertex_normals&#45;&gt;proc~cross</title>
+<path fill="none" stroke="#000000" d="M411.99,-125.96C418.2,-123.17 424.13,-119.64 429.06,-115.14 458.46,-88.31 435.41,-59.69 465.06,-33.13 473.26,-25.79 484.02,-21.01 494.51,-17.91"/>
+<polygon fill="#000000" stroke="#000000" points="495.31,-21.31 504.18,-15.51 493.63,-14.52 495.31,-21.31"/>
+</g>
+<!-- interface~vkf_line_points -->
+<g id="proc~~set_grid~~CallsGraph_node29" class="node">
+<title>interface~vkf_line_points</title>
+<g id="a_proc~~set_grid~~CallsGraph_node29"><a xlink:href="../interface/vkf_line_points.html" xlink:title="vkf_line_points">
+<polygon fill="#a7506f" stroke="#a7506f" points="752.47,-240.27 662.95,-240.27 662.95,-216 752.47,-216 752.47,-240.27"/>
+<text xml:space="preserve" text-anchor="middle" x="707.71" y="-224.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_points</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_points&#45;&gt;interface~vkf_line_points -->
+<g id="proc~~set_grid~~CallsGraph_edge36" class="edge">
+<title>proc~line_set_points&#45;&gt;interface~vkf_line_points</title>
+<path fill="none" stroke="#000000" d="M578.08,-251.98C600.32,-247.86 627.53,-242.81 651.19,-238.43"/>
+<polygon fill="#000000" stroke="#000000" points="651.8,-241.87 660.99,-236.61 650.52,-234.99 651.8,-241.87"/>
+</g>
+<!-- interface~vkf_line_points_changed -->
+<g id="proc~~set_grid~~CallsGraph_node30" class="node">
+<title>interface~vkf_line_points_changed</title>
+<g id="a_proc~~set_grid~~CallsGraph_node30"><a xlink:href="../interface/vkf_line_points_changed.html" xlink:title="vkf_line_points_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="778.35,-282.27 637.08,-282.27 637.08,-258 778.35,-258 778.35,-282.27"/>
+<text xml:space="preserve" text-anchor="middle" x="707.71" y="-266.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_points_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_points&#45;&gt;interface~vkf_line_points_changed -->
+<g id="proc~~set_grid~~CallsGraph_edge37" class="edge">
+<title>proc~line_set_points&#45;&gt;interface~vkf_line_points_changed</title>
+<path fill="none" stroke="#000000" d="M578.08,-262.68C592.53,-263.52 609.08,-264.48 625.39,-265.42"/>
+<polygon fill="#000000" stroke="#000000" points="624.92,-268.9 635.11,-265.99 625.32,-261.91 624.92,-268.9"/>
+</g>
+<!-- interface~vkf_line_style -->
+<g id="proc~~set_grid~~CallsGraph_node31" class="node">
+<title>interface~vkf_line_style</title>
+<g id="a_proc~~set_grid~~CallsGraph_node31"><a xlink:href="../interface/vkf_line_style.html" xlink:title="vkf_line_style">
+<polygon fill="#a7506f" stroke="#a7506f" points="748.72,-366.27 666.7,-366.27 666.7,-342 748.72,-342 748.72,-366.27"/>
+<text xml:space="preserve" text-anchor="middle" x="707.71" y="-350.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_grid~~CallsGraph_edge38" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M587.75,-347.24C609.13,-348.48 633.64,-349.9 654.84,-351.13"/>
+<polygon fill="#000000" stroke="#000000" points="654.54,-354.62 664.73,-351.7 654.95,-347.63 654.54,-354.62"/>
+</g>
+<!-- interface~vkf_line_style_changed -->
+<g id="proc~~set_grid~~CallsGraph_node32" class="node">
+<title>interface~vkf_line_style_changed</title>
+<g id="a_proc~~set_grid~~CallsGraph_node32"><a xlink:href="../interface/vkf_line_style_changed.html" xlink:title="vkf_line_style_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="774.6,-324.27 640.83,-324.27 640.83,-300 774.6,-300 774.6,-324.27"/>
+<text xml:space="preserve" text-anchor="middle" x="707.71" y="-308.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_grid~~CallsGraph_edge39" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M587.75,-334.19C600.95,-331.74 615.34,-329.07 629.41,-326.46"/>
+<polygon fill="#000000" stroke="#000000" points="629.92,-329.93 639.11,-324.67 628.64,-323.05 629.92,-329.93"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_grid~~CallsGraph_edge40" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M574.55,-378.63C598.68,-374.16 629.55,-368.44 655.39,-363.65"/>
+<polygon fill="#000000" stroke="#000000" points="655.81,-367.13 665,-361.87 654.53,-360.25 655.81,-367.13"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_grid~~CallsGraph_edge41" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M574.56,-376.48C583.59,-373.5 592.91,-369.76 601.08,-365.13 619.71,-354.59 618.39,-343.58 637.08,-333.13 639.73,-331.66 642.49,-330.27 645.32,-328.97"/>
+<polygon fill="#000000" stroke="#000000" points="646.51,-332.27 654.42,-325.22 643.84,-325.8 646.51,-332.27"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_grid~~CallsGraph_edge42" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M575.86,-314.72C599.86,-321.95 630.17,-331.08 655.58,-338.73"/>
+<polygon fill="#000000" stroke="#000000" points="654.46,-342.05 665.05,-341.58 656.48,-335.35 654.46,-342.05"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_grid~~CallsGraph_edge43" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M584.01,-305.03C598.19,-305.85 613.98,-306.76 629.38,-307.66"/>
+<polygon fill="#000000" stroke="#000000" points="628.8,-311.13 638.99,-308.21 629.21,-304.14 628.8,-311.13"/>
+</g>
+<!-- proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array -->
+<g id="proc~~set_grid~~CallsGraph_edge44" class="edge">
+<title>proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array</title>
+<path fill="none" stroke="#000000" d="M573.25,-144.72C595.5,-148.45 623.8,-153.21 648.6,-157.37"/>
+<polygon fill="#000000" stroke="#000000" points="647.78,-160.78 658.22,-158.99 648.94,-153.88 647.78,-160.78"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocset_gridCallsGraph = svgPanZoom('#procset_gridCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">set_grid</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="n">closed_u</span><span class="p">,</span><span class="w"> </span><span class="n">closed_v</span><span class="p">,</span><span class="w"> </span><span class="n">lines</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">Polyhedron</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">points</span><span class="p">(:,:,:)</span><span class="w">               </span><span class="c">!! (3, nu, nv), frame coordinates</span>
+<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">closed_u</span><span class="p">,</span><span class="w"> </span><span class="n">closed_v</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">lines</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">nu</span><span class="p">,</span><span class="w"> </span><span class="n">nv</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">,</span><span class="w"> </span><span class="n">mv</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="p">,</span><span class="w"> </span><span class="n">j2</span><span class="p">,</span><span class="w"> </span><span class="n">nt</span><span class="p">,</span><span class="w"> </span><span class="n">ne</span><span class="p">,</span><span class="w"> </span><span class="n">every</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cu</span><span class="p">,</span><span class="w"> </span><span class="n">cv</span><span class="w"></span>
+<span class="w">        </span><span class="n">nu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">nv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">cu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">        </span><span class="n">cv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">closed_u</span><span class="p">))</span><span class="w"> </span><span class="n">cu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">closed_u</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">nu</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">closed_v</span><span class="p">))</span><span class="w"> </span><span class="n">cv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">closed_v</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">nv</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">        </span><span class="n">every</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span><span class="w"> </span><span class="n">every</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">reshape</span><span class="p">(</span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">nu</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nv</span><span class="p">])</span><span class="w"></span>
+<span class="w">        </span><span class="n">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span><span class="w"> </span><span class="n">nu</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">cu</span><span class="p">)</span><span class="w">                          </span><span class="c">! quadrilaterals along i, j</span>
+<span class="w">        </span><span class="n">mv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="n">nv</span><span class="p">,</span><span class="w"> </span><span class="n">nv</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">cv</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">tri</span><span class="p">))</span><span class="w"> </span><span class="k">deallocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">tri</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">tri</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">mv</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)))</span><span class="w"></span>
+<span class="w">        </span><span class="n">nt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">mv</span><span class="w"></span>
+<span class="w">            </span><span class="n">j2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">nv</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="w"></span>
+<span class="w">                </span><span class="n">i2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">modulo</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">nu</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">                </span><span class="n">self</span><span class="p">%</span><span class="n">tri</span><span class="p">(:,</span><span class="w"> </span><span class="n">nt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">),</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="n">i2</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">),</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="n">i2</span><span class="p">,</span><span class="w"> </span><span class="n">j2</span><span class="p">)]</span><span class="w"></span>
+<span class="w">                </span><span class="n">self</span><span class="p">%</span><span class="n">tri</span><span class="p">(:,</span><span class="w"> </span><span class="n">nt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">),</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="n">i2</span><span class="p">,</span><span class="w"> </span><span class="n">j2</span><span class="p">),</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j2</span><span class="p">)]</span><span class="w"></span>
+<span class="w">                </span><span class="n">nt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nt</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">        end do</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">allocated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">edge</span><span class="p">))</span><span class="w"> </span><span class="k">deallocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">edge</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">allocate</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">edge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">nu</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nv</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">))</span><span class="w"></span>
+<span class="w">        </span><span class="n">ne</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">every</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">                              </span><span class="c">! lines of constant i, along j</span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">nu</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">shown_line</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">nu</span><span class="p">,</span><span class="w"> </span><span class="n">every</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">cu</span><span class="p">))</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">                do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">mv</span><span class="w"></span>
+<span class="w">                    </span><span class="n">ne</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ne</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">                    </span><span class="n">self</span><span class="p">%</span><span class="n">edge</span><span class="p">(:,</span><span class="w"> </span><span class="n">ne</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">),</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="nb">modulo</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">nv</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)]</span><span class="w"></span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">            end do</span>
+<span class="k">        end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">every</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">                              </span><span class="c">! lines of constant j, along i</span>
+<span class="w">            </span><span class="k">do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">nv</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">shown_line</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">nv</span><span class="p">,</span><span class="w"> </span><span class="n">every</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">cv</span><span class="p">))</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">                do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="w"></span>
+<span class="w">                    </span><span class="n">ne</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ne</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">                    </span><span class="n">self</span><span class="p">%</span><span class="n">edge</span><span class="p">(:,</span><span class="w"> </span><span class="n">ne</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">),</span><span class="w"> </span><span class="n">at</span><span class="p">(</span><span class="nb">modulo</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">nu</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">)]</span><span class="w"></span>
+<span class="w">                </span><span class="k">end do</span>
+<span class="k">            end do</span>
+<span class="k">        end if</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">edge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">edge</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="n">ne</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">drop_colors</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">make_polyhedron</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">contains</span>
+
+<span class="k">        pure </span><span class="kt">integer </span><span class="k">function </span><span class="n">at</span><span class="p">(</span><span class="n">i_</span><span class="p">,</span><span class="w"> </span><span class="n">j_</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i_</span><span class="p">,</span><span class="w"> </span><span class="n">j_</span><span class="w"></span>
+<span class="w">            </span><span class="n">at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i_</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">j_</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">nu</span><span class="w"></span>
+<span class="w">        </span><span class="k">end function </span><span class="n">at</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; Line k of n drawn, every `step` (and the last, if the grid is open).</span>
+<span class="w">        </span><span class="k">pure </span><span class="kt">logical </span><span class="k">function </span><span class="n">shown_line</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">step</span><span class="p">,</span><span class="w"> </span><span class="n">closed</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">step</span><span class="w"></span>
+<span class="w">            </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">closed</span><span class="w"></span>
+<span class="w">            </span><span class="n">shown_line</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">modulo</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">step</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">closed</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end function </span><span class="n">shown_line</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">set_grid</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

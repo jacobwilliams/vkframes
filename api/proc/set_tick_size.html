@@ -1,0 +1,797 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>set_tick_size &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>set_tick_size
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">7 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_shapes.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_shapes.f90.html'>vkf_shapes.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_shapes.html'>vkf_shapes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">set_tick_size</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/set_tick_size.html#src">set_tick_size</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine set_tick_size(self, major, minor)  
+</h2>
+    
+
+    <p>Major and minor tick sizes (window units; default 8 and 4).</p>
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/coordinateaxes.html'>CoordinateAxes</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~694"></span>
+              class(<a href='../type/coordinateaxes.html'>CoordinateAxes</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-major~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>major</strong></td>
+            <td>
+                <p>window units (&lt;= 0: unchanged)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-minor~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>minor</strong></td>
+            <td>
+                <p>window units (&lt;= 0: unchanged)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~set_tick_size~~CallsGraph Pages: 1 -->
+<svg id="procset_tick_sizeCallsGraph" width="641pt" height="359pt"
+ viewBox="0.00 0.00 641.00 359.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~set_tick_size~~CallsGraph" class="graph" transform="scale(0.793219 0.793219) rotate(0) translate(4 448.27)">
+<title>proc~~set_tick_size~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-448.27 804.1,-448.27 804.1,4 -4,4"/>
+<!-- proc~set_tick_size -->
+<g id="proc~~set_tick_size~~CallsGraph_node1" class="node">
+<title>proc~set_tick_size</title>
+<polygon fill="none" stroke="black" points="171.27,-213.27 0,-213.27 0,-189 171.27,-189 171.27,-213.27"/>
+<text xml:space="preserve" text-anchor="middle" x="85.63" y="-197.53" font-family="Helvetica,sans-Serif" font-size="10.50">CoordinateAxes%set_tick_size</text>
+</g>
+<!-- proc~make_axes -->
+<g id="proc~~set_tick_size~~CallsGraph_node2" class="node">
+<title>proc~make_axes</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node2"><a xlink:href="../proc/make_axes.html" xlink:title="make_axes">
+<polygon fill="#d9534f" stroke="#d9534f" points="278.79,-213.27 207.27,-213.27 207.27,-189 278.79,-189 278.79,-213.27"/>
+<text xml:space="preserve" text-anchor="middle" x="243.03" y="-197.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_axes</text>
+</a>
+</g>
+</g>
+<!-- proc~set_tick_size&#45;&gt;proc~make_axes -->
+<g id="proc~~set_tick_size~~CallsGraph_edge1" class="edge">
+<title>proc~set_tick_size&#45;&gt;proc~make_axes</title>
+<path fill="none" stroke="#000000" d="M171.61,-201.13C179.79,-201.13 187.87,-201.13 195.47,-201.13"/>
+<polygon fill="#000000" stroke="#000000" points="195.45,-204.64 205.45,-201.14 195.45,-197.64 195.45,-204.64"/>
+</g>
+<!-- interface~vkf_switch_create -->
+<g id="proc~~set_tick_size~~CallsGraph_node3" class="node">
+<title>interface~vkf_switch_create</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node3"><a xlink:href="../interface/vkf_switch_create.html" xlink:title="vkf_switch_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="435.06,-402.27 330.54,-402.27 330.54,-378 435.06,-378 435.06,-402.27"/>
+<text xml:space="preserve" text-anchor="middle" x="382.8" y="-386.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_switch_create</text>
+</a>
+</g>
+</g>
+<!-- proc~make_axes&#45;&gt;interface~vkf_switch_create -->
+<g id="proc~~set_tick_size~~CallsGraph_edge2" class="edge">
+<title>proc~make_axes&#45;&gt;interface~vkf_switch_create</title>
+<path fill="none" stroke="#000000" d="M245.69,-213.74C250.45,-244.81 267.02,-325.7 314.79,-369.13 316.62,-370.8 318.59,-372.33 320.65,-373.75"/>
+<polygon fill="#000000" stroke="#000000" points="318.48,-376.54 328.91,-378.44 321.94,-370.46 318.48,-376.54"/>
+</g>
+<!-- proc~add -->
+<g id="proc~~set_tick_size~~CallsGraph_node4" class="node">
+<title>proc~add</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node4"><a xlink:href="../proc/add.html" xlink:title="add">
+<polygon fill="#d9534f" stroke="#d9534f" points="409.8,-360.27 355.8,-360.27 355.8,-336 409.8,-336 409.8,-360.27"/>
+<text xml:space="preserve" text-anchor="middle" x="382.8" y="-344.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">add</text>
+</a>
+</g>
+</g>
+<!-- proc~make_axes&#45;&gt;proc~add -->
+<g id="proc~~set_tick_size~~CallsGraph_edge3" class="edge">
+<title>proc~make_axes&#45;&gt;proc~add</title>
+<path fill="none" stroke="#000000" d="M247.57,-213.55C255.41,-238.76 276.6,-296.16 314.79,-327.13 323.27,-334.02 334.03,-338.65 344.42,-341.77"/>
+<polygon fill="#000000" stroke="#000000" points="343.41,-345.13 353.97,-344.22 345.15,-338.35 343.41,-345.13"/>
+</g>
+<!-- proc~append~2 -->
+<g id="proc~~set_tick_size~~CallsGraph_node5" class="node">
+<title>proc~append~2</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node5"><a xlink:href="../proc/append~2.html" xlink:title="append">
+<polygon fill="#d9534f" stroke="#d9534f" points="409.8,-129.27 355.8,-129.27 355.8,-105 409.8,-105 409.8,-129.27"/>
+<text xml:space="preserve" text-anchor="middle" x="382.8" y="-113.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">append</text>
+</a>
+</g>
+</g>
+<!-- proc~make_axes&#45;&gt;proc~append~2 -->
+<g id="proc~~set_tick_size~~CallsGraph_edge4" class="edge">
+<title>proc~make_axes&#45;&gt;proc~append~2</title>
+<path fill="none" stroke="#000000" d="M254.84,-188.75C267.79,-174.63 290.75,-151.76 314.79,-138.13 323.96,-132.94 334.58,-128.86 344.62,-125.73"/>
+<polygon fill="#000000" stroke="#000000" points="345.5,-129.12 354.16,-123.01 343.58,-122.39 345.5,-129.12"/>
+</g>
+<!-- proc~color~3 -->
+<g id="proc~~set_tick_size~~CallsGraph_node6" class="node">
+<title>proc~color~3</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node6"><a xlink:href="../proc/color~3.html" xlink:title="ReferenceFrame%color">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="450.81,-87.27 314.79,-87.27 314.79,-63 450.81,-63 450.81,-87.27"/>
+<text xml:space="preserve" text-anchor="middle" x="382.8" y="-71.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%color</text>
+</a>
+</g>
+</g>
+<!-- proc~make_axes&#45;&gt;proc~color~3 -->
+<g id="proc~~set_tick_size~~CallsGraph_edge5" class="edge">
+<title>proc~make_axes&#45;&gt;proc~color~3</title>
+<path fill="none" stroke="#000000" d="M249.04,-188.77C258.55,-166.85 281.31,-121.1 314.79,-96.13 316.3,-95.01 317.88,-93.94 319.5,-92.93"/>
+<polygon fill="#000000" stroke="#000000" points="320.73,-96.24 327.9,-88.45 317.43,-90.06 320.73,-96.24"/>
+</g>
+<!-- proc~line_node -->
+<g id="proc~~set_tick_size~~CallsGraph_node7" class="node">
+<title>proc~line_node</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node7"><a xlink:href="../proc/line_node.html" xlink:title="line_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="414.43,-213.27 351.16,-213.27 351.16,-189 414.43,-189 414.43,-213.27"/>
+<text xml:space="preserve" text-anchor="middle" x="382.8" y="-197.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_axes&#45;&gt;proc~line_node -->
+<g id="proc~~set_tick_size~~CallsGraph_edge6" class="edge">
+<title>proc~make_axes&#45;&gt;proc~line_node</title>
+<path fill="none" stroke="#000000" d="M279.15,-201.13C297.59,-201.13 320.32,-201.13 339.7,-201.13"/>
+<polygon fill="#000000" stroke="#000000" points="339.45,-204.64 349.45,-201.14 339.45,-197.64 339.45,-204.64"/>
+</g>
+<!-- proc~marker_node -->
+<g id="proc~~set_tick_size~~CallsGraph_node8" class="node">
+<title>proc~marker_node</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node8"><a xlink:href="../proc/marker_node.html" xlink:title="marker_node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="424.18,-171.27 341.41,-171.27 341.41,-147 424.18,-147 424.18,-171.27"/>
+<text xml:space="preserve" text-anchor="middle" x="382.8" y="-155.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_axes&#45;&gt;proc~marker_node -->
+<g id="proc~~set_tick_size~~CallsGraph_edge7" class="edge">
+<title>proc~make_axes&#45;&gt;proc~marker_node</title>
+<path fill="none" stroke="#000000" d="M279.15,-190.43C294.72,-185.68 313.34,-180.01 330.42,-174.8"/>
+<polygon fill="#000000" stroke="#000000" points="331.38,-178.16 339.93,-171.9 329.34,-171.47 331.38,-178.16"/>
+</g>
+<!-- proc~replace -->
+<g id="proc~~set_tick_size~~CallsGraph_node9" class="node">
+<title>proc~replace</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node9"><a xlink:href="../proc/replace.html" xlink:title="ShapeNodes%replace">
+<polygon fill="#d9534f" stroke="#d9534f" points="446.68,-318.27 318.91,-318.27 318.91,-294 446.68,-294 446.68,-318.27"/>
+<text xml:space="preserve" text-anchor="middle" x="382.8" y="-302.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ShapeNodes%replace</text>
+</a>
+</g>
+</g>
+<!-- proc~make_axes&#45;&gt;proc~replace -->
+<g id="proc~~set_tick_size~~CallsGraph_edge8" class="edge">
+<title>proc~make_axes&#45;&gt;proc~replace</title>
+<path fill="none" stroke="#000000" d="M260.38,-213.59C284.2,-231.75 328.66,-265.63 356.66,-286.98"/>
+<polygon fill="#000000" stroke="#000000" points="354.2,-289.5 364.27,-292.78 358.44,-283.93 354.2,-289.5"/>
+</g>
+<!-- interface~vkf_node_add_child -->
+<g id="proc~~set_tick_size~~CallsGraph_node13" class="node">
+<title>interface~vkf_node_add_child</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node13"><a xlink:href="../interface/vkf_node_add_child.html" xlink:title="vkf_node_add_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="612.7,-444.27 496.93,-444.27 496.93,-420 612.7,-420 612.7,-444.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-428.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~set_tick_size~~CallsGraph_edge9" class="edge">
+<title>proc~add&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M410.1,-352.8C423.11,-355.96 438.6,-361.08 450.81,-369.13 471.34,-382.67 466.28,-397.6 486.81,-411.13 488.76,-412.42 490.79,-413.63 492.88,-414.77"/>
+<polygon fill="#000000" stroke="#000000" points="491.12,-417.81 501.65,-418.95 494.13,-411.49 491.12,-417.81"/>
+</g>
+<!-- interface~vkf_node_delete -->
+<g id="proc~~set_tick_size~~CallsGraph_node14" class="node">
+<title>interface~vkf_node_delete</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node14"><a xlink:href="../interface/vkf_node_delete.html" xlink:title="vkf_node_delete">
+<polygon fill="#a7506f" stroke="#a7506f" points="604.08,-402.27 505.56,-402.27 505.56,-378 604.08,-378 604.08,-402.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-386.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_delete</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~set_tick_size~~CallsGraph_edge10" class="edge">
+<title>proc~add&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M409.99,-354.61C432.46,-360.16 465.68,-368.36 494.53,-375.49"/>
+<polygon fill="#000000" stroke="#000000" points="493.32,-378.8 503.87,-377.8 495,-372 493.32,-378.8"/>
+</g>
+<!-- proc~check_status -->
+<g id="proc~~set_tick_size~~CallsGraph_node16" class="node">
+<title>proc~check_status</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node16"><a xlink:href="../proc/check_status.html" xlink:title="check_status">
+<polygon fill="#d9534f" stroke="#d9534f" points="594.7,-276.27 514.93,-276.27 514.93,-252 594.7,-252 594.7,-276.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-260.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_status</text>
+</a>
+</g>
+</g>
+<!-- proc~add&#45;&gt;proc~check_status -->
+<g id="proc~~set_tick_size~~CallsGraph_edge11" class="edge">
+<title>proc~add&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M410.1,-343.47C423.11,-340.31 438.6,-335.19 450.81,-327.13 471.34,-313.6 466.28,-298.67 486.81,-285.13 492.03,-281.7 497.84,-278.79 503.8,-276.35"/>
+<polygon fill="#000000" stroke="#000000" points="504.97,-279.65 513.18,-272.94 502.58,-273.07 504.97,-279.65"/>
+</g>
+<!-- interface~vkf_line_create -->
+<g id="proc~~set_tick_size~~CallsGraph_node11" class="node">
+<title>interface~vkf_line_create</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node11"><a xlink:href="../interface/vkf_line_create.html" xlink:title="vkf_line_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="600.33,-192.27 509.31,-192.27 509.31,-168 600.33,-168 600.33,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_create</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;interface~vkf_line_create -->
+<g id="proc~~set_tick_size~~CallsGraph_edge12" class="edge">
+<title>proc~line_node&#45;&gt;interface~vkf_line_create</title>
+<path fill="none" stroke="#000000" d="M414.59,-197.33C437.72,-194.48 470.04,-190.48 497.72,-187.06"/>
+<polygon fill="#000000" stroke="#000000" points="497.86,-190.57 507.35,-185.87 497,-183.63 497.86,-190.57"/>
+</g>
+<!-- proc~line_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_tick_size~~CallsGraph_edge13" class="edge">
+<title>proc~line_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M412.85,-213.74C433.35,-222.44 461.55,-234.05 486.81,-243.13 492.26,-245.1 498,-247.05 503.73,-248.94"/>
+<polygon fill="#000000" stroke="#000000" points="502.63,-252.26 513.22,-252 504.78,-245.6 502.63,-252.26"/>
+</g>
+<!-- proc~line_set_points -->
+<g id="proc~~set_tick_size~~CallsGraph_node17" class="node">
+<title>proc~line_set_points</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node17"><a xlink:href="../proc/line_set_points.html" xlink:title="line_set_points">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="599.58,-66.27 510.06,-66.27 510.06,-42 599.58,-42 599.58,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_points</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_points -->
+<g id="proc~~set_tick_size~~CallsGraph_edge14" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_points</title>
+<path fill="none" stroke="#000000" d="M414.61,-197.64C427.23,-194.78 441.11,-189.58 450.81,-180.13 486.15,-145.72 451.47,-109.55 486.81,-75.13 490.5,-71.55 494.79,-68.57 499.39,-66.1"/>
+<polygon fill="#000000" stroke="#000000" points="500.72,-69.34 508.44,-62.08 497.88,-62.94 500.72,-69.34"/>
+</g>
+<!-- proc~line_set_segments -->
+<g id="proc~~set_tick_size~~CallsGraph_node18" class="node">
+<title>proc~line_set_segments</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node18"><a xlink:href="../proc/line_set_segments.html" xlink:title="line_set_segments">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="609.33,-150.27 500.31,-150.27 500.31,-126 609.33,-126 609.33,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_segments</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_segments -->
+<g id="proc~~set_tick_size~~CallsGraph_edge15" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_segments</title>
+<path fill="none" stroke="#000000" d="M414.69,-193.03C426.23,-189.6 439.32,-185.21 450.81,-180.13 467.75,-172.65 469.87,-166.62 486.81,-159.13 490.54,-157.49 494.44,-155.91 498.41,-154.42"/>
+<polygon fill="#000000" stroke="#000000" points="499.3,-157.81 507.54,-151.16 496.95,-151.22 499.3,-157.81"/>
+</g>
+<!-- proc~line_set_style -->
+<g id="proc~~set_tick_size~~CallsGraph_node19" class="node">
+<title>proc~line_set_style</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node19"><a xlink:href="../proc/line_set_style.html" xlink:title="line_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="595.83,-234.27 513.81,-234.27 513.81,-210 595.83,-210 595.83,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~line_node&#45;&gt;proc~line_set_style -->
+<g id="proc~~set_tick_size~~CallsGraph_edge16" class="edge">
+<title>proc~line_node&#45;&gt;proc~line_set_style</title>
+<path fill="none" stroke="#000000" d="M414.59,-204.94C438.9,-207.94 473.35,-212.2 501.91,-215.72"/>
+<polygon fill="#000000" stroke="#000000" points="501.47,-219.2 511.83,-216.95 502.33,-212.25 501.47,-219.2"/>
+</g>
+<!-- interface~vkf_marker_create -->
+<g id="proc~~set_tick_size~~CallsGraph_node12" class="node">
+<title>interface~vkf_marker_create</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node12"><a xlink:href="../interface/vkf_marker_create.html" xlink:title="vkf_marker_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="610.08,-24.27 499.56,-24.27 499.56,0 610.08,0 610.08,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_marker_create</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_node&#45;&gt;interface~vkf_marker_create -->
+<g id="proc~~set_tick_size~~CallsGraph_edge17" class="edge">
+<title>proc~marker_node&#45;&gt;interface~vkf_marker_create</title>
+<path fill="none" stroke="#000000" d="M424.66,-152.88C434.2,-149.77 443.65,-145.11 450.81,-138.13 486.15,-103.72 451.47,-67.55 486.81,-33.13 487.84,-32.13 488.92,-31.17 490.04,-30.26"/>
+<polygon fill="#000000" stroke="#000000" points="491.64,-33.4 498.06,-24.97 487.78,-27.56 491.64,-33.4"/>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~check_status -->
+<g id="proc~~set_tick_size~~CallsGraph_edge18" class="edge">
+<title>proc~marker_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M424.49,-166.59C433.82,-169.68 443.21,-174.02 450.81,-180.13 475.93,-200.35 461.69,-222.92 486.81,-243.13 491.92,-247.25 497.84,-250.56 504.01,-253.23"/>
+<polygon fill="#000000" stroke="#000000" points="502.51,-256.4 513.1,-256.6 504.95,-249.84 502.51,-256.4"/>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~line_set_points -->
+<g id="proc~~set_tick_size~~CallsGraph_edge19" class="edge">
+<title>proc~marker_node&#45;&gt;proc~line_set_points</title>
+<path fill="none" stroke="#000000" d="M424.49,-151.68C433.82,-148.59 443.21,-144.25 450.81,-138.13 475.93,-117.92 461.69,-95.35 486.81,-75.13 490.55,-72.13 494.72,-69.54 499.11,-67.33"/>
+<polygon fill="#000000" stroke="#000000" points="500.43,-70.57 508.24,-63.41 497.67,-64.14 500.43,-70.57"/>
+</g>
+<!-- proc~marker_set_style -->
+<g id="proc~~set_tick_size~~CallsGraph_node20" class="node">
+<title>proc~marker_set_style</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node20"><a xlink:href="../proc/marker_set_style.html" xlink:title="marker_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="605.58,-108.27 504.06,-108.27 504.06,-84 605.58,-84 605.58,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-92.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_node&#45;&gt;proc~marker_set_style -->
+<g id="proc~~set_tick_size~~CallsGraph_edge20" class="edge">
+<title>proc~marker_node&#45;&gt;proc~marker_set_style</title>
+<path fill="none" stroke="#000000" d="M424.38,-148.03C433.23,-145.16 442.45,-141.83 450.81,-138.13 467.75,-130.65 469.87,-124.62 486.81,-117.13 490.54,-115.49 494.44,-113.91 498.41,-112.42"/>
+<polygon fill="#000000" stroke="#000000" points="499.3,-115.81 507.54,-109.16 496.95,-109.22 499.3,-115.81"/>
+</g>
+<!-- interface~vkf_compile_node -->
+<g id="proc~~set_tick_size~~CallsGraph_node10" class="node">
+<title>interface~vkf_compile_node</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node10"><a xlink:href="../interface/vkf_compile_node.html" xlink:title="vkf_compile_node">
+<polygon fill="#a7506f" stroke="#a7506f" points="608.58,-318.27 501.06,-318.27 501.06,-294 608.58,-294 608.58,-318.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-302.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_compile_node</text>
+</a>
+</g>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~set_tick_size~~CallsGraph_edge21" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M447.11,-306.13C460.9,-306.13 475.51,-306.13 489.35,-306.13"/>
+<polygon fill="#000000" stroke="#000000" points="489.24,-309.64 499.24,-306.14 489.24,-302.64 489.24,-309.64"/>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~set_tick_size~~CallsGraph_edge22" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M438.36,-318.6C442.86,-320.97 447.1,-323.78 450.81,-327.13 480.95,-354.37 456.67,-383.9 486.81,-411.13 487.74,-411.97 488.7,-412.78 489.69,-413.55"/>
+<polygon fill="#000000" stroke="#000000" points="487.68,-416.42 497.99,-418.85 491.45,-410.52 487.68,-416.42"/>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~set_tick_size~~CallsGraph_edge23" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M434.6,-318.67C440.29,-321.05 445.82,-323.85 450.81,-327.13 471.34,-340.67 466.28,-355.6 486.81,-369.13 489.35,-370.81 492.02,-372.35 494.79,-373.78"/>
+<polygon fill="#000000" stroke="#000000" points="493.18,-376.89 503.73,-377.83 496.07,-370.52 493.18,-376.89"/>
+</g>
+<!-- interface~vkf_node_remove_child -->
+<g id="proc~~set_tick_size~~CallsGraph_node15" class="node">
+<title>interface~vkf_node_remove_child</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node15"><a xlink:href="../interface/vkf_node_remove_child.html" xlink:title="vkf_node_remove_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="622.83,-360.27 486.81,-360.27 486.81,-336 622.83,-336 622.83,-360.27"/>
+<text xml:space="preserve" text-anchor="middle" x="554.82" y="-344.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_remove_child</text>
+</a>
+</g>
+</g>
+<!-- proc~replace&#45;&gt;interface~vkf_node_remove_child -->
+<g id="proc~~set_tick_size~~CallsGraph_edge24" class="edge">
+<title>proc~replace&#45;&gt;interface~vkf_node_remove_child</title>
+<path fill="none" stroke="#000000" d="M434.81,-318.74C452.72,-323.16 473.03,-328.18 491.74,-332.8"/>
+<polygon fill="#000000" stroke="#000000" points="490.83,-336.18 501.38,-335.18 492.51,-329.38 490.83,-336.18"/>
+</g>
+<!-- proc~replace&#45;&gt;proc~check_status -->
+<g id="proc~~set_tick_size~~CallsGraph_edge25" class="edge">
+<title>proc~replace&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M434.81,-293.53C456.55,-288.16 481.84,-281.92 503.51,-276.56"/>
+<polygon fill="#000000" stroke="#000000" points="504.13,-280.02 513,-274.22 502.45,-273.22 504.13,-280.02"/>
+</g>
+<!-- interface~vkf_line_points -->
+<g id="proc~~set_tick_size~~CallsGraph_node21" class="node">
+<title>interface~vkf_line_points</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node21"><a xlink:href="../interface/vkf_line_points.html" xlink:title="vkf_line_points">
+<polygon fill="#a7506f" stroke="#a7506f" points="774.23,-76.27 684.71,-76.27 684.71,-52 774.23,-52 774.23,-76.27"/>
+<text xml:space="preserve" text-anchor="middle" x="729.47" y="-60.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_points</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_points&#45;&gt;interface~vkf_line_points -->
+<g id="proc~~set_tick_size~~CallsGraph_edge26" class="edge">
+<title>proc~line_set_points&#45;&gt;interface~vkf_line_points</title>
+<path fill="none" stroke="#000000" d="M599.83,-56.68C622.07,-57.97 649.28,-59.55 672.94,-60.92"/>
+<polygon fill="#000000" stroke="#000000" points="672.54,-64.4 682.72,-61.49 672.94,-57.41 672.54,-64.4"/>
+</g>
+<!-- interface~vkf_line_points_changed -->
+<g id="proc~~set_tick_size~~CallsGraph_node22" class="node">
+<title>interface~vkf_line_points_changed</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node22"><a xlink:href="../interface/vkf_line_points_changed.html" xlink:title="vkf_line_points_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="800.1,-34.27 658.83,-34.27 658.83,-10 800.1,-10 800.1,-34.27"/>
+<text xml:space="preserve" text-anchor="middle" x="729.47" y="-18.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_points_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_points&#45;&gt;interface~vkf_line_points_changed -->
+<g id="proc~~set_tick_size~~CallsGraph_edge27" class="edge">
+<title>proc~line_set_points&#45;&gt;interface~vkf_line_points_changed</title>
+<path fill="none" stroke="#000000" d="M599.83,-45.98C614.91,-43.18 632.28,-39.96 649.28,-36.81"/>
+<polygon fill="#000000" stroke="#000000" points="649.68,-40.3 658.87,-35.03 648.4,-33.41 649.68,-40.3"/>
+</g>
+<!-- interface~vkf_line_style -->
+<g id="proc~~set_tick_size~~CallsGraph_node23" class="node">
+<title>interface~vkf_line_style</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node23"><a xlink:href="../interface/vkf_line_style.html" xlink:title="vkf_line_style">
+<polygon fill="#a7506f" stroke="#a7506f" points="770.48,-139.27 688.46,-139.27 688.46,-115 770.48,-115 770.48,-139.27"/>
+<text xml:space="preserve" text-anchor="middle" x="729.47" y="-123.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_tick_size~~CallsGraph_edge28" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M609.5,-134.71C630.88,-133.35 655.39,-131.79 676.59,-130.44"/>
+<polygon fill="#000000" stroke="#000000" points="676.72,-133.94 686.48,-129.81 676.27,-126.95 676.72,-133.94"/>
+</g>
+<!-- interface~vkf_line_style_changed -->
+<g id="proc~~set_tick_size~~CallsGraph_node24" class="node">
+<title>interface~vkf_line_style_changed</title>
+<g id="a_proc~~set_tick_size~~CallsGraph_node24"><a xlink:href="../interface/vkf_line_style_changed.html" xlink:title="vkf_line_style_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="796.35,-181.27 662.58,-181.27 662.58,-157 796.35,-157 796.35,-181.27"/>
+<text xml:space="preserve" text-anchor="middle" x="729.47" y="-165.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_tick_size~~CallsGraph_edge29" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M609.5,-147.77C622.7,-150.14 637.09,-152.73 651.16,-155.25"/>
+<polygon fill="#000000" stroke="#000000" points="650.4,-158.67 660.86,-157 651.64,-151.78 650.4,-158.67"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_tick_size~~CallsGraph_edge30" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M596.19,-214.25C605.52,-211.18 615,-206.95 622.83,-201.13 645.69,-184.15 635.88,-164.99 658.83,-148.13 664.44,-144.01 670.86,-140.69 677.49,-138.02"/>
+<polygon fill="#000000" stroke="#000000" points="678.28,-141.45 686.55,-134.83 675.96,-134.85 678.28,-141.45"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_tick_size~~CallsGraph_edge31" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M596.3,-209.71C620.28,-202.35 650.91,-192.94 676.65,-185.04"/>
+<polygon fill="#000000" stroke="#000000" points="677.36,-188.48 685.9,-182.2 675.31,-181.79 677.36,-188.48"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~set_tick_size~~CallsGraph_edge32" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M605.76,-105.1C628.16,-109.12 654.57,-113.87 677.14,-117.92"/>
+<polygon fill="#000000" stroke="#000000" points="676.26,-121.32 686.72,-119.64 677.5,-114.43 676.26,-121.32"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~set_tick_size~~CallsGraph_edge33" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M604.39,-108.75C610.77,-111.15 617.08,-113.94 622.83,-117.13 641.29,-127.39 640.32,-137.98 658.83,-148.13 661.49,-149.59 664.26,-150.96 667.1,-152.25"/>
+<polygon fill="#000000" stroke="#000000" points="665.63,-155.43 676.21,-155.96 668.28,-148.95 665.63,-155.43"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocset_tick_sizeCallsGraph = svgPanZoom('#procset_tick_sizeCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">set_tick_size</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">major</span><span class="p">,</span><span class="w"> </span><span class="n">minor</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">CoordinateAxes</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">major</span><span class="p">,</span><span class="w"> </span><span class="n">minor</span><span class="w">                </span><span class="c">!! window units (&lt;= 0: unchanged)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">major</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">major_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">major</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">minor</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">minor_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">minor</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">make_axes</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">set_tick_size</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

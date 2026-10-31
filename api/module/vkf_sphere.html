@@ -1,0 +1,4032 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_sphere &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_sphere
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.6% of total for modules and submodules.">331 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_sphere.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_sphere.f90.html'>vkf_sphere.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_sphere</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sphere.html#variable-lod_first">lod_first</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#variable-lod_segments">lod_segments</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sphere.html#interface-sphere">Sphere</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sphere.html#type-sphere">Sphere</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-auto_lod">auto_lod</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-new_sphere">new_sphere</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-night_texture_map">night_texture_map</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-num_lod_meshes">num_lod_meshes</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-opacity">opacity</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-radii">radii</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-radius">radius</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-read_texture">read_texture</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_attitude">sphere_attitude</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_frame_info">sphere_frame_info</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_position">sphere_position</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_scale">sphere_scale</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-texture_map~2">texture_map</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-twilight">twilight</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-apply_material">apply_material</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-apply_material_to">apply_material_to</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-build_lod_mesh">build_lod_mesh</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-material">material</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_auto_lod">set_auto_lod</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_material">set_material</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_night_texture_map">set_night_texture_map</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_opacity">set_opacity</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_radius">set_radius</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_resolution">set_resolution</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_sphere_attitude">set_sphere_attitude</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_sphere_position">set_sphere_position</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_sphere_scale">set_sphere_scale</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_texture_map~2">set_texture_map</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-set_twilight">set_twilight</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_bound">sphere_bound</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_build_contents">sphere_build_contents</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_pick">sphere_pick</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_set_color">sphere_set_color</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-sphere_update">sphere_update</a>
+            <a class="list-group-item" href="../module/vkf_sphere.html#proc-update_sphere_transform">update_sphere_transform</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Spheres and ellipsoids: a textured celestial body, as OpenFrames' Sphere.</p>
+<p>The body is centered on its frame's origin (or at <code>set_sphere_position</code>,
+turned by <code>set_sphere_attitude</code>, e.g. to orient a texture). Its shape is a
+sphere of <code>radius</code>, or an ellipsoid with semi-axes radius * <code>sphere_scale</code>;
+the ellipsoid is built directly (exact normals, geodetic texture mapping; see
+vkf_geometry), where OpenFrames scales a sphere. The texture is an
+equirectangular image (longitude -180 to 180, north at the top). The color is
+used when there is no texture.</p>
+<p>Lighting: the body is lit by the scene's lights (a frame's light source,
+e.g. the Sun, or the window's light), with a material (<code>set_material</code>;
+OpenFrames' default: no specular reflection). The night texture shows where
+the surface is lit weakly (the night side: city lights), as OpenFrames'
+setNightTextureMap: weighted by 1 - the lit color (the material's ambient
+and diffuse colors in the lights' colors and intensities, and its
+emission), per channel and per pixel, so a brighter light narrows the
+band where the day fades into the night, and ambient light dims the night
+texture. The twilight (<code>set_twilight</code>; not in OpenFrames; default none:
+the light ends at the terminator) extends the diffuse light past the
+terminator, to where the light is a given angle below the horizon, fading
+out: e.g. sunlight scattered by an atmosphere.</p>
+<p>Translucency (not in OpenFrames): <code>set_opacity</code> (default 1, opaque) below
+1 draws the body translucent: lit as usual, blended over what is behind
+it, drawn after the opaque scene (farthest first: VSG's depth-sorted bin)
+without writing depth, front faces only. Whether it is translucent is
+decided when a window first shows it (as the textures); its opacity can
+then change at any time (through the material's alpha).</p>
+<p>Texture files are found with find_data_file (a path, or a name on
+VKFRAMES_DATA_PATH, e.g. data/'s 2k_earth_daymap.jpg and
+2k_earth_nightmap.jpg). The textures and the mesh resolution are read when
+a window first shows the sphere: set them before that. The radius, scale,
+color and material can change at any time: the meshes are built once, then
+scaled by their transform (radii / the built radii), and the color is applied
+through the material (the shaders multiply the vertex color, white here, by
+the diffuse color).</p>
+<p>Level of detail (<code>set_auto_lod</code>, on by default; OpenFrames' setAutoLOD): the
+body has meshes of 32, 64, ... 1024 segments around (half as many from pole
+to pole), and each view draws the coarsest whose facets stay within half a
+pixel of the true outline (src/vsg/vkf_layer.cpp: SphereLod), so that the
+body isn't faceted however close the view. Meshes are built when a view
+first wants them (the 128-segment one at once), in the sphere's update.
+Off: one mesh of <code>set_resolution</code>'s segments (default 128 x 64).</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_files.html'>vkf_files</a></li>
+                  <li class="list-inline-item"><a href='vkf_geometry.html'>vkf_geometry</a></li>
+                  <li class="list-inline-item"><a href='vkf_pick.html'>vkf_pick</a></li>
+                  <li class="list-inline-item"><a href='vkf_frames.html'>vkf_frames</a></li>
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_sphere~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_sphereUsesGraph" width="641pt" height="343pt"
+ viewBox="0.00 0.00 641.00 343.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_sphere~~UsesGraph" class="graph" transform="scale(0.95512 0.95512) rotate(0) translate(4 354.86)">
+<title>module~~vkf_sphere~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-354.86 667.12,-354.86 667.12,4 -4,4"/>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_sphere~~UsesGraph_node1" class="node">
+<title>module~vkf_sphere</title>
+<polygon fill="none" stroke="black" points="663.12,-173.63 594.6,-173.63 594.6,-149.36 663.12,-149.36 663.12,-173.63"/>
+<text xml:space="preserve" text-anchor="middle" x="628.86" y="-157.89" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_sphere</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_sphere~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-304.63 129.27,-304.63 129.27,-280.36 212.04,-280.36 212.04,-304.63"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-288.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sphere~~UsesGraph_edge1" class="edge">
+<title>module~vkf_sphere&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-310.49C415.16,-368.79 367.05,-354.38 248.04,-326.49 232.99,-322.96 217.23,-316.48 203.97,-310.12"/>
+<polygon fill="#000000" stroke="#000000" points="205.79,-307.12 195.28,-305.78 202.66,-313.38 205.79,-307.12"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_sphere~~UsesGraph_node3" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node3"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="317.31,-123.63 263.04,-123.63 263.04,-99.36 317.31,-99.36 317.31,-123.63"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-107.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_sphere~~UsesGraph_edge2" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-100.49C460.99,-67.63 376.53,-84.39 328.53,-98.59"/>
+<polygon fill="#000000" stroke="#000000" points="327.69,-95.18 319.17,-101.48 329.76,-101.87 327.69,-95.18"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_sphere~~UsesGraph_node4" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node4"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="558.6,-173.63 488.58,-173.63 488.58,-149.36 558.6,-149.36 558.6,-173.63"/>
+<text xml:space="preserve" text-anchor="middle" x="523.59" y="-157.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_sphere~~UsesGraph_edge3" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M594.33,-161.49C586.73,-161.49 578.54,-161.49 570.53,-161.49"/>
+<polygon fill="#000000" stroke="#000000" points="570.53,-157.99 560.53,-161.49 570.53,-164.99 570.53,-157.99"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_sphere~~UsesGraph_node5" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node5"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="452.58,-322.63 368.31,-322.63 368.31,-298.36 452.58,-298.36 452.58,-322.63"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-306.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_sphere~~UsesGraph_edge4" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-310.49C504.98,-319.61 483.6,-321.41 464.32,-320.29"/>
+<polygon fill="#000000" stroke="#000000" points="464.72,-316.81 454.45,-319.43 464.11,-323.79 464.72,-316.81"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_sphere~~UsesGraph_node6" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node6"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="319.93,-284.63 260.41,-284.63 260.41,-260.36 319.93,-260.36 319.93,-284.63"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-268.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_sphere~~UsesGraph_edge5" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M623.87,-173.78C613.33,-203.88 581.6,-280.96 524.59,-310.49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-310.49C493.74,-325.43 484.43,-295.89 452.58,-289.49 411.86,-281.31 364.52,-276.92 331.69,-274.66"/>
+<polygon fill="#000000" stroke="#000000" points="332,-271.17 321.8,-274.02 331.55,-278.16 332,-271.17"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_node7" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node7"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-164.63 140.52,-164.63 140.52,-140.36 200.79,-140.36 200.79,-164.63"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-148.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_edge6" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M606.99,-148.94C586.2,-136.48 553.33,-116.94 524.59,-100.49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-100.49C478.91,-75.49 497.85,-33.48 452.58,-11.49 386.1,20.8 359.09,-22.34 291.17,-51.49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-51.49C247.17,-68.62 209.52,-107 188.7,-131.21"/>
+<polygon fill="#000000" stroke="#000000" points="186.04,-128.94 182.31,-138.85 191.41,-133.43 186.04,-128.94"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_sphere~~UsesGraph_node8" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node8"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="437.58,-44.63 383.31,-44.63 383.31,-20.36 437.58,-20.36 437.58,-44.63"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-28.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_sphere~~UsesGraph_edge7" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-100.49C506.77,-92.05 467.92,-67.99 440.63,-50.89"/>
+<polygon fill="#000000" stroke="#000000" points="442.78,-48.1 432.45,-45.75 439.05,-54.03 442.78,-48.1"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sphere~~UsesGraph_edge8" class="edge">
+<title>module~vkf_frames&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-232.49C358.93,-247.03 341.15,-216.2 291.17,-232.49"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_sphere~~UsesGraph_edge10" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M513.31,-173.94C494.3,-199.42 450.77,-257.77 427.24,-289.32"/>
+<polygon fill="#000000" stroke="#000000" points="424.7,-286.86 421.53,-296.97 430.32,-291.05 424.7,-286.86"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_sphere~~UsesGraph_edge11" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-232.49C382.95,-240.11 353.59,-250.04 330.75,-258.09"/>
+<polygon fill="#000000" stroke="#000000" points="329.78,-254.72 321.53,-261.37 332.12,-261.32 329.78,-254.72"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_edge12" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M505.34,-149.07C459.11,-116.48 333.14,-32.29 291.17,-51.49"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_sphere~~UsesGraph_edge13" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M513.16,-148.86C506.22,-139.47 496.64,-126.3 488.58,-114.49 471.9,-90.05 473.58,-79.33 452.58,-58.49 450.08,-56.01 447.31,-53.65 444.41,-51.44"/>
+<polygon fill="#000000" stroke="#000000" points="446.41,-48.56 436.19,-45.75 442.43,-54.32 446.41,-48.56"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_sphere~~UsesGraph_node10" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node10"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="448.08,-162.63 372.81,-162.63 372.81,-138.36 448.08,-138.36 448.08,-162.63"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-146.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_sphere~~UsesGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.34,-158.1C479.36,-157.21 469.5,-156.24 459.94,-155.29"/>
+<polygon fill="#000000" stroke="#000000" points="460.28,-151.81 449.99,-154.31 459.6,-158.77 460.28,-151.81"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_sphere~~UsesGraph_node11" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node11"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="437.44,-204.63 383.44,-204.63 383.44,-180.36 437.44,-180.36 437.44,-204.63"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-188.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_sphere~~UsesGraph_edge14" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.34,-171.04C475.71,-174.57 461.35,-178.57 448.48,-182.16"/>
+<polygon fill="#000000" stroke="#000000" points="447.79,-178.72 439.1,-184.78 449.67,-185.46 447.79,-178.72"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_sphere~~UsesGraph_node12" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node12"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="332.31,-204.63 248.04,-204.63 248.04,-180.36 332.31,-180.36 332.31,-204.63"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-188.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_sphere~~UsesGraph_edge15" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.83,-174.11C489.05,-191.3 450.61,-221.22 411.44,-232.49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-232.49C393.82,-236.99 355.87,-222.47 327.14,-209.68"/>
+<polygon fill="#000000" stroke="#000000" points="328.96,-206.66 318.41,-205.71 326.06,-213.04 328.96,-206.66"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sphere~~UsesGraph_edge16" class="edge">
+<title>module~vkf_geometry&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-312.49C268.17,-305.66 244.25,-301.05 223.5,-297.99"/>
+<polygon fill="#000000" stroke="#000000" points="224.22,-294.56 213.83,-296.66 223.26,-301.49 224.22,-294.56"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_sphere~~UsesGraph_edge17" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M370.39,-297.94C357.69,-293.86 343.59,-289.33 330.85,-285.24"/>
+<polygon fill="#000000" stroke="#000000" points="332.1,-281.97 321.51,-282.24 329.96,-288.63 332.1,-281.97"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_edge18" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M367.96,-317.7C344.82,-320.13 315.78,-320.49 291.17,-312.49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-312.49C270.02,-306.26 262.73,-307.27 248.04,-293.49 212.55,-260.19 189.91,-206.63 179.12,-176"/>
+<polygon fill="#000000" stroke="#000000" points="182.45,-174.91 175.93,-166.55 175.82,-177.14 182.45,-174.91"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sphere~~UsesGraph_edge19" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.13,-277.43C249.09,-279.31 236.16,-281.51 223.65,-283.64"/>
+<polygon fill="#000000" stroke="#000000" points="223.1,-280.18 213.83,-285.31 224.28,-287.09 223.1,-280.18"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_sphere~~UsesGraph_node9" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_sphere~~UsesGraph_node9"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-184.63 0,-184.63 0,-160.36 93.27,-160.36 93.27,-184.63"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-168.89" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_sphere~~UsesGraph_edge20" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-157.33C129.43,-159.08 116.96,-161.13 104.7,-163.14"/>
+<polygon fill="#000000" stroke="#000000" points="104.36,-159.65 95.06,-164.72 105.49,-166.55 104.36,-159.65"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_edge21" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.91,-32.74C358.14,-33.89 320.68,-37.99 291.17,-51.49"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_edge22" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.37,-152.92C349.03,-154.01 318.3,-154.62 291.17,-152.49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-152.49C263.71,-150.49 235.05,-150.45 212.41,-150.92"/>
+<polygon fill="#000000" stroke="#000000" points="212.59,-147.42 202.68,-151.18 212.77,-154.42 212.59,-147.42"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_sphere~~UsesGraph_edge23" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.96,-163.09C362.38,-167.2 349.36,-171.83 337.12,-176.17"/>
+<polygon fill="#000000" stroke="#000000" points="336.31,-172.75 328.06,-179.39 338.66,-179.34 336.31,-172.75"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sphere~~UsesGraph_edge24" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.2,-201.56C359.27,-209.77 322.91,-222.15 291.17,-232.49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-232.49C257.63,-242.77 224.17,-260.62 201.05,-274.19"/>
+<polygon fill="#000000" stroke="#000000" points="199.29,-271.16 192.5,-279.3 202.88,-277.17 199.29,-271.16"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_sphere~~UsesGraph_edge25" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.16,-180.41C378.08,-177.71 372.92,-174.69 368.31,-171.49 350.48,-159.11 349.44,-151.82 332.31,-138.49 328.77,-135.74 324.95,-132.98 321.12,-130.33"/>
+<polygon fill="#000000" stroke="#000000" points="323.23,-127.53 312.97,-124.89 319.34,-133.35 323.23,-127.53"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_sphere~~UsesGraph_edge26" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.68,-205.06C382.08,-209.21 374.81,-213.93 368.31,-218.49 351.72,-230.14 348.9,-234.84 332.31,-246.49 328.86,-248.92 325.19,-251.38 321.51,-253.79"/>
+<polygon fill="#000000" stroke="#000000" points="319.75,-250.76 313.21,-259.1 323.52,-256.66 319.75,-250.76"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_edge27" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M384.38,-179.95C360.96,-169.23 324.67,-155.12 291.17,-152.49"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sphere~~UsesGraph_edge28" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M267.68,-204.91C261.18,-208.98 254.15,-213.68 248.04,-218.49 227.1,-234.96 205.5,-256.37 190.64,-271.92"/>
+<polygon fill="#000000" stroke="#000000" points="188.48,-269.11 184.16,-278.79 193.57,-273.92 188.48,-269.11"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sphere~~UsesGraph_edge30" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.31,-179.94C239.38,-175.54 224.79,-170.58 211.61,-166.09"/>
+<polygon fill="#000000" stroke="#000000" points="212.96,-162.85 202.37,-162.95 210.71,-169.48 212.96,-162.85"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_sphere~~UsesGraph_edge29" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.65,-189.05C208.28,-185.79 148.78,-180.87 104.91,-177.23"/>
+<polygon fill="#000000" stroke="#000000" points="105.31,-173.75 95.06,-176.42 104.73,-180.73 105.31,-173.75"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_sphereUsesGraph = svgPanZoom('#modulevkf_sphereUsesGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_sphere~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_sphereUsedByGraph" width="283pt" height="52pt"
+ viewBox="0.00 0.00 283.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_sphere~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_sphere~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 278.56,-48.27 278.56,4 -4,4"/>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_sphere~~UsedByGraph_node1" class="node">
+<title>module~vkf_sphere</title>
+<polygon fill="none" stroke="black" points="68.52,-44.27 0,-44.27 0,-20 68.52,-20 68.52,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.26" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_sphere</text>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_sphere~~UsedByGraph_node2" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_sphere~~UsedByGraph_node2"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="177.54,-24.27 104.52,-24.27 104.52,0 177.54,0 177.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="141.03" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_sphere~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M104.27,-18.96C96.45,-20.45 88.08,-22.05 79.97,-23.6"/>
+<polygon fill="#000000" stroke="#000000" points="79.4,-20.15 70.23,-25.46 80.71,-27.02 79.4,-20.15"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_sphere~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_sphere~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="274.56,-44.27 213.54,-44.27 213.54,-20 274.56,-20 274.56,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="244.05" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_sphere~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M213.05,-32.69C201.9,-32.87 189.14,-33.05 177.54,-33.13 145.09,-33.38 136.97,-33.37 104.52,-33.13 96.59,-33.08 88.15,-32.98 79.99,-32.88"/>
+<polygon fill="#000000" stroke="#000000" points="80.29,-29.38 70.24,-32.74 80.19,-36.38 80.29,-29.38"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_sphere~~UsedByGraph_edge3" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M213.29,-26.24C205.68,-24.74 197.32,-23.08 189.09,-21.45"/>
+<polygon fill="#000000" stroke="#000000" points="189.98,-18.06 179.5,-19.55 188.62,-24.93 189.98,-18.06"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod_first"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>lod_first</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>the index of the mesh built at once (128 segments)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod_segments"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>lod_segments</strong>(6)</td>
+<td> =</td>
+                <td>[32, 64, 128, 256, 512, 1024]</td>
+            <td>
+                <p>The level-of-detail meshes: segments around the equator (half as many
+from pole to pole); the one built at once.</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-sphere"></span>
+      <h3>public        interface <a href='../interface/sphere.html'>Sphere</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The Sphere constructor: <code>Sphere(...)</code> makes one (see <code>new_sphere</code> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_sphere.html'>new_sphere</a>(name, radius, color) result(s)  
+
+    </h3>
+    
+  <p>A sphere named <code>name</code>, of radius <code>radius</code> (default 1) and color <code>color</code>
+([r, g, b] or [r, g, b, a]; default white, 90% opaque).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~26"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~35"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>scene units (default 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~63"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/sphere.html'>Sphere</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-sphere"></span>
+      <h3>
+        type, public, extends(<a href='../type/referenceframe.html'>ReferenceFrame</a>)&nbsp;::&nbsp;
+        <a href='../type/sphere.html'>Sphere</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A sphere or ellipsoid (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ambient_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ambient_</strong>(4)</td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>ambient color [r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-auto_lod_"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>auto_lod_</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>level of detail (default on)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-built_radii"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>built_radii</strong>(3)</td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>the mesh's semi-axes</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffuse_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>diffuse_</strong>(4)</td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>diffuse [r, g, b, a] (times the color if no texture)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-emission_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>emission_</strong>(4)</td>
+<td> =</td>
+                <td>[0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]</td>
+            <td>
+<p>emission color [r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-image~13"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>image</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the textures, for meshes built later</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod_mesh"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lod_mesh</strong>(size(lod_segments))</td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the level-of-detail meshes (null: not built yet)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod_node"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lod_node</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>chooses among the meshes, per view</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mesh~15"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mesh</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>without level of detail</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_lat~5"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_lat</strong></td>
+<td> =</td>
+                <td>64</td>
+            <td>
+<p>without level of detail</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_lon~5"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_lon</strong></td>
+<td> =</td>
+                <td>128</td>
+            <td>
+<p>without level of detail</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-night~2"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>night</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the textures, for meshes built later</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-night_texture~3"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>night_texture</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>night texture file (unallocated or '': none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-opacity_~2"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>opacity_</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>1 opaque; below 1 translucent (see set_opacity)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius_~2"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius_</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>radius (scene units; default 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale_~4"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale_</strong>(3)</td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>scale along x, y and z: semi-axes radius * scale</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shininess_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shininess_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>0 to 128 (0: no specular highlight)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shown~11"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shown</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>(meshes built later are compiled)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-specular_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>specular_</strong>(4)</td>
+<td> =</td>
+                <td>[0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]</td>
+            <td>
+<p>specular color [r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sphere_attitude_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sphere_attitude_</strong>(4)</td>
+<td> =</td>
+                <td>quat_identity</td>
+            <td>
+<p>the body's attitude in the frame ([x, y, z, w])</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sphere_node"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sphere_node</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>transform of the body within the frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sphere_position_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sphere_position_</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the body's center in the frame (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-texture~4"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>texture</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>texture file (unallocated or '': none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-textured"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>textured</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>(the color is not used)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-translucent~3"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>translucent</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>built translucent (opacity below 1 when first shown)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-twilight_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>twilight_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>radians below the horizon (0: none)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The Sphere constructor: <code>Sphere(...)</code> makes one (see <code>new_sphere</code> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_sphere.html'>new_sphere</a></strong>
+                    (name, radius, color)
+                  </td>
+                  <td><p>A sphere named <code>name</code>, of radius <code>radius</code> (default 1) and color <code>color</code>
+([r, g, b] or [r, g, b, a]; default white, 90% opaque).</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-add_child'>add_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-attitude~5'>attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-auto_lod'>auto_lod</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_labels_shown'>axes_labels_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_shown'>axes_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axis_label'>axis_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-bound~14'>bound</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/sphere_bound.html'>sphere_bound</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-build_contents~14'>build_contents</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/sphere_build_contents.html'>sphere_build_contents</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child~3'>child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child_index'>child_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-color~37'>color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-contents_shown'>contents_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-detach'>detach</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follow~3'>follow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follower'>follower</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-frame_info~16'>frame_info</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/sphere_frame_info.html'>sphere_frame_info</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-frame_string'>frame_string</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-has_light_source'>has_light_source</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-is_following'>is_following</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_alignment'>label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_font'>label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_size'>label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-late_update~2'>late_update</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_ambient~2'>light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_diffuse~2'>light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_source_enabled'>light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_specular~2'>light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-local_matrix'>local_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-material'>material</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_x_axis'>move_x_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_y_axis'>move_y_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_z_axis'>move_z_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name~14'>name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_on_top'>name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_shown'>name_label_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-night_texture_map'>night_texture_map</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-node~17'>node</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_children'>num_children</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-num_lod_meshes'>num_lod_meshes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_parents'>num_parents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-opacity~5'>opacity</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent~4'>parent</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent_index'>parent_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-pick~8'>pick</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/sphere_pick.html'>sphere_pick</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-pickable~3'>pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position~17'>position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position_of'>position_of</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-radii~6'>radii</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-radius~34'>radius</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-realize'>realize</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-remove_child'>remove_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-reposition_axes'>reposition_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_attitude~2'>set_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_auto_lod'>set_auto_lod</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_color~11'>set_color</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/sphere_set_color.html'>sphere_set_color</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_alignment'>set_label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_font'>set_label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_size'>set_label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_ambient~2'>set_light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_diffuse~2'>set_light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_source_enabled'>set_light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_specular~2'>set_light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_material'>set_material</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name'>set_name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name_label_on_top'>set_name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_night_texture_map'>set_night_texture_map</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_opacity~2'>set_opacity</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_pickable~2'>set_pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_position~2'>set_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_radius'>set_radius</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_resolution'>set_resolution</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_sphere_attitude'>set_sphere_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_sphere_position'>set_sphere_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_sphere_scale'>set_sphere_scale</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_texture_map~2'>set_texture_map</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-set_twilight'>set_twilight</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_x_label'>set_x_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_y_label'>set_y_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_z_label'>set_z_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes'>show_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes_labels'>show_axes_labels</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_contents'>show_contents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_decorations'>show_decorations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_name_label'>show_name_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-sphere_attitude'>sphere_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-sphere_position'>sphere_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-sphere_scale'>sphere_scale</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-sync~3'>sync</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-texture_map~2'>texture_map</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-twilight'>twilight</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-unfollow'>unfollow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/sphere.html#boundprocedure-update~12'>update</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/sphere_update.html'>sphere_update</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-world_matrix'>world_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-auto_lod"></span> <h3>private pure function <a href='../proc/auto_lod.html'>auto_lod</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Whether level of detail is on.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~834"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_sphere"></span> <h3>private  function <a href='../proc/new_sphere.html'>new_sphere</a>(name, radius, color) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A sphere named <code>name</code>, of radius <code>radius</code> (default 1) and color <code>color</code>
+([r, g, b] or [r, g, b, a]; default white, 90% opaque).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~26"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~35"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>scene units (default 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~63"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/sphere.html'>Sphere</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-night_texture_map"></span> <h3>private  function <a href='../proc/night_texture_map.html'>night_texture_map</a>(self) result(file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The night texture file ('' for none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~826"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_lod_meshes"></span> <h3>private  function <a href='../proc/num_lod_meshes.html'>num_lod_meshes</a>(self) result(n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of level-of-detail meshes built so far (0 without level of detail).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~842"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-opacity"></span> <h3>private pure function <a href='../proc/opacity.html'>opacity</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's opacity (set_opacity).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~814"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-radii"></span> <h3>private pure function <a href='../proc/radii.html'>radii</a>(self) result(r)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The semi-axes: radius * sphere_scale.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~818"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-radius"></span> <h3>private pure function <a href='../proc/radius.html'>radius</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sphere's radius (scene units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~815"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-read_texture"></span> <h3>private  function <a href='../proc/read_texture.html'>read_texture</a>(self, file) result(image)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>An image handle for texture file <code>file</code> (null if none or unreadable).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~843"></span>
+              type(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~22"></span>
+              character(len=:),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+<p>found with find_data_file (unallocated or '': none)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(c_ptr)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_attitude"></span> <h3>private pure function <a href='../proc/sphere_attitude.html'>sphere_attitude</a>(self) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Attitude of the body in its frame (quaternion [x, y, z, w]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~822"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_frame_info"></span> <h3>private  function <a href='../proc/sphere_frame_info.html'>sphere_frame_info</a>(self) result(info)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>What kind of frame this is: 'Sphere'.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~838"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_position"></span> <h3>private pure function <a href='../proc/sphere_position.html'>sphere_position</a>(self) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Position of the body's center in its frame (scene units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~820"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_scale"></span> <h3>private pure function <a href='../proc/sphere_scale.html'>sphere_scale</a>(self) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The scale along the sphere's x, y and z axes.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~817"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-texture_map~2"></span> <h3>private  function <a href='../proc/texture_map~2.html'>texture_map</a>(self) result(file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The texture file ('' for none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~824"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-twilight"></span> <h3>private pure function <a href='../proc/twilight.html'>twilight</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The twilight angle (radians below the horizon; 0: none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~830"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_material"></span> <h3>private  subroutine <a href='../proc/apply_material.html'>apply_material</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The material, with the diffuse color times the body's color (without a
+texture), and the twilight, on every mesh built.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~831"></span>
+              type(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_material_to"></span> <h3>private  subroutine <a href='../proc/apply_material_to.html'>apply_material_to</a>(self, mesh)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The material, with the diffuse color times the body's color (without a
+texture), and the twilight, on mesh <code>mesh</code> (if not null).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~832"></span>
+              type(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mesh~16"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mesh</strong></td>
+            <td>
+<p>a mesh handle (null: nothing done)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-build_lod_mesh"></span> <h3>private  subroutine <a href='../proc/build_lod_mesh.html'>build_lod_mesh</a>(self, k, compile)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Build level-of-detail mesh k (lod_segments(k) segments around) and add it
+to the level-of-detail node (compiled for the windows if <code>compile</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~840"></span>
+              type(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k~101"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k</strong></td>
+            <td>
+<p>index into lod_segments</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compile~5"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>compile</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-material"></span> <h3>private pure subroutine <a href='../proc/material.html'>material</a>(self, ambient, diffuse, specular, emission, shininess)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The material (each optional): ambient, diffuse, specular and emission colors
+and shininess.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~828"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ambient~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ambient</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffuse~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>diffuse</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-specular~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>specular</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-emission~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>emission</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shininess~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shininess</strong></td>
+            <td>
+<p>0 to 128</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_auto_lod"></span> <h3>private  subroutine <a href='../proc/set_auto_lod.html'>set_auto_lod</a>(self, lod)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Level of detail (default on; see the module documentation): meshes of
+several resolutions, the one drawn chosen per view. Off: one mesh of
+<code>set_resolution</code>'s segments. Set it before a window shows the sphere.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~833"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod~5"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lod</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_material"></span> <h3>private  subroutine <a href='../proc/set_material.html'>set_material</a>(self, ambient, diffuse, specular, emission, shininess)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The material (OpenFrames' setMaterial; each optional): ambient, diffuse,
+specular and emission colors ([r, g, b] or [r, g, b, a], 0 to 1) and
+shininess (0 to 128: the specular highlight's sharpness; 0 for none).
+The ambient and diffuse colors scale the body's color or texture (VSG's
+Phong); the specular color is reflected from the lights' specular parts.
+Defaults: ambient and diffuse white, no specular reflection or emission.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~827"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ambient~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ambient</strong>(:)</td>
+            <td>
+<p>[r, g, b(, a)], 0 to 1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-diffuse~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>diffuse</strong>(:)</td>
+            <td>
+<p>[r, g, b(, a)], 0 to 1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-specular~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>specular</strong>(:)</td>
+            <td>
+<p>[r, g, b(, a)], 0 to 1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-emission"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>emission</strong>(:)</td>
+            <td>
+<p>[r, g, b(, a)], 0 to 1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shininess~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shininess</strong></td>
+            <td>
+<p>0 to 128 (&lt; 0: 0)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_night_texture_map"></span> <h3>private  subroutine <a href='../proc/set_night_texture_map.html'>set_night_texture_map</a>(self, file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The texture for the side away from the light (e.g. city lights; an
+equirectangular image file as the texture, '' for none), shown where the
+diffuse light is weak.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~825"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~20"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+<p>found with find_data_file; '' for none</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_opacity"></span> <h3>private  subroutine <a href='../proc/set_opacity.html'>set_opacity</a>(self, opacity)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's opacity, 0 (invisible) to 1 (opaque, the default): below 1
+it is drawn translucent (see the module documentation). Set below 1
+before a window first shows it to make it translucent; then the
+opacity can change at any time (a translucent body stays translucent,
+an opaque one opaque).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~813"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-opacity~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>opacity</strong></td>
+            <td>
+<p>0 to 1</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_radius"></span> <h3>private  subroutine <a href='../proc/set_radius.html'>set_radius</a>(self, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sphere's radius (scene units, &gt; 0; default 1); can change at any time.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~811"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~36"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>scene units (&lt;= 0: ignored)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_resolution"></span> <h3>private  subroutine <a href='../proc/set_resolution.html'>set_resolution</a>(self, n_lon, n_lat)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The mesh resolution without level of detail: segments in longitude and
+latitude (default 128 x 64).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~835"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_lon~6"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_lon</strong></td>
+            <td>
+<p>segments in longitude (at least 3)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_lat~6"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_lat</strong></td>
+            <td>
+<p>segments in latitude (at least 2)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_sphere_attitude"></span> <h3>private  subroutine <a href='../proc/set_sphere_attitude.html'>set_sphere_attitude</a>(self, q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Attitude of the body in its frame (quaternion [x, y, z, w]), e.g. to
+orient its texture.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~821"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~27"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>quaternion [x, y, z, w] (normalized here)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_sphere_position"></span> <h3>private  subroutine <a href='../proc/set_sphere_position.html'>set_sphere_position</a>(self, position)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Position of the body's center in its frame.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~819"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_sphere_scale"></span> <h3>private  subroutine <a href='../proc/set_sphere_scale.html'>set_sphere_scale</a>(self, scale)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Scale the sphere along its x, y and z axes (all &gt; 0), making an
+ellipsoid with semi-axes radius * scale.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~816"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale~14"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale</strong>(3)</td>
+            <td>
+<p>along x, y and z (all &gt; 0, else ignored)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_texture_map~2"></span> <h3>private  subroutine <a href='../proc/set_texture_map~2.html'>set_texture_map</a>(self, file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The texture: an equirectangular image file ('' for none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~823"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~18"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+<p>found with find_data_file; '' for none</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_twilight"></span> <h3>private  subroutine <a href='../proc/set_twilight.html'>set_twilight</a>(self, angle)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The twilight: the diffuse light extended past the terminator to where
+the light is <code>angle</code> (radians, 0 to 1.5) below the horizon, fading out
+smoothly (where it meets the light on the day side: the same brightness
+and slope, so no line shows), and the night texture fading in across it.
+0 (the default): none, the light ends at the terminator (an airless
+body). Not in OpenFrames. Can change at any time.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~829"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-angle~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>angle</strong></td>
+            <td>
+<p>radians below the horizon (clamped to 0 to 1.5)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_bound"></span> <h3>private  subroutine <a href='../proc/sphere_bound.html'>sphere_bound</a>(self, center, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's bounding sphere: its center, and its largest semi-axis.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~836"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~34"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the bounding sphere, frame coordinates (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~38"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>the bounding sphere, frame coordinates (scene units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_build_contents"></span> <h3>private  subroutine <a href='../proc/sphere_build_contents.html'>sphere_build_contents</a>(self, viewer, group)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body: an ellipsoid mesh under the sphere's transform.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~839"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~59"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>a window's viewer (null: headless)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-group~30"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+            <td>
+<p>the frame's contents group</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_pick"></span> <h3>private  subroutine <a href='../proc/sphere_pick.html'>sphere_pick</a>(self, cam, to_root, hits, n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Picked on the ellipsoid (exact), with the geodetic latitude and longitude
+of the point hit (in the body's axes: sphere_attitude); else the frame's
+origin.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~837"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~30"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+<p>the camera and cursor of the pick</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-to_root~8"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>to_root</strong>(4,4)</td>
+            <td>
+<p>the frame's transform to the root frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hits~14"></span>
+              type(<a href='../type/pickhit.html'>PickHit</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>hits</strong>(:)</td>
+            <td>
+<p>hits so far, in hits(1:n); added to</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~98"></span>
+              integer,
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>number of hits</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_set_color"></span> <h3>private  subroutine <a href='../proc/sphere_set_color.html'>sphere_set_color</a>(self, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's color (used without a texture); [r, g, b] or [r, g, b, a].</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~812"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~64"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_update"></span> <h3>private recursive subroutine <a href='../proc/sphere_update.html'>sphere_update</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Update the frame (followed trajectories, children) and, with level of
+detail, build the mesh the views have wanted if it isn't built yet (the
+coarsest with as many segments as wanted, or the finest).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~841"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~62"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the scene time</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-update_sphere_transform"></span> <h3>private  subroutine <a href='../proc/update_sphere_transform.html'>update_sphere_transform</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's transform: its position, attitude and scale (radii / the built
+radii); nothing before it is built.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~844"></span>
+              type(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

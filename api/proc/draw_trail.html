@@ -1,0 +1,671 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>draw_trail &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>draw_trail
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.1% of total for procedures.">90 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_artists.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_artists.f90.html'>vkf_artists.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_artists.html'>vkf_artists</a></li>
+            <li class="breadcrumb-item active" aria-current="page">draw_trail</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/draw_trail.html#src">draw_trail</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine draw_trail(self, t)  
+</h2>
+    
+
+    <p>A trail at time t: the points within its window (and the one beyond
+each end: the GPU cuts the segments at the cutoffs) drawn, and the
+distances along the curve at t and at the window's edges given to the
+shader (see vkf_line_set_trail), as distances from t's in the
+direction of time; times beyond the trajectory's are extrapolated from
+its end segments.</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~198"></span>
+              type(<a href='../type/curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~28"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~draw_trail~~CallsGraph Pages: 1 -->
+<svg id="procdraw_trailCallsGraph" width="218pt" height="242pt"
+ viewBox="0.00 0.00 218.00 242.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~draw_trail~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 238.27)">
+<title>proc~~draw_trail~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-238.27 213.79,-238.27 213.79,4 -4,4"/>
+<!-- proc~draw_trail -->
+<g id="proc~~draw_trail~~CallsGraph_node1" class="node">
+<title>proc~draw_trail</title>
+<polygon fill="none" stroke="black" points="64.02,-129.27 0,-129.27 0,-105 64.02,-105 64.02,-129.27"/>
+<text xml:space="preserve" text-anchor="middle" x="32.01" y="-113.54" font-family="Helvetica,sans-Serif" font-size="10.50">draw_trail</text>
+</g>
+<!-- distance -->
+<g id="proc~~draw_trail~~CallsGraph_node2" class="node">
+<title>distance</title>
+<polygon fill="#777777" stroke="#777777" points="183.16,-234.27 126.64,-234.27 126.64,-210 183.16,-210 183.16,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="154.9" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">distance</text>
+</g>
+<!-- proc~draw_trail&#45;&gt;distance -->
+<g id="proc~~draw_trail~~CallsGraph_edge1" class="edge">
+<title>proc~draw_trail&#45;&gt;distance</title>
+<path fill="none" stroke="#000000" d="M40.07,-129.69C50.83,-147.79 72.98,-181.23 100.02,-201.13 104.75,-204.62 110.13,-207.6 115.62,-210.14"/>
+<polygon fill="#000000" stroke="#000000" points="114.19,-213.33 124.77,-213.9 116.85,-206.86 114.19,-213.33"/>
+</g>
+<!-- draw_range -->
+<g id="proc~~draw_trail~~CallsGraph_node3" class="node">
+<title>draw_range</title>
+<polygon fill="#777777" stroke="#777777" points="192.16,-192.27 117.64,-192.27 117.64,-168 192.16,-168 192.16,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="154.9" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">draw_range</text>
+</g>
+<!-- proc~draw_trail&#45;&gt;draw_range -->
+<g id="proc~~draw_trail~~CallsGraph_edge2" class="edge">
+<title>proc~draw_trail&#45;&gt;draw_range</title>
+<path fill="none" stroke="#000000" d="M50.96,-129.68C64.15,-138.58 82.72,-150.44 100.02,-159.13 102.7,-160.48 105.49,-161.8 108.33,-163.08"/>
+<polygon fill="#000000" stroke="#000000" points="106.74,-166.21 117.31,-166.93 109.49,-159.77 106.74,-166.21"/>
+</g>
+<!-- interface~vkf_line_set_range -->
+<g id="proc~~draw_trail~~CallsGraph_node4" class="node">
+<title>interface~vkf_line_set_range</title>
+<g id="a_proc~~draw_trail~~CallsGraph_node4"><a xlink:href="../interface/vkf_line_set_range.html" xlink:title="vkf_line_set_range">
+<polygon fill="#a7506f" stroke="#a7506f" points="209.79,-150.27 100.02,-150.27 100.02,-126 209.79,-126 209.79,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="154.9" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_set_range</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_trail&#45;&gt;interface~vkf_line_set_range -->
+<g id="proc~~draw_trail~~CallsGraph_edge3" class="edge">
+<title>proc~draw_trail&#45;&gt;interface~vkf_line_set_range</title>
+<path fill="none" stroke="#000000" d="M64.46,-122.6C71.87,-123.88 80.03,-125.3 88.33,-126.74"/>
+<polygon fill="#000000" stroke="#000000" points="87.73,-130.19 98.18,-128.46 88.92,-123.3 87.73,-130.19"/>
+</g>
+<!-- proc~check_status -->
+<g id="proc~~draw_trail~~CallsGraph_node5" class="node">
+<title>proc~check_status</title>
+<g id="a_proc~~draw_trail~~CallsGraph_node5"><a xlink:href="../proc/check_status.html" xlink:title="check_status">
+<polygon fill="#d9534f" stroke="#d9534f" points="194.79,-108.27 115.02,-108.27 115.02,-84 194.79,-84 194.79,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="154.9" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_status</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_trail&#45;&gt;proc~check_status -->
+<g id="proc~~draw_trail~~CallsGraph_edge4" class="edge">
+<title>proc~draw_trail&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M64.46,-111.67C76.48,-109.58 90.51,-107.15 103.85,-104.83"/>
+<polygon fill="#000000" stroke="#000000" points="104.08,-108.34 113.34,-103.18 102.89,-101.44 104.08,-108.34"/>
+</g>
+<!-- proc~decreasing_times -->
+<g id="proc~~draw_trail~~CallsGraph_node6" class="node">
+<title>proc~decreasing_times</title>
+<g id="a_proc~~draw_trail~~CallsGraph_node6"><a xlink:href="../proc/decreasing_times.html" xlink:title="decreasing_times">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="207.16,-66.27 102.64,-66.27 102.64,-42 207.16,-42 207.16,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="154.9" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">decreasing_times</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_trail&#45;&gt;proc~decreasing_times -->
+<g id="proc~~draw_trail~~CallsGraph_edge5" class="edge">
+<title>proc~draw_trail&#45;&gt;proc~decreasing_times</title>
+<path fill="none" stroke="#000000" d="M50.96,-104.59C64.15,-95.69 82.72,-83.83 100.02,-75.14 102.7,-73.79 105.49,-72.47 108.33,-71.19"/>
+<polygon fill="#000000" stroke="#000000" points="109.49,-74.5 117.31,-67.34 106.74,-68.06 109.49,-74.5"/>
+</g>
+<!-- set_trail -->
+<g id="proc~~draw_trail~~CallsGraph_node7" class="node">
+<title>set_trail</title>
+<polygon fill="#777777" stroke="#777777" points="181.9,-24.27 127.9,-24.27 127.9,0 181.9,0 181.9,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="154.9" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">set_trail</text>
+</g>
+<!-- proc~draw_trail&#45;&gt;set_trail -->
+<g id="proc~~draw_trail~~CallsGraph_edge6" class="edge">
+<title>proc~draw_trail&#45;&gt;set_trail</title>
+<path fill="none" stroke="#000000" d="M40.07,-104.58C50.83,-86.48 72.98,-53.04 100.02,-33.13 105.12,-29.38 110.99,-26.2 116.93,-23.54"/>
+<polygon fill="#000000" stroke="#000000" points="118.15,-26.82 126.14,-19.86 115.56,-20.31 118.15,-26.82"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~draw_trail~~CalledByGraph Pages: 1 -->
+<svg id="procdraw_trailCalledByGraph" width="261pt" height="32pt"
+ viewBox="0.00 0.00 261.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~draw_trail~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>proc~~draw_trail~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 257.29,-28.27 257.29,4 -4,4"/>
+<!-- proc~draw_trail -->
+<g id="proc~~draw_trail~~CalledByGraph_node1" class="node">
+<title>proc~draw_trail</title>
+<polygon fill="none" stroke="black" points="253.29,-24.27 189.27,-24.27 189.27,0 253.29,0 253.29,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="221.28" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">draw_trail</text>
+</g>
+<!-- proc~curve_update -->
+<g id="proc~~draw_trail~~CalledByGraph_node2" class="node">
+<title>proc~curve_update</title>
+<g id="a_proc~~draw_trail~~CalledByGraph_node2"><a xlink:href="../proc/curve_update.html" xlink:title="CurveArtist%curve_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="153.27,-24.27 0,-24.27 0,0 153.27,0 153.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="76.64" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">CurveArtist%curve_update</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_update&#45;&gt;proc~draw_trail -->
+<g id="proc~~draw_trail~~CalledByGraph_edge1" class="edge">
+<title>proc~curve_update&#45;&gt;proc~draw_trail</title>
+<path fill="none" stroke="#000000" d="M153.55,-12.13C161.76,-12.13 169.89,-12.13 177.5,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="177.45,-15.64 187.45,-12.14 177.45,-8.64 177.45,-15.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">draw_trail</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">CurveArtist</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">unlimited</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">huge</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">far</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e30_c_float</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">values</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span><span class="w"> </span><span class="n">hi</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">sgn</span><span class="p">,</span><span class="w"> </span><span class="n">lo_key</span><span class="p">,</span><span class="w"> </span><span class="n">hi_key</span><span class="p">,</span><span class="w"> </span><span class="n">s_now</span><span class="p">,</span><span class="w"> </span><span class="n">fade</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">i1</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">check_status</span><span class="p">(</span><span class="n">vkf_line_set_range</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">tail</span><span class="p">,</span><span class="w"> </span><span class="mi">1_c_int</span><span class="p">,</span><span class="w"> </span><span class="mi">0_c_int</span><span class="p">),</span><span class="w"> </span><span class="s1">&#39;trajectory artists&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">tail_shown</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">n_written</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">n_drawn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">first_drawn_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="n">values</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_c_float</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">associated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">traj</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">draw_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">set_trail</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="k">        </span><span class="n">sgn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="n">decreasing_times</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">traj</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">))</span><span class="w">   </span><span class="c">! (keys sgn * time increase with the index)</span>
+<span class="w">        </span><span class="n">lo_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="nb">huge</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">past</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">past</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">unlimited</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">hi_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="nb">huge</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">future</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">future</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">unlimited</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sgn</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">                              </span><span class="c">! (the past is at the larger keys)</span>
+<span class="w">            </span><span class="n">lo_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="nb">huge</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">future</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">future</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">unlimited</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">hi_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="nb">huge</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">past</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">past</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">unlimited</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">hi_key</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">key</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">lo_key</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">key</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="w"> </span><span class="k">then</span><span class="w">     </span><span class="c">! (the window misses the trajectory)</span>
+<span class="w">            </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">draw_range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">set_trail</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="k">        </span><span class="n">i1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">keys_up_to</span><span class="p">(</span><span class="n">lo_key</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.))</span><span class="w">                   </span><span class="c">! the last point before the window, or the first</span>
+<span class="w">        </span><span class="n">i2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">keys_up_to</span><span class="p">(</span><span class="n">hi_key</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">                 </span><span class="c">! the first after it, or the last</span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">first_drawn_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i1</span><span class="w"></span>
+<span class="w">        </span><span class="n">self</span><span class="p">%</span><span class="n">n_drawn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">i1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">draw_range</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">s_now</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s_at</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">hi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">s_now</span><span class="p">,</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">fade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">fade</span><span class="w"></span>
+<span class="w">        </span><span class="n">values</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">hi</span><span class="p">,</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">s_now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span><span class="w"> </span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">),</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">sgn</span><span class="p">,</span><span class="w"> </span><span class="kt">c_float</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                       </span><span class="kt">real</span><span class="p">(</span><span class="nb">merge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">replace</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">replace</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)]</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">past</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">unlimited</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">values</span><span class="p">(</span><span class="mi">5</span><span class="p">:</span><span class="mi">6</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">far</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">values</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s_at</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">past</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s_now</span><span class="p">),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">values</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s_at</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">fade</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">past</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s_now</span><span class="p">),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">future</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">unlimited</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">values</span><span class="p">(</span><span class="mi">7</span><span class="p">:</span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">far</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span>
+<span class="k">            </span><span class="n">values</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s_at</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">fade</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">future</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s_now</span><span class="p">),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">values</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s_at</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">future</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s_now</span><span class="p">),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w">                                         </span><span class="c">! each part&#39;s color (or the line&#39;s: then its alpha only)</span>
+<span class="w">            </span><span class="n">values</span><span class="p">(</span><span class="mi">9</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">):</span><span class="mi">12</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">color</span><span class="p">(:,</span><span class="w"> </span><span class="n">k</span><span class="p">),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">values</span><span class="p">(</span><span class="mi">12</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">opacity</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">color</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">),</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                                                                           </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">replace</span><span class="p">(</span><span class="n">k</span><span class="p">)),</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        </span><span class="n">values</span><span class="p">(</span><span class="mi">17</span><span class="p">:</span><span class="mi">20</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">real</span><span class="p">([</span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">pattern</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">factor</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">pattern</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                              </span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">factor</span><span class="p">(</span><span class="mi">2</span><span class="p">)],</span><span class="w"> </span><span class="kt">c_float</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">set_trail</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">contains</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; Point i&#39;s key: its time, increasing with the index.</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="k">function </span><span class="n">key</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
+<span class="w">            </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end function </span><span class="n">key</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; The number of points with keys below x, or at most x if `inclusive`</span>
+<span class="w">        </span><span class="c">!&gt; (bisection: the keys increase).</span>
+<span class="w">        </span><span class="kt">integer </span><span class="k">function </span><span class="n">keys_up_to</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">inclusive</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">x</span><span class="w">                       </span><span class="c">!! the key</span>
+<span class="w">            </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">inclusive</span><span class="w">                </span><span class="c">!! keys equal to x counted</span>
+<span class="w">            </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">low</span><span class="p">,</span><span class="w"> </span><span class="n">high</span><span class="p">,</span><span class="w"> </span><span class="n">mid</span><span class="w"></span>
+<span class="w">            </span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">            </span><span class="n">high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">            </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">high</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">low</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="n">mid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">low</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">high</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="p">(</span><span class="n">mid</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">(</span><span class="n">inclusive</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">key</span><span class="p">(</span><span class="n">mid</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">x</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mid</span><span class="w"></span>
+<span class="w">                </span><span class="k">else</span>
+<span class="k">                    </span><span class="n">high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mid</span><span class="w"></span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">            end do</span>
+<span class="k">            </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">low</span><span class="w"></span>
+<span class="w">        </span><span class="k">end function </span><span class="n">keys_up_to</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; The distance along the curve at time tt: interpolated between the</span>
+<span class="w">        </span><span class="c">!&gt; points about it (extrapolated beyond the ends).</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="k">function </span><span class="n">s_at</span><span class="p">(</span><span class="n">tt</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tt</span><span class="w"></span>
+<span class="w">            </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">j</span><span class="w"></span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="n">t1</span><span class="w"></span>
+<span class="w">            </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">keys_up_to</span><span class="p">(</span><span class="n">sgn</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tt</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.)))</span><span class="w"></span>
+<span class="w">            </span><span class="n">t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">s_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">distance</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="n">s_at</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s_at</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">tt</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">distance</span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">s_at</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end function </span><span class="n">s_at</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">draw_trail</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,1229 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_math.f90 &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_math.f90
+      <small>Source File</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 1.5% of total for source files.">191 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_math.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+            <li class="breadcrumb-item active" aria-current="page">vkf_math.f90</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#mods-0"
+         aria-expanded="false" aria-controls="mods-0">
+         <h4 class="card-header bg-primary text-white">Modules</h4>
+      </a>
+      <div id="mods-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_math.html">vkf_math</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../sourcefile/vkf_math.f90.html#src">vkf_math.f90</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Files dependent on this one</h3>
+          </div>
+          <div class="card-body">
+            <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: sourcefile~~vkf_math.f90~~AfferentGraph Pages: 1 -->
+<svg id="sourcefilevkf_mathf90AfferentGraph" width="641pt" height="500pt"
+ viewBox="0.00 0.00 641.00 500.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph" class="graph" transform="scale(0.599957 0.599957) rotate(0) translate(4 828.76)">
+<title>sourcefile~~vkf_math.f90~~AfferentGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-828.76 1064.41,-828.76 1064.41,4 -4,4"/>
+<!-- sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node1" class="node">
+<title>sourcefile~vkf_math.f90</title>
+<polygon fill="none" stroke="black" points="80.52,-416.07 0,-416.07 0,-391.8 80.52,-391.8 80.52,-416.07"/>
+<text xml:space="preserve" text-anchor="middle" x="40.26" y="-400.34" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_math.f90</text>
+</g>
+<!-- sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node2" class="node">
+<title>sourcefile~vkf_artists.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node2"><a xlink:href="../sourcefile/vkf_artists.f90.html" xlink:title="vkf_artists.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="644.47,-584.07 559.45,-584.07 559.45,-559.8 644.47,-559.8 644.47,-584.07"/>
+<text xml:space="preserve" text-anchor="middle" x="601.96" y="-568.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge1" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M559.02,-580.45C551.19,-583.44 543.53,-587.49 537.33,-592.94 509.56,-617.35 527.71,-642.03 501.33,-667.94 483.06,-685.89 471.95,-680.68 448.94,-691.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M446.94,-691.94C383.36,-723.07 370.57,-803.17 308.05,-769.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M306.05,-769.94C193.48,-710.11 274.07,-590.18 169.03,-517.94"/>
+</g>
+<!-- sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node6" class="node">
+<title>sourcefile~vkf_frames.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node6"><a xlink:href="../sourcefile/vkf_frames.f90.html" xlink:title="vkf_frames.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="493.08,-512.07 402.81,-512.07 402.81,-487.8 493.08,-487.8 493.08,-512.07"/>
+<text xml:space="preserve" text-anchor="middle" x="447.94" y="-496.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge33" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M568.67,-559.42C558.55,-555.31 547.4,-550.61 537.33,-545.94 518.48,-537.21 497.87,-526.55 481.3,-517.69"/>
+<polygon fill="#000000" stroke="#000000" points="483.35,-514.82 472.88,-513.15 480.03,-520.98 483.35,-514.82"/>
+</g>
+<!-- sourcefile~vkf_line_chain.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node11" class="node">
+<title>sourcefile~vkf_line_chain.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node11"><a xlink:href="../sourcefile/vkf_line_chain.f90.html" xlink:title="vkf_line_chain.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="501.33,-782.07 394.56,-782.07 394.56,-757.8 501.33,-757.8 501.33,-782.07"/>
+<text xml:space="preserve" text-anchor="middle" x="447.94" y="-766.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_chain.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_line_chain.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge54" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_line_chain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M559.06,-579.54C551.05,-582.6 543.3,-586.9 537.33,-592.94 500.25,-630.4 526.47,-659.61 501.33,-705.94 492.71,-721.83 479.9,-737.57 469.1,-749.46"/>
+<polygon fill="#000000" stroke="#000000" points="466.66,-746.95 462.38,-756.65 471.77,-751.74 466.66,-746.95"/>
+</g>
+<!-- sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node14" class="node">
+<title>sourcefile~vkf_pick.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node14"><a xlink:href="../sourcefile/vkf_pick.f90.html" xlink:title="vkf_pick.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="344.31,-612.07 269.79,-612.07 269.79,-587.8 344.31,-587.8 344.31,-612.07"/>
+<text xml:space="preserve" text-anchor="middle" x="307.05" y="-596.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge58" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M559.2,-583.82C551.77,-586.47 544.21,-589.52 537.33,-592.94 494.59,-614.19 496.61,-656.51 448.94,-653.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M446.94,-653.94C407.31,-651.8 365.31,-632.83 338,-617.98"/>
+<polygon fill="#000000" stroke="#000000" points="340.04,-615.11 329.61,-613.27 336.62,-621.21 340.04,-615.11"/>
+</g>
+<!-- sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node21" class="node">
+<title>sourcefile~vkf_trajectory.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node21"><a xlink:href="../sourcefile/vkf_trajectory.f90.html" xlink:title="vkf_trajectory.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="219.54,-416.07 116.52,-416.07 116.52,-391.8 219.54,-391.8 219.54,-416.07"/>
+<text xml:space="preserve" text-anchor="middle" x="168.03" y="-400.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge77" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M558.97,-564.59C516.64,-556.48 449.82,-541.77 394.56,-520.94 321.16,-493.28 240.9,-447.59 198.74,-422.26"/>
+<polygon fill="#000000" stroke="#000000" points="200.77,-419.4 190.4,-417.22 197.15,-425.39 200.77,-419.4"/>
+</g>
+<!-- sourcefile~vkf_clock.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node3" class="node">
+<title>sourcefile~vkf_clock.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node3"><a xlink:href="../sourcefile/vkf_clock.f90.html" xlink:title="vkf_clock.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="799.24,-130.07 718.72,-130.07 718.72,-105.8 799.24,-105.8 799.24,-130.07"/>
+<text xml:space="preserve" text-anchor="middle" x="758.98" y="-114.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_clock.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_clock.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge2" class="edge">
+<title>sourcefile~vkf_clock.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M722.2,-105.34C684.03,-92.43 625.99,-74.44 602.96,-75.94"/>
+</g>
+<!-- sourcefile~vkf_diagnostics.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node4" class="node">
+<title>sourcefile~vkf_diagnostics.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node4"><a xlink:href="../sourcefile/vkf_diagnostics.f90.html" xlink:title="vkf_diagnostics.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="815.37,-88.07 702.6,-88.07 702.6,-63.8 815.37,-63.8 815.37,-88.07"/>
+<text xml:space="preserve" text-anchor="middle" x="758.98" y="-72.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_diagnostics.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_diagnostics.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge3" class="edge">
+<title>sourcefile~vkf_diagnostics.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M702.32,-74.19C672.77,-73.71 635.86,-73.8 602.96,-75.94"/>
+</g>
+<!-- sourcefile~vkf_follower.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node5" class="node">
+<title>sourcefile~vkf_follower.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node5"><a xlink:href="../sourcefile/vkf_follower.f90.html" xlink:title="vkf_follower.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="354.06,-322.07 260.04,-322.07 260.04,-297.8 354.06,-297.8 354.06,-322.07"/>
+<text xml:space="preserve" text-anchor="middle" x="307.05" y="-306.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge4" class="edge">
+<title>sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M279.75,-297.38C245.49,-281.84 187.74,-258.73 169.03,-269.94"/>
+</g>
+<!-- sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge78" class="edge">
+<title>sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M287.85,-322.42C264.51,-338.43 223.81,-366.36 196.64,-385"/>
+<polygon fill="#000000" stroke="#000000" points="194.81,-382.01 188.55,-390.55 198.77,-387.78 194.81,-382.01"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge5" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M402.54,-509.02C334.06,-522.02 206.61,-541.85 169.03,-517.94"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_follower.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge31" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_follower.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M436.19,-487.44C425.37,-474.72 408.35,-454.31 394.56,-435.94 367.82,-400.31 338.95,-357.23 322.24,-331.79"/>
+<polygon fill="#000000" stroke="#000000" points="325.3,-330.06 316.89,-323.61 319.44,-333.9 325.3,-330.06"/>
+</g>
+<!-- sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node7" class="node">
+<title>sourcefile~vkf_geometry.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node7"><a xlink:href="../sourcefile/vkf_geometry.f90.html" xlink:title="vkf_geometry.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="358.56,-570.07 255.54,-570.07 255.54,-545.8 358.56,-545.8 358.56,-570.07"/>
+<text xml:space="preserve" text-anchor="middle" x="307.05" y="-554.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge45" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_geometry.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M416.81,-512.52C396.88,-520.85 370.51,-531.86 348.72,-540.95"/>
+<polygon fill="#000000" stroke="#000000" points="347.41,-537.71 339.53,-544.8 350.1,-544.17 347.41,-537.71"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge59" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M415.11,-512.48C407.91,-516.17 400.6,-520.67 394.56,-525.94 373.1,-544.66 380.63,-560.94 358.56,-578.94 357.25,-580.01 355.88,-581.03 354.46,-582.01"/>
+<polygon fill="#000000" stroke="#000000" points="352.73,-578.96 345.86,-587.04 356.26,-585 352.73,-578.96"/>
+</g>
+<!-- sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node20" class="node">
+<title>sourcefile~vkf_text.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node20"><a xlink:href="../sourcefile/vkf_text.f90.html" xlink:title="vkf_text.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="343.18,-242.07 270.91,-242.07 270.91,-217.8 343.18,-217.8 343.18,-242.07"/>
+<text xml:space="preserve" text-anchor="middle" x="307.05" y="-226.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge74" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M433.59,-487.54C421.49,-475.53 404.13,-456.19 394.56,-435.94 359.69,-362.18 407.7,-321.06 358.56,-255.94 356.61,-253.36 354.33,-251.01 351.84,-248.88"/>
+<polygon fill="#000000" stroke="#000000" points="354.14,-246.22 343.95,-243.32 350.1,-251.94 354.14,-246.22"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge79" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M437.04,-487.63C416.24,-463.15 365.16,-410.21 308.05,-403.94"/>
+</g>
+<!-- sourcefile~vkf_geometry.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge6" class="edge">
+<title>sourcefile~vkf_geometry.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M255.33,-550.23C228.18,-544.42 195.06,-534.5 169.03,-517.94"/>
+</g>
+<!-- sourcefile~vkf_gui.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node8" class="node">
+<title>sourcefile~vkf_gui.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node8"><a xlink:href="../sourcefile/vkf_gui.f90.html" xlink:title="vkf_gui.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="793.62,-46.07 724.35,-46.07 724.35,-21.8 793.62,-21.8 793.62,-46.07"/>
+<text xml:space="preserve" text-anchor="middle" x="758.98" y="-30.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_gui.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_gui.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge7" class="edge">
+<title>sourcefile~vkf_gui.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M726.26,-46.54C695.37,-57.85 646.79,-73.09 602.96,-75.94"/>
+</g>
+<!-- sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node9" class="node">
+<title>sourcefile~vkf_handles.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node9"><a xlink:href="../sourcefile/vkf_handles.f90.html" xlink:title="vkf_handles.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="806.37,-474.07 711.6,-474.07 711.6,-449.8 806.37,-449.8 806.37,-474.07"/>
+<text xml:space="preserve" text-anchor="middle" x="758.98" y="-458.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge8" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M734.35,-449.35C655.18,-407.59 399.26,-275.95 308.05,-269.94"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge24" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M745.69,-474.27C724.97,-494.87 683.7,-535.08 666.6,-545.94 661.5,-549.18 655.93,-552.15 650.27,-554.84"/>
+<polygon fill="#000000" stroke="#000000" points="649.18,-551.49 641.46,-558.75 652.02,-557.89 649.18,-551.49"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge34" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-429.94C552.15,-429.88 501.93,-460.05 473.18,-480.79"/>
+<polygon fill="#000000" stroke="#000000" points="471.43,-477.73 465.5,-486.51 475.61,-483.35 471.43,-477.73"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge46" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_geometry.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M446.94,-421.94C386.97,-439.15 341.18,-502.43 320.37,-536.27"/>
+<polygon fill="#000000" stroke="#000000" points="317.61,-534.05 315.5,-544.44 323.63,-537.64 317.61,-534.05"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge60" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M446.94,-421.94C413.87,-431.43 412.38,-449.51 394.56,-478.94 370.1,-519.35 391.14,-544.74 358.56,-578.94 357.21,-580.36 355.75,-581.68 354.2,-582.92"/>
+<polygon fill="#000000" stroke="#000000" points="352.39,-579.92 345.9,-588.29 356.19,-585.8 352.39,-579.92"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge80" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M718.94,-449.32C687.87,-440.39 643.09,-429.99 602.96,-429.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-429.94C533.31,-429.86 513.98,-403.27 448.94,-421.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M446.94,-421.94C387.11,-439.11 369.93,-410.74 308.05,-403.94"/>
+</g>
+<!-- sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node10" class="node">
+<title>sourcefile~vkf_hud.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node10"><a xlink:href="../sourcefile/vkf_hud.f90.html" xlink:title="vkf_hud.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="638.47,-208.07 565.45,-208.07 565.45,-183.8 638.47,-183.8 638.47,-208.07"/>
+<text xml:space="preserve" text-anchor="middle" x="601.96" y="-192.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge9" class="edge">
+<title>sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M571.65,-208.54C519.6,-229.71 407.18,-270.15 308.05,-269.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M306.05,-269.94C245.28,-265.94 221.27,-238.65 169.03,-269.94"/>
+</g>
+<!-- sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge35" class="edge">
+<title>sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M565.19,-203.47C554.78,-207.35 544.34,-213.18 537.33,-221.94 477.08,-297.25 541.21,-348.12 501.33,-435.94 493.95,-452.19 481.38,-467.75 470.41,-479.46"/>
+<polygon fill="#000000" stroke="#000000" points="467.99,-476.93 463.5,-486.53 472.99,-481.82 467.99,-476.93"/>
+</g>
+<!-- sourcefile~vkf_line_chain.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge10" class="edge">
+<title>sourcefile~vkf_line_chain.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M394.3,-781.25C367.06,-784.4 334.13,-783.8 308.05,-769.94"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node12" class="node">
+<title>sourcefile~vkf_line_segments.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node12"><a xlink:href="../sourcefile/vkf_line_segments.f90.html" xlink:title="vkf_line_segments.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="666.6,-786.07 537.33,-786.07 537.33,-761.8 666.6,-761.8 666.6,-786.07"/>
+<text xml:space="preserve" text-anchor="middle" x="601.96" y="-770.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge11" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M568.86,-786.54C538.44,-797.28 491.25,-810.85 448.94,-809.94"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge36" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M548.5,-761.38C544.41,-759.03 540.6,-756.25 537.33,-752.94 500.25,-715.48 518.57,-689.75 501.33,-639.94 486.92,-598.31 468.59,-550.33 457.87,-522.73"/>
+<polygon fill="#000000" stroke="#000000" points="461.22,-521.68 454.33,-513.64 454.7,-524.22 461.22,-521.68"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_line_chain.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge55" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_line_chain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M536.94,-772.25C528.98,-772.05 520.84,-771.83 512.88,-771.62"/>
+<polygon fill="#000000" stroke="#000000" points="512.99,-768.12 502.9,-771.36 512.81,-775.12 512.99,-768.12"/>
+</g>
+<!-- sourcefile~vkf_model.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node13" class="node">
+<title>sourcefile~vkf_model.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node13"><a xlink:href="../sourcefile/vkf_model.f90.html" xlink:title="vkf_model.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="645.22,-504.07 558.7,-504.07 558.7,-479.8 645.22,-479.8 645.22,-504.07"/>
+<text xml:space="preserve" text-anchor="middle" x="601.96" y="-488.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge12" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M558.42,-485.15C540.8,-482.67 520.13,-480.16 501.33,-478.94 453.98,-475.86 441.84,-474.88 394.56,-478.94 369.22,-481.11 190.45,-531.65 169.03,-517.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M167.03,-517.94C125.94,-489.68 84.22,-448.97 60.65,-424.62"/>
+<polygon fill="#000000" stroke="#000000" points="63.32,-422.34 53.87,-417.53 58.26,-427.18 63.32,-422.34"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge37" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M558.21,-494.19C541.65,-495.06 522.45,-496.07 504.81,-497"/>
+<polygon fill="#000000" stroke="#000000" points="504.81,-493.49 495,-497.52 505.17,-500.49 504.81,-493.49"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge61" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M566.79,-504.54C513.66,-524.13 411.24,-561.89 352.45,-583.57"/>
+<polygon fill="#000000" stroke="#000000" points="351.6,-580.15 343.43,-586.9 354.02,-586.72 351.6,-580.15"/>
+</g>
+<!-- sourcefile~vkf_pick.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge13" class="edge">
+<title>sourcefile~vkf_pick.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M272.95,-587.41C267.04,-584.83 261.03,-581.97 255.54,-578.94 214.35,-556.22 208.72,-543.2 169.03,-517.94"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node15" class="node">
+<title>sourcefile~vkf_shadow.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node15"><a xlink:href="../sourcefile/vkf_shadow.f90.html" xlink:title="vkf_shadow.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="805.24,-664.07 712.72,-664.07 712.72,-639.8 805.24,-639.8 805.24,-664.07"/>
+<text xml:space="preserve" text-anchor="middle" x="758.98" y="-648.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge14" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M745.89,-664.31C733.89,-677.02 715.47,-697.76 702.6,-717.94 682.29,-749.79 697.76,-773.57 666.6,-794.94 586.63,-849.78 545.89,-812.02 448.94,-809.94"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge38" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M721.98,-639.45C714.98,-635.86 708.11,-631.4 702.6,-625.94 676.34,-599.91 694.72,-574.95 666.6,-550.94 644.15,-531.77 631.44,-539.7 602.96,-531.94"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node18" class="node">
+<title>sourcefile~vkf_sphere.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node18"><a xlink:href="../sourcefile/vkf_sphere.f90.html" xlink:title="vkf_sphere.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="646.35,-626.07 557.58,-626.07 557.58,-601.8 646.35,-601.8 646.35,-626.07"/>
+<text xml:space="preserve" text-anchor="middle" x="601.96" y="-610.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge70" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_sphere.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M712.31,-640.74C695.23,-636.56 675.66,-631.76 657.84,-627.39"/>
+<polygon fill="#000000" stroke="#000000" points="658.73,-624.01 648.18,-625.02 657.06,-630.8 658.73,-624.01"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node19" class="node">
+<title>sourcefile~vkf_terrain.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node19"><a xlink:href="../sourcefile/vkf_terrain.f90.html" xlink:title="vkf_terrain.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="646.35,-744.07 557.58,-744.07 557.58,-719.8 646.35,-719.8 646.35,-744.07"/>
+<text xml:space="preserve" text-anchor="middle" x="601.96" y="-728.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge72" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_terrain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M738.83,-664.37C720.65,-675.9 692.35,-693.16 666.6,-705.94 660.29,-709.07 653.5,-712.15 646.79,-715.02"/>
+<polygon fill="#000000" stroke="#000000" points="645.68,-711.69 637.8,-718.76 648.37,-718.15 645.68,-711.69"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node16" class="node">
+<title>sourcefile~vkf_shapes.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node16"><a xlink:href="../sourcefile/vkf_shapes.f90.html" xlink:title="vkf_shapes.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="804.12,-584.07 713.85,-584.07 713.85,-559.8 804.12,-559.8 804.12,-584.07"/>
+<text xml:space="preserve" text-anchor="middle" x="758.98" y="-568.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge15" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M726.13,-584.5C718.13,-588.29 709.78,-592.82 702.6,-597.94 683.91,-611.25 686.42,-623.39 666.6,-634.94 580.2,-685.29 538.76,-647.97 448.94,-691.94"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge25" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M713.56,-571.94C695.63,-571.94 674.79,-571.94 656.07,-571.94"/>
+<polygon fill="#000000" stroke="#000000" points="656.25,-568.44 646.25,-571.94 656.25,-575.44 656.25,-568.44"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge39" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M713.46,-560.79C682.43,-552.94 640.11,-542.06 602.96,-531.94"/>
+</g>
+<!-- sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node17" class="node">
+<title>sourcefile~vkf_sky.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node17"><a xlink:href="../sourcefile/vkf_sky.f90.html" xlink:title="vkf_sky.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="482.2,-128.07 413.68,-128.07 413.68,-103.8 482.2,-103.8 482.2,-128.07"/>
+<text xml:space="preserve" text-anchor="middle" x="447.94" y="-112.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge16" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M413.4,-107.53C383.87,-102 340.62,-98.62 308.05,-115.94"/>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge75" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M417.4,-128.46C409.67,-132.31 401.55,-136.87 394.56,-141.94 367.58,-161.5 341.45,-189.78 325.09,-208.96"/>
+<polygon fill="#000000" stroke="#000000" points="322.6,-206.49 318.86,-216.41 327.96,-210.98 322.6,-206.49"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge17" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M579.03,-626.38C558.99,-637.61 528.44,-654.4 501.33,-667.94 478.42,-679.38 471.95,-680.68 448.94,-691.94"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge40" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M557.22,-602.69C550.3,-600.02 543.42,-596.8 537.33,-592.94 507.28,-573.9 480.33,-542.42 464.3,-521.43"/>
+<polygon fill="#000000" stroke="#000000" points="467.22,-519.49 458.44,-513.56 461.6,-523.67 467.22,-519.49"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge47" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_geometry.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M557.29,-612.68C515.11,-610.66 449.69,-605.45 394.56,-591.94 389.68,-590.74 369.05,-582.66 349.17,-574.67"/>
+<polygon fill="#000000" stroke="#000000" points="350.6,-571.47 340.02,-570.98 347.98,-577.97 350.6,-571.47"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge62" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M563.8,-626.53C526.37,-638.7 471.09,-655.13 448.94,-653.94"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge18" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M557.21,-743.18C550.29,-745.85 543.42,-749.07 537.33,-752.94 517.69,-765.41 520.79,-778.19 501.33,-790.94 480.62,-804.52 473.71,-810.47 448.94,-809.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M446.94,-809.94C382.72,-808.56 364.78,-800.09 308.05,-769.94"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge41" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M592.72,-719.39C580.59,-700.9 557.2,-665.26 537.33,-634.94 511.17,-595.02 480.68,-548.44 463.21,-521.74"/>
+<polygon fill="#000000" stroke="#000000" points="466.22,-519.95 457.81,-513.49 460.36,-523.78 466.22,-519.95"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge63" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M557.27,-723.28C514.21,-713.64 447.38,-695.67 394.56,-667.94 370.16,-655.13 345.78,-635.16 329.15,-620.17"/>
+<polygon fill="#000000" stroke="#000000" points="331.6,-617.66 321.88,-613.46 326.85,-622.81 331.6,-617.66"/>
+</g>
+<!-- sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge19" class="edge">
+<title>sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M270.56,-235.17C241.65,-240.6 200.6,-251.03 169.03,-269.94"/>
+</g>
+<!-- sourcefile~vkf_trajectory.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge20" class="edge">
+<title>sourcefile~vkf_trajectory.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M116.24,-403.94C108.27,-403.94 100.03,-403.94 92.06,-403.94"/>
+<polygon fill="#000000" stroke="#000000" points="92.15,-400.44 82.15,-403.94 92.15,-407.44 92.15,-400.44"/>
+</g>
+<!-- sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node22" class="node">
+<title>sourcefile~vkf_view.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node22"><a xlink:href="../sourcefile/vkf_view.f90.html" xlink:title="vkf_view.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="639.97,-288.07 563.95,-288.07 563.95,-263.8 639.97,-263.8 639.97,-288.07"/>
+<text xml:space="preserve" text-anchor="middle" x="601.96" y="-272.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge21" class="edge">
+<title>sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M563.52,-274.68C507.82,-272.92 399.86,-269.94 308.05,-269.94"/>
+</g>
+<!-- sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge42" class="edge">
+<title>sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M593.98,-288.33C578.42,-315.68 539.24,-382.99 501.33,-435.94 490.67,-450.82 477.64,-466.76 467.23,-479"/>
+<polygon fill="#000000" stroke="#000000" points="464.72,-476.55 460.86,-486.42 470.03,-481.12 464.72,-476.55"/>
+</g>
+<!-- sourcefile~vkf_window.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node23" class="node">
+<title>sourcefile~vkf_window.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node23"><a xlink:href="../sourcefile/vkf_window.f90.html" xlink:title="vkf_window.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="943.14,-150.07 851.37,-150.07 851.37,-125.8 943.14,-125.8 943.14,-150.07"/>
+<text xml:space="preserve" text-anchor="middle" x="897.25" y="-134.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge22" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M876.47,-150.39C850.8,-165.56 804.06,-189.94 759.98,-195.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-195.94C722.73,-200.74 638.37,-159.39 602.96,-155.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-155.94C524.98,-148.54 525.29,-75.08 448.94,-75.94"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_clock.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge27" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_clock.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M850.88,-131.28C838.06,-129.4 824.04,-127.34 810.92,-125.41"/>
+<polygon fill="#000000" stroke="#000000" points="811.58,-121.97 801.17,-123.98 810.56,-128.9 811.58,-121.97"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_diagnostics.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge29" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_diagnostics.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M873.21,-125.43C857.2,-116.94 835.25,-105.71 815.37,-96.94 812.08,-95.49 808.65,-94.04 805.19,-92.62"/>
+<polygon fill="#000000" stroke="#000000" points="806.77,-89.48 796.19,-89.04 804.19,-95.99 806.77,-89.48"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge43" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M889.4,-150.17C872.24,-179.28 824.14,-251.86 759.98,-273.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-273.94C718.76,-287.44 707.87,-259.18 666.6,-254.94 609.45,-249.06 581.74,-218.49 537.33,-254.94 473.93,-306.97 536.35,-361.77 501.33,-435.94 493.71,-452.08 481.14,-467.64 470.22,-479.37"/>
+<polygon fill="#000000" stroke="#000000" points="467.8,-476.84 463.36,-486.46 472.83,-481.71 467.8,-476.84"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_gui.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge48" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_gui.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M871.05,-125.52C864.21,-121.45 857.11,-116.51 851.37,-110.94 830.14,-90.33 838.36,-73.57 815.37,-54.94 811.96,-52.18 808.15,-49.75 804.17,-47.63"/>
+<polygon fill="#000000" stroke="#000000" points="805.96,-44.6 795.41,-43.59 803.03,-50.96 805.96,-44.6"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge50" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_handles.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M894.65,-150.55C889.14,-190.52 868.28,-316.96 815.37,-405.94 807.4,-419.35 795.53,-431.92 784.83,-441.75"/>
+<polygon fill="#000000" stroke="#000000" points="782.56,-439.08 777.36,-448.31 787.18,-444.34 782.56,-439.08"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge52" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_hud.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-195.94C722.04,-200.83 680.98,-200.57 650.14,-199.23"/>
+<polygon fill="#000000" stroke="#000000" points="650.53,-195.74 640.37,-198.75 650.19,-202.74 650.53,-195.74"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge64" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-155.94C450.4,-132.78 397.22,-401.25 394.56,-407.94 365.85,-480.1 408.13,-519.15 358.56,-578.94 357.15,-580.64 355.58,-582.2 353.89,-583.64"/>
+<polygon fill="#000000" stroke="#000000" points="352.25,-580.53 345.89,-589.01 356.15,-586.35 352.25,-580.53"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge68" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_sky.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-155.94C564.3,-150.01 523.65,-139.08 493.61,-130.14"/>
+<polygon fill="#000000" stroke="#000000" points="494.69,-126.81 484.1,-127.26 492.66,-133.51 494.69,-126.81"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge76" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-155.94C509.8,-141.19 482.23,-150.9 394.56,-179.94 373.01,-187.08 350.89,-199.98 334.41,-210.89"/>
+<polygon fill="#000000" stroke="#000000" points="332.48,-207.98 326.19,-216.5 336.42,-213.76 332.48,-207.98"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge82" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_view.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-273.94C723.91,-285.67 683.07,-285.68 651.87,-283.01"/>
+<polygon fill="#000000" stroke="#000000" points="652.22,-279.53 641.92,-282.03 651.53,-286.5 652.22,-279.53"/>
+</g>
+<!-- sourcefile~vkframes.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_node24" class="node">
+<title>sourcefile~vkframes.f90</title>
+<g id="a_sourcefile~~vkf_math.f90~~AfferentGraph_node24"><a xlink:href="../sourcefile/vkframes.f90.html" xlink:title="vkframes.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="1060.41,-150.07 979.14,-150.07 979.14,-125.8 1060.41,-125.8 1060.41,-150.07"/>
+<text xml:space="preserve" text-anchor="middle" x="1019.77" y="-134.34" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge23" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M986.46,-125.37C962.43,-116.42 928.68,-104.65 898.25,-96.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-96.94C846.01,-84.21 863.06,-33.22 815.37,-12.94 769.25,6.68 750.74,1 702.6,-12.94 652.28,-27.51 655.25,-72.54 602.96,-75.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-75.94C533.5,-79.65 516.51,-75.18 448.94,-75.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M446.94,-75.94C382.71,-76.66 364.77,-85.78 308.05,-115.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M306.05,-115.94C225.16,-158.95 247.62,-222.86 169.03,-269.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M167.03,-269.94C118.34,-299.11 76.59,-352.44 55.64,-382.27"/>
+<polygon fill="#000000" stroke="#000000" points="52.99,-379.95 50.21,-390.17 58.76,-383.91 52.99,-379.95"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge26" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C840.14,-574.16 828.79,-597.85 759.98,-611.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-611.94C747.73,-614.04 695.84,-599.81 654.88,-587.75"/>
+<polygon fill="#000000" stroke="#000000" points="655.96,-584.42 645.38,-584.93 653.97,-591.13 655.96,-584.42"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_clock.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge28" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_clock.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-96.94C866.22,-89.69 831.84,-95.09 805.12,-102.22"/>
+<polygon fill="#000000" stroke="#000000" points="804.28,-98.82 795.63,-104.94 806.21,-105.55 804.28,-98.82"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_diagnostics.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge30" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_diagnostics.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-96.94C873.96,-91.56 849.27,-87.26 827.1,-84"/>
+<polygon fill="#000000" stroke="#000000" points="827.65,-80.54 817.26,-82.6 826.66,-87.47 827.65,-80.54"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_follower.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge32" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_follower.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-391.94C636.42,-310.66 456.89,-303.89 365.72,-306.49"/>
+<polygon fill="#000000" stroke="#000000" points="365.64,-302.99 355.76,-306.83 365.88,-309.98 365.64,-302.99"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge44" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-531.94C689.23,-527.58 669.44,-550.06 602.96,-531.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.96,-531.94C569.38,-523.33 533.57,-515.69 504.64,-510.04"/>
+<polygon fill="#000000" stroke="#000000" points="505.48,-506.63 495,-508.18 504.15,-513.51 505.48,-506.63"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_gui.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge49" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_gui.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-96.94C856.88,-87.44 852.34,-71.48 815.37,-54.94 811.84,-53.36 808.15,-51.79 804.42,-50.26"/>
+<polygon fill="#000000" stroke="#000000" points="805.92,-47.09 795.33,-46.65 803.33,-53.59 805.92,-47.09"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge51" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_handles.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C856.4,-559.49 804.27,-512.39 777.51,-482.93"/>
+<polygon fill="#000000" stroke="#000000" points="780.29,-480.79 771.06,-475.59 775.03,-485.41 780.29,-480.79"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge53" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_hud.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1017.06,-150.18C1008.15,-211.69 965.04,-485.77 898.25,-531.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C832.66,-575.9 863.56,-438.39 815.37,-377.94 760.05,-308.54 675.46,-245.47 631.59,-215.06"/>
+<polygon fill="#000000" stroke="#000000" points="633.58,-212.19 623.36,-209.42 629.63,-217.96 633.58,-212.19"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_line_segments.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge56" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_line_segments.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-731.94C732.99,-743.85 704.06,-752.85 678,-759.39"/>
+<polygon fill="#000000" stroke="#000000" points="677.4,-755.93 668.5,-761.69 679.05,-762.74 677.4,-755.93"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_model.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge57" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_model.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C847.86,-568.35 820.43,-535.77 759.98,-531.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-531.94C719.82,-529.52 677.89,-518.14 647.28,-508.14"/>
+<polygon fill="#000000" stroke="#000000" points="648.57,-504.88 637.97,-505.02 646.34,-511.52 648.57,-504.88"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge65" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C810.31,-596.61 857.08,-685.66 759.98,-731.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-731.94C753.99,-733.84 453.37,-654.18 448.94,-653.94"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shadow.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge66" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shadow.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C850.92,-563.28 859.26,-592.6 815.37,-625.94 811.41,-628.95 807.04,-631.73 802.55,-634.26"/>
+<polygon fill="#000000" stroke="#000000" points="801.25,-630.99 793.98,-638.7 804.47,-637.21 801.25,-630.99"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shapes.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge67" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shapes.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C872.39,-548.44 841.66,-558.22 815.43,-563.98"/>
+<polygon fill="#000000" stroke="#000000" points="815.08,-560.48 805.98,-565.9 816.48,-567.34 815.08,-560.48"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge69" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sky.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-96.94C856.88,-87.44 854.36,-127.97 815.37,-138.94 756.11,-155.61 577.66,-134.03 493.62,-122.43"/>
+<polygon fill="#000000" stroke="#000000" points="494.3,-118.99 483.91,-121.07 493.33,-125.92 494.3,-118.99"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge71" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sphere.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-611.94C725.28,-618.64 687.88,-619.32 658,-618.23"/>
+<polygon fill="#000000" stroke="#000000" points="658.19,-614.74 648.05,-617.79 657.88,-621.73 658.19,-614.74"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge73" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_terrain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-731.94C727.04,-746.69 688.52,-746.76 657.62,-743.11"/>
+<polygon fill="#000000" stroke="#000000" points="658.49,-739.7 648.11,-741.82 657.54,-746.63 658.49,-739.7"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge81" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-391.94C590.15,-283.1 506.9,-425.78 308.05,-403.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M306.05,-403.94C281.69,-401.06 254.72,-400.5 231.2,-400.86"/>
+<polygon fill="#000000" stroke="#000000" points="231.39,-397.36 221.47,-401.07 231.54,-404.35 231.39,-397.36"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge83" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_view.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M896.25,-531.94C853.02,-564.47 853.68,-479.16 815.37,-440.94 792.1,-417.73 787.31,-410.21 759.98,-391.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.98,-391.94C710.6,-360.26 714.19,-333.31 666.6,-301.94 661.56,-298.61 656.02,-295.59 650.38,-292.87"/>
+<polygon fill="#000000" stroke="#000000" points="652.14,-289.83 641.59,-288.94 649.29,-296.22 652.14,-289.83"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_window.f90 -->
+<g id="sourcefile~~vkf_math.f90~~AfferentGraph_edge84" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_window.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M978.64,-137.94C971.01,-137.94 962.89,-137.94 954.86,-137.94"/>
+<polygon fill="#000000" stroke="#000000" points="955.13,-134.44 945.13,-137.94 955.13,-141.44 955.13,-134.44"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var pansourcefilevkf_mathf90AfferentGraph = svgPanZoom('#sourcefilevkf_mathf90AfferentGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#AfferentGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="AfferentGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="200pt" height="32pt"
+ viewBox="0.00 0.00 200.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 195.52,-28.27 195.52,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="191.52,-24.27 87.75,-24.27 87.75,0 191.52,0 191.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="139.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a file to a file which it depends on. A file
+is dependent upon another if the latter must be compiled before the former
+can be.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+          </div>
+        </div>
+<br>
+      <section>
+        <h2><span class="anchor" id="src"></span>Source Code</h2>
+        <div class="hl codehilite"><pre><span></span><a id="ln-1" name="ln-1" href="#ln-1"></a><span class="c">!&gt; Math for vkframes: the working precision, quaternions and 4x4 transforms.</span>
+<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="c">!&gt;</span>
+<a id="ln-3" name="ln-3" href="#ln-3"></a><span class="c">!&gt; Quaternions are `q(4) = [x, y, z, w]` (vector part first, as OpenFrames and</span>
+<a id="ln-4" name="ln-4" href="#ln-4"></a><span class="c">!&gt; OpenSceneGraph store them), unit length for rotations. The rotation of q</span>
+<a id="ln-5" name="ln-5" href="#ln-5"></a><span class="c">!&gt; takes vectors in a frame to its parent frame: v_parent = rotate(q, v_local).</span>
+<a id="ln-6" name="ln-6" href="#ln-6"></a><span class="c">!&gt; Matrices are 4x4, column-major, acting on column vectors.</span>
+<a id="ln-7" name="ln-7" href="#ln-7"></a><span class="k">module </span><span class="n">vkf_math</span><span class="w"></span>
+<a id="ln-8" name="ln-8" href="#ln-8"></a>
+<a id="ln-9" name="ln-9" href="#ln-9"></a><span class="w">    </span><span class="k">use</span><span class="p">,</span><span class="w"> </span><span class="k">intrinsic</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">iso_fortran_env</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">real64</span><span class="w"></span>
+<a id="ln-10" name="ln-10" href="#ln-10"></a>
+<a id="ln-11" name="ln-11" href="#ln-11"></a><span class="w">    </span><span class="k">implicit none</span>
+<a id="ln-12" name="ln-12" href="#ln-12"></a>
+<a id="ln-13" name="ln-13" href="#ln-13"></a><span class="k">    private</span>
+<a id="ln-14" name="ln-14" href="#ln-14"></a>
+<a id="ln-15" name="ln-15" href="#ln-15"></a><span class="k">    </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">parameter</span><span class="p">,</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">wp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">real64</span><span class="w">           </span><span class="c">!! working precision</span>
+<a id="ln-16" name="ln-16" href="#ln-16"></a><span class="w">    </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="p">,</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">acos</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0_wp</span><span class="p">)</span><span class="w">   </span><span class="c">!! pi</span>
+<a id="ln-17" name="ln-17" href="#ln-17"></a>
+<a id="ln-18" name="ln-18" href="#ln-18"></a><span class="w">    </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="p">,</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">quat_identity</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">]</span><span class="w">   </span><span class="c">!! the identity rotation</span>
+<a id="ln-19" name="ln-19" href="#ln-19"></a>
+<a id="ln-20" name="ln-20" href="#ln-20"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">quat_from_axis_angle</span><span class="p">,</span><span class="w"> </span><span class="n">quat_multiply</span><span class="p">,</span><span class="w"> </span><span class="n">quat_conjugate</span><span class="p">,</span><span class="w"> </span><span class="n">quat_normalize</span><span class="w"></span>
+<a id="ln-21" name="ln-21" href="#ln-21"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">quat_rotate</span><span class="p">,</span><span class="w"> </span><span class="n">quat_to_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">quat_from_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">quat_slerp</span><span class="p">,</span><span class="w"> </span><span class="n">quat_from_vectors</span><span class="w"></span>
+<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">identity_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">translation_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">frame_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">rigid_inverse</span><span class="p">,</span><span class="w"> </span><span class="n">cross</span><span class="w"></span>
+<a id="ln-23" name="ln-23" href="#ln-23"></a><span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_rgba</span><span class="w"></span>
+<a id="ln-24" name="ln-24" href="#ln-24"></a>
+<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="k">contains</span><span class="w"></span>
+<a id="ln-26" name="ln-26" href="#ln-26"></a>
+<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="w">    </span><span class="c">!&gt; The rotation by `angle` (radians) about `axis` (need not be unit length).</span>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_from_axis_angle</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span><span class="w"> </span><span class="n">angle</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">axis</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-30" name="ln-30" href="#ln-30"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">angle</span><span class="w">       </span><span class="c">!! (radians)</span>
+<a id="ln-31" name="ln-31" href="#ln-31"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="w"></span>
+<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span><span class="w"></span>
+<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="k">            </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quat_identity</span><span class="w"></span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">        </span><span class="k">else</span>
+<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="k">            </span><span class="n">q</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">axis</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="mf">0.5_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">angle</span><span class="p">)</span><span class="w"></span>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">            </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">cos</span><span class="p">(</span><span class="mf">0.5_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">angle</span><span class="p">)</span><span class="w"></span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-40" name="ln-40" href="#ln-40"></a><span class="k">    end function </span><span class="n">quat_from_axis_angle</span><span class="w"></span>
+<a id="ln-41" name="ln-41" href="#ln-41"></a>
+<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">    </span><span class="c">!&gt; The product a*b: rotating by b, then by a.</span>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_multiply</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="w">        </span><span class="n">q</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"></span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">        </span><span class="n">q</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="w">        </span><span class="n">q</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">        </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">    </span><span class="k">end function </span><span class="n">quat_multiply</span><span class="w"></span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">    </span><span class="c">!&gt; The conjugate of q: the inverse rotation, for a unit quaternion.</span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_conjugate</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"></span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-56" name="ln-56" href="#ln-56"></a><span class="w">        </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">-</span><span class="n">q</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)]</span><span class="w"></span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">    </span><span class="k">end function </span><span class="n">quat_conjugate</span><span class="w"></span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a>
+<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">    </span><span class="c">!&gt; q / |q| (the identity for a zero quaternion).</span>
+<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_normalize</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="w"></span>
+<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-62" name="ln-62" href="#ln-62"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">u</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="w"></span>
+<a id="ln-64" name="ln-64" href="#ln-64"></a><span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<a id="ln-65" name="ln-65" href="#ln-65"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-66" name="ln-66" href="#ln-66"></a><span class="k">            </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quat_identity</span><span class="w"></span>
+<a id="ln-67" name="ln-67" href="#ln-67"></a><span class="w">        </span><span class="k">else</span>
+<a id="ln-68" name="ln-68" href="#ln-68"></a><span class="k">            </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">n</span><span class="w"></span>
+<a id="ln-69" name="ln-69" href="#ln-69"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-70" name="ln-70" href="#ln-70"></a><span class="k">    end function </span><span class="n">quat_normalize</span><span class="w"></span>
+<a id="ln-71" name="ln-71" href="#ln-71"></a>
+<a id="ln-72" name="ln-72" href="#ln-72"></a><span class="w">    </span><span class="c">!&gt; The vector v rotated by the unit quaternion q.</span>
+<a id="ln-73" name="ln-73" href="#ln-73"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_rotate</span><span class="p">(</span><span class="n">q</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="w"></span>
+<a id="ln-74" name="ln-74" href="#ln-74"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="n">v</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-75" name="ln-75" href="#ln-75"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">r</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-76" name="ln-76" href="#ln-76"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-77" name="ln-77" href="#ln-77"></a><span class="w">        </span><span class="c">! r = v + 2 w (u x v) + 2 u x (u x v), with u = q(1:3), w = q(4)</span>
+<a id="ln-78" name="ln-78" href="#ln-78"></a><span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cross</span><span class="p">(</span><span class="n">q</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"></span>
+<a id="ln-79" name="ln-79" href="#ln-79"></a><span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cross</span><span class="p">(</span><span class="n">q</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<a id="ln-80" name="ln-80" href="#ln-80"></a><span class="w">    </span><span class="k">end function </span><span class="n">quat_rotate</span><span class="w"></span>
+<a id="ln-81" name="ln-81" href="#ln-81"></a>
+<a id="ln-82" name="ln-82" href="#ln-82"></a><span class="w">    </span><span class="c">!&gt; The 3x3 rotation matrix of the unit quaternion q (columns: the rotated axes).</span>
+<a id="ln-83" name="ln-83" href="#ln-83"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_to_matrix</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"></span>
+<a id="ln-84" name="ln-84" href="#ln-84"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-85" name="ln-85" href="#ln-85"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-86" name="ln-86" href="#ln-86"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">z</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="w"></span>
+<a id="ln-87" name="ln-87" href="#ln-87"></a><span class="w">        </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-88" name="ln-88" href="#ln-88"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">z</span><span class="p">)</span><span class="w"></span>
+<a id="ln-89" name="ln-89" href="#ln-89"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<a id="ln-90" name="ln-90" href="#ln-90"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<a id="ln-91" name="ln-91" href="#ln-91"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<a id="ln-92" name="ln-92" href="#ln-92"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">z</span><span class="o">*</span><span class="n">z</span><span class="p">)</span><span class="w"></span>
+<a id="ln-93" name="ln-93" href="#ln-93"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<a id="ln-94" name="ln-94" href="#ln-94"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<a id="ln-95" name="ln-95" href="#ln-95"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">z</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">x</span><span class="o">*</span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<a id="ln-96" name="ln-96" href="#ln-96"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="o">*</span><span class="n">y</span><span class="p">)</span><span class="w"></span>
+<a id="ln-97" name="ln-97" href="#ln-97"></a><span class="w">    </span><span class="k">end function </span><span class="n">quat_to_matrix</span><span class="w"></span>
+<a id="ln-98" name="ln-98" href="#ln-98"></a>
+<a id="ln-99" name="ln-99" href="#ln-99"></a><span class="w">    </span><span class="c">!&gt; The unit quaternion of a 3x3 rotation matrix (columns: the rotated</span>
+<a id="ln-100" name="ln-100" href="#ln-100"></a><span class="w">    </span><span class="c">!&gt; axes; the inverse of quat_to_matrix), by Shepperd&#39;s method (from the</span>
+<a id="ln-101" name="ln-101" href="#ln-101"></a><span class="w">    </span><span class="c">!&gt; largest of w and the vector components, for accuracy).</span>
+<a id="ln-102" name="ln-102" href="#ln-102"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_from_matrix</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<a id="ln-103" name="ln-103" href="#ln-103"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-104" name="ln-104" href="#ln-104"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-105" name="ln-105" href="#ln-105"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="w"></span>
+<a id="ln-106" name="ln-106" href="#ln-106"></a><span class="w">        </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-107" name="ln-107" href="#ln-107"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-108" name="ln-108" href="#ln-108"></a><span class="k">            </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<a id="ln-109" name="ln-109" href="#ln-109"></a><span class="w">            </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="mf">0.25_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">s</span><span class="p">]</span><span class="w"></span>
+<a id="ln-110" name="ln-110" href="#ln-110"></a><span class="w">        </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-111" name="ln-111" href="#ln-111"></a><span class="k">            </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="w"></span>
+<a id="ln-112" name="ln-112" href="#ln-112"></a><span class="w">            </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mf">0.25_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">]</span><span class="w"></span>
+<a id="ln-113" name="ln-113" href="#ln-113"></a><span class="w">        </span><span class="k">else if</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-114" name="ln-114" href="#ln-114"></a><span class="k">            </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="w"></span>
+<a id="ln-115" name="ln-115" href="#ln-115"></a><span class="w">            </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="mf">0.25_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">]</span><span class="w"></span>
+<a id="ln-116" name="ln-116" href="#ln-116"></a><span class="w">        </span><span class="k">else</span>
+<a id="ln-117" name="ln-117" href="#ln-117"></a><span class="k">            </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2.0_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">sqrt</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span><span class="w"></span>
+<a id="ln-118" name="ln-118" href="#ln-118"></a><span class="w">            </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="mf">0.25_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">s</span><span class="p">]</span><span class="w"></span>
+<a id="ln-119" name="ln-119" href="#ln-119"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-120" name="ln-120" href="#ln-120"></a><span class="k">        </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<a id="ln-121" name="ln-121" href="#ln-121"></a><span class="w">    </span><span class="k">end function </span><span class="n">quat_from_matrix</span><span class="w"></span>
+<a id="ln-122" name="ln-122" href="#ln-122"></a>
+<a id="ln-123" name="ln-123" href="#ln-123"></a><span class="w">    </span><span class="c">!&gt; Spherical linear interpolation from `a` (t = 0) to `b` (t = 1), along the</span>
+<a id="ln-124" name="ln-124" href="#ln-124"></a><span class="w">    </span><span class="c">!&gt; shorter arc; linear when the two are nearly equal. Same as OpenSceneGraph&#39;s</span>
+<a id="ln-125" name="ln-125" href="#ln-125"></a><span class="w">    </span><span class="c">!&gt; osg::Quat::slerp, which OpenFrames&#39; TrajectoryFollower uses.</span>
+<a id="ln-126" name="ln-126" href="#ln-126"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_slerp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<a id="ln-127" name="ln-127" href="#ln-127"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w">           </span><span class="c">!! the fraction of the way (0 to 1)</span>
+<a id="ln-128" name="ln-128" href="#ln-128"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-129" name="ln-129" href="#ln-129"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-130" name="ln-130" href="#ln-130"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">epsilon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.00001_wp</span><span class="w"></span>
+<a id="ln-131" name="ln-131" href="#ln-131"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cos_omega</span><span class="p">,</span><span class="w"> </span><span class="n">omega</span><span class="p">,</span><span class="w"> </span><span class="n">sin_omega</span><span class="p">,</span><span class="w"> </span><span class="n">scale_a</span><span class="p">,</span><span class="w"> </span><span class="n">scale_b</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-132" name="ln-132" href="#ln-132"></a><span class="w">        </span><span class="n">cos_omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot_product</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"></span>
+<a id="ln-133" name="ln-133" href="#ln-133"></a><span class="w">        </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"></span>
+<a id="ln-134" name="ln-134" href="#ln-134"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cos_omega</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-135" name="ln-135" href="#ln-135"></a><span class="k">            </span><span class="n">cos_omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">cos_omega</span><span class="w"></span>
+<a id="ln-136" name="ln-136" href="#ln-136"></a><span class="w">            </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">b</span><span class="w"></span>
+<a id="ln-137" name="ln-137" href="#ln-137"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-138" name="ln-138" href="#ln-138"></a><span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">cos_omega</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">epsilon</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-139" name="ln-139" href="#ln-139"></a><span class="k">            </span><span class="n">omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">acos</span><span class="p">(</span><span class="n">cos_omega</span><span class="p">)</span><span class="w"></span>
+<a id="ln-140" name="ln-140" href="#ln-140"></a><span class="w">            </span><span class="n">sin_omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span><span class="w"></span>
+<a id="ln-141" name="ln-141" href="#ln-141"></a><span class="w">            </span><span class="n">scale_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sin</span><span class="p">((</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">omega</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sin_omega</span><span class="w"></span>
+<a id="ln-142" name="ln-142" href="#ln-142"></a><span class="w">            </span><span class="n">scale_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">omega</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sin_omega</span><span class="w"></span>
+<a id="ln-143" name="ln-143" href="#ln-143"></a><span class="w">        </span><span class="k">else</span>
+<a id="ln-144" name="ln-144" href="#ln-144"></a><span class="k">            </span><span class="n">scale_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="w"></span>
+<a id="ln-145" name="ln-145" href="#ln-145"></a><span class="w">            </span><span class="n">scale_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="w"></span>
+<a id="ln-146" name="ln-146" href="#ln-146"></a><span class="w">        </span><span class="k">end if</span>
+<a id="ln-147" name="ln-147" href="#ln-147"></a><span class="k">        </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scale_a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">scale_b</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">to</span><span class="w"></span>
+<a id="ln-148" name="ln-148" href="#ln-148"></a><span class="w">    </span><span class="k">end function </span><span class="n">quat_slerp</span><span class="w"></span>
+<a id="ln-149" name="ln-149" href="#ln-149"></a>
+<a id="ln-150" name="ln-150" href="#ln-150"></a><span class="w">    </span><span class="c">!&gt; The shortest rotation taking the direction of `from` to that of `to`</span>
+<a id="ln-151" name="ln-151" href="#ln-151"></a><span class="w">    </span><span class="c">!&gt; (OpenSceneGraph&#39;s osg::Quat::makeRotate(from, to)); a half turn about a</span>
+<a id="ln-152" name="ln-152" href="#ln-152"></a><span class="w">    </span><span class="c">!&gt; perpendicular axis if they are opposite, the identity if either is zero.</span>
+<a id="ln-153" name="ln-153" href="#ln-153"></a><span class="w">    </span><span class="k">pure function </span><span class="n">quat_from_vectors</span><span class="p">(</span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<a id="ln-154" name="ln-154" href="#ln-154"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">from</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">to</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-155" name="ln-155" href="#ln-155"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-156" name="ln-156" href="#ln-156"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">eps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e-12_wp</span><span class="w"></span>
+<a id="ln-157" name="ln-157" href="#ln-157"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">u</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">v</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">axis</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-158" name="ln-158" href="#ln-158"></a><span class="w">        </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quat_identity</span><span class="w"></span>
+<a id="ln-159" name="ln-159" href="#ln-159"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">norm2</span><span class="p">(</span><span class="n">from</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">to</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-160" name="ln-160" href="#ln-160"></a><span class="k">        </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">from</span><span class="p">)</span><span class="w"></span>
+<a id="ln-161" name="ln-161" href="#ln-161"></a><span class="w">        </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">to</span><span class="p">)</span><span class="w"></span>
+<a id="ln-162" name="ln-162" href="#ln-162"></a><span class="w">        </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot_product</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"></span>
+<a id="ln-163" name="ln-163" href="#ln-163"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">d</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-164" name="ln-164" href="#ln-164"></a><span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">d</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="o">-</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-165" name="ln-165" href="#ln-165"></a><span class="k">            </span><span class="n">axis</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cross</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">])</span><span class="w"></span>
+<a id="ln-166" name="ln-166" href="#ln-166"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">norm2</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">1.0e-6_wp</span><span class="p">)</span><span class="w"> </span><span class="n">axis</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cross</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">])</span><span class="w"></span>
+<a id="ln-167" name="ln-167" href="#ln-167"></a><span class="w">            </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">axis</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">axis</span><span class="p">),</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">]</span><span class="w"></span>
+<a id="ln-168" name="ln-168" href="#ln-168"></a><span class="w">            </span><span class="k">return</span>
+<a id="ln-169" name="ln-169" href="#ln-169"></a><span class="k">        end if</span>
+<a id="ln-170" name="ln-170" href="#ln-170"></a><span class="k">        </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quat_normalize</span><span class="p">([</span><span class="n">cross</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">),</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="p">])</span><span class="w"></span>
+<a id="ln-171" name="ln-171" href="#ln-171"></a><span class="w">    </span><span class="k">end function </span><span class="n">quat_from_vectors</span><span class="w"></span>
+<a id="ln-172" name="ln-172" href="#ln-172"></a>
+<a id="ln-173" name="ln-173" href="#ln-173"></a><span class="w">    </span><span class="c">!&gt; The inverse of a rigid transform (rotation and translation): [R&#39; -R&#39;t].</span>
+<a id="ln-174" name="ln-174" href="#ln-174"></a><span class="w">    </span><span class="k">pure function </span><span class="n">rigid_inverse</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">inv</span><span class="p">)</span><span class="w"></span>
+<a id="ln-175" name="ln-175" href="#ln-175"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-176" name="ln-176" href="#ln-176"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">inv</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-177" name="ln-177" href="#ln-177"></a><span class="w">        </span><span class="n">inv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<a id="ln-178" name="ln-178" href="#ln-178"></a><span class="w">        </span><span class="n">inv</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">transpose</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">))</span><span class="w"></span>
+<a id="ln-179" name="ln-179" href="#ln-179"></a><span class="w">        </span><span class="n">inv</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="nb">matmul</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">))</span><span class="w"></span>
+<a id="ln-180" name="ln-180" href="#ln-180"></a><span class="w">        </span><span class="n">inv</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"></span>
+<a id="ln-181" name="ln-181" href="#ln-181"></a><span class="w">    </span><span class="k">end function </span><span class="n">rigid_inverse</span><span class="w"></span>
+<a id="ln-182" name="ln-182" href="#ln-182"></a>
+<a id="ln-183" name="ln-183" href="#ln-183"></a><span class="w">    </span><span class="c">!&gt; The 4x4 identity matrix.</span>
+<a id="ln-184" name="ln-184" href="#ln-184"></a><span class="w">    </span><span class="k">pure function </span><span class="n">identity_matrix</span><span class="p">()</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"></span>
+<a id="ln-185" name="ln-185" href="#ln-185"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-186" name="ln-186" href="#ln-186"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">k</span><span class="w"></span>
+<a id="ln-187" name="ln-187" href="#ln-187"></a><span class="w">        </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<a id="ln-188" name="ln-188" href="#ln-188"></a><span class="w">        </span><span class="k">do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="w"></span>
+<a id="ln-189" name="ln-189" href="#ln-189"></a><span class="w">            </span><span class="n">m</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"></span>
+<a id="ln-190" name="ln-190" href="#ln-190"></a><span class="w">        </span><span class="k">end do</span>
+<a id="ln-191" name="ln-191" href="#ln-191"></a><span class="k">    end function </span><span class="n">identity_matrix</span><span class="w"></span>
+<a id="ln-192" name="ln-192" href="#ln-192"></a>
+<a id="ln-193" name="ln-193" href="#ln-193"></a><span class="w">    </span><span class="c">!&gt; The 4x4 transform translating by `t`.</span>
+<a id="ln-194" name="ln-194" href="#ln-194"></a><span class="w">    </span><span class="k">pure function </span><span class="n">translation_matrix</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"></span>
+<a id="ln-195" name="ln-195" href="#ln-195"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-196" name="ln-196" href="#ln-196"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-197" name="ln-197" href="#ln-197"></a><span class="w">        </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">identity_matrix</span><span class="p">()</span><span class="w"></span>
+<a id="ln-198" name="ln-198" href="#ln-198"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="w"></span>
+<a id="ln-199" name="ln-199" href="#ln-199"></a><span class="w">    </span><span class="k">end function </span><span class="n">translation_matrix</span><span class="w"></span>
+<a id="ln-200" name="ln-200" href="#ln-200"></a>
+<a id="ln-201" name="ln-201" href="#ln-201"></a><span class="w">    </span><span class="c">!&gt; A frame&#39;s local-to-parent transform, as OpenFrames&#39; FrameTransform builds</span>
+<a id="ln-202" name="ln-202" href="#ln-202"></a><span class="w">    </span><span class="c">!&gt; it: translate(position) * rotate(attitude) * scale(scale) * translate(-pivot).</span>
+<a id="ln-203" name="ln-203" href="#ln-203"></a><span class="w">    </span><span class="k">pure function </span><span class="n">frame_matrix</span><span class="p">(</span><span class="n">position</span><span class="p">,</span><span class="w"> </span><span class="n">attitude</span><span class="p">,</span><span class="w"> </span><span class="nb">scale</span><span class="p">,</span><span class="w"> </span><span class="n">pivot</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="w"></span>
+<a id="ln-204" name="ln-204" href="#ln-204"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">position</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">             </span><span class="c">!! origin in the parent frame</span>
+<a id="ln-205" name="ln-205" href="#ln-205"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">attitude</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w">             </span><span class="c">!! quaternion [x, y, z, w]</span>
+<a id="ln-206" name="ln-206" href="#ln-206"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">scale</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">      </span><span class="c">!! scale along each local axis (default 1)</span>
+<a id="ln-207" name="ln-207" href="#ln-207"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pivot</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">      </span><span class="c">!! local point placed at `position` (default 0)</span>
+<a id="ln-208" name="ln-208" href="#ln-208"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<a id="ln-209" name="ln-209" href="#ln-209"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">r</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">s</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">p</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-210" name="ln-210" href="#ln-210"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">k</span><span class="w"></span>
+<a id="ln-211" name="ln-211" href="#ln-211"></a><span class="w">        </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"></span>
+<a id="ln-212" name="ln-212" href="#ln-212"></a><span class="w">        </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<a id="ln-213" name="ln-213" href="#ln-213"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="nb">scale</span><span class="p">))</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">scale</span>
+<a id="ln-214" name="ln-214" href="#ln-214"></a><span class="nb">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">pivot</span><span class="p">))</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pivot</span><span class="w"></span>
+<a id="ln-215" name="ln-215" href="#ln-215"></a><span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quat_to_matrix</span><span class="p">(</span><span class="n">attitude</span><span class="p">)</span><span class="w"></span>
+<a id="ln-216" name="ln-216" href="#ln-216"></a><span class="w">        </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<a id="ln-217" name="ln-217" href="#ln-217"></a><span class="w">        </span><span class="k">do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
+<a id="ln-218" name="ln-218" href="#ln-218"></a><span class="w">            </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">(:,</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">s</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"></span>
+<a id="ln-219" name="ln-219" href="#ln-219"></a><span class="w">        </span><span class="k">end do</span>
+<a id="ln-220" name="ln-220" href="#ln-220"></a><span class="k">        </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">matmul</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w"></span>
+<a id="ln-221" name="ln-221" href="#ln-221"></a><span class="w">        </span><span class="n">m</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"></span>
+<a id="ln-222" name="ln-222" href="#ln-222"></a><span class="w">    </span><span class="k">end function </span><span class="n">frame_matrix</span><span class="w"></span>
+<a id="ln-223" name="ln-223" href="#ln-223"></a>
+<a id="ln-224" name="ln-224" href="#ln-224"></a><span class="w">    </span><span class="c">!&gt; The cross product a x b.</span>
+<a id="ln-225" name="ln-225" href="#ln-225"></a><span class="w">    </span><span class="k">pure function </span><span class="n">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"></span>
+<a id="ln-226" name="ln-226" href="#ln-226"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-227" name="ln-227" href="#ln-227"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">c</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<a id="ln-228" name="ln-228" href="#ln-228"></a><span class="w">        </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">a</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span><span class="w"></span>
+<a id="ln-229" name="ln-229" href="#ln-229"></a><span class="w">    </span><span class="k">end function </span><span class="n">cross</span><span class="w"></span>
+<a id="ln-230" name="ln-230" href="#ln-230"></a>
+<a id="ln-231" name="ln-231" href="#ln-231"></a><span class="w">    </span><span class="c">!&gt; Set `rgba` from `color`: [r, g, b] (alpha unchanged) or [r, g, b, a].</span>
+<a id="ln-232" name="ln-232" href="#ln-232"></a><span class="w">    </span><span class="k">pure subroutine </span><span class="n">set_rgba</span><span class="p">(</span><span class="n">rgba</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="p">)</span><span class="w"></span>
+<a id="ln-233" name="ln-233" href="#ln-233"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">rgba</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w">                  </span><span class="c">!! [r, g, b, a]</span>
+<a id="ln-234" name="ln-234" href="#ln-234"></a><span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">color</span><span class="p">(:)</span><span class="w">                    </span><span class="c">!! [r, g, b] or [r, g, b, a] (0 to 1)</span>
+<a id="ln-235" name="ln-235" href="#ln-235"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="w"></span>
+<a id="ln-236" name="ln-236" href="#ln-236"></a><span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">color</span><span class="p">))</span><span class="w"></span>
+<a id="ln-237" name="ln-237" href="#ln-237"></a><span class="w">        </span><span class="n">rgba</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">color</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">)</span><span class="w"></span>
+<a id="ln-238" name="ln-238" href="#ln-238"></a><span class="w">    </span><span class="k">end subroutine </span><span class="n">set_rgba</span><span class="w"></span>
+<a id="ln-239" name="ln-239" href="#ln-239"></a>
+<a id="ln-240" name="ln-240" href="#ln-240"></a><span class="k">end module </span><span class="n">vkf_math</span><span class="w"></span>
+</pre></div>
+
+      </section>
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,2568 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_model &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_model
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 1.3% of total for modules and submodules.">169 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_model.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_model.f90.html'>vkf_model.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_model</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_model.html#interface-model">Model</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_model.html#type-model">Model</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_model.html#proc-has_model">has_model</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_attitude">model_attitude</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_file">model_file</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_frame_info">model_frame_info</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_pivot">model_pivot</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_position">model_position</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_scale">model_scale</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-new_model">new_model</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-set_model">set_model</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-share_model">share_model</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_bound">model_bound</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_build_contents">model_build_contents</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_frame_bound">model_frame_bound</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-model_pick">model_pick</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-set_model_attitude">set_model_attitude</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-set_model_pivot">set_model_pivot</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-set_model_position">set_model_position</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-set_model_scale">set_model_scale</a>
+            <a class="list-group-item" href="../module/vkf_model.html#proc-update_model_transform">update_model_transform</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>3D models: a model file (3ds, obj, glTF, ... through vsgXchange) in a
+frame, as OpenFrames' Model.</p>
+<p>The model is placed in its frame by its own transform:
+translate(model_position) * rotate(model_attitude) * scale(model_scale) *
+translate(-model_pivot), so e.g. the pivot can be the model's center
+(<code>model_bound</code>) and the scale can size it.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_pick.html'>vkf_pick</a></li>
+                  <li class="list-inline-item"><a href='vkf_frames.html'>vkf_frames</a></li>
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_model~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_modelUsesGraph" width="641pt" height="367pt"
+ viewBox="0.00 0.00 641.00 367.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_model~~UsesGraph" class="graph" transform="scale(0.958333 0.958333) rotate(0) translate(4 379.41)">
+<title>module~~vkf_model~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-379.41 664.87,-379.41 664.87,4 -4,4"/>
+<!-- module~vkf_model -->
+<g id="module~~vkf_model~~UsesGraph_node1" class="node">
+<title>module~vkf_model</title>
+<polygon fill="none" stroke="black" points="660.87,-195.88 594.6,-195.88 594.6,-171.61 660.87,-171.61 660.87,-195.88"/>
+<text xml:space="preserve" text-anchor="middle" x="627.73" y="-180.14" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_model</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_model~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_model~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-96.88 129.27,-96.88 129.27,-72.61 212.04,-72.61 212.04,-96.88"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-81.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_model~~UsesGraph_edge1" class="edge">
+<title>module~vkf_model&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M620.1,-171.17C596.97,-129.29 515.64,2.44 411.44,-5.74"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-5.74C337.81,3.09 314.73,3.86 248.04,-23.74 226.09,-32.83 205.31,-50.21 190.98,-64.1"/>
+<polygon fill="#000000" stroke="#000000" points="188.57,-61.56 184.01,-71.12 193.54,-66.5 188.57,-61.56"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_model~~UsesGraph_node3" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_model~~UsesGraph_node3"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="558.6,-195.88 488.58,-195.88 488.58,-171.61 558.6,-171.61 558.6,-195.88"/>
+<text xml:space="preserve" text-anchor="middle" x="523.59" y="-180.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_model~~UsesGraph_edge2" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M594.13,-183.74C586.6,-183.74 578.45,-183.74 570.47,-183.74"/>
+<polygon fill="#000000" stroke="#000000" points="570.51,-180.24 560.51,-183.74 570.51,-187.24 570.51,-180.24"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_model~~UsesGraph_node4" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_model~~UsesGraph_node4"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="319.93,-56.88 260.41,-56.88 260.41,-32.61 319.93,-32.61 319.93,-56.88"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-41.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_model~~UsesGraph_edge3" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M409.44,-5.74C380.98,-7.98 350.4,-18.29 327.47,-27.75"/>
+<polygon fill="#000000" stroke="#000000" points="326.4,-24.4 318.58,-31.54 329.15,-30.83 326.4,-24.4"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_node5" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_model~~UsesGraph_node5"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-292.88 140.52,-292.88 140.52,-268.61 200.79,-268.61 200.79,-292.88"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-277.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_edge4" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-363.74C459.96,-392.9 435.93,-358.88 368.31,-344.74 333.29,-337.42 326.81,-324.93 291.17,-321.74"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_model~~UsesGraph_node6" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_model~~UsesGraph_node6"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="437.58,-335.88 383.31,-335.88 383.31,-311.61 437.58,-311.61 437.58,-335.88"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-320.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_model~~UsesGraph_edge5" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M624.6,-196.26C617.79,-231.65 592.83,-331.98 524.59,-363.74"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.59,-363.74C508.41,-370.34 471.68,-354.88 444.3,-341.3"/>
+<polygon fill="#000000" stroke="#000000" points="446.18,-338.33 435.68,-336.93 443.01,-344.57 446.18,-338.33"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_model~~UsesGraph_edge6" class="edge">
+<title>module~vkf_frames&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M503.5,-171.26C489.71,-162.57 470.44,-151.09 452.58,-142.74 418.05,-126.6 329.17,-87.72 291.17,-84.74"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_model~~UsesGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M519.42,-171.2C512.29,-145.86 492.4,-88.76 452.58,-62.74 416.63,-39.26 366.34,-37.35 331.49,-39.65"/>
+<polygon fill="#000000" stroke="#000000" points="331.49,-36.14 321.81,-40.44 332.06,-43.11 331.49,-36.14"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_edge10" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M514.86,-196.23C503.34,-213.86 480.06,-245.99 452.58,-264.74 436.87,-275.46 310.12,-323.47 291.17,-321.74"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_model~~UsesGraph_edge11" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M517.21,-196.3C507.13,-218.75 483.58,-266.34 452.58,-297.74 450.17,-300.19 447.48,-302.51 444.67,-304.7"/>
+<polygon fill="#000000" stroke="#000000" points="442.88,-301.68 436.69,-310.28 446.89,-307.41 442.88,-301.68"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_model~~UsesGraph_node8" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_model~~UsesGraph_node8"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="448.08,-255.88 372.81,-255.88 372.81,-231.61 448.08,-231.61 448.08,-255.88"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-240.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_model~~UsesGraph_edge7" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M499.29,-196.32C483.43,-204.88 462.21,-216.34 444.6,-225.84"/>
+<polygon fill="#000000" stroke="#000000" points="443.18,-222.63 436.05,-230.46 446.51,-228.79 443.18,-222.63"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_model~~UsesGraph_node9" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_model~~UsesGraph_node9"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="452.58,-95.88 368.31,-95.88 368.31,-71.61 452.58,-71.61 452.58,-95.88"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-80.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_model~~UsesGraph_edge8" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M512.51,-171.31C499.6,-155.83 476.07,-129.07 452.58,-109.74 449.55,-107.25 446.27,-104.81 442.93,-102.48"/>
+<polygon fill="#000000" stroke="#000000" points="445.04,-99.68 434.76,-97.1 441.19,-105.52 445.04,-99.68"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_model~~UsesGraph_node10" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_model~~UsesGraph_node10"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="437.44,-175.88 383.44,-175.88 383.44,-151.61 437.44,-151.61 437.44,-175.88"/>
+<text xml:space="preserve" text-anchor="middle" x="410.44" y="-160.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_model~~UsesGraph_edge12" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.34,-177.58C475.83,-175.33 461.64,-172.77 448.87,-170.48"/>
+<polygon fill="#000000" stroke="#000000" points="449.6,-167.05 439.13,-168.72 448.36,-173.94 449.6,-167.05"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_model~~UsesGraph_node11" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_model~~UsesGraph_node11"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="332.31,-292.88 248.04,-292.88 248.04,-268.61 332.31,-268.61 332.31,-292.88"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-277.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_model~~UsesGraph_edge13" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.1,-187.67C455.67,-192.43 406.52,-202.5 368.31,-222.74 349.39,-232.76 349.41,-241.87 332.31,-254.74 329.01,-257.23 325.47,-259.71 321.91,-262.1"/>
+<polygon fill="#000000" stroke="#000000" points="320.31,-258.96 313.82,-267.33 324.11,-264.84 320.31,-258.96"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_model~~UsesGraph_edge14" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.13,-54.63C247.79,-58.83 233.08,-63.83 219.24,-68.55"/>
+<polygon fill="#000000" stroke="#000000" points="218.15,-65.22 209.81,-71.76 220.41,-71.85 218.15,-65.22"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_model~~UsesGraph_node7" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_model~~UsesGraph_node7"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-272.88 0,-272.88 0,-248.61 93.27,-248.61 93.27,-272.88"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-257.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_model~~UsesGraph_edge15" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-275.9C129.43,-274.15 116.96,-272.1 104.7,-270.1"/>
+<polygon fill="#000000" stroke="#000000" points="105.49,-266.68 95.06,-268.52 104.36,-273.59 105.49,-266.68"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_edge16" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.08,-324.41C359.07,-324.75 322.67,-324.61 291.17,-321.74"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_edge17" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.08,-256.33C381.58,-260.4 374.52,-265.07 368.31,-269.74 335.28,-294.6 332.35,-325.5 291.17,-321.74"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-321.74C260.19,-319.1 229.18,-307.89 206.3,-297.86"/>
+<polygon fill="#000000" stroke="#000000" points="208.01,-294.79 197.45,-293.85 205.11,-301.17 208.01,-294.79"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_model~~UsesGraph_edge18" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.35,-255.35C362.8,-258.34 352.35,-261.6 342.22,-264.77"/>
+<polygon fill="#000000" stroke="#000000" points="341.37,-261.37 332.87,-267.7 343.46,-268.05 341.37,-261.37"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_model~~UsesGraph_edge19" class="edge">
+<title>module~vkf_geometry&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.06,-85.85C345.33,-86.56 316.66,-86.74 291.17,-84.74"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-84.74C267.82,-83.07 244.22,-82.76 223.8,-82.99"/>
+<polygon fill="#000000" stroke="#000000" points="223.96,-79.49 214.02,-83.15 224.08,-86.49 223.96,-79.49"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_model~~UsesGraph_edge20" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.37,-71.19C358.39,-66.91 343.86,-62.12 330.77,-57.8"/>
+<polygon fill="#000000" stroke="#000000" points="332.2,-54.59 321.61,-54.78 330.01,-61.23 332.2,-54.59"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_edge21" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M381.32,-96.31C347.31,-112.4 289.47,-142.67 248.04,-179.74 221.85,-203.17 198.59,-236.72 184.81,-258.62"/>
+<polygon fill="#000000" stroke="#000000" points="181.88,-256.69 179.62,-267.04 187.84,-260.36 181.88,-256.69"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_model~~UsesGraph_edge22" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.09,-154.99C343.85,-141.95 269.44,-117.23 220.18,-100.86"/>
+<polygon fill="#000000" stroke="#000000" points="221.5,-97.61 210.9,-97.78 219.29,-104.26 221.5,-97.61"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_model~~UsesGraph_edge24" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M401.02,-151.24C387.88,-132.32 360.99,-95.95 332.31,-70.74 329.52,-68.29 326.47,-65.91 323.34,-63.65"/>
+<polygon fill="#000000" stroke="#000000" points="325.37,-60.8 315.11,-58.14 321.47,-66.61 325.37,-60.8"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_edge25" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.42,-176.14C382.59,-180.57 375,-185.7 368.31,-190.74 351.45,-203.45 350.51,-211.04 332.31,-221.74 293.99,-244.27 245.6,-260.61 211.99,-270.31"/>
+<polygon fill="#000000" stroke="#000000" points="211.33,-266.86 202.65,-272.93 213.23,-273.6 211.33,-266.86"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_model~~UsesGraph_node12" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_model~~UsesGraph_node12"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="317.31,-212.88 263.04,-212.88 263.04,-188.61 317.31,-188.61 317.31,-212.88"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-197.14" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_model~~UsesGraph_edge23" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.2,-171.95C367.16,-176.97 346.38,-183.47 328.63,-189.03"/>
+<polygon fill="#000000" stroke="#000000" points="327.7,-185.65 319.2,-191.97 329.79,-192.33 327.7,-185.65"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_model~~UsesGraph_edge26" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M279.98,-268.33C271.38,-256.56 258.37,-238.26 248.04,-221.74 223.43,-182.37 197.71,-134.67 183.29,-107.2"/>
+<polygon fill="#000000" stroke="#000000" points="186.43,-105.66 178.7,-98.42 180.23,-108.9 186.43,-105.66"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_model~~UsesGraph_edge28" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.74,-280.74C236.36,-280.74 224.03,-280.74 212.68,-280.74"/>
+<polygon fill="#000000" stroke="#000000" points="212.79,-277.24 202.79,-280.74 212.79,-284.24 212.79,-277.24"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_model~~UsesGraph_edge27" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M250.74,-268.12C238.51,-264.69 224.83,-261.45 212.04,-259.74 176.64,-255.01 136.56,-255.14 104.84,-256.51"/>
+<polygon fill="#000000" stroke="#000000" points="104.89,-253.01 95.07,-257 105.23,-260 104.89,-253.01"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_modelUsesGraph = svgPanZoom('#modulevkf_modelUsesGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_model~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_modelUsedByGraph" width="171pt" height="32pt"
+ viewBox="0.00 0.00 171.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_model~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>module~~vkf_model~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 167.29,-28.27 167.29,4 -4,4"/>
+<!-- module~vkf_model -->
+<g id="module~~vkf_model~~UsedByGraph_node1" class="node">
+<title>module~vkf_model</title>
+<polygon fill="none" stroke="black" points="66.27,-24.27 0,-24.27 0,0 66.27,0 66.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="33.13" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_model</text>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_model~~UsedByGraph_node2" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_model~~UsedByGraph_node2"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="163.29,-24.27 102.27,-24.27 102.27,0 163.29,0 163.29,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="132.78" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_model -->
+<g id="module~~vkf_model~~UsedByGraph_edge1" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_model</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M101.95,-12.13C94.33,-12.13 85.97,-12.13 77.81,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="78.01,-8.64 68.01,-12.14 78.01,-15.64 78.01,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-model"></span>
+      <h3>public        interface <a href='../interface/model.html'>Model</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The Model constructor: <code>Model(...)</code> makes one (see <code>new_model</code> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_model.html'>new_model</a>(name, file, color) result(m)  
+
+    </h3>
+    
+  <p>A model frame named <code>name</code> (decorations of color <code>color</code>), with the
+model file <code>file</code> if given (see <code>set_model</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~36"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/model.html'>Model</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-model"></span>
+      <h3>
+        type, public, extends(<a href='../type/referenceframe.html'>ReferenceFrame</a>)&nbsp;::&nbsp;
+        <a href='../type/model.html'>Model</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A model (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bound_center"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bound_center</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the model's bounding sphere: center (model coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bound_radius"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bound_radius</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the model's bounding sphere: radius (0: unknown)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~12"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the model file (unallocated: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model_"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model_</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the loaded model's node</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model_attitude_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model_attitude_</strong>(4)</td>
+<td> =</td>
+                <td>quat_identity</td>
+            <td>
+<p>attitude in the frame (quaternion [x, y, z, w])</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model_node"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model_node</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>transform of the model within the frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-model_position_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>model_position_</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>where the pivot is in the frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pivot_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pivot_</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the model's point at model_position_ (model coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale_~3"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale_</strong>(3)</td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>scale along the model's x, y, z</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The Model constructor: <code>Model(...)</code> makes one (see <code>new_model</code> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_model.html'>new_model</a></strong>
+                    (name, file, color)
+                  </td>
+                  <td><p>A model frame named <code>name</code> (decorations of color <code>color</code>), with the
+model file <code>file</code> if given (see <code>set_model</code>).</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-add_child'>add_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-attitude~5'>attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_labels_shown'>axes_labels_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_shown'>axes_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axis_label'>axis_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-bound~5'>bound</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/model_frame_bound.html'>model_frame_bound</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-build_contents~6'>build_contents</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/model_build_contents.html'>model_build_contents</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child~3'>child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child_index'>child_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-color~37'>color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-contents_shown'>contents_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-detach'>detach</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follow~3'>follow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follower'>follower</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-frame_info~6'>frame_info</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/model_frame_info.html'>model_frame_info</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-frame_string'>frame_string</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-has_light_source'>has_light_source</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-has_model'>has_model</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-is_following'>is_following</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_alignment'>label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_font'>label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_size'>label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-late_update~2'>late_update</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_ambient~2'>light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_diffuse~2'>light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_source_enabled'>light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_specular~2'>light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-local_matrix'>local_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-model_attitude'>model_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-model_bound'>model_bound</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-model_file'>model_file</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-model_pivot'>model_pivot</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-model_position'>model_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-model_scale'>model_scale</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_x_axis'>move_x_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_y_axis'>move_y_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_z_axis'>move_z_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name~14'>name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_on_top'>name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_shown'>name_label_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-node~17'>node</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_children'>num_children</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_parents'>num_parents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent~4'>parent</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent_index'>parent_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-pick~6'>pick</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/model_pick.html'>model_pick</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-pickable~3'>pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position~17'>position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position_of'>position_of</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-realize'>realize</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-remove_child'>remove_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-reposition_axes'>reposition_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_attitude~2'>set_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_color~8'>set_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_alignment'>set_label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_font'>set_label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_size'>set_label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_ambient~2'>set_light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_diffuse~2'>set_light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_source_enabled'>set_light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_specular~2'>set_light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-set_model'>set_model</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-set_model_attitude'>set_model_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-set_model_pivot'>set_model_pivot</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-set_model_position'>set_model_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-set_model_scale'>set_model_scale</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name'>set_name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name_label_on_top'>set_name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_pickable~2'>set_pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_position~2'>set_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_x_label'>set_x_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_y_label'>set_y_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_z_label'>set_z_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/model.html#boundprocedure-share_model'>share_model</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes'>show_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes_labels'>show_axes_labels</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_contents'>show_contents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_decorations'>show_decorations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_name_label'>show_name_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-sync~3'>sync</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-unfollow'>unfollow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-update~11'>update</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-world_matrix'>world_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-has_model"></span> <h3>private pure function <a href='../proc/has_model.html'>has_model</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if a model was read (or shared).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~557"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_attitude"></span> <h3>private pure function <a href='../proc/model_attitude.html'>model_attitude</a>(self) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Attitude of the model in its frame (quaternion [x, y, z, w]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~562"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_file"></span> <h3>private  function <a href='../proc/model_file.html'>model_file</a>(self) result(file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The model file ('' if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~556"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_frame_info"></span> <h3>private  function <a href='../proc/model_frame_info.html'>model_frame_info</a>(self) result(info)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The kind of frame: 'Model'.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~568"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_pivot"></span> <h3>private pure function <a href='../proc/model_pivot.html'>model_pivot</a>(self) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The model's pivot, in its own coordinates (see <code>set_model_pivot</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~566"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_position"></span> <h3>private pure function <a href='../proc/model_position.html'>model_position</a>(self) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the model's pivot is placed in its frame (frame coordinates).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~560"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_scale"></span> <h3>private pure function <a href='../proc/model_scale.html'>model_scale</a>(self) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Scale along the model's x, y and z axes.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~564"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_model"></span> <h3>private  function <a href='../proc/new_model.html'>new_model</a>(name, file, color) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A model frame named <code>name</code> (decorations of color <code>color</code>), with the
+model file <code>file</code> if given (see <code>set_model</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~36"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/model.html'>Model</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_model"></span> <h3>private  function <a href='../proc/set_model.html'>set_model</a>(self, file) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Read the model file (now, so its bound is known). Returns false if it
+could not be read. Set it before a window first shows the model.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~554"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~14"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-share_model"></span> <h3>private  function <a href='../proc/share_model.html'>share_model</a>(self, other) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Use the model already read by <code>other</code> (no second copy in memory).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~555"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-other"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>other</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_bound"></span> <h3>private  subroutine <a href='../proc/model_bound.html'>model_bound</a>(self, center, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The model's bounding sphere, in the model's own coordinates (before its transform).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~558"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~23"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~14"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_build_contents"></span> <h3>private  subroutine <a href='../proc/model_build_contents.html'>model_build_contents</a>(self, viewer, group)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The model under the model transform.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~569"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~50"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>a window's viewer handle (null: headless)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-group~14"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+            <td>
+<p>the group node to build under</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_frame_bound"></span> <h3>private  subroutine <a href='../proc/model_frame_bound.html'>model_frame_bound</a>(self, center, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The model's bounding sphere in the frame (through the model transform).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~567"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~24"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~15"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-model_pick"></span> <h3>private  subroutine <a href='../proc/model_pick.html'>model_pick</a>(self, cam, to_root, hits, n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Picked on the model's bounding sphere (not its triangles); else at the
+frame's origin.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~571"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~27"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+<p>the cursor's ray and the pick's settings</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-to_root~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>to_root</strong>(4,4)</td>
+            <td>
+<p>the frame's transform to the root frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hits~10"></span>
+              type(<a href='../type/pickhit.html'>PickHit</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>hits</strong>(:)</td>
+            <td>
+<p>hits so far (grown as needed)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~63"></span>
+              integer,
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>number of hits in hits</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_model_attitude"></span> <h3>private  subroutine <a href='../proc/set_model_attitude.html'>set_model_attitude</a>(self, q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Attitude of the model in its frame (quaternion [x, y, z, w]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~561"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~11"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_model_pivot"></span> <h3>private  subroutine <a href='../proc/set_model_pivot.html'>set_model_pivot</a>(self, pivot)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The point of the model (in its own coordinates) placed at model_position,
+about which it is rotated and scaled.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~565"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pivot~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pivot</strong>(3)</td>
+            <td>
+<p>(model coordinates)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_model_position"></span> <h3>private  subroutine <a href='../proc/set_model_position.html'>set_model_position</a>(self, position)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the model's pivot is placed in its frame (frame coordinates).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~559"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~15"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_model_scale"></span> <h3>private  subroutine <a href='../proc/set_model_scale.html'>set_model_scale</a>(self, scale)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Scale along the model's x, y and z axes.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~563"></span>
+              class(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-update_model_transform"></span> <h3>private  subroutine <a href='../proc/update_model_transform.html'>update_model_transform</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Give the model transform to its node (once built).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~570"></span>
+              type(<a href='../type/model.html'>Model</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

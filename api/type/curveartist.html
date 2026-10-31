@@ -1,0 +1,4184 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>CurveArtist &ndash; vkframes </title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>CurveArtist
+      <small>Derived Type</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title="<p> 3.1% of total for derived types.</p>Including implementation: 378 statements,  2.4% of total for derived types.">36 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_artists.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_artists.f90.html'>vkf_artists.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_artists.html'>vkf_artists</a></li>
+            <li class="breadcrumb-item active" aria-current="page">CurveArtist</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/curveartist.html#variable-color_">color_</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-default_data~2">default_data</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-highlight_">highlight_</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-lod_">lod_</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-pattern_">pattern_</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-pattern_factor">pattern_factor</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-sources_~2">sources_</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-tail_from">tail_from</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-tail_to">tail_to</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-trail_">trail_</a>
+            <a class="list-group-item" href="../type/curveartist.html#variable-width_">width_</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#cons-0"
+         aria-expanded="false" aria-controls="cons-0">
+         <h4 class="card-header bg-primary text-white">Constructor</h4>
+      </a>
+      <div id="cons-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/curveartist.html#interface-curveartist">CurveArtist</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#boundprocs-0"
+         aria-expanded="false" aria-controls="boundprocs-0">
+         <h4 class="card-header bg-primary text-white">Type-Bound Procedures</h4>
+      </a>
+      <div id="boundprocs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-apply_style~2">apply_style</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-build~2">build</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-chain_kind~2">chain_kind</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-color~9">color</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-dash_mode">dash_mode</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-data_sources~2">data_sources</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-draw_tail~2">draw_tail</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-drawn_color">drawn_color</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-drawn_distance">drawn_distance</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-drawn_point">drawn_point</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-first_drawn">first_drawn</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-get_trajectory">get_trajectory</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-has_trail">has_trail</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-highlight">highlight</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-init_chain~2">init_chain</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-level_of_detail">level_of_detail</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-lod_error">lod_error</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-new_tail~2">new_tail</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-num_chunks">num_chunks</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-num_drawn">num_drawn</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-pattern~2">pattern</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-pickable">pickable</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-point_colors">point_colors</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-points~3">points</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-release~2">release</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-remove_trail">remove_trail</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_color">set_color</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_dash_mode">set_dash_mode</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_highlight">set_highlight</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_level_of_detail">set_level_of_detail</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_pattern">set_pattern</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_pickable">set_pickable</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_point_colors">set_point_colors</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_trace_mode">set_trace_mode</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_trail">set_trail</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_trail_style">set_trail_style</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_trajectory~3">set_trajectory</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_width">set_width</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_x_data~2">set_x_data</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_y_data~2">set_y_data</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-set_z_data~2">set_z_data</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-trace_end">trace_end</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-trace_mode">trace_mode</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-update~5">update</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-width~3">width</a>
+            <a class="list-group-item" href="../type/curveartist.html#boundprocedure-write_points~2">write_points</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../type/curveartist.html#src">CurveArtist</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      <h2 id="type-def-statement">
+        type, public, extends(<a href='chainartist.html'>ChainArtist</a>) :: CurveArtist</h2>
+    <p>Draws a trajectory's points connected by a line (OpenFrames' CurveArtist).
+The x, y and z of the points come from data sources (default: the
+trajectory's positions). The line is in the artist's color, or in the
+trajectory's point colors if it has any (see the module documentation).</p>
+<br>      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Inherits</h3>
+        </div>
+        <div class="card-body">
+          <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: type~~curveartist~~InheritsGraph Pages: 1 -->
+<svg id="typecurveartistInheritsGraph" width="641pt" height="194pt"
+ viewBox="0.00 0.00 641.00 194.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="type~~curveartist~~InheritsGraph" class="graph" transform="scale(0.95872 0.95872) rotate(0) translate(4 197.89)">
+<title>type~~curveartist~~InheritsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-197.89 664.6,-197.89 664.6,4 -4,4"/>
+<!-- type~curveartist -->
+<g id="type~~curveartist~~InheritsGraph_node1" class="node">
+<title>type~curveartist</title>
+<polygon fill="none" stroke="black" points="660.6,-87.27 589.83,-87.27 589.83,-63 660.6,-63 660.6,-87.27"/>
+<text xml:space="preserve" text-anchor="middle" x="625.21" y="-71.54" font-family="Helvetica,sans-Serif" font-size="10.50">CurveArtist</text>
+</g>
+<!-- type~chainartist -->
+<g id="type~~curveartist~~InheritsGraph_node2" class="node">
+<title>type~chainartist</title>
+<g id="a_type~~curveartist~~InheritsGraph_node2"><a xlink:href="../type/chainartist.html" xlink:title="ChainArtist">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="498.7,-150.27 428.68,-150.27 428.68,-126 498.7,-126 498.7,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="463.69" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ChainArtist</text>
+</a>
+</g>
+</g>
+<!-- type~curveartist&#45;&gt;type~chainartist -->
+<g id="type~~curveartist~~InheritsGraph_edge4" class="edge">
+<title>type~curveartist&#45;&gt;type~chainartist</title>
+<path fill="none" stroke="#000000" d="M602.71,-87.72C593.4,-92.89 582.26,-98.68 571.83,-103.14 551.97,-111.61 529.33,-119.28 509.99,-125.27"/>
+<polygon fill="#000000" stroke="#000000" points="509.03,-121.9 500.48,-128.15 511.07,-128.6 509.03,-121.9"/>
+</g>
+<!-- type~datasource -->
+<g id="type~~curveartist~~InheritsGraph_node3" class="node">
+<title>type~datasource</title>
+<g id="a_type~~curveartist~~InheritsGraph_node3"><a xlink:href="../type/datasource.html" xlink:title="DataSource">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="500.58,-108.27 426.81,-108.27 426.81,-84 500.58,-84 500.58,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="463.69" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DataSource</text>
+</a>
+</g>
+</g>
+<!-- type~curveartist&#45;&gt;type~datasource -->
+<g id="type~~curveartist~~InheritsGraph_edge1" class="edge">
+<title>type~curveartist&#45;&gt;type~datasource</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M589.6,-79.69C566.98,-82.67 537.13,-86.6 512.28,-89.87"/>
+<polygon fill="#000000" stroke="#000000" points="511.86,-86.4 502.4,-91.17 512.77,-93.34 511.86,-86.4"/>
+<text xml:space="preserve" text-anchor="middle" x="548.2" y="-90.36" font-family="Helvetica,sans-Serif" font-size="9.50">sources_</text>
+</g>
+<!-- type~highlightstyle -->
+<g id="type~~curveartist~~InheritsGraph_node4" class="node">
+<title>type~highlightstyle</title>
+<g id="a_type~~curveartist~~InheritsGraph_node4"><a xlink:href="../type/highlightstyle.html" xlink:title="HighlightStyle">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="506.58,-66.27 420.81,-66.27 420.81,-42 506.58,-42 506.58,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="463.69" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">HighlightStyle</text>
+</a>
+</g>
+</g>
+<!-- type~curveartist&#45;&gt;type~highlightstyle -->
+<g id="type~~curveartist~~InheritsGraph_edge2" class="edge">
+<title>type~curveartist&#45;&gt;type~highlightstyle</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M589.58,-69.49C583.67,-68.58 577.58,-67.68 571.83,-66.89 554.33,-64.47 535.17,-62.1 517.97,-60.07"/>
+<polygon fill="#000000" stroke="#000000" points="518.82,-56.65 508.48,-58.97 518.01,-63.6 518.82,-56.65"/>
+<text xml:space="preserve" text-anchor="middle" x="548.2" y="-69.11" font-family="Helvetica,sans-Serif" font-size="9.50">highlight_</text>
+</g>
+<!-- type~trailstyle -->
+<g id="type~~curveartist~~InheritsGraph_node5" class="node">
+<title>type~trailstyle</title>
+<g id="a_type~~curveartist~~InheritsGraph_node5"><a xlink:href="../type/trailstyle.html" xlink:title="TrailStyle">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="493.45,-24.27 433.93,-24.27 433.93,0 493.45,0 493.45,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="463.69" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrailStyle</text>
+</a>
+</g>
+</g>
+<!-- type~curveartist&#45;&gt;type~trailstyle -->
+<g id="type~~curveartist~~InheritsGraph_edge3" class="edge">
+<title>type~curveartist&#45;&gt;type~trailstyle</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M604.3,-62.75C594.72,-57.12 582.92,-50.67 571.83,-45.89 550.22,-36.57 525.19,-28.53 504.75,-22.65"/>
+<polygon fill="#000000" stroke="#000000" points="505.95,-19.35 495.38,-20.01 504.06,-26.09 505.95,-19.35"/>
+<text xml:space="preserve" text-anchor="middle" x="548.2" y="-48.11" font-family="Helvetica,sans-Serif" font-size="9.50">trail_</text>
+</g>
+<!-- c_ptr -->
+<g id="type~~curveartist~~InheritsGraph_node6" class="node">
+<title>c_ptr</title>
+<polygon fill="#5cb85c" stroke="#5cb85c" points="56.76,-173.27 2.76,-173.27 2.76,-149 56.76,-149 56.76,-173.27"/>
+<text xml:space="preserve" text-anchor="middle" x="29.76" y="-157.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">c_ptr</text>
+</g>
+<!-- type~chainartist&#45;&gt;c_ptr -->
+<g id="type~~curveartist~~InheritsGraph_edge5" class="edge">
+<title>type~chainartist&#45;&gt;c_ptr</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M428.2,-147.49C361.98,-164.19 212.54,-195.8 87.52,-178.13"/>
+<text xml:space="preserve" text-anchor="middle" x="224.04" y="-184.86" font-family="Helvetica,sans-Serif" font-size="9.50">group, tail</text>
+</g>
+<!-- type~linechain -->
+<g id="type~~curveartist~~InheritsGraph_node7" class="node">
+<title>type~linechain</title>
+<g id="a_type~~curveartist~~InheritsGraph_node7"><a xlink:href="../type/linechain.html" xlink:title="LineChain">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="345.06,-150.27 280.29,-150.27 280.29,-126 345.06,-126 345.06,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="312.67" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain</text>
+</a>
+</g>
+</g>
+<!-- type~chainartist&#45;&gt;type~linechain -->
+<g id="type~~curveartist~~InheritsGraph_edge6" class="edge">
+<title>type~chainartist&#45;&gt;type~linechain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M428.51,-138.13C407.21,-138.13 379.63,-138.13 356.84,-138.13"/>
+<polygon fill="#000000" stroke="#000000" points="356.93,-134.64 346.93,-138.14 356.93,-141.64 356.93,-134.64"/>
+<text xml:space="preserve" text-anchor="middle" x="389.68" y="-140.36" font-family="Helvetica,sans-Serif" font-size="9.50">chain</text>
+</g>
+<!-- type~trajectoryartist -->
+<g id="type~~curveartist~~InheritsGraph_node8" class="node">
+<title>type~trajectoryartist</title>
+<g id="a_type~~curveartist~~InheritsGraph_node8"><a xlink:href="../type/trajectoryartist.html" xlink:title="TrajectoryArtist">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="358.56,-85.27 266.79,-85.27 266.79,-61 358.56,-61 358.56,-85.27"/>
+<text xml:space="preserve" text-anchor="middle" x="312.67" y="-69.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryArtist</text>
+</a>
+</g>
+</g>
+<!-- type~chainartist&#45;&gt;type~trajectoryartist -->
+<g id="type~~curveartist~~InheritsGraph_edge7" class="edge">
+<title>type~chainartist&#45;&gt;type~trajectoryartist</title>
+<path fill="none" stroke="#000000" d="M433.96,-125.6C410.95,-115.56 378.42,-101.37 352.99,-90.28"/>
+<polygon fill="#000000" stroke="#000000" points="354.53,-87.14 343.96,-86.35 351.73,-93.55 354.53,-87.14"/>
+</g>
+<!-- type~linechain&#45;&gt;c_ptr -->
+<g id="type~~curveartist~~InheritsGraph_edge8" class="edge">
+<title>type~linechain&#45;&gt;c_ptr</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M280.08,-139.14C240.37,-141.13 170.51,-147.08 113.52,-164.88 101.14,-168.75 100.44,-179.23 87.52,-178.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M85.52,-178.13C79.75,-177.32 73.76,-175.99 67.95,-174.42"/>
+<polygon fill="#000000" stroke="#000000" points="69.14,-171.12 58.56,-171.62 67.14,-177.83 69.14,-171.12"/>
+<text xml:space="preserve" text-anchor="middle" x="147.41" y="-167.11" font-family="Helvetica,sans-Serif" font-size="9.50">group, image</text>
+</g>
+<!-- type~linechunk -->
+<g id="type~~curveartist~~InheritsGraph_node9" class="node">
+<title>type~linechunk</title>
+<g id="a_type~~curveartist~~InheritsGraph_node9"><a xlink:href="../type/linechunk.html" xlink:title="LineChunk">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="181.29,-115.27 113.52,-115.27 113.52,-91 181.29,-91 181.29,-115.27"/>
+<text xml:space="preserve" text-anchor="middle" x="147.41" y="-99.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChunk</text>
+</a>
+</g>
+</g>
+<!-- type~linechain&#45;&gt;type~linechunk -->
+<g id="type~~curveartist~~InheritsGraph_edge9" class="edge">
+<title>type~linechain&#45;&gt;type~linechunk</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M279.81,-131.3C254.93,-125.97 220.08,-118.5 192.52,-112.59"/>
+<polygon fill="#000000" stroke="#000000" points="193.58,-109.24 183.07,-110.57 192.12,-116.09 193.58,-109.24"/>
+<text xml:space="preserve" text-anchor="middle" x="224.04" y="-125.99" font-family="Helvetica,sans-Serif" font-size="9.50">chunks</text>
+</g>
+<!-- type~trajectory -->
+<g id="type~~curveartist~~InheritsGraph_node10" class="node">
+<title>type~trajectory</title>
+<g id="a_type~~curveartist~~InheritsGraph_node10"><a xlink:href="../type/trajectory.html" xlink:title="Trajectory">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="179.41,-73.27 115.4,-73.27 115.4,-49 179.41,-49 179.41,-73.27"/>
+<text xml:space="preserve" text-anchor="middle" x="147.41" y="-57.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory</text>
+</a>
+</g>
+</g>
+<!-- type~trajectoryartist&#45;&gt;type~trajectory -->
+<g id="type~~curveartist~~InheritsGraph_edge10" class="edge">
+<title>type~trajectoryartist&#45;&gt;type~trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M266.63,-69.82C243.05,-68.09 214.34,-65.98 191.11,-64.27"/>
+<polygon fill="#000000" stroke="#000000" points="191.6,-60.8 181.37,-63.56 191.09,-67.78 191.6,-60.8"/>
+<text xml:space="preserve" text-anchor="middle" x="224.04" y="-70.43" font-family="Helvetica,sans-Serif" font-size="9.50">traj</text>
+</g>
+<!-- type~linechunk&#45;&gt;c_ptr -->
+<g id="type~~curveartist~~InheritsGraph_edge11" class="edge">
+<title>type~linechunk&#45;&gt;c_ptr</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M121.31,-115.72C105.1,-123.85 83.76,-134.55 65.87,-143.52"/>
+<polygon fill="#000000" stroke="#000000" points="64.53,-140.28 57.16,-147.9 67.67,-146.54 64.53,-140.28"/>
+<text xml:space="preserve" text-anchor="middle" x="86.52" y="-139.55" font-family="Helvetica,sans-Serif" font-size="9.50">line</text>
+</g>
+<!-- type~lodlevel -->
+<g id="type~~curveartist~~InheritsGraph_node11" class="node">
+<title>type~lodlevel</title>
+<g id="a_type~~curveartist~~InheritsGraph_node11"><a xlink:href="../type/lodlevel.html" xlink:title="LodLevel">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="59.52,-115.27 0,-115.27 0,-91 59.52,-91 59.52,-115.27"/>
+<text xml:space="preserve" text-anchor="middle" x="29.76" y="-99.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LodLevel</text>
+</a>
+</g>
+</g>
+<!-- type~linechunk&#45;&gt;type~lodlevel -->
+<g id="type~~curveartist~~InheritsGraph_edge12" class="edge">
+<title>type~linechunk&#45;&gt;type~lodlevel</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M113.27,-103.14C100.13,-103.14 84.89,-103.14 71.12,-103.14"/>
+<polygon fill="#000000" stroke="#000000" points="71.48,-99.64 61.48,-103.14 71.48,-106.64 71.48,-99.64"/>
+<text xml:space="preserve" text-anchor="middle" x="86.52" y="-105.36" font-family="Helvetica,sans-Serif" font-size="9.50">lod</text>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var pantypecurveartistInheritsGraph = svgPanZoom('#typecurveartistInheritsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#InheritsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="InheritsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="184pt" height="32pt"
+ viewBox="0.00 0.00 184.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 179.88,-28.27 179.88,4 -4,4"/>
+<!-- Type -->
+<g id="node1" class="node">
+<title>Type</title>
+<polygon fill="#5cb85c" stroke="#5cb85c" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="175.88,-24.27 72.12,-24.27 72.12,0 175.88,0 175.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="124" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a derived type to the parent type which it
+extends. Dashed arrows point from a derived type to the other
+types it contains as a components, with a label listing the name(s) of
+said component(s).
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    <br>
+
+    <section>
+    <h2>Components</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_</strong>(4)</td>
+<td> =</td>
+                <td>[1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]</td>
+            <td>
+                <p>line color [r, g, b, a] (default white)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_data~2"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>default_data</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+                <p>sources not set: the positions, per the DOF</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-highlight_"></span>
+              type(<a href='highlightstyle.html'>HighlightStyle</a>),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>highlight_</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>(see set_highlight)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod_"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lod_</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+                <p>level of detail (see set_level_of_detail)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern_</strong></td>
+<td> =</td>
+                <td>int(z&#39;FFFF&#39;)</td>
+            <td>
+                <p>16-bit dash pattern (z'FFFF': solid)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern_factor"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern_factor</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>window units per pattern bit (&gt;= 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources_~2"></span>
+              type(<a href='datasource.html'>DataSource</a>),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources_</strong>(3)</td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>x, y, z data sources (default: the positions)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-tail_from"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>tail_from</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>the tail: from point tail_from toward tail_to</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-tail_to"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>tail_to</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>the tail: from point tail_from toward tail_to</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-trail_"></span>
+              type(<a href='trailstyle.html'>TrailStyle</a>),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>trail_</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                <p>(see set_trail)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width_</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+                <p>line width (window units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
+    
+      <section>
+        <h2>Constructor</h2>
+            <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-curveartist"></span>
+      <h3>public        interface <a href='../interface/curveartist.html'>CurveArtist</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The CurveArtist constructor: <code>CurveArtist(...)</code> makes one (see <code>new_curve_artist</code> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_curve_artist.html'>new_curve_artist</a>(traj, color, width) result(a)  
+
+    </h3>
+    
+  <p>A curve artist for <code>traj</code> (optional), drawn in color <code>color</code> ([r, g, b]
+or [r, g, b, a]; default white) and <code>width</code> (window units; default 1).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-traj~16"></span>
+              type(<a href='trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>traj</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='curveartist.html'>CurveArtist</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+      </section>
+      <br>
+
+
+      <section>
+        <h2>Type-Bound Procedures</h2>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-apply_style~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>apply_style</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_style.html'>curve_style</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_style.html'>curve_style</a>(self)  
+</h3>
+    
+
+  <p>The style: the artist's color, or white if the points' colors are drawn
+(the shader multiplies them by it).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-build~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>build</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/chain_build.html'>chain_build</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/chain_build.html'>chain_build</a>(self, viewer, group)  
+</h3>
+    
+
+  <p>Create the chain of buffers (sized for the points now) and the trace
+tail under <code>group</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='chainartist.html'>ChainArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>compiles what is made later (null: nothing to)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+            <td>
+<p>the artist's group</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-chain_kind~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>chain_kind</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_chain_kind.html'>curve_chain_kind</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/curve_chain_kind.html'>curve_chain_kind</a>(self)  
+</h3>
+    
+
+  <p>The chain: a line strip.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-color~9"></span>
+      <h3>
+          procedure, public ::
+  <strong>color</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_color.html'>curve_color</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/curve_color.html'>curve_color</a>(self) result(c)  
+</h3>
+    
+
+  <p>The line's color [r, g, b, a].</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-dash_mode"></span>
+      <h3>
+          procedure, public ::
+  <strong>dash_mode</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_dash_mode.html'>curve_dash_mode</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/curve_dash_mode.html'>curve_dash_mode</a>(self) result(mode)  
+</h3>
+    
+
+  <p>The dash pattern's layout: DASH_SCENE, DASH_SCREEN or DASH_FIXED.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-data_sources~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>data_sources</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/data_sources~2.html'>data_sources</a>(self) result(s)  
+</h3>
+    
+
+  <p>The x, y and z data sources.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='datasource.html'>DataSource</a>), (3)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-draw_tail~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>draw_tail</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/update_tail.html'>update_tail</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/update_tail.html'>update_tail</a>(self, t, k, k2)  
+</h3>
+    
+
+  <p>The tail: from point k (the latest passed) to the point interpolated at
+time t toward point k2 (the next in time: k + 1, or k - 1 for decreasing
+times); none if either isn't a point written (before the start, or
+everything passed).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k2</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-drawn_color"></span>
+      <h3>
+          procedure, public ::
+  <strong>drawn_color</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/drawn_color.html'>drawn_color</a>(self, i) result(rgba)  
+</h3>
+    
+
+  <p>The color of point i (1 to num_drawn) as drawn: read back from the line
+buffers.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-drawn_distance"></span>
+      <h3>
+          procedure, public ::
+  <strong>drawn_distance</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/drawn_distance.html'>drawn_distance</a>(self, i) result(s)  
+</h3>
+    
+
+  <p>The distance along the curve at point i (1 to num_drawn), as drawn (for
+the dash pattern): read back from the line buffers.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-drawn_point"></span>
+      <h3>
+          procedure, public ::
+  <strong>drawn_point</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/drawn_point.html'>drawn_point</a>(self, i) result(v)  
+</h3>
+    
+
+  <p>Point i (of the trajectory's: first_drawn to first_drawn + num_drawn - 1
+drawn) as written: read back from the line buffers.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-first_drawn"></span>
+      <h3>
+          procedure, public ::
+  <strong>first_drawn</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/first_drawn.html'>first_drawn</a>(self)  
+</h3>
+    
+
+  <p>The first point drawn (1, or in trace mode of decreasing times the
+earliest point passed): points first_drawn .. first_drawn + num_drawn - 1.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='chainartist.html'>ChainArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-get_trajectory"></span>
+      <h3>
+          procedure, public ::
+  <strong>get_trajectory</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/get_trajectory.html'>get_trajectory</a>(self) result(traj)  
+</h3>
+    
+
+  <p>The trajectory drawn (null if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='trajectoryartist.html'>TrajectoryArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='trajectory.html'>Trajectory</a>), pointer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-has_trail"></span>
+      <h3>
+          procedure, public ::
+  <strong>has_trail</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/has_trail.html'>has_trail</a>(self)  
+</h3>
+    
+
+  <p>Whether the curve has a trail (set_trail).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-highlight"></span>
+      <h3>
+          procedure, public ::
+  <strong>highlight</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_highlight.html'>curve_highlight</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/curve_highlight.html'>curve_highlight</a>(self) result(mode)  
+</h3>
+    
+
+  <p>The curve's highlight: HIGHLIGHT_* (added; HIGHLIGHT_NONE: not highlighted).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-init_chain~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>init_chain</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_init_chain.html'>curve_init_chain</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_init_chain.html'>curve_init_chain</a>(self)  
+</h3>
+    
+
+  <p>The chain (ChainArtist's), with the curve's level of detail.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-level_of_detail"></span>
+      <h3>
+          procedure, public ::
+  <strong>level_of_detail</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/level_of_detail.html'>level_of_detail</a>(self)  
+</h3>
+    
+
+  <p>Whether level of detail is on.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-lod_error"></span>
+      <h3>
+          procedure, public ::
+  <strong>lod_error</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/lod_error.html'>lod_error</a>(self, j) result(error)  
+</h3>
+    
+
+  <p>The error bounds of chunk j of the curve's points (for checks): how far
+the points skipped can be from the segments drawn at stride 2^k, k = 1,
+2, ... (scene units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), allocatable, (:)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-new_tail~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>new_tail</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_new_tail.html'>curve_new_tail</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/curve_new_tail.html'>curve_new_tail</a>(self) result(node)  
+</h3>
+    
+
+  <p>The trace tail: a line of two points (white unless the points' colors are drawn).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(c_ptr)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-num_chunks"></span>
+      <h3>
+          procedure, public ::
+  <strong>num_chunks</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/num_chunks.html'>num_chunks</a>(self)  
+</h3>
+    
+
+  <p>Number of buffers the artist is drawn with (0 until built).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='chainartist.html'>ChainArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-num_drawn"></span>
+      <h3>
+          procedure, public ::
+  <strong>num_drawn</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/num_drawn.html'>num_drawn</a>(self)  
+</h3>
+    
+
+  <p>Number of trajectory points drawn now (all of them, or in trace mode
+those passed).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='chainartist.html'>ChainArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-pattern~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>pattern</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_pattern.html'>curve_pattern</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure subroutine <a href='../proc/curve_pattern.html'>curve_pattern</a>(self, factor, bits)  
+</h3>
+    
+
+  <p>The dash pattern: its <code>factor</code> and 16 pattern <code>bits</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>factor</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bits</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-pickable"></span>
+      <h3>
+          procedure, public ::
+  <strong>pickable</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/artist_pickable.html'>artist_pickable</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/artist_pickable.html'>artist_pickable</a>(self)  
+</h3>
+    
+
+  <p>Whether <code>pick</code> tests what this artist draws.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='trajectoryartist.html'>TrajectoryArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-point_colors"></span>
+      <h3>
+          procedure, public ::
+  <strong>point_colors</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/point_colors.html'>point_colors</a>(self)  
+</h3>
+    
+
+  <p>Whether a trajectory's colors are drawn.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='chainartist.html'>ChainArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-points~3"></span>
+      <h3>
+          procedure, public ::
+  <strong>points</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_points.html'>curve_points</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/curve_points.html'>curve_points</a>(self) result(n)  
+</h3>
+    
+
+  <p>Number of points to draw (1 if all sources are zero: a point at the origin).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-release~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>release</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/chain_release.html'>chain_release</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/chain_release.html'>chain_release</a>(self)  
+</h3>
+    
+
+  <p>Forget the render nodes: the chain and the tail (see artist_release).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='chainartist.html'>ChainArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-remove_trail"></span>
+      <h3>
+          procedure, public ::
+  <strong>remove_trail</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/remove_trail.html'>remove_trail</a>(self)  
+</h3>
+    
+
+  <p>No trail: the whole curve (or trace mode, if set) again.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_color"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_color</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_set_color.html'>curve_set_color</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_set_color.html'>curve_set_color</a>(self, color)  
+</h3>
+    
+
+  <p>The line's color: [r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1
+(with the trajectory's point colors drawn: for points without one).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_dash_mode"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_dash_mode</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_set_dash_mode.html'>curve_set_dash_mode</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_set_dash_mode.html'>curve_set_dash_mode</a>(self, mode, length)  
+</h3>
+    
+
+  <p>How the dash pattern (and a trail's) is laid out: DASH_SCENE (the
+default) anchored to the line: a dash stays put on it as the view
+changes, its size in scene units (one per line and view, from 0.7 to
+1.4 times the pattern's on screen, changing by doubling as it zooms);
+DASH_SCREEN screen-locked, as OpenGL's line stipple (OpenFrames'):
+every dash the pattern's length in pixels, at any zoom and depth,
+sliding along the line as the view changes; DASH_FIXED a fixed
+length of the line, as paint on it: never changing, so zooming in the
+dashes grow on screen, and out they shrink (under a pixel, blending
+into a fainter solid line); <code>length</code> (scene units, for the whole
+pattern: the other patterns, a trail's future's and the arrows', in
+proportion), else the pattern's length on screen where the line is
+first drawn. DASH_SCREEN and DASH_FIXED cost projecting the points
+drawn on the CPU, per view and frame.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mode</strong></td>
+            <td>
+<p>DASH_SCENE, DASH_SCREEN or DASH_FIXED</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>length</strong></td>
+            <td>
+<p>(DASH_FIXED) the pattern's length, scene units</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_highlight"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_highlight</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_set_highlight.html'>curve_set_highlight</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_set_highlight.html'>curve_set_highlight</a>(self, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)  
+</h3>
+    
+
+  <p>Highlight the curve (see the module documentation): <code>mode</code> a sum of
+HIGHLIGHT_PULSE and HIGHLIGHT_ARROWS (HIGHLIGHT_NONE: not highlighted),
+in <code>color</code> ([r, g, b] or [r, g, b, a]; default white). The other
+settings are kept when not given.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mode</strong></td>
+            <td>
+<p>HIGHLIGHT_* (added)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>arrow_spacing</strong></td>
+            <td>
+<p>between arrows (window units; default 40)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>arrow_speed</strong></td>
+            <td>
+<p>(window units per second; default 50)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>band_width</strong></td>
+            <td>
+<p>of the arrows' band (window units; default 12)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pulse_period</strong></td>
+            <td>
+<p>(s; default 1.5)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_level_of_detail"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_level_of_detail</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/set_level_of_detail.html'>set_level_of_detail</a>(self, enabled)  
+</h3>
+    
+
+  <p>Level of detail (default on): seen from far away, the curve is drawn
+from every 2nd, 4th, ... point (and its last), as many as can be
+skipped while staying within half a pixel of all of them, chosen per
+view and per chunk of points. Off: every point is drawn.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enabled</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_pattern"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_pattern</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_set_pattern.html'>curve_set_pattern</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_set_pattern.html'>curve_set_pattern</a>(self, factor, pattern)  
+</h3>
+    
+
+  <p>A dash pattern, as OpenGL's line stipple (OpenFrames' setPattern): each
+bit of the 16-bit <code>pattern</code> (bit 0 first; z'FFFF', the default, is
+solid) covers <code>factor</code> window units, along the whole curve (the dashes
+run on across its points). The dashes' length on screen is kept within
+0.7 to 1.4 times the pattern's (see shaders/line.vert).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>factor</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_pickable"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_pickable</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/artist_set_pickable.html'>artist_set_pickable</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/artist_set_pickable.html'>artist_set_pickable</a>(self, pickable)  
+</h3>
+    
+
+  <p>Whether <code>pick</code> tests what this artist draws (default true; e.g. false for
+a spacecraft's marker beside its orbit's curve).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='trajectoryartist.html'>TrajectoryArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pickable</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_point_colors"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_point_colors</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/set_point_colors.html'>set_point_colors</a>(self, enabled)  
+</h3>
+    
+
+  <p>Whether a trajectory with colors is drawn in them (default true); points
+without a color yet (colors arriving after positions) in the artist's
+color. A curve: each segment blended from its first point's color to its
+second's (with level of detail, a color lasting fewer points than are
+skipped may not show from far away); a surface: each point's pair in its
+color, times the artist's alpha. False: all in the artist's color.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='chainartist.html'>ChainArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enabled</strong></td>
+            <td>
+<p>true: the trajectory's colors</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_trace_mode"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_trace_mode</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/set_trace_mode.html'>set_trace_mode</a>(self, enabled)  
+</h3>
+    
+
+  <p>Draw only the part up to the current time (see the module documentation).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='trajectoryartist.html'>TrajectoryArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enabled</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_trail"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_trail</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/set_trail.html'>set_trail</a>(self, past, future, fade)  
+</h3>
+    
+
+  <p>A trail (see the module documentation): only the part within <code>past</code>
+before the current time and <code>future</code> after it (s, &gt;= 0; 0: none of
+it; huge(1.0_wp): no limit), each fading out over the last <code>fade</code> (0
+to 1, default 0.25) of its window toward its cutoff. Replaces trace
+mode while set.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>past</strong></td>
+            <td>
+<p>s before and after the current time</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>future</strong></td>
+            <td>
+<p>s before and after the current time</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fade</strong></td>
+            <td>
+<p>of each part's window (default 0.25)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_trail_style"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_trail_style</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/set_trail_style.html'>set_trail_style</a>(self, which, color, opacity, factor, pattern)  
+</h3>
+    
+
+  <p>The style of a trail's part, <code>which</code> TRAIL_PAST or TRAIL_FUTURE:
+<code>color</code> ([r, g, b] or [r, g, b, a]: drawn in it instead of the line's
+colors), <code>opacity</code> (its alpha multiplied by it: translucency, default
+1), a dash pattern (<code>factor</code> and 16 <code>pattern</code> bits, as set_pattern;
+default solid). Settings not given are kept.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>which</strong></td>
+            <td>
+<p>TRAIL_PAST or TRAIL_FUTURE</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>opacity</strong></td>
+            <td>
+<p>0 to 1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>factor</strong></td>
+            <td>
+<p>window units per bit (&gt;= 1), 16 bits</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern</strong></td>
+            <td>
+<p>window units per bit (&gt;= 1), 16 bits</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_trajectory~3"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_trajectory</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_set_trajectory.html'>curve_set_trajectory</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_set_trajectory.html'>curve_set_trajectory</a>(self, traj)  
+</h3>
+    
+
+  <p>Draw <code>traj</code>; with the default data sources, its positions (per its DOF).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>traj</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_width"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_width</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_set_width.html'>curve_set_width</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_set_width.html'>curve_set_width</a>(self, width)  
+</h3>
+    
+
+  <p>The line's width in window units (logical pixels).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_x_data~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_x_data</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/set_x_data~2.html'>set_x_data</a>(self, src) result(valid)  
+</h3>
+    
+
+  <p>Where the x (y, z) of the points come from. Returns whether the
+trajectory has those data.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_y_data~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_y_data</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/set_y_data~2.html'>set_y_data</a>(self, src) result(valid)  
+</h3>
+    
+
+  <p>Where the y of the points come from (see set_x_data).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-set_z_data~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>set_z_data</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/set_z_data~2.html'>set_z_data</a>(self, src) result(valid)  
+</h3>
+    
+
+  <p>Where the z of the points come from (see set_x_data).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              type(<a href='datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-trace_end"></span>
+      <h3>
+          procedure, public ::
+  <strong>trace_end</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  function <a href='../proc/trace_end.html'>trace_end</a>(self, v)  
+</h3>
+    
+
+  <p>In trace mode, the end of the line (the point at the current time) as
+drawn; false if no tail is drawn.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong>(3)</td>
+            <td>
+<p>the tail's end (frame coordinates)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-trace_mode"></span>
+      <h3>
+          procedure, public ::
+  <strong>trace_mode</strong>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/trace_mode.html'>trace_mode</a>(self)  
+</h3>
+    
+
+  <p>Whether only the part up to the current time is drawn.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='trajectoryartist.html'>TrajectoryArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-update~5"></span>
+      <h3>
+          procedure, public ::
+  <strong>update</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_update.html'>curve_update</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/curve_update.html'>curve_update</a>(self, t)  
+</h3>
+    
+
+  <p>Write the points added (all of them on a redraw), and draw them all, or
+in trace mode those passed and the tail to the point at time t, or with
+a trail the window about time t.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the current time</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-width~3"></span>
+      <h3>
+          procedure, public ::
+  <strong>width</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/curve_width.html'>curve_width</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private pure function <a href='../proc/curve_width.html'>curve_width</a>(self)  
+</h3>
+    
+
+  <p>The line's width (window units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+          <div class="row">
+              <div class="card mt-3">
+    <div class="card-header codesum">
+      <span class="anchor" id="boundprocedure-write_points~2"></span>
+      <h3>
+          procedure, public ::
+  <strong>write_points</strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/write_curve.html'>write_curve</a>
+        
+      </h3>
+    </div>
+      <ul class="list-group">
+          <li class="list-group-item">
+                    <h3>
+    private  subroutine <a href='../proc/write_curve.html'>write_curve</a>(self, i1, i2)  
+</h3>
+    
+
+  <p>Write points i1 .. i2 into the chain (and upload the chunks written to).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              class(<a href='curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i1</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" ></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i2</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+          </li>
+      </ul>
+  </div>
+
+          </div>
+      </section>
+
+    <section>
+    <h3><span class="anchor" id="src"></span>Source Code</h3>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="k">extends</span><span class="p">(</span><span class="n">ChainArtist</span><span class="p">),</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">CurveArtist</span><span class="w"></span>
+<span class="w">        </span><span class="k">private</span>
+<span class="k">        type</span><span class="p">(</span><span class="n">DataSource</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">sources_</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w">             </span><span class="c">!! x, y, z data sources (default: the positions)</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">default_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w">            </span><span class="c">!! sources not set: the positions, per the DOF</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">color_</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">]</span><span class="w">  </span><span class="c">!! line color [r, g, b, a] (default white)</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">width_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w">                 </span><span class="c">!! line width (window units)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pattern_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w">               </span><span class="c">!! window units per pattern bit (&gt;= 1)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pattern_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">z</span><span class="s1">&#39;FFFF&#39;</span><span class="p">)</span><span class="w">          </span><span class="c">!! 16-bit dash pattern (z&#39;FFFF&#39;: solid)</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">lod_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.</span><span class="w">                    </span><span class="c">!! level of detail (see set_level_of_detail)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">HighlightStyle</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">highlight_</span><span class="w">          </span><span class="c">!! (see set_highlight)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">TrailStyle</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">trail_</span><span class="w">                  </span><span class="c">!! (see set_trail)</span>
+<span class="w">        </span><span class="c">! rendering (the chain: a line strip; the tail: a line of two points)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tail_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">tail_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">       </span><span class="c">!! the tail: from point tail_from toward tail_to</span>
+<span class="w">    </span><span class="k">contains</span>
+<span class="k">        procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_trajectory</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_set_trajectory</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_x_data</span><span class="p">,</span><span class="w"> </span><span class="n">set_y_data</span><span class="p">,</span><span class="w"> </span><span class="n">set_z_data</span><span class="p">,</span><span class="w"> </span><span class="n">data_sources</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_color</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_set_color</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_color</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_width</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_set_width</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_width</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_pattern</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_set_pattern</span><span class="p">,</span><span class="w"> </span><span class="n">pattern</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_pattern</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_highlight</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_set_highlight</span><span class="p">,</span><span class="w"> </span><span class="n">highlight</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_highlight</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_trail</span><span class="p">,</span><span class="w"> </span><span class="n">remove_trail</span><span class="p">,</span><span class="w"> </span><span class="n">has_trail</span><span class="p">,</span><span class="w"> </span><span class="n">set_trail_style</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_dash_mode</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_set_dash_mode</span><span class="p">,</span><span class="w"> </span><span class="n">dash_mode</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_dash_mode</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">set_level_of_detail</span><span class="p">,</span><span class="w"> </span><span class="n">level_of_detail</span><span class="p">,</span><span class="w"> </span><span class="n">lod_error</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">drawn_color</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">update</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_update</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">drawn_point</span><span class="p">,</span><span class="w"> </span><span class="n">drawn_distance</span><span class="p">,</span><span class="w"> </span><span class="n">trace_end</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">init_chain</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_init_chain</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">chain_kind</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_chain_kind</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">points</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_points</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">new_tail</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_new_tail</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">apply_style</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">curve_style</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">write_points</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">write_curve</span><span class="w"></span>
+<span class="w">        </span><span class="k">procedure</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">draw_tail</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">update_tail</span><span class="w"></span>
+<span class="w">    </span><span class="k">end type </span><span class="n">CurveArtist</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

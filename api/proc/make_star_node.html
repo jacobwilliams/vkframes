@@ -1,0 +1,978 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>make_star_node &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>make_star_node
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">27 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_sky.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_sky.f90.html'>vkf_sky.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_sky.html'>vkf_sky</a></li>
+            <li class="breadcrumb-item active" aria-current="page">make_star_node</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/make_star_node.html#src">make_star_node</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine make_star_node(self)  
+</h2>
+    
+
+    <p>The star node for the current stars, in place of the old one.</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~29"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~make_star_node~~CallsGraph Pages: 1 -->
+<svg id="procmake_star_nodeCallsGraph" width="641pt" height="452pt"
+ viewBox="0.00 0.00 641.00 452.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~make_star_node~~CallsGraph" class="graph" transform="scale(0.748508 0.748508) rotate(0) translate(4 600.27)">
+<title>proc~~make_star_node~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-600.27 852.37,-600.27 852.37,4 -4,4"/>
+<!-- proc~make_star_node -->
+<g id="proc~~make_star_node~~CallsGraph_node1" class="node">
+<title>proc~make_star_node</title>
+<polygon fill="none" stroke="black" points="99.27,-224.27 0,-224.27 0,-200 99.27,-200 99.27,-224.27"/>
+<text xml:space="preserve" text-anchor="middle" x="49.63" y="-208.53" font-family="Helvetica,sans-Serif" font-size="10.50">make_star_node</text>
+</g>
+<!-- interface~vkf_compile_node -->
+<g id="proc~~make_star_node~~CallsGraph_node2" class="node">
+<title>interface~vkf_compile_node</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node2"><a xlink:href="../interface/vkf_compile_node.html" xlink:title="vkf_compile_node">
+<polygon fill="#a7506f" stroke="#a7506f" points="425.68,-596.27 318.16,-596.27 318.16,-572 425.68,-572 425.68,-596.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-580.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_compile_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~make_star_node~~CallsGraph_edge1" class="edge">
+<title>proc~make_star_node&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M50,-224.57C48.36,-270.93 49.07,-435.46 135.27,-521.13 180.46,-566.05 253.94,-579.93 306.84,-583.74"/>
+<polygon fill="#000000" stroke="#000000" points="306.42,-587.23 316.62,-584.34 306.85,-580.24 306.42,-587.23"/>
+</g>
+<!-- interface~vkf_node_add_child -->
+<g id="proc~~make_star_node~~CallsGraph_node3" class="node">
+<title>interface~vkf_node_add_child</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node3"><a xlink:href="../interface/vkf_node_add_child.html" xlink:title="vkf_node_add_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="429.81,-554.27 314.04,-554.27 314.04,-530 429.81,-530 429.81,-554.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-538.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~make_star_node~~CallsGraph_edge2" class="edge">
+<title>proc~make_star_node&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M50.66,-224.58C51.43,-266.78 59.86,-405.89 135.27,-478.13 179.98,-520.96 250.36,-535.76 302.58,-540.56"/>
+<polygon fill="#000000" stroke="#000000" points="302.01,-544.03 312.26,-541.34 302.57,-537.05 302.01,-544.03"/>
+</g>
+<!-- interface~vkf_node_delete -->
+<g id="proc~~make_star_node~~CallsGraph_node4" class="node">
+<title>interface~vkf_node_delete</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node4"><a xlink:href="../interface/vkf_node_delete.html" xlink:title="vkf_node_delete">
+<polygon fill="#a7506f" stroke="#a7506f" points="421.18,-512.27 322.66,-512.27 322.66,-488 421.18,-488 421.18,-512.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-496.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_delete</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~make_star_node~~CallsGraph_edge3" class="edge">
+<title>proc~make_star_node&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M51.52,-224.73C54.87,-262.69 70.18,-377.02 135.27,-436.13 183.51,-479.95 258.79,-494.22 311.24,-498.63"/>
+<polygon fill="#000000" stroke="#000000" points="310.65,-502.1 320.88,-499.34 311.17,-495.12 310.65,-502.1"/>
+</g>
+<!-- interface~vkf_node_remove_child -->
+<g id="proc~~make_star_node~~CallsGraph_node5" class="node">
+<title>interface~vkf_node_remove_child</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node5"><a xlink:href="../interface/vkf_node_remove_child.html" xlink:title="vkf_node_remove_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="439.93,-470.27 303.91,-470.27 303.91,-446 439.93,-446 439.93,-470.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-454.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_remove_child</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;interface~vkf_node_remove_child -->
+<g id="proc~~make_star_node~~CallsGraph_edge4" class="edge">
+<title>proc~make_star_node&#45;&gt;interface~vkf_node_remove_child</title>
+<path fill="none" stroke="#000000" d="M52.66,-224.55C58.71,-257.63 79.82,-348.49 135.27,-395.13 179.01,-431.94 242.15,-447.44 292.06,-453.88"/>
+<polygon fill="#000000" stroke="#000000" points="291.62,-457.35 301.96,-455.05 292.44,-450.4 291.62,-457.35"/>
+</g>
+<!-- interface~vkf_sky_stars -->
+<g id="proc~~make_star_node~~CallsGraph_node6" class="node">
+<title>interface~vkf_sky_stars</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node6"><a xlink:href="../interface/vkf_sky_stars.html" xlink:title="vkf_sky_stars">
+<polygon fill="#a7506f" stroke="#a7506f" points="241.66,-108.27 161.14,-108.27 161.14,-84 241.66,-84 241.66,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="201.4" y="-92.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky_stars</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;interface~vkf_sky_stars -->
+<g id="proc~~make_star_node~~CallsGraph_edge5" class="edge">
+<title>proc~make_star_node&#45;&gt;interface~vkf_sky_stars</title>
+<path fill="none" stroke="#000000" d="M59.44,-199.74C73.52,-180.73 102.83,-144.23 135.27,-122.13 139.99,-118.92 145.17,-116.01 150.48,-113.4"/>
+<polygon fill="#000000" stroke="#000000" points="151.72,-116.68 159.39,-109.38 148.83,-110.3 151.72,-116.68"/>
+</g>
+<!-- interface~vkf_sky_stars_changed -->
+<g id="proc~~make_star_node~~CallsGraph_node7" class="node">
+<title>interface~vkf_sky_stars_changed</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node7"><a xlink:href="../interface/vkf_sky_stars_changed.html" xlink:title="vkf_sky_stars_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="267.54,-66.27 135.27,-66.27 135.27,-42 267.54,-42 267.54,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="201.4" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky_stars_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;interface~vkf_sky_stars_changed -->
+<g id="proc~~make_star_node~~CallsGraph_edge6" class="edge">
+<title>proc~make_star_node&#45;&gt;interface~vkf_sky_stars_changed</title>
+<path fill="none" stroke="#000000" d="M54.84,-199.89C64.63,-173.2 91.48,-109.45 135.27,-75.13 136.59,-74.1 137.95,-73.12 139.36,-72.19"/>
+<polygon fill="#000000" stroke="#000000" points="140.84,-75.37 147.86,-67.44 137.42,-69.27 140.84,-75.37"/>
+</g>
+<!-- interface~vkf_stars_create -->
+<g id="proc~~make_star_node~~CallsGraph_node8" class="node">
+<title>interface~vkf_stars_create</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node8"><a xlink:href="../interface/vkf_stars_create.html" xlink:title="vkf_stars_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="249.91,-24.27 152.89,-24.27 152.89,0 249.91,0 249.91,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="201.4" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_stars_create</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;interface~vkf_stars_create -->
+<g id="proc~~make_star_node~~CallsGraph_edge7" class="edge">
+<title>proc~make_star_node&#45;&gt;interface~vkf_stars_create</title>
+<path fill="none" stroke="#000000" d="M52.97,-199.66C59.68,-167.29 82.06,-79.85 135.27,-33.13 137.46,-31.21 139.82,-29.47 142.31,-27.88"/>
+<polygon fill="#000000" stroke="#000000" points="143.88,-31.01 151.08,-23.23 140.6,-24.83 143.88,-31.01"/>
+</g>
+<!-- proc~apply_attitude -->
+<g id="proc~~make_star_node~~CallsGraph_node9" class="node">
+<title>proc~apply_attitude</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node9"><a xlink:href="../proc/apply_attitude.html" xlink:title="apply_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="415.56,-142.27 328.29,-142.27 328.29,-118 415.56,-118 415.56,-142.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-126.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;proc~apply_attitude -->
+<g id="proc~~make_star_node~~CallsGraph_edge8" class="edge">
+<title>proc~make_star_node&#45;&gt;proc~apply_attitude</title>
+<path fill="none" stroke="#000000" d="M79.21,-199.62C95.42,-192.87 116.22,-184.79 135.27,-179.13 196.47,-160.98 268.53,-147.05 316.71,-138.76"/>
+<polygon fill="#000000" stroke="#000000" points="317.05,-142.25 326.33,-137.13 315.88,-135.35 317.05,-142.25"/>
+</g>
+<!-- proc~apply_mode -->
+<g id="proc~~make_star_node~~CallsGraph_node10" class="node">
+<title>proc~apply_mode</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node10"><a xlink:href="../proc/apply_mode.html" xlink:title="apply_mode">
+<polygon fill="#d9534f" stroke="#d9534f" points="410.31,-184.27 333.54,-184.27 333.54,-160 410.31,-160 410.31,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_mode</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;proc~apply_mode -->
+<g id="proc~~make_star_node~~CallsGraph_edge9" class="edge">
+<title>proc~make_star_node&#45;&gt;proc~apply_mode</title>
+<path fill="none" stroke="#000000" d="M99.35,-203.61C111.09,-201.69 123.61,-199.74 135.27,-198.13 199.68,-189.26 274.34,-181.44 322.06,-176.75"/>
+<polygon fill="#000000" stroke="#000000" points="322.18,-180.25 331.79,-175.8 321.5,-173.29 322.18,-180.25"/>
+</g>
+<!-- proc~check_status -->
+<g id="proc~~make_star_node~~CallsGraph_node11" class="node">
+<title>proc~check_status</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node11"><a xlink:href="../proc/check_status.html" xlink:title="check_status">
+<polygon fill="#d9534f" stroke="#d9534f" points="589.08,-226.27 509.31,-226.27 509.31,-202 589.08,-202 589.08,-226.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-210.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_status</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;proc~check_status -->
+<g id="proc~~make_star_node~~CallsGraph_edge10" class="edge">
+<title>proc~make_star_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M99.7,-212.33C194.43,-212.71 401.61,-213.55 497.56,-213.93"/>
+<polygon fill="#000000" stroke="#000000" points="497.44,-217.43 507.46,-213.97 497.47,-210.43 497.44,-217.43"/>
+</g>
+<!-- proc~make_name_node -->
+<g id="proc~~make_star_node~~CallsGraph_node12" class="node">
+<title>proc~make_name_node</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node12"><a xlink:href="../proc/make_name_node.html" xlink:title="make_name_node">
+<polygon fill="#d9534f" stroke="#d9534f" points="256.29,-386.27 146.52,-386.27 146.52,-362 256.29,-362 256.29,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="201.4" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_name_node</text>
+</a>
+</g>
+</g>
+<!-- proc~make_star_node&#45;&gt;proc~make_name_node -->
+<g id="proc~~make_star_node~~CallsGraph_edge11" class="edge">
+<title>proc~make_star_node&#45;&gt;proc~make_name_node</title>
+<path fill="none" stroke="#000000" d="M62.14,-224.58C87.79,-252.33 149.9,-319.51 181.4,-353.58"/>
+<polygon fill="#000000" stroke="#000000" points="178.68,-355.79 188.04,-360.76 183.82,-351.04 178.68,-355.79"/>
+</g>
+<!-- proc~apply_attitude&#45;&gt;proc~check_status -->
+<g id="proc~~make_star_node~~CallsGraph_edge14" class="edge">
+<title>proc~apply_attitude&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M415.9,-139.57C424.39,-142.5 432.94,-146.28 440.31,-151.13 460.85,-164.65 455.65,-179.8 476.31,-193.13 482.99,-197.45 490.59,-200.9 498.27,-203.65"/>
+<polygon fill="#000000" stroke="#000000" points="497.09,-206.95 507.68,-206.64 499.21,-200.28 497.09,-206.95"/>
+</g>
+<!-- interface~vkf_sky_style -->
+<g id="proc~~make_star_node~~CallsGraph_node14" class="node">
+<title>interface~vkf_sky_style</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node14"><a xlink:href="../interface/vkf_sky_style.html" xlink:title="vkf_sky_style">
+<polygon fill="#a7506f" stroke="#a7506f" points="589.08,-100.27 509.31,-100.27 509.31,-76 589.08,-76 589.08,-100.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-84.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky_style</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_attitude&#45;&gt;interface~vkf_sky_style -->
+<g id="proc~~make_star_node~~CallsGraph_edge12" class="edge">
+<title>proc~apply_attitude&#45;&gt;interface~vkf_sky_style</title>
+<path fill="none" stroke="#000000" d="M415.8,-119.86C440.61,-113.92 471.96,-106.4 497.92,-100.18"/>
+<polygon fill="#000000" stroke="#000000" points="498.67,-103.6 507.58,-97.87 497.04,-96.79 498.67,-103.6"/>
+</g>
+<!-- interface~vkf_sky_style_changed -->
+<g id="proc~~make_star_node~~CallsGraph_node15" class="node">
+<title>interface~vkf_sky_style_changed</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node15"><a xlink:href="../interface/vkf_sky_style_changed.html" xlink:title="vkf_sky_style_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="614.95,-142.27 483.43,-142.27 483.43,-118 614.95,-118 614.95,-142.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-126.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky_style_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_attitude&#45;&gt;interface~vkf_sky_style_changed -->
+<g id="proc~~make_star_node~~CallsGraph_edge13" class="edge">
+<title>proc~apply_attitude&#45;&gt;interface~vkf_sky_style_changed</title>
+<path fill="none" stroke="#000000" d="M415.8,-130.13C432.67,-130.13 452.55,-130.13 471.72,-130.13"/>
+<polygon fill="#000000" stroke="#000000" points="471.69,-133.64 481.69,-130.14 471.69,-126.64 471.69,-133.64"/>
+</g>
+<!-- proc~quat_to_matrix -->
+<g id="proc~~make_star_node~~CallsGraph_node20" class="node">
+<title>proc~quat_to_matrix</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node20"><a xlink:href="../proc/quat_to_matrix.html" xlink:title="quat_to_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="594.7,-296.27 503.68,-296.27 503.68,-272 594.7,-272 594.7,-296.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-280.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_to_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_attitude&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~make_star_node~~CallsGraph_edge15" class="edge">
+<title>proc~apply_attitude&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M415.76,-137.43C424.65,-140.51 433.4,-144.9 440.31,-151.13 470.47,-178.34 450.5,-203.78 476.31,-235.13 486.41,-247.4 500.34,-257.86 513.26,-265.93"/>
+<polygon fill="#000000" stroke="#000000" points="511.17,-268.75 521.55,-270.85 514.74,-262.73 511.17,-268.75"/>
+</g>
+<!-- proc~apply_mode&#45;&gt;proc~check_status -->
+<g id="proc~~make_star_node~~CallsGraph_edge17" class="edge">
+<title>proc~apply_mode&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M410.52,-181.15C435.99,-187.25 469.92,-195.38 497.73,-202.04"/>
+<polygon fill="#000000" stroke="#000000" points="496.82,-205.42 507.36,-204.35 498.45,-198.62 496.82,-205.42"/>
+</g>
+<!-- interface~vkf_switch_set -->
+<g id="proc~~make_star_node~~CallsGraph_node16" class="node">
+<title>interface~vkf_switch_set</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node16"><a xlink:href="../interface/vkf_switch_set.html" xlink:title="vkf_switch_set">
+<polygon fill="#a7506f" stroke="#a7506f" points="592.45,-184.27 505.93,-184.27 505.93,-160 592.45,-160 592.45,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_switch_set</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_mode&#45;&gt;interface~vkf_switch_set -->
+<g id="proc~~make_star_node~~CallsGraph_edge16" class="edge">
+<title>proc~apply_mode&#45;&gt;interface~vkf_switch_set</title>
+<path fill="none" stroke="#000000" d="M410.52,-172.13C434.99,-172.13 467.29,-172.13 494.45,-172.13"/>
+<polygon fill="#000000" stroke="#000000" points="494.22,-175.64 504.22,-172.14 494.22,-168.64 494.22,-175.64"/>
+</g>
+<!-- proc~make_name_node&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~make_star_node~~CallsGraph_edge18" class="edge">
+<title>proc~make_name_node&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M205.45,-386.38C214.4,-419.87 243.88,-513.82 303.54,-563.13 305,-564.34 306.53,-565.48 308.12,-566.55"/>
+<polygon fill="#000000" stroke="#000000" points="305.98,-569.36 316.4,-571.27 309.44,-563.28 305.98,-569.36"/>
+</g>
+<!-- proc~make_name_node&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~make_star_node~~CallsGraph_edge20" class="edge">
+<title>proc~make_name_node&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M207.46,-386.46C219.66,-414.64 253.42,-484.19 303.54,-521.13 305.07,-522.26 306.65,-523.32 308.29,-524.33"/>
+<polygon fill="#000000" stroke="#000000" points="306.29,-527.23 316.76,-528.81 309.56,-521.05 306.29,-527.23"/>
+</g>
+<!-- proc~make_name_node&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~make_star_node~~CallsGraph_edge21" class="edge">
+<title>proc~make_name_node&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M210.95,-386.44C226.73,-408.27 262.62,-453.87 303.54,-479.13 306.28,-480.82 309.16,-482.39 312.13,-483.84"/>
+<polygon fill="#000000" stroke="#000000" points="310.54,-486.96 321.1,-487.71 313.31,-480.53 310.54,-486.96"/>
+</g>
+<!-- proc~make_name_node&#45;&gt;interface~vkf_node_remove_child -->
+<g id="proc~~make_star_node~~CallsGraph_edge22" class="edge">
+<title>proc~make_name_node&#45;&gt;interface~vkf_node_remove_child</title>
+<path fill="none" stroke="#000000" d="M219.54,-386.72C239.07,-400.59 272.32,-422.83 303.54,-437.13 307.04,-438.74 310.7,-440.27 314.43,-441.71"/>
+<polygon fill="#000000" stroke="#000000" points="313.01,-444.92 323.6,-445.05 315.4,-438.34 313.01,-444.92"/>
+</g>
+<!-- proc~make_name_node&#45;&gt;proc~apply_mode -->
+<g id="proc~~make_star_node~~CallsGraph_edge24" class="edge">
+<title>proc~make_name_node&#45;&gt;proc~apply_mode</title>
+<path fill="none" stroke="#000000" d="M209.89,-361.55C225.55,-335.71 263.64,-275.4 303.54,-231.13 316.4,-216.87 332.53,-202.64 345.79,-191.73"/>
+<polygon fill="#000000" stroke="#000000" points="347.68,-194.7 353.26,-185.69 343.28,-189.26 347.68,-194.7"/>
+</g>
+<!-- proc~make_name_node&#45;&gt;proc~check_status -->
+<g id="proc~~make_star_node~~CallsGraph_edge26" class="edge">
+<title>proc~make_name_node&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M256.72,-362.79C322.14,-348.79 425.19,-325.58 440.31,-315.13 463.44,-299.17 456.36,-282.94 476.31,-263.13 488.01,-251.52 502.81,-240.9 515.93,-232.54"/>
+<polygon fill="#000000" stroke="#000000" points="517.59,-235.62 524.27,-227.4 513.92,-229.66 517.59,-235.62"/>
+</g>
+<!-- interface~vkf_label_set_at_infinity -->
+<g id="proc~~make_star_node~~CallsGraph_node13" class="node">
+<title>interface~vkf_label_set_at_infinity</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node13"><a xlink:href="../interface/vkf_label_set_at_infinity.html" xlink:title="vkf_label_set_at_infinity">
+<polygon fill="#a7506f" stroke="#a7506f" points="440.31,-306.27 303.54,-306.27 303.54,-282 440.31,-282 440.31,-306.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-290.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_label_set_at_infinity</text>
+</a>
+</g>
+</g>
+<!-- proc~make_name_node&#45;&gt;interface~vkf_label_set_at_infinity -->
+<g id="proc~~make_star_node~~CallsGraph_edge19" class="edge">
+<title>proc~make_name_node&#45;&gt;interface~vkf_label_set_at_infinity</title>
+<path fill="none" stroke="#000000" d="M224.11,-361.55C244.33,-350.06 275.49,-332.98 303.54,-320.13 310.51,-316.94 318,-313.79 325.35,-310.85"/>
+<polygon fill="#000000" stroke="#000000" points="326.51,-314.15 334.55,-307.25 323.96,-307.63 326.51,-314.15"/>
+</g>
+<!-- interface~vkf_transform_create -->
+<g id="proc~~make_star_node~~CallsGraph_node17" class="node">
+<title>interface~vkf_transform_create</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node17"><a xlink:href="../interface/vkf_transform_create.html" xlink:title="vkf_transform_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="433.93,-264.27 309.91,-264.27 309.91,-240 433.93,-240 433.93,-264.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-248.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_transform_create</text>
+</a>
+</g>
+</g>
+<!-- proc~make_name_node&#45;&gt;interface~vkf_transform_create -->
+<g id="proc~~make_star_node~~CallsGraph_edge23" class="edge">
+<title>proc~make_name_node&#45;&gt;interface~vkf_transform_create</title>
+<path fill="none" stroke="#000000" d="M211.57,-361.65C227.78,-340.42 263.61,-297.26 303.54,-273.13 305.71,-271.82 307.98,-270.58 310.3,-269.42"/>
+<polygon fill="#000000" stroke="#000000" points="311.69,-272.63 319.41,-265.37 308.85,-266.23 311.69,-272.63"/>
+</g>
+<!-- proc~apply_name_attitude -->
+<g id="proc~~make_star_node~~CallsGraph_node18" class="node">
+<title>proc~apply_name_attitude</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node18"><a xlink:href="../proc/apply_name_attitude.html" xlink:title="apply_name_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="433.56,-386.27 310.29,-386.27 310.29,-362 433.56,-362 433.56,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_name_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~make_name_node&#45;&gt;proc~apply_name_attitude -->
+<g id="proc~~make_star_node~~CallsGraph_edge25" class="edge">
+<title>proc~make_name_node&#45;&gt;proc~apply_name_attitude</title>
+<path fill="none" stroke="#000000" d="M256.65,-374.13C270.09,-374.13 284.7,-374.13 298.84,-374.13"/>
+<polygon fill="#000000" stroke="#000000" points="298.54,-377.64 308.54,-374.14 298.54,-370.64 298.54,-377.64"/>
+</g>
+<!-- proc~label_create -->
+<g id="proc~~make_star_node~~CallsGraph_node19" class="node">
+<title>proc~label_create</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node19"><a xlink:href="../proc/label_create.html" xlink:title="label_create">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="410.31,-428.27 333.54,-428.27 333.54,-404 410.31,-404 410.31,-428.27"/>
+<text xml:space="preserve" text-anchor="middle" x="371.92" y="-412.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">label_create</text>
+</a>
+</g>
+</g>
+<!-- proc~make_name_node&#45;&gt;proc~label_create -->
+<g id="proc~~make_star_node~~CallsGraph_edge27" class="edge">
+<title>proc~make_name_node&#45;&gt;proc~label_create</title>
+<path fill="none" stroke="#000000" d="M252.97,-386.74C274.93,-392.21 300.54,-398.59 322.28,-404.01"/>
+<polygon fill="#000000" stroke="#000000" points="321.24,-407.36 331.79,-406.38 322.93,-400.57 321.24,-407.36"/>
+</g>
+<!-- proc~apply_name_attitude&#45;&gt;proc~check_status -->
+<g id="proc~~make_star_node~~CallsGraph_edge29" class="edge">
+<title>proc~apply_name_attitude&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M420.05,-361.62C427.45,-358.13 434.54,-353.72 440.31,-348.13 469.79,-319.6 450.3,-294.87 476.31,-263.13 486.38,-250.85 500.31,-240.38 513.23,-232.32"/>
+<polygon fill="#000000" stroke="#000000" points="514.71,-235.51 521.53,-227.41 511.14,-229.49 514.71,-235.51"/>
+</g>
+<!-- proc~apply_name_attitude&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~make_star_node~~CallsGraph_edge30" class="edge">
+<title>proc~apply_name_attitude&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M408.72,-361.6C419.07,-357.63 430.27,-353.01 440.31,-348.13 468.22,-334.59 498.47,-316.31 519.82,-302.75"/>
+<polygon fill="#000000" stroke="#000000" points="521.44,-305.86 527.97,-297.52 517.66,-299.97 521.44,-305.86"/>
+</g>
+<!-- interface~vkf_transform_set_matrix -->
+<g id="proc~~make_star_node~~CallsGraph_node22" class="node">
+<title>interface~vkf_transform_set_matrix</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node22"><a xlink:href="../interface/vkf_transform_set_matrix.html" xlink:title="vkf_transform_set_matrix">
+<polygon fill="#a7506f" stroke="#a7506f" points="622.08,-365.27 476.31,-365.27 476.31,-341 622.08,-341 622.08,-365.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-349.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_transform_set_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_name_attitude&#45;&gt;interface~vkf_transform_set_matrix -->
+<g id="proc~~make_star_node~~CallsGraph_edge28" class="edge">
+<title>proc~apply_name_attitude&#45;&gt;interface~vkf_transform_set_matrix</title>
+<path fill="none" stroke="#000000" d="M433.73,-366.85C443.75,-365.65 454.29,-364.39 464.75,-363.13"/>
+<polygon fill="#000000" stroke="#000000" points="465.02,-366.63 474.54,-361.96 464.19,-359.68 465.02,-366.63"/>
+</g>
+<!-- interface~vkf_label_create -->
+<g id="proc~~make_star_node~~CallsGraph_node21" class="node">
+<title>interface~vkf_label_create</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node21"><a xlink:href="../interface/vkf_label_create.html" xlink:title="vkf_label_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="598.08,-449.27 500.31,-449.27 500.31,-425 598.08,-425 598.08,-449.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-433.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_label_create</text>
+</a>
+</g>
+</g>
+<!-- proc~label_create&#45;&gt;interface~vkf_label_create -->
+<g id="proc~~make_star_node~~CallsGraph_edge31" class="edge">
+<title>proc~label_create&#45;&gt;interface~vkf_label_create</title>
+<path fill="none" stroke="#000000" d="M410.52,-420.64C433.31,-423.37 462.87,-426.91 488.76,-430.01"/>
+<polygon fill="#000000" stroke="#000000" points="488.13,-433.46 498.48,-431.18 488.96,-426.51 488.13,-433.46"/>
+</g>
+<!-- proc~get_font -->
+<g id="proc~~make_star_node~~CallsGraph_node23" class="node">
+<title>proc~get_font</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node23"><a xlink:href="../proc/get_font.html" xlink:title="get_font">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="576.7,-407.27 521.68,-407.27 521.68,-383 576.7,-383 576.7,-407.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-391.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">get_font</text>
+</a>
+</g>
+</g>
+<!-- proc~label_create&#45;&gt;proc~get_font -->
+<g id="proc~~make_star_node~~CallsGraph_edge32" class="edge">
+<title>proc~label_create&#45;&gt;proc~get_font</title>
+<path fill="none" stroke="#000000" d="M410.52,-411.63C439.92,-408.11 480.6,-403.23 510.12,-399.7"/>
+<polygon fill="#000000" stroke="#000000" points="510.21,-403.21 519.72,-398.55 509.38,-396.26 510.21,-403.21"/>
+</g>
+<!-- proc~vsg_alignment -->
+<g id="proc~~make_star_node~~CallsGraph_node24" class="node">
+<title>proc~vsg_alignment</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node24"><a xlink:href="../proc/vsg_alignment.html" xlink:title="vsg_alignment">
+<polygon fill="#d9534f" stroke="#d9534f" points="593.58,-491.27 504.81,-491.27 504.81,-467 593.58,-467 593.58,-491.27"/>
+<text xml:space="preserve" text-anchor="middle" x="549.19" y="-475.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vsg_alignment</text>
+</a>
+</g>
+</g>
+<!-- proc~label_create&#45;&gt;proc~vsg_alignment -->
+<g id="proc~~make_star_node~~CallsGraph_edge33" class="edge">
+<title>proc~label_create&#45;&gt;proc~vsg_alignment</title>
+<path fill="none" stroke="#000000" d="M410.55,-426.21C420.4,-429.3 430.89,-432.98 440.31,-437.13 457.26,-444.6 459.29,-450.82 476.31,-458.13 481.91,-460.54 487.87,-462.77 493.87,-464.81"/>
+<polygon fill="#000000" stroke="#000000" points="492.61,-468.08 503.2,-467.8 494.74,-461.42 492.61,-468.08"/>
+</g>
+<!-- interface~vkf_font_read -->
+<g id="proc~~make_star_node~~CallsGraph_node25" class="node">
+<title>interface~vkf_font_read</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node25"><a xlink:href="../interface/vkf_font_read.html" xlink:title="vkf_font_read">
+<polygon fill="#a7506f" stroke="#a7506f" points="740.85,-428.27 658.08,-428.27 658.08,-404 740.85,-404 740.85,-428.27"/>
+<text xml:space="preserve" text-anchor="middle" x="699.46" y="-412.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_font_read</text>
+</a>
+</g>
+</g>
+<!-- proc~get_font&#45;&gt;interface~vkf_font_read -->
+<g id="proc~~make_star_node~~CallsGraph_edge34" class="edge">
+<title>proc~get_font&#45;&gt;interface~vkf_font_read</title>
+<path fill="none" stroke="#000000" d="M577.05,-398.94C596.41,-401.68 623.16,-405.47 646.62,-408.79"/>
+<polygon fill="#000000" stroke="#000000" points="645.94,-412.23 656.33,-410.17 646.92,-405.3 645.94,-412.23"/>
+</g>
+<!-- proc~find_font -->
+<g id="proc~~make_star_node~~CallsGraph_node26" class="node">
+<title>proc~find_font</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node26"><a xlink:href="../proc/find_font.html" xlink:title="find_font">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="728.47,-386.27 670.45,-386.27 670.45,-362 728.47,-362 728.47,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="699.46" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_font</text>
+</a>
+</g>
+</g>
+<!-- proc~get_font&#45;&gt;proc~find_font -->
+<g id="proc~~make_star_node~~CallsGraph_edge35" class="edge">
+<title>proc~get_font&#45;&gt;proc~find_font</title>
+<path fill="none" stroke="#000000" d="M577.05,-391.33C599.84,-388.1 632.87,-383.42 658.73,-379.76"/>
+<polygon fill="#000000" stroke="#000000" points="659.14,-383.24 668.55,-378.37 658.16,-376.31 659.14,-383.24"/>
+</g>
+<!-- proc~find_in_dirs -->
+<g id="proc~~make_star_node~~CallsGraph_node27" class="node">
+<title>proc~find_in_dirs</title>
+<g id="a_proc~~make_star_node~~CallsGraph_node27"><a xlink:href="../proc/find_in_dirs.html" xlink:title="find_in_dirs">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="848.37,-386.27 776.85,-386.27 776.85,-362 848.37,-362 848.37,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="812.61" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_in_dirs</text>
+</a>
+</g>
+</g>
+<!-- proc~find_font&#45;&gt;proc~find_in_dirs -->
+<g id="proc~~make_star_node~~CallsGraph_edge36" class="edge">
+<title>proc~find_font&#45;&gt;proc~find_in_dirs</title>
+<path fill="none" stroke="#000000" d="M728.8,-374.13C739.93,-374.13 752.99,-374.13 765.41,-374.13"/>
+<polygon fill="#000000" stroke="#000000" points="765.05,-377.64 775.05,-374.14 765.05,-370.64 765.05,-377.64"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocmake_star_nodeCallsGraph = svgPanZoom('#procmake_star_nodeCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~make_star_node~~CalledByGraph Pages: 1 -->
+<svg id="procmake_star_nodeCalledByGraph" width="457pt" height="74pt"
+ viewBox="0.00 0.00 457.00 74.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~make_star_node~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 70.27)">
+<title>proc~~make_star_node~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-70.27 452.56,-70.27 452.56,4 -4,4"/>
+<!-- proc~make_star_node -->
+<g id="proc~~make_star_node~~CalledByGraph_node1" class="node">
+<title>proc~make_star_node</title>
+<polygon fill="none" stroke="black" points="448.56,-45.27 349.29,-45.27 349.29,-21 448.56,-21 448.56,-45.27"/>
+<text xml:space="preserve" text-anchor="middle" x="398.93" y="-29.53" font-family="Helvetica,sans-Serif" font-size="10.50">make_star_node</text>
+</g>
+<!-- proc~node -->
+<g id="proc~~make_star_node~~CalledByGraph_node2" class="node">
+<title>proc~node</title>
+<g id="a_proc~~make_star_node~~CalledByGraph_node2"><a xlink:href="../proc/node.html" xlink:title="SkySphere%node">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="291.54,-66.27 187.02,-66.27 187.02,-42 291.54,-42 291.54,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="239.28" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%node</text>
+</a>
+</g>
+</g>
+<!-- proc~node&#45;&gt;proc~make_star_node -->
+<g id="proc~~make_star_node~~CalledByGraph_edge1" class="edge">
+<title>proc~node&#45;&gt;proc~make_star_node</title>
+<path fill="none" stroke="#000000" d="M291.9,-47.26C306.5,-45.31 322.51,-43.18 337.58,-41.17"/>
+<polygon fill="#000000" stroke="#000000" points="337.92,-44.66 347.37,-39.87 336.99,-37.72 337.92,-44.66"/>
+</g>
+<!-- proc~set_star_data -->
+<g id="proc~~make_star_node~~CalledByGraph_node3" class="node">
+<title>proc~set_star_data</title>
+<g id="a_proc~~make_star_node~~CalledByGraph_node3"><a xlink:href="../proc/set_star_data.html" xlink:title="SkySphere%set_star_data">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="313.29,-24.27 165.27,-24.27 165.27,0 313.29,0 313.29,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="239.28" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SkySphere%set_star_data</text>
+</a>
+</g>
+</g>
+<!-- proc~set_star_data&#45;&gt;proc~make_star_node -->
+<g id="proc~~make_star_node~~CalledByGraph_edge2" class="edge">
+<title>proc~set_star_data&#45;&gt;proc~make_star_node</title>
+<path fill="none" stroke="#000000" d="M313.56,-21.9C321.67,-22.98 329.85,-24.07 337.77,-25.12"/>
+<polygon fill="#000000" stroke="#000000" points="337.26,-28.58 347.63,-26.44 338.18,-21.65 337.26,-28.58"/>
+</g>
+<!-- proc~set_sky -->
+<g id="proc~~make_star_node~~CalledByGraph_node4" class="node">
+<title>proc~set_sky</title>
+<g id="a_proc~~make_star_node~~CalledByGraph_node4"><a xlink:href="../proc/set_sky.html" xlink:title="WindowProxy%set_sky">
+<polygon fill="#d9534f" stroke="#d9534f" points="129.27,-66.27 0,-66.27 0,-42 129.27,-42 129.27,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="64.63" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%set_sky</text>
+</a>
+</g>
+</g>
+<!-- proc~set_sky&#45;&gt;proc~node -->
+<g id="proc~~make_star_node~~CalledByGraph_edge3" class="edge">
+<title>proc~set_sky&#45;&gt;proc~node</title>
+<path fill="none" stroke="#000000" d="M129.43,-54.13C144.43,-54.13 160.41,-54.13 175.38,-54.13"/>
+<polygon fill="#000000" stroke="#000000" points="175.07,-57.64 185.07,-54.14 175.07,-50.64 175.07,-57.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">make_star_node</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">SkySphere</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:,:),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">p</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="kt">c_int</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">capacity</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">data</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="nb">c_associated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            call </span><span class="n">check_status</span><span class="p">(</span><span class="n">vkf_node_remove_child</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_switch</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">),</span><span class="w"> </span><span class="s1">&#39;SkySphere&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">call </span><span class="n">vkf_node_delete</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">c_null_ptr</span>
+<span class="nb">        </span><span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">n_stars</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vkf_stars_create</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">n_stars</span><span class="p">,</span><span class="w"> </span><span class="kt">c_int</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">c_associated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vkf_sky_stars</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">,</span><span class="w"> </span><span class="n">capacity</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">c_associated</span><span class="p">(</span><span class="k">data</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="k">data</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">capacity</span><span class="p">)])</span><span class="w"></span>
+<span class="w">                    </span><span class="n">p</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="n">self</span><span class="p">%</span><span class="n">n_stars</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">stars</span><span class="p">(:,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="n">self</span><span class="p">%</span><span class="n">n_stars</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">call </span><span class="n">check_status</span><span class="p">(</span><span class="n">vkf_sky_stars_changed</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">n_stars</span><span class="p">,</span><span class="w"> </span><span class="kt">c_int</span><span class="p">)),</span><span class="w"> </span><span class="s1">&#39;SkySphere&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">                call </span><span class="n">apply_attitude</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">shown</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">check_status</span><span class="p">(</span><span class="n">vkf_compile_node</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">),</span><span class="w"> </span><span class="s1">&#39;SkySphere&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">call </span><span class="n">check_status</span><span class="p">(</span><span class="n">vkf_node_add_child</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">star_switch</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">star_node</span><span class="p">),</span><span class="w"> </span><span class="s1">&#39;SkySphere&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end if</span>
+<span class="k">        call </span><span class="n">make_name_node</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w">                     </span><span class="c">! (the names after the stars: in front of them)</span>
+<span class="w">        </span><span class="k">call </span><span class="n">apply_mode</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">make_star_node</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

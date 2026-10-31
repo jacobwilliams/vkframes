@@ -1,0 +1,5223 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_trajectory &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_trajectory
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 5.0% of total for modules and submodules.">646 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_trajectory.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_trajectory.f90.html'>vkf_trajectory.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_trajectory</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_trajectory.html#variable-source_attitude">SOURCE_ATTITUDE</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#variable-source_posopt">SOURCE_POSOPT</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#variable-source_time">SOURCE_TIME</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#variable-source_zero">SOURCE_ZERO</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#variable-time_at_bound">TIME_AT_BOUND</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#variable-time_not_found">TIME_NOT_FOUND</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#variable-time_out_of_range">TIME_OUT_OF_RANGE</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_trajectory.html#interface-datasource">DataSource</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#interface-trajectory">Trajectory</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_trajectory.html#type-datasource">DataSource</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#type-trajectory">Trajectory</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-attitude~2">attitude</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-color">color</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-dof">dof</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-generation">generation</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-is_empty">is_empty</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-new_capacity">new_capacity</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-new_data_source">new_data_source</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-new_trajectory">new_trajectory</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-num_attitudes">num_attitudes</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-num_colors">num_colors</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-num_optionals">num_optionals</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-num_points">num_points</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-num_positions">num_positions</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-num_times">num_times</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-optional">optional</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-optional_sources">optional_sources</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-point">point</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-point_at">point_at</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-point_between">point_between</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-position">position</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-position_sources">position_sources</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-revision">revision</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-storage_bytes">storage_bytes</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-time">time</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-time_distance">time_distance</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-time_fraction">time_fraction</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-time_index">time_index</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-time_range">time_range</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-verify_data">verify_data</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-add_attitude">add_attitude</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-add_color">add_color</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-add_point">add_point</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-add_points">add_points</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-add_position">add_position</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-add_time">add_time</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-attitudes">attitudes</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-clear">clear</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-colors">colors</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-compact">compact</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-grow_attitudes">grow_attitudes</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-grow_colors">grow_colors</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-grow_positions">grow_positions</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-grow_times">grow_times</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-points">points</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-positions">positions</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-reserve">reserve</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-set_dof">set_dof</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-set_num_optionals">set_num_optionals</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-set_optional">set_optional</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-times">times</a>
+            <a class="list-group-item" href="../module/vkf_trajectory.html#proc-to_float_rgba">to_float_rgba</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Trajectory data: times with positions, attitudes and optional data vectors, as
+in OpenFrames' Trajectory.</p>
+<p>Data are appended: each time may get one position (with <code>num_optionals</code>
+optional vectors), one attitude and one color, so there may be fewer
+positions, attitudes or colors than times (data can arrive separately).
+Colors are optional (not in OpenFrames): a CurveArtist draws a trajectory
+with colors in them, blended along each segment between its points'
+colors (see CurveArtist%set_point_colors). No sorting is done; times
+are expected to be monotonic, increasing or decreasing. Indices are 1-based.</p>
+<p>Differences from OpenFrames:
+* Storage grows by doubling, positions, attitudes and colors separately, so
+  a trajectory without attitudes (colors) holds no attitude (color) memory.
+  <code>reserve</code> sets it for a known size; <code>compact</code> frees what's unused once a
+  trajectory is complete (one copy of each array; <code>storage_bytes</code> says
+  what is held).
+* Instead of subscriber callbacks, a trajectory counts its changes
+  (<code>revision</code>) and clears (<code>generation</code>): a reader such as an artist compares
+  them with what it last saw and updates only what changed (e.g. uploads only
+  the points appended since).
+* No locking: vkframes updates and renders on one thread.</p>
+<p>Between points, a trajectory is linear in time: <code>point_at(t)</code> is the point
+at any time (the first or last point outside its times), and
+<code>point_between(k, k2, t)</code> and <code>time_fraction(k, k2, t)</code> the same between
+two points already found (followers, trace mode's tail, intermediate
+markers and time handles use them).</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_trajectory~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_trajectoryUsesGraph" width="340pt" height="112pt"
+ viewBox="0.00 0.00 340.00 112.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_trajectory~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 108.27)">
+<title>module~~vkf_trajectory~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-108.27 336.31,-108.27 336.31,4 -4,4"/>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_trajectory~~UsesGraph_node1" class="node">
+<title>module~vkf_trajectory</title>
+<polygon fill="none" stroke="black" points="332.31,-64.27 248.04,-64.27 248.04,-40 332.31,-40 332.31,-64.27"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-48.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_trajectory</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_trajectory~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_trajectory~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-104.27 129.27,-104.27 129.27,-80 212.04,-80 212.04,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-88.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_trajectory~~UsesGraph_edge1" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.31,-64.68C241.81,-68.26 230.22,-72.2 219.18,-75.96"/>
+<polygon fill="#000000" stroke="#000000" points="218.16,-72.61 209.82,-79.15 220.41,-79.24 218.16,-72.61"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_trajectory~~UsesGraph_node3" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_trajectory~~UsesGraph_node3"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-44.27 0,-44.27 0,-20 93.27,-20 93.27,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_trajectory~~UsesGraph_edge2" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.65,-48.7C208.28,-45.44 148.78,-40.51 104.91,-36.88"/>
+<polygon fill="#000000" stroke="#000000" points="105.31,-33.4 95.06,-36.06 104.73,-40.37 105.31,-33.4"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_trajectory~~UsesGraph_node4" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_trajectory~~UsesGraph_node4"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-24.27 140.52,-24.27 140.52,0 200.79,0 200.79,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_trajectory~~UsesGraph_edge3" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.31,-39.59C239.38,-35.19 224.79,-30.22 211.61,-25.73"/>
+<polygon fill="#000000" stroke="#000000" points="212.96,-22.5 202.37,-22.59 210.71,-29.13 212.96,-22.5"/>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_trajectory~~UsesGraph_edge4" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-16.98C129.43,-18.73 116.96,-20.77 104.7,-22.78"/>
+<polygon fill="#000000" stroke="#000000" points="104.36,-19.29 95.06,-24.36 105.49,-26.2 104.36,-19.29"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_trajectory~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_trajectoryUsedByGraph" width="641pt" height="373pt"
+ viewBox="0.00 0.00 641.00 373.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_trajectory~~UsedByGraph" class="graph" transform="scale(0.831237 0.831237) rotate(0) translate(4 444.6)">
+<title>module~~vkf_trajectory~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-444.6 767.14,-444.6 767.14,4 -4,4"/>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node1" class="node">
+<title>module~vkf_trajectory</title>
+<polygon fill="none" stroke="black" points="84.27,-36.67 0,-36.67 0,-12.4 84.27,-12.4 84.27,-36.67"/>
+<text xml:space="preserve" text-anchor="middle" x="42.13" y="-20.94" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_trajectory</text>
+</g>
+<!-- module~vkf_artists -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node2" class="node">
+<title>module~vkf_artists</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node2"><a xlink:href="../module/vkf_artists.html" xlink:title="vkf_artists">
+<polygon fill="#337ab7" stroke="#337ab7" points="424.46,-358.67 359.69,-358.67 359.69,-334.4 424.46,-334.4 424.46,-358.67"/>
+<text xml:space="preserve" text-anchor="middle" x="392.07" y="-342.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M364.83,-359.01C340.31,-369.7 302.38,-383.78 267.55,-386.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M265.55,-386.54C218.3,-390.28 205.83,-393.25 158.91,-386.54"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node4" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node4"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="301.56,-76.67 231.54,-76.67 231.54,-52.4 301.56,-52.4 301.56,-76.67"/>
+<text xml:space="preserve" text-anchor="middle" x="266.55" y="-60.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge11" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M359.4,-336.54C351.32,-332.67 343.3,-327.45 337.56,-320.54 279.77,-250.9 269.44,-137.43 267.77,-88.38"/>
+<polygon fill="#000000" stroke="#000000" points="271.27,-88.53 267.54,-78.62 264.28,-88.7 271.27,-88.53"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node3" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node3"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="195.54,-36.67 120.27,-36.67 120.27,-12.4 195.54,-12.4 195.54,-36.67"/>
+<text xml:space="preserve" text-anchor="middle" x="157.91" y="-20.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge2" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M119.97,-24.54C112.29,-24.54 104.07,-24.54 95.95,-24.54"/>
+<polygon fill="#000000" stroke="#000000" points="96.13,-21.04 86.13,-24.54 96.13,-28.04 96.13,-21.04"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge3" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M264.21,-77.15C257.46,-137.79 224.78,-395.96 158.91,-386.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M156.91,-386.54C86.65,-376.49 54.06,-126.9 45.5,-48.13"/>
+<polygon fill="#000000" stroke="#000000" points="49.02,-48.1 44.49,-38.52 42.06,-48.83 49.02,-48.1"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M232.1,-51.99C222.87,-48.53 212.71,-44.72 202.97,-41.07"/>
+<polygon fill="#000000" stroke="#000000" points="204.25,-37.81 193.65,-37.57 201.79,-44.36 204.25,-37.81"/>
+</g>
+<!-- module~vkf_handles -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node5" class="node">
+<title>module~vkf_handles</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node5"><a xlink:href="../module/vkf_handles.html" xlink:title="vkf_handles">
+<polygon fill="#337ab7" stroke="#337ab7" points="557.1,-400.67 482.58,-400.67 482.58,-376.4 557.1,-376.4 557.1,-400.67"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-384.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge4" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M482.15,-386.25C433.14,-383.66 343.66,-380.51 267.55,-386.54"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge6" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M482.12,-376.28C467.54,-371.4 450.67,-365.77 435.56,-360.72"/>
+<polygon fill="#000000" stroke="#000000" points="436.95,-357.5 426.36,-357.65 434.73,-364.14 436.95,-357.5"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge12" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.67,-376.08C490.47,-373.49 486.27,-370.61 482.58,-367.54 463.67,-351.82 466.85,-339.45 446.58,-325.54 425.78,-311.25 414.64,-319.65 393.07,-306.54"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node6" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node6"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="763.14,-196.67 702.12,-196.67 702.12,-172.4 763.14,-172.4 763.14,-196.67"/>
+<text xml:space="preserve" text-anchor="middle" x="732.63" y="-180.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge5" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M728.8,-172.17C720.54,-139.51 693,-51.6 630.61,-24.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-24.54C584.67,-5.48 568.59,-20.82 520.84,-24.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-24.54C463.11,-28.87 448.79,-20.13 393.07,-24.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391.07,-24.54C336.34,-28.87 322.22,-29.53 267.55,-24.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M265.55,-24.54C233.2,-21.58 227.68,-8.25 195.54,-3.54 162.44,1.32 153.43,0.9 120.27,-3.54 111.17,-4.75 101.63,-6.74 92.48,-9.02"/>
+<polygon fill="#000000" stroke="#000000" points="91.8,-5.58 83.03,-11.53 93.59,-12.35 91.8,-5.58"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge8" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-428.54C568.54,-454.52 543.57,-433.29 482.58,-409.54 457.18,-399.65 432.14,-381.06 415.04,-366.63"/>
+<polygon fill="#000000" stroke="#000000" points="417.38,-364.03 407.54,-360.11 412.79,-369.31 417.38,-364.03"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge10" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M265.55,-24.54C246.55,-22.8 225.57,-22.46 207.29,-22.68"/>
+<polygon fill="#000000" stroke="#000000" points="207.44,-19.18 197.51,-22.86 207.57,-26.17 207.44,-19.18"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge22" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391.07,-24.54C360.87,-26.93 328.33,-37.84 304.23,-47.66"/>
+<polygon fill="#000000" stroke="#000000" points="303.04,-44.36 295.19,-51.47 305.76,-50.81 303.04,-44.36"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge24" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-428.54C614.78,-434.52 579.79,-419.54 553.4,-406.23"/>
+<polygon fill="#000000" stroke="#000000" points="555.25,-403.25 544.76,-401.77 552.04,-409.47 555.25,-403.25"/>
+</g>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node7" class="node">
+<title>module~vkf_hud</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node7"><a xlink:href="../module/vkf_hud.html" xlink:title="vkf_hud">
+<polygon fill="#337ab7" stroke="#337ab7" points="546.84,-236.67 492.84,-236.67 492.84,-212.4 546.84,-212.4 546.84,-236.67"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-220.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge26" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-184.54C602.38,-186.97 574.55,-197.52 553.74,-207.18"/>
+<polygon fill="#000000" stroke="#000000" points="552.39,-203.95 544.91,-211.44 555.44,-210.25 552.39,-203.95"/>
+</g>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node8" class="node">
+<title>module~vkf_line_segments</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node8"><a xlink:href="../module/vkf_line_segments.html" xlink:title="vkf_line_segments">
+<polygon fill="#337ab7" stroke="#337ab7" points="446.58,-176.67 337.56,-176.67 337.56,-152.4 446.58,-152.4 446.58,-176.67"/>
+<text xml:space="preserve" text-anchor="middle" x="392.07" y="-160.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge27" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-184.54C571.04,-189.87 505.5,-183.27 458.19,-176.27"/>
+<polygon fill="#000000" stroke="#000000" points="458.79,-172.82 448.38,-174.76 457.73,-179.74 458.79,-172.82"/>
+</g>
+<!-- module~vkf_model -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node9" class="node">
+<title>module~vkf_model</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node9"><a xlink:href="../module/vkf_model.html" xlink:title="vkf_model">
+<polygon fill="#337ab7" stroke="#337ab7" points="425.21,-76.67 358.94,-76.67 358.94,-52.4 425.21,-52.4 425.21,-76.67"/>
+<text xml:space="preserve" text-anchor="middle" x="392.07" y="-60.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_model -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge28" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_model</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-24.54C488.13,-26.93 455,-37.83 430.45,-47.66"/>
+<polygon fill="#000000" stroke="#000000" points="429.12,-44.42 421.22,-51.48 431.8,-50.89 429.12,-44.42"/>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node10" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node10"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="666.12,-136.67 593.1,-136.67 593.1,-112.4 666.12,-112.4 666.12,-136.67"/>
+<text xml:space="preserve" text-anchor="middle" x="629.61" y="-120.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge29" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M710.7,-172.1C696.44,-163.63 677.32,-152.28 661.34,-142.79"/>
+<polygon fill="#000000" stroke="#000000" points="663.55,-140.03 653.16,-137.93 659.97,-146.05 663.55,-140.03"/>
+</g>
+<!-- module~vkf_shapes -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node11" class="node">
+<title>module~vkf_shapes</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node11"><a xlink:href="../module/vkf_shapes.html" xlink:title="vkf_shapes">
+<polygon fill="#337ab7" stroke="#337ab7" points="554.85,-358.67 484.83,-358.67 484.83,-334.4 554.85,-334.4 554.85,-358.67"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-342.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shapes -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge30" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shapes</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M731.67,-197.05C731.02,-241.18 721.92,-389.04 630.61,-428.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-428.54C590.27,-445.12 591.21,-391.66 557.1,-367.54 555.93,-366.71 554.73,-365.89 553.5,-365.07"/>
+<polygon fill="#000000" stroke="#000000" points="555.48,-362.18 545.15,-359.83 551.76,-368.11 555.48,-362.18"/>
+</g>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node12" class="node">
+<title>module~vkf_sphere</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node12"><a xlink:href="../module/vkf_sphere.html" xlink:title="vkf_sphere">
+<polygon fill="#337ab7" stroke="#337ab7" points="554.1,-156.67 485.58,-156.67 485.58,-132.4 554.1,-132.4 554.1,-156.67"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-140.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge32" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M701.95,-183.1C681.78,-182.48 654.54,-182.32 630.61,-184.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-184.54C600.39,-187.15 570.32,-174.56 549.13,-162.82"/>
+<polygon fill="#000000" stroke="#000000" points="550.91,-159.81 540.51,-157.79 547.38,-165.85 550.91,-159.81"/>
+</g>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node13" class="node">
+<title>module~vkf_terrain</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node13"><a xlink:href="../module/vkf_terrain.html" xlink:title="vkf_terrain">
+<polygon fill="#337ab7" stroke="#337ab7" points="554.1,-76.67 485.58,-76.67 485.58,-52.4 554.1,-52.4 554.1,-76.67"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-60.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge34" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-24.54C614.79,-18.54 579.79,-33.53 553.4,-46.83"/>
+<polygon fill="#000000" stroke="#000000" points="552.04,-43.6 544.76,-51.3 555.25,-49.82 552.04,-43.6"/>
+</g>
+<!-- module~vkf_view -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node14" class="node">
+<title>module~vkf_view</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node14"><a xlink:href="../module/vkf_view.html" xlink:title="vkf_view">
+<polygon fill="#337ab7" stroke="#337ab7" points="548.1,-278.67 491.58,-278.67 491.58,-254.4 548.1,-254.4 548.1,-278.67"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-262.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge36" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M628.61,-184.54C587.01,-188.39 591.21,-221.41 557.1,-245.54 555.93,-246.36 554.73,-247.19 553.5,-248"/>
+<polygon fill="#000000" stroke="#000000" points="551.76,-244.96 545.15,-253.24 555.48,-250.89 551.76,-244.96"/>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_trajectory~~UsedByGraph_node15" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_trajectory~~UsedByGraph_node15"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="665.75,-278.67 593.48,-278.67 593.48,-254.4 665.75,-254.4 665.75,-278.67"/>
+<text xml:space="preserve" text-anchor="middle" x="629.61" y="-262.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge37" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M716.29,-196.99C699.97,-210.24 673.93,-231.37 654.84,-246.87"/>
+<polygon fill="#000000" stroke="#000000" points="652.83,-243.99 647.27,-253.01 657.24,-249.43 652.83,-243.99"/>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge13" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M496.44,-237.17C491.82,-239.87 487.01,-242.75 482.58,-245.54 441.83,-271.17 434.21,-331.54 393.07,-306.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391.07,-306.54C311.01,-257.87 280.83,-139.04 271.32,-88.22"/>
+<polygon fill="#000000" stroke="#000000" points="274.81,-87.85 269.63,-78.61 267.91,-89.06 274.81,-87.85"/>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge14" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.68,-152.07C354.69,-135.08 316.86,-104.46 291.98,-84.31"/>
+<polygon fill="#000000" stroke="#000000" points="294.29,-81.68 284.31,-78.11 289.88,-87.12 294.29,-81.68"/>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge15" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M358.62,-64.54C344.72,-64.54 328.24,-64.54 313.15,-64.54"/>
+<polygon fill="#000000" stroke="#000000" points="313.46,-61.04 303.46,-64.54 313.46,-68.04 313.46,-61.04"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge16" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M592.91,-123.05C546.61,-120.77 463.43,-115.48 393.07,-104.54"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge31" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M592.72,-131.2C584.03,-132.81 574.62,-134.56 565.58,-136.23"/>
+<polygon fill="#000000" stroke="#000000" points="565.06,-132.77 555.87,-138.04 566.34,-139.65 565.06,-132.77"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge33" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M606.02,-111.96C590.64,-103.4 570.06,-91.94 552.99,-82.43"/>
+<polygon fill="#000000" stroke="#000000" points="555.16,-79.64 544.72,-77.83 551.76,-85.76 555.16,-79.64"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge7" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M484.47,-346.54C469.49,-346.54 451.77,-346.54 435.94,-346.54"/>
+<polygon fill="#000000" stroke="#000000" points="436.32,-343.04 426.32,-346.54 436.32,-350.04 436.32,-343.04"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge17" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M484.58,-336.55C450.16,-326.37 401.07,-311.4 393.07,-306.54"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge18" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.46,-131.97C463.38,-122.3 426.58,-109.75 393.07,-104.54"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge19" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M498.83,-77.07C474.39,-90.92 431.56,-110.52 393.07,-104.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391.07,-104.54C362.61,-100.11 331.79,-90.14 308.06,-81.26"/>
+<polygon fill="#000000" stroke="#000000" points="309.36,-78.01 298.76,-77.69 306.85,-84.54 309.36,-78.01"/>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge20" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.18,-279.14C462.68,-294.43 410.2,-316.95 393.07,-306.54"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge21" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M607.31,-279.06C563.7,-302.88 462.54,-348.76 393.07,-306.54"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge23" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M622.11,-279.02C610.99,-299.49 586.62,-340.6 557.1,-367.54 556.35,-368.22 555.57,-368.9 554.77,-369.56"/>
+<polygon fill="#000000" stroke="#000000" points="552.95,-366.56 546.86,-375.23 557.03,-372.25 552.95,-366.56"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge25" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M596.28,-253.94C584.1,-249.19 570.16,-243.76 557.6,-238.86"/>
+<polygon fill="#000000" stroke="#000000" points="559,-235.65 548.41,-235.28 556.46,-242.18 559,-235.65"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_trajectory~~UsedByGraph_edge35" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M593.02,-266.54C582.4,-266.54 570.69,-266.54 559.86,-266.54"/>
+<polygon fill="#000000" stroke="#000000" points="560.05,-263.04 550.05,-266.54 560.05,-270.04 560.05,-263.04"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_trajectoryUsedByGraph = svgPanZoom('#modulevkf_trajectoryUsedByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source_attitude"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SOURCE_ATTITUDE</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>an element of the attitude quaternion</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source_posopt"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SOURCE_POSOPT</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>an element of the position or of an optional</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source_time"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SOURCE_TIME</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>the time</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-source_zero"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SOURCE_ZERO</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>where a component of a DataSource comes from (OpenFrames' SourceType)
+0</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-time_at_bound"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>TIME_AT_BOUND</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>index = 1 or num_times (at the first or last time)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-time_not_found"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>TIME_NOT_FOUND</strong></td>
+<td> =</td>
+                <td>-2</td>
+            <td>
+                <p>results of Trajectory%time_index (as OpenFrames' getTimeIndex)
+the search did not converge</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-time_out_of_range"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>TIME_OUT_OF_RANGE</strong></td>
+<td> =</td>
+                <td>-1</td>
+            <td>
+                <p>index = 0 (before the first time) or num_times + 1 (after the last)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-datasource"></span>
+      <h3>public        interface <a href='../interface/datasource.html'>DataSource</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The DataSource constructor: <code>DataSource(...)</code> makes one (see <code>new_data_source</code> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private pure function <a href='../proc/new_data_source.html'>new_data_source</a>(src, element, opt, scale) result(s)  
+
+    </h3>
+    
+  <p>A data source (see <code>DataSource</code>); <code>element</code> defaults to 1, <code>opt</code> to 0,
+<code>scale</code> to 1.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-src~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+<p>a SOURCE_* constant</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-element~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>element</strong></td>
+            <td>
+<p>element (1 to dof, or 1 to 4 for an attitude; default 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-opt~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>opt</strong></td>
+            <td>
+<p>(0: the position (default), k: optional k)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/datasource.html'>DataSource</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-trajectory"></span>
+      <h3>public        interface <a href='../interface/trajectory.html'>Trajectory</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The Trajectory constructor: <code>Trajectory(...)</code> makes one (see <code>new_trajectory</code> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_trajectory.html'>new_trajectory</a>(dof, nopt) result(traj)  
+
+    </h3>
+    
+  <p>A trajectory with <code>dof</code> (2 or 3, default 3) degrees of freedom and
+<code>nopt</code> (default 0) optional vectors per position.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dof~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dof</strong></td>
+            <td>
+<p>degrees of freedom (2 or 3, default 3)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nopt"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nopt</strong></td>
+            <td>
+<p>optional vectors per position (default 0)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/trajectory.html'>Trajectory</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-datasource"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/datasource.html'>DataSource</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Where one component (x, y or z) of a point is taken from, as OpenFrames'
+Trajectory::DataSource: <code>src</code> is a SOURCE_* constant; for SOURCE_POSOPT,
+<code>element</code> (1 to dof) of the position (<code>opt</code> = 0) or of optional <code>opt</code>;
+for SOURCE_ATTITUDE, <code>element</code> (1 to 4) of the quaternion. The value is
+multiplied by <code>scale</code>.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-element"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>element</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+<p>element (1 to dof, or 1 to 4 for SOURCE_ATTITUDE)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-opt"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>opt</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>(0: the position, k: optional k (SOURCE_POSOPT))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale~2"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>factor the value is multiplied by</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-src~4"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+<td> =</td>
+                <td>SOURCE_ZERO</td>
+            <td>
+<p>where the component comes from: a SOURCE_* constant</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The DataSource constructor: <code>DataSource(...)</code> makes one (see <code>new_data_source</code> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    pure
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_data_source.html'>new_data_source</a></strong>
+                    (src, element, opt, scale)
+                  </td>
+                  <td><p>A data source (see <code>DataSource</code>); <code>element</code> defaults to 1, <code>opt</code> to 0,
+<code>scale</code> to 1.</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-trajectory"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/trajectory.html'>Trajectory</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A trajectory (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-att"></span>
+              real(kind=wp),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>att</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(4, capacity): quaternions [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-col"></span>
+              real(kind=c_float),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>col</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(4, capacity): colors [r, g, b, a] (as drawn)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dof_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dof_</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+<p>degrees of freedom of positions and optionals (2 or 3)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-generation_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>generation_</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>incremented when the data are cleared</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_att"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_att</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of attitudes (&lt;= n_times)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_col"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_col</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of colors (&lt;= n_times)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_pos"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_pos</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of positions (&lt;= n_times)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_times"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_times</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of times</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nopt_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nopt_</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>optionals per position</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-posopt"></span>
+              real(kind=wp),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>posopt</strong>(:,:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(3, 0:nopt, capacity): position, then optionals</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-revision_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>revision_</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>incremented on every change</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~10"></span>
+              real(kind=wp),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>t</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(capacity): times</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The Trajectory constructor: <code>Trajectory(...)</code> makes one (see <code>new_trajectory</code> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_trajectory.html'>new_trajectory</a></strong>
+                    (dof, nopt)
+                  </td>
+                  <td><p>A trajectory with <code>dof</code> (2 or 3, default 3) degrees of freedom and
+<code>nopt</code> (default 0) optional vectors per position.</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-add'>add</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/type/trajectory.html#boundprocedure-add_point'>add_point</a>, <a href='/home/runner/work/vkframes/vkframes/web/api/type/trajectory.html#boundprocedure-add_points'>add_points</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-add_attitude'>add_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-add_color'>add_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, private ::
+  <strong><a href='../type/trajectory.html#boundprocedure-add_point'>add_point</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, private ::
+  <strong><a href='../type/trajectory.html#boundprocedure-add_points'>add_points</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-add_position'>add_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-add_time'>add_time</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-attitude~4'>attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-attitudes'>attitudes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-clear'>clear</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-color'>color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-colors'>colors</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-compact'>compact</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-dof'>dof</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-generation'>generation</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-is_empty'>is_empty</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-num_attitudes'>num_attitudes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-num_colors'>num_colors</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-num_optionals'>num_optionals</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-num_points'>num_points</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-num_positions'>num_positions</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-num_times'>num_times</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-optional'>optional</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-point~4'>point</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-point_at'>point_at</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-point_between'>point_between</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-points'>points</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-position~4'>position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-positions'>positions</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-reserve'>reserve</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-revision'>revision</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-set_dof'>set_dof</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-set_num_optionals'>set_num_optionals</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-set_optional'>set_optional</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-storage_bytes'>storage_bytes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-time'>time</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-time_distance'>time_distance</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-time_fraction'>time_fraction</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-time_index'>time_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-time_range'>time_range</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-times'>times</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectory.html#boundprocedure-verify_data'>verify_data</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-attitude~2"></span> <h3>private pure function <a href='../proc/attitude~2.html'>attitude</a>(self, i) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Attitude i (quaternion [x, y, z, w]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~95"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~14"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-color"></span> <h3>private pure function <a href='../proc/color.html'>color</a>(self, i) result(c)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Color i ([r, g, b, a]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~96"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~15"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-dof"></span> <h3>private pure function <a href='../proc/dof.html'>dof</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Degrees of freedom (2 or 3) of positions and optionals.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~76"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-generation"></span> <h3>private pure function <a href='../proc/generation.html'>generation</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of times the data were cleared (by <code>clear</code>, <code>set_dof</code> or
+<code>set_num_optionals</code>): while it is unchanged, data were only appended.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~85"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_empty"></span> <h3>private pure function <a href='../proc/is_empty.html'>is_empty</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if the trajectory has no times.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~83"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_capacity"></span> <h3>private pure function <a href='../proc/new_capacity.html'>new_capacity</a>(current, needed, exact)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The capacity to grow to for <code>needed</code> points: twice the current, or what is
+needed and a quarter more (so that appending after a large bulk add
+doesn't copy everything at once); <code>exact</code> (reserve): what is needed.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-current~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>current</strong></td>
+            <td>
+<p>current capacity</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-needed"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>needed</strong></td>
+            <td>
+<p>points needed</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-exact"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>exact</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_data_source"></span> <h3>private pure function <a href='../proc/new_data_source.html'>new_data_source</a>(src, element, opt, scale) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A data source (see <code>DataSource</code>); <code>element</code> defaults to 1, <code>opt</code> to 0,
+<code>scale</code> to 1.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-src~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+<p>a SOURCE_* constant</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-element~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>element</strong></td>
+            <td>
+<p>element (1 to dof, or 1 to 4 for an attitude; default 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-opt~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>opt</strong></td>
+            <td>
+<p>(0: the position (default), k: optional k)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/datasource.html'>DataSource</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_trajectory"></span> <h3>private  function <a href='../proc/new_trajectory.html'>new_trajectory</a>(dof, nopt) result(traj)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A trajectory with <code>dof</code> (2 or 3, default 3) degrees of freedom and
+<code>nopt</code> (default 0) optional vectors per position.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dof~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dof</strong></td>
+            <td>
+<p>degrees of freedom (2 or 3, default 3)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nopt"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nopt</strong></td>
+            <td>
+<p>optional vectors per position (default 0)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/trajectory.html'>Trajectory</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_attitudes"></span> <h3>private pure function <a href='../proc/num_attitudes.html'>num_attitudes</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of attitudes (at most num_times).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~81"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_colors"></span> <h3>private pure function <a href='../proc/num_colors.html'>num_colors</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of colors (at most num_times).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~82"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_optionals"></span> <h3>private pure function <a href='../proc/num_optionals.html'>num_optionals</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of optional vectors per position.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~78"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_points"></span> <h3>private pure function <a href='../proc/num_points.html'>num_points</a>(self, sources)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of points available with these sources: the number of times,
+limited by the positions or attitudes they use; huge() if all are zero.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~111"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources~7"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_positions"></span> <h3>private pure function <a href='../proc/num_positions.html'>num_positions</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of positions (at most num_times).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~80"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_times"></span> <h3>private pure function <a href='../proc/num_times.html'>num_times</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of times.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~79"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-optional"></span> <h3>private pure function <a href='../proc/optional.html'>optional</a>(self, i, k) result(v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Optional vector k (1 to num_optionals) of position i.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~97"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~16"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k~13"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-optional_sources"></span> <h3>public pure function <a href='../proc/optional_sources.html'>optional_sources</a>(opt, dof, scale) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sources of optional <code>opt</code>'s x, y, (z) (zero beyond <code>dof</code>, default
+3), each times <code>scale</code> (default 1): e.g. a thrust vector stored per
+point, for SegmentArtist%set_end_data with relative ends.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-opt~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>opt</strong></td>
+            <td>
+<p>the optional (1 to num_optionals)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dof~4"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dof</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/datasource.html'>DataSource</a>), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-point"></span> <h3>private pure function <a href='../proc/point.html'>point</a>(self, i, sources) result(v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Point i with components from <code>sources</code> (OpenFrames' getPoint). No checks:
+use <code>verify_data</code> and <code>num_points</code> first.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~108"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~18"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources~4"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-point_at"></span> <h3>private  function <a href='../proc/point_at.html'>point_at</a>(self, t, sources, ok) result(v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The point at time t (components from <code>sources</code>; default: the
+position's), linear in time between the points about it; outside the
+times, the first or last point. <code>ok</code> (optional) false, and v 0, if there
+is no point (or the search for the time failed).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~107"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the time</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources~3"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(3)</td>
+            <td>
+<p>where the components come from (default: the position)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~13"></span>
+              logical,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+<p>a point was found</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-point_between"></span> <h3>private pure function <a href='../proc/point_between.html'>point_between</a>(self, k, k2, t, sources) result(v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The point at time t between points k and k2 (components from
+<code>sources</code>): linear in time, within the two (time_fraction). Point k if
+k2 isn't a point (beyond the ends, or more times than data).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~106"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k~15"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k</strong></td>
+            <td>
+<p>a point (1 to num_points(sources))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k2~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k2</strong></td>
+            <td>
+<p>the other point (e.g. k + 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~19"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the time</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources~2"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(3)</td>
+            <td>
+<p>where the components come from</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-position"></span> <h3>private pure function <a href='../proc/position.html'>position</a>(self, i) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Position i (z = 0 for a 2-DOF trajectory).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~94"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~13"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-position_sources"></span> <h3>public pure function <a href='../proc/position_sources.html'>position_sources</a>(dof) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sources of a trajectory's positions: x, y, (z) of the position, and
+zero for components beyond <code>dof</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dof~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dof</strong></td>
+            <td>
+<p>degrees of freedom (2 or 3)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/datasource.html'>DataSource</a>), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-revision"></span> <h3>private pure function <a href='../proc/revision.html'>revision</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of changes so far (any added, set or cleared data).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~84"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-storage_bytes"></span> <h3>private pure function <a href='../proc/storage_bytes.html'>storage_bytes</a>(self) result(b)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The memory the trajectory's data take (bytes), used or not: its
+storage's capacity (see <code>reserve</code>, <code>compact</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~73"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=int64)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-time"></span> <h3>private pure function <a href='../proc/time.html'>time</a>(self, i)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Time i.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~93"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~12"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-time_distance"></span> <h3>private pure function <a href='../proc/time_distance.html'>time_distance</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The "distance" from time t to the time range [t0, tf]: &gt; 0 outside it (to
+the nearer end), 0 at its ends, &lt; 0 inside; huge() without times.
+(OpenFrames' getTimeDistance.)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~103"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~16"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-time_fraction"></span> <h3>private pure function <a href='../proc/time_fraction.html'>time_fraction</a>(self, k, k2, t) result(frac)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The fraction of the way in time from point k to point k2 (any two
+points: e.g. k + 1, or k - 1 with times running backward) at time t,
+kept within 0 to 1 (0 if their times are the same). No checks: k and k2
+must be times.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~105"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k~14"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k</strong></td>
+            <td>
+<p>the points (1 to num_times)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k2</strong></td>
+            <td>
+<p>the points (1 to num_times)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~18"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the time</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-time_index"></span> <h3>private  function <a href='../proc/time_index.html'>time_index</a>(self, t, index) result(status)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Find the interval of the time list containing t, by bisection (times
+increasing or decreasing). Returns a TIME_<em> code, or the number of
+iterations (&gt; 0) when found, with times(index) &lt;= t &lt; times(index+1) for
+increasing times (&gt;= and &gt; for decreasing). See the TIME_</em> constants for
+<code>index</code> in the other cases.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~104"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~17"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-index~5"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>index</strong></td>
+            <td>
+<p>the interval's first index (see the TIME_* constants)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-time_range"></span> <h3>private  function <a href='../proc/time_range.html'>time_range</a>(self, t0, tf)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The first and last times, ordered (t0 &lt;= tf); false if there are no times.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~102"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t0~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t0</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-tf~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>tf</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-verify_data"></span> <h3>private pure function <a href='../proc/verify_data.html'>verify_data</a>(self, sources)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if the trajectory has the data the sources refer to (elements and
+optionals in range).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~110"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources~6"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_attitude"></span> <h3>private  subroutine <a href='../proc/add_attitude.html'>add_attitude</a>(self, q, ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add an attitude quaternion [x, y, z, w] for the next time that has none.
+<code>ok</code> is false if every time already has an attitude.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~88"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>quaternion [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~10"></span>
+              logical,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+<p>false if not added</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_color"></span> <h3>private  subroutine <a href='../proc/add_color.html'>add_color</a>(self, color, ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add a color ([r, g, b], alpha 1, or [r, g, b, a], 0 to 1) for the next
+time that has none. <code>ok</code> is false if every time already has a color.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~89"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~11"></span>
+              logical,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+<p>false if not added</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_point"></span> <h3>private  subroutine <a href='../proc/add_point.html'>add_point</a>(self, t, pos, att, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add a point: a time with an optional position, attitude and color
+([r, g, b] or [r, g, b, a]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~91"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~13"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>time</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pos~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pos</strong>(:)</td>
+            <td>
+<p>position (first <code>dof</code> elements used)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-att~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>att</strong>(4)</td>
+            <td>
+<p>attitude quaternion [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_points"></span> <h3>private  subroutine <a href='../proc/add_points.html'>add_points</a>(self, t, pos, att, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add points in bulk: times <code>t(n)</code>, with optional positions <code>pos(dof, n)</code>,
+attitudes <code>att(4, n)</code> and colors <code>color(3 or 4, n)</code>. Times, positions,
+attitudes and colors must all have been complete before (as many of each
+as times) for the given ones to line up with <code>t</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~92"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~14"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong>(:)</td>
+            <td>
+<p>(n): times</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pos~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pos</strong>(:,:)</td>
+            <td>
+<p>(dof, n): positions</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-att~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>att</strong>(:,:)</td>
+            <td>
+<p>(4, n): attitude quaternions [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:,:)</td>
+            <td>
+<p>(3 or 4, n): colors [r, g, b(, a)] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_position"></span> <h3>private  subroutine <a href='../proc/add_position.html'>add_position</a>(self, pos, ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add a position (the first <code>dof</code> elements of <code>pos</code> are used) for the next
+time that has none. <code>ok</code> is false if every time already has a position.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~87"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pos~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pos</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~9"></span>
+              logical,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+<p>false if not added</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_time"></span> <h3>private  subroutine <a href='../proc/add_time.html'>add_time</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Add a time at the end of the time list.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~86"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-attitudes"></span> <h3>private  subroutine <a href='../proc/attitudes.html'>attitudes</a>(self, q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Pointer to the attitudes (4, num_attitudes), without copying.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~100"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:,:), pointer
+            </td>
+            <td>::</td>
+            <td><strong>q</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-clear"></span> <h3>private  subroutine <a href='../proc/clear.html'>clear</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Remove all points (keeping the memory).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~74"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-colors"></span> <h3>private  subroutine <a href='../proc/colors.html'>colors</a>(self, c)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Pointer to the colors (4, num_colors; single precision, as drawn),
+without copying.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~101"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c~4"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:,:), pointer
+            </td>
+            <td>::</td>
+            <td><strong>c</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-compact"></span> <h3>private  subroutine <a href='../proc/compact.html'>compact</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Free the storage not used: each array is reallocated to the points it
+holds (one copy, an array at a time), and arrays holding none are
+deallocated. For a trajectory that is complete: growing doubles the
+storage, so up to about half of it can be unused. The data and what is
+drawn of them don't change; pointers from <code>times</code>, <code>positions</code>, ...
+must be fetched again. Points can still be added (storage grows again).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~72"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-grow_attitudes"></span> <h3>private  subroutine <a href='../proc/grow_attitudes.html'>grow_attitudes</a>(self, n, exact)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Grow the attitudes' storage to hold at least <code>n</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~114"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~17"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-exact~4"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>exact</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-grow_colors"></span> <h3>private  subroutine <a href='../proc/grow_colors.html'>grow_colors</a>(self, n, exact)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Grow the colors' storage to hold at least <code>n</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~115"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~18"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-exact~5"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>exact</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-grow_positions"></span> <h3>private  subroutine <a href='../proc/grow_positions.html'>grow_positions</a>(self, n, exact)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Grow the positions' (and optionals') storage to hold at least <code>n</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~113"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~16"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-exact~3"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>exact</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-grow_times"></span> <h3>private  subroutine <a href='../proc/grow_times.html'>grow_times</a>(self, n, exact)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Grow the times' storage to hold at least <code>n</code> (see <code>new_capacity</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~112"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~15"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-exact~2"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>exact</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-points"></span> <h3>private pure subroutine <a href='../proc/points.html'>points</a>(self, i1, i2, sources, v, stride)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Points i1, i1 + stride, ... (up to i2) with components from <code>sources</code>, into
+v(3, :) (as many columns as points; <code>point</code> for a range, a whole array
+slice per component). No checks: use <code>verify_data</code> and <code>num_points</code> first.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~109"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i1"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i1</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i2</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources~5"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~10"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong>(:,:)</td>
+            <td>
+<p>(3, number of points)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stride"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>stride</strong></td>
+            <td>
+<p>step between points (default 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-positions"></span> <h3>private  subroutine <a href='../proc/positions.html'>positions</a>(self, p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Pointer to the positions (3, num_positions), without copying.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~99"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~8"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:,:), pointer
+            </td>
+            <td>::</td>
+            <td><strong>p</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-reserve"></span> <h3>private  subroutine <a href='../proc/reserve.html'>reserve</a>(self, n, positions, attitudes, colors)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Reserve memory for <code>n</code> points: times, positions (with their optionals)
+unless <code>positions</code> is false, and attitudes and colors only if
+<code>attitudes</code> / <code>colors</code> is true. Optional: storage grows as needed, but
+reserving avoids reallocations for a known size. It never shrinks the
+storage (see <code>compact</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~71"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~10"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>number of points</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-positions~2"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>positions</strong></td>
+            <td>
+<p>reserve positions (default true)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-attitudes~2"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>attitudes</strong></td>
+            <td>
+<p>reserve attitudes (default false)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-colors~2"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>colors</strong></td>
+            <td>
+<p>reserve colors (default false)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_dof"></span> <h3>private  subroutine <a href='../proc/set_dof.html'>set_dof</a>(self, dof)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set the degrees of freedom (2 or 3) of positions and optionals; clears the trajectory.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~75"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dof~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dof</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_num_optionals"></span> <h3>private  subroutine <a href='../proc/set_num_optionals.html'>set_num_optionals</a>(self, nopt)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set the number of optional vectors per position; clears the trajectory.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~77"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nopt~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nopt</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_optional"></span> <h3>private  subroutine <a href='../proc/set_optional.html'>set_optional</a>(self, index, v, ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set optional vector <code>index</code> (1 to num_optionals) of the most recently
+added position. <code>ok</code> is false if there is no position or no such optional.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~90"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-index~4"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>index</strong></td>
+            <td>
+<p>the optional (1 to num_optionals)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong>(:)</td>
+            <td>
+<p>the vector (its first <code>dof</code> elements are used)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~12"></span>
+              logical,
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+<p>false if not set</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-times"></span> <h3>private  subroutine <a href='../proc/times.html'>times</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Pointer to the times (num_times), without copying.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~98"></span>
+              class(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~15"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:), pointer
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-to_float_rgba"></span> <h3>private pure subroutine <a href='../proc/to_float_rgba.html'>to_float_rgba</a>(rgba, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>rgba from [r, g, b] (alpha 1) or [r, g, b, a].</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~3"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

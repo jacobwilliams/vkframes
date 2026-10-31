@@ -1,0 +1,4362 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_sky &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_sky
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 5.2% of total for modules and submodules.">659 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_sky.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_sky.f90.html'>vkf_sky.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_sky</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sky.html#variable-name_alignment">NAME_ALIGNMENT</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#variable-sky_none">SKY_NONE</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#variable-sky_stars">SKY_STARS</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#variable-sky_texture">SKY_TEXTURE</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#variable-default_constellations">default_constellations</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sky.html#type-constellation">Constellation</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#type-skysphere">SkySphere</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#type-starname">StarName</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-after_fields">after_fields</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-attitude">attitude</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-constellation_file_read">constellation_file_read</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-constellation_name">constellation_name</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-constellations">constellations</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-draw_mode">draw_mode</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-node">node</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-num_constellation_lines">num_constellation_lines</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-num_constellations">num_constellations</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-num_star_names">num_star_names</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-num_star_names_drawn">num_star_names_drawn</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-num_stars">num_stars</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-raw_size">raw_size</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-read_constellations">read_constellations</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-read_stars">read_stars</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-set_constellations">set_constellations</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-set_star_data">set_star_data</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-set_star_names">set_star_names</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-set_texture_map">set_texture_map</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-size_of">size_of</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-sky_direction">sky_direction</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star_catalog">star_catalog</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star_magnitude_range">star_magnitude_range</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star_magnitudes">star_magnitudes</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star_names">star_names</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star_sizes">star_sizes</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-texture_map">texture_map</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-add_name">add_name</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-apply_attitude">apply_attitude</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-apply_mode">apply_mode</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-apply_name_attitude">apply_name_attitude</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-constellation_line">constellation_line</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-constellation_lines">constellation_lines</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-make_line_node">make_line_node</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-make_name_node">make_name_node</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-make_star_node">make_star_node</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-make_texture_node">make_texture_node</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-set_attitude">set_attitude</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-set_draw_mode">set_draw_mode</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star">star</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star_name">star_name</a>
+            <a class="list-group-item" href="../module/vkf_sky.html#proc-star_to_point">star_to_point</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>The sky behind a scene (OpenFrames' SkySphere): a texture map and/or stars
+from a star catalog, at infinity (they turn with the view, never move with
+it), in the root frame's axes turned by the sky's attitude. A window shows
+a sky with WindowProxy%set_sky; one sky can be shown in several windows.</p>
+<ul>
+<li>Texture: an equirectangular image of the sky (right ascension across,
+  declination down; as a Sphere's texture map), e.g. OpenFrames'
+  Images/StarMap.tif.</li>
+<li>
+<p>Stars: a star catalog in OpenFrames' text format (e.g. the HYG v3
+  catalog of OpenFrames, data/Stars_HYGv3.txt): a header line
+  "ra[_limit] dec mag ci proper", then a star per line: right ascension (in
+  hours, or 0 to <code>limit</code> if the header says "ra_limit", e.g. "ra_360.0"),
+  declination (degrees), apparent magnitude, optional B-V color index and
+  name. Stars in a magnitude range are drawn (at most a number of them, in
+  catalog order), sized from their brightness between a minimum and a
+  maximum size (window units), colored from their color index, and the
+  smaller dimmed (OpenFrames' SkySphere::processStars and StarToPoint).</p>
+</li>
+<li>
+<p>Star names: the names of the catalog's named stars drawn (those of
+  them up to a magnitude), as labels beside them, at infinity as the stars
+  (behind the scene); off by default (set_star_names). Shown with the
+  stars (draw mode SKY_STARS).</p>
+</li>
+<li>Constellations: faint lines between their stars, from a constellation
+  file (e.g. data/inp_Constellation.txt, Chris Dolan's outlines): "N name"
+  starts a constellation, then a line per segment, "dec1 ra1 dec2 ra2"
+  (degrees, hours), then an optional "# comment"; lines starting with "#"
+  are comments. Off by default (set_constellations); at infinity, behind
+  the stars, shown unless the draw mode is SKY_NONE.</li>
+</ul>
+<p>Both are drawn when given (draw mode SKY_TEXTURE + SKY_STARS); the stars
+over the texture, by the brighter color.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='vkf_text.html'>vkf_text</a></li>
+                  <li class="list-inline-item"><a href='vkf_files.html'>vkf_files</a></li>
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_sky~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_skyUsesGraph" width="378pt" height="187pt"
+ viewBox="0.00 0.00 378.00 187.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_sky~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 183.41)">
+<title>module~~vkf_sky~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-183.41 373.54,-183.41 373.54,4 -4,4"/>
+<!-- module~vkf_sky -->
+<g id="module~~vkf_sky~~UsesGraph_node1" class="node">
+<title>module~vkf_sky</title>
+<polygon fill="none" stroke="black" points="369.54,-106.27 315.54,-106.27 315.54,-82 369.54,-82 369.54,-106.27"/>
+<text xml:space="preserve" text-anchor="middle" x="342.54" y="-90.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_sky</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_sky~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_sky~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="88.02,-146.27 5.25,-146.27 5.25,-122 88.02,-122 88.02,-146.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-130.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sky~~UsesGraph_edge1" class="edge">
+<title>module~vkf_sky&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.54,-174.13C193.7,-189.37 125.25,-168.09 84.2,-151.21"/>
+<polygon fill="#000000" stroke="#000000" points="85.59,-148 75.02,-147.3 82.85,-154.44 85.59,-148"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_sky~~UsesGraph_node3" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_sky~~UsesGraph_node3"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="186.54,-66.27 132.27,-66.27 132.27,-42 186.54,-42 186.54,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_sky~~UsesGraph_edge2" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.54,-54.13C234.58,-48.51 214.85,-47.85 198.09,-48.87"/>
+<polygon fill="#000000" stroke="#000000" points="198.21,-45.35 188.54,-49.67 198.8,-52.32 198.21,-45.35"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_sky~~UsesGraph_node4" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_sky~~UsesGraph_node4"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.16,-146.27 129.65,-146.27 129.65,-122 189.16,-122 189.16,-146.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-130.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_sky~~UsesGraph_edge3" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M333.73,-106.61C320.3,-126.55 290.68,-164.35 253.54,-174.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.54,-174.13C227.07,-180.58 200.76,-166.56 182.74,-153.38"/>
+<polygon fill="#000000" stroke="#000000" points="185.36,-150.98 175.31,-147.6 181.06,-156.5 185.36,-150.98"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_sky~~UsesGraph_node5" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_sky~~UsesGraph_node5"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sky~~UsesGraph_edge4" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M317.82,-81.68C300.42,-72.96 276,-61.58 253.54,-54.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.54,-54.13C231.82,-47.6 210.7,-38.04 193.76,-29.69"/>
+<polygon fill="#000000" stroke="#000000" points="195.66,-26.73 185.15,-25.37 192.51,-32.98 195.66,-26.73"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_sky~~UsesGraph_node6" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_sky~~UsesGraph_node6"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="279.54,-106.27 225.54,-106.27 225.54,-82 279.54,-82 279.54,-106.27"/>
+<text xml:space="preserve" text-anchor="middle" x="252.54" y="-90.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_sky~~UsesGraph_edge5" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M315.14,-94.13C307.65,-94.13 299.36,-94.13 291.34,-94.13"/>
+<polygon fill="#000000" stroke="#000000" points="291.44,-90.64 281.44,-94.14 291.44,-97.64 291.44,-90.64"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sky~~UsesGraph_edge6" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.3,-134.13C120.17,-134.13 109.81,-134.13 99.59,-134.13"/>
+<polygon fill="#000000" stroke="#000000" points="99.72,-130.64 89.72,-134.14 99.72,-137.64 99.72,-130.64"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_sky~~UsesGraph_node7" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_sky~~UsesGraph_node7"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-24.27 0,-24.27 0,0 93.27,0 93.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_sky~~UsesGraph_edge7" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-12.13C121.52,-12.13 113.21,-12.13 104.84,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="104.98,-8.64 94.98,-12.14 104.98,-15.64 104.98,-8.64"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_sky~~UsesGraph_edge8" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.17,-97.48C200.32,-100.8 162.09,-106.38 129.27,-113.13 119.48,-115.15 109.1,-117.58 99.15,-120.07"/>
+<polygon fill="#000000" stroke="#000000" points="98.44,-116.64 89.61,-122.51 100.17,-123.42 98.44,-116.64"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_sky~~UsesGraph_edge9" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.18,-82.57C216.47,-78.74 206.62,-74.42 197.27,-70.32"/>
+<polygon fill="#000000" stroke="#000000" points="198.97,-67.24 188.41,-66.43 196.16,-73.65 198.97,-67.24"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_sky~~UsesGraph_edge10" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.18,-105.7C217.11,-109.25 208.05,-113.22 199.33,-117.05"/>
+<polygon fill="#000000" stroke="#000000" points="198.07,-113.78 190.32,-121 200.89,-120.19 198.07,-113.78"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_sky~~UsesGraph_edge11" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M238.93,-81.52C222.33,-64.96 194.65,-37.44 189.54,-33.13 188.9,-32.59 188.24,-32.05 187.57,-31.5"/>
+<polygon fill="#000000" stroke="#000000" points="189.86,-28.85 179.8,-25.52 185.59,-34.4 189.86,-28.85"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_sky~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_skyUsedByGraph" width="267pt" height="52pt"
+ viewBox="0.00 0.00 267.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_sky~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_sky~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 263.29,-48.27 263.29,4 -4,4"/>
+<!-- module~vkf_sky -->
+<g id="module~~vkf_sky~~UsedByGraph_node1" class="node">
+<title>module~vkf_sky</title>
+<polygon fill="none" stroke="black" points="54,-44.27 0,-44.27 0,-20 54,-20 54,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_sky</text>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_sky~~UsedByGraph_node2" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_sky~~UsedByGraph_node2"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="162.27,-24.27 90,-24.27 90,0 162.27,0 162.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="126.13" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_sky~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M89.52,-19.47C81.73,-21.07 73.47,-22.77 65.61,-24.39"/>
+<polygon fill="#000000" stroke="#000000" points="65.06,-20.93 55.97,-26.38 66.47,-27.79 65.06,-20.93"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_sky~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_sky~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="259.29,-44.27 198.27,-44.27 198.27,-20 259.29,-20 259.29,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="228.78" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_sky~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M197.78,-32.69C186.63,-32.87 173.87,-33.05 162.27,-33.13 130.15,-33.38 122.12,-33.39 90,-33.13 82.12,-33.07 73.67,-32.96 65.63,-32.84"/>
+<polygon fill="#000000" stroke="#000000" points="65.81,-29.34 55.76,-32.68 65.7,-36.34 65.81,-29.34"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_sky~~UsedByGraph_edge3" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M197.86,-26.19C190.21,-24.67 181.8,-23 173.54,-21.36"/>
+<polygon fill="#000000" stroke="#000000" points="174.42,-17.96 163.93,-19.45 173.05,-24.83 174.42,-17.96"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name_alignment"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>NAME_ALIGNMENT</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>star names' alignment: vkf_frames' ALIGN_LEFT_CENTER</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sky_none"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SKY_NONE</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>What a sky draws (OpenFrames' SkySphere::DrawMode; add them).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sky_stars"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SKY_STARS</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>What a sky draws (OpenFrames' SkySphere::DrawMode; add them).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sky_texture"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SKY_TEXTURE</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>What a sky draws (OpenFrames' SkySphere::DrawMode; add them).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_constellations"></span>
+              character(len=*),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>default_constellations</strong></td>
+<td> =</td>
+                <td>&#39;inp_Constellation.txt&#39;</td>
+            <td>
+                <p>The constellation file read when none is given: vkframes' (data/).</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-constellation"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/constellation.html'>Constellation</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A constellation of those read: its name and its lines (columns of
+self%lines).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-first"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>first</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+<p>its lines: first .. last</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-last"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>last</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>its lines: first .. last</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the file's name for it</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-skysphere"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/skysphere.html'>SkySphere</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>The sky behind a scene (OpenFrames' SkySphere; see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-attitude_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>attitude_</strong>(4)</td>
+<td> =</td>
+                <td>[0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]</td>
+            <td>
+<p>in the root frame (quaternion [x, y, z, w])</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-catalog"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>catalog</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>star catalog file (unallocated or '': none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-constellation_file"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>constellation_file</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the file read (unallocated: none yet)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-groups"></span>
+              type(<a href='../type/constellation.html'>Constellation</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>groups</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the constellations read (n_groups of them)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-image"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>image</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the texture image (null: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line_node"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line_node</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the constellations drawing (null: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line_switch"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line_switch</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>shows or hides the constellations (draw mode)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lines"></span>
+              real(kind=c_float),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>lines</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(8, n): the lines' ends, directions (x, y, z, -)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lines_rgba"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lines_rgba</strong>(4)</td>
+<td> =</td>
+                <td>[0.35_wp, 0.5_wp, 0.8_wp, 0.45_wp]</td>
+            <td>
+<p>their color (faint)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lines_shown"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lines_shown</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>the constellations are drawn</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lines_width"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lines_width</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mag_range"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mag_range</strong>(2)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>of the stars read</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_mag"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_mag</strong></td>
+<td> =</td>
+                <td>8.0_wp</td>
+            <td>
+<p>OpenFrames' SkySphere defaults</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_size"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_size</strong></td>
+<td> =</td>
+                <td>10.0_wp</td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_stars"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_stars</strong></td>
+<td> =</td>
+                <td>10000</td>
+            <td>
+<p>the most stars drawn</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-min_dim"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>min_dim</strong></td>
+<td> =</td>
+                <td>0.5_wp</td>
+            <td>
+<p>the smallest stars' color scale (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-min_mag"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>min_mag</strong></td>
+<td> =</td>
+                <td>-2.0_wp</td>
+            <td>
+<p>OpenFrames' SkySphere defaults</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-min_size"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>min_size</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mode"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mode</strong></td>
+<td> =</td>
+                <td>SKY_TEXTURE+SKY_STARS</td>
+            <td>
+<p>SKY_NONE, or a sum of SKY_TEXTURE and SKY_STARS</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_groups"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_groups</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>constellations read</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_labels"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_labels</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>names drawn</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_lines"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_lines</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>lines read: columns of lines used</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_names"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_names</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>named stars read</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_stars"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_stars</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>stars read: columns of stars used</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name_node"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name_node</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the star names, a transform: the attitude (null: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-names"></span>
+              type(<a href='../type/starname.html'>StarName</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>names</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the named stars read (n_names of them)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-names_font"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>names_font</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>font ('' or unallocated: the default)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-names_max_mag"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>names_max_mag</strong></td>
+<td> =</td>
+                <td>huge(1.0_wp)</td>
+            <td>
+<p>names of stars up to this magnitude</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-names_rgba"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>names_rgba</strong>(4)</td>
+<td> =</td>
+                <td>[0.6_wp, 0.7_wp, 0.9_wp, 1.0_wp]</td>
+            <td>
+<p>color</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-names_shown"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>names_shown</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>the names are drawn</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-names_size"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>names_size</strong></td>
+<td> =</td>
+                <td>12.0_wp</td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-root"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>root</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the sky's node, a transform (null until made)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shown"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shown</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>made for a window: nodes made later are compiled</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-star_node"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>star_node</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the stars drawing (null: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-star_switch"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>star_switch</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>shows or hides the stars (draw mode)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-stars"></span>
+              real(kind=c_float),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>stars</strong>(:,:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(8, n): direction, size, rgb, -</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-texture_file"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>texture_file</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>texture image file (unallocated or '': none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-texture_node"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>texture_node</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the texture drawing (null: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-texture_switch"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>texture_switch</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>shows or hides the texture (draw mode)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-attitude'>attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-constellation_file_read'>constellation_file_read</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-constellation_line'>constellation_line</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-constellation_lines'>constellation_lines</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-constellation_name'>constellation_name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-constellations'>constellations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-draw_mode'>draw_mode</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-node'>node</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-num_constellation_lines'>num_constellation_lines</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-num_constellations'>num_constellations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-num_star_names'>num_star_names</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-num_star_names_drawn'>num_star_names_drawn</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-num_stars'>num_stars</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-set_attitude'>set_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-set_constellations'>set_constellations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-set_draw_mode'>set_draw_mode</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-set_star_data'>set_star_data</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-set_star_names'>set_star_names</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-set_texture_map'>set_texture_map</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-star~2'>star</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-star_catalog'>star_catalog</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-star_magnitude_range'>star_magnitude_range</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-star_magnitudes'>star_magnitudes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-star_name'>star_name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-star_names'>star_names</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-star_sizes'>star_sizes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/skysphere.html#boundprocedure-texture_map'>texture_map</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-starname"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/starname.html'>StarName</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A named star of those read: its name and magnitude, its direction in
+the stars read (self%stars).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mag"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mag</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>apparent magnitude</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-star"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>star</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>the star's column in self%stars</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-text"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>text</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the catalog's name</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-after_fields"></span> <h3>private pure function <a href='../proc/after_fields.html'>after_fields</a>(line, n) result(rest)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The text of <code>line</code> after its first n fields (separated by blanks or
+tabs), trimmed: a star's name ('' if none: e.g. without a color index).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>fields skipped</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-attitude"></span> <h3>private pure function <a href='../proc/attitude.html'>attitude</a>(self) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sky's attitude in the root frame (quaternion [x, y, z, w]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~26"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-constellation_file_read"></span> <h3>private  function <a href='../proc/constellation_file_read.html'>constellation_file_read</a>(self) result(file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The constellation file read ('' for none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~17"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-constellation_name"></span> <h3>private  function <a href='../proc/constellation_name.html'>constellation_name</a>(self, i) result(name)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Constellation i's name (1 to num_constellations).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~20"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+<p>1 to num_constellations</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-constellations"></span> <h3>private pure function <a href='../proc/constellations.html'>constellations</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Whether the constellations are drawn (as set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~16"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-draw_mode"></span> <h3>private pure function <a href='../proc/draw_mode.html'>draw_mode</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>What is drawn: SKY_NONE, or a sum of SKY_TEXTURE and SKY_STARS.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~24"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-node"></span> <h3>private  function <a href='../proc/node.html'>node</a>(self, viewer) result(n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sky's node, made on first use, for a window (WindowProxy%set_sky).
+For a window's <code>viewer</code> (null: headless), nodes made later (a new texture
+or catalog) are compiled for the windows running.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~27"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>a window's viewer (null: headless)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(c_ptr)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_constellation_lines"></span> <h3>private pure function <a href='../proc/num_constellation_lines.html'>num_constellation_lines</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of constellation lines read (of all of them).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~19"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_constellations"></span> <h3>private pure function <a href='../proc/num_constellations.html'>num_constellations</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of constellations read.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~18"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_star_names"></span> <h3>private pure function <a href='../proc/num_star_names.html'>num_star_names</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of named stars read (of the stars read).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~12"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_star_names_drawn"></span> <h3>private pure function <a href='../proc/num_star_names_drawn.html'>num_star_names_drawn</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of star names drawn now (0 until the sky is shown, or if the
+names aren't).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~13"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_stars"></span> <h3>private pure function <a href='../proc/num_stars.html'>num_stars</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of stars read.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~7"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-raw_size"></span> <h3>private pure function <a href='../proc/raw_size.html'>raw_size</a>(mag)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A star's pixel diameter from its apparent magnitude, from its brightness
+and luminance (OpenFrames' getStarPixelSizeFromMagnitude).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mag~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mag</strong></td>
+            <td>
+<p>apparent magnitude</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-read_constellations"></span> <h3>private  function <a href='../proc/read_constellations.html'>read_constellations</a>(self, file) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Read the constellations of <code>file</code> (found with find_data_file; '' for
+none) into self%lines and self%groups, in place of those read before.
+False (those kept) if it can't be found or read.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~36"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~6"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+<p>constellation file ('' for none)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-read_stars"></span> <h3>private  function <a href='../proc/read_stars.html'>read_stars</a>(self) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Read the stars of the catalog into self%stars.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~35"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_constellations"></span> <h3>private  function <a href='../proc/set_constellations.html'>set_constellations</a>(self, shown, file, rgba, width) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Draw the constellations: faint lines between their stars, from
+constellation file <code>file</code> (found with find_data_file; read when given,
+or when first shown without one: default_constellations), <code>shown</code>
+(default false), in color <code>rgba</code> (default a faint blue, alpha 0.45) and
+<code>width</code> window units wide (default 1). Also while shown; the settings
+not given are kept. Returns false if the file can't be read (the
+constellations read before are kept) or <code>width</code> isn't &gt; 0 (nothing
+changed).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~15"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shown~3"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shown</strong></td>
+            <td>
+<p>draw the constellations</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+<p>constellation file</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>color [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+<p>window units (&gt; 0)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_star_data"></span> <h3>private  function <a href='../proc/set_star_data.html'>set_star_data</a>(self, catalog, min_mag, max_mag, max_stars, min_size, max_size, min_dim_ratio) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Draw the stars of <code>catalog</code> (found with find_data_file; '' for none)
+with magnitudes from <code>min_mag</code> to <code>max_mag</code> (default -2 to 8), at most
+<code>max_stars</code> (default 10000), sized from <code>min_size</code> to <code>max_size</code> window
+units (default 1 to 10) by brightness, the smallest dimmed to
+<code>min_dim_ratio</code> (0 to 1, default 0.5) of their color (OpenFrames'
+setSkySphereStarData). Returns false if the catalog cannot be read or the
+limits are invalid (min_mag &gt; max_mag, max_stars &lt; 1, min_size &gt;
+max_size, a ratio outside 0 to 1).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~3"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-catalog~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>catalog</strong></td>
+            <td>
+<p>star catalog file; '' for none</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-min_mag~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>min_mag</strong></td>
+            <td>
+<p>apparent magnitudes</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_mag~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_mag</strong></td>
+            <td>
+<p>apparent magnitudes</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_stars~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_stars</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-min_size~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>min_size</strong></td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_size~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_size</strong></td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-min_dim_ratio"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>min_dim_ratio</strong></td>
+            <td>
+<p>0 to 1</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_star_names"></span> <h3>private  function <a href='../proc/set_star_names.html'>set_star_names</a>(self, shown, max_mag, size, rgba, font) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Draw the names of the named stars drawn (those of the catalog's last
+field), beside them: <code>shown</code> (default false), of the stars up to
+magnitude <code>max_mag</code> (default all of them), <code>size</code> window units tall
+(default 12), in color <code>rgba</code> (default a pale blue) and font <code>font</code>
+('' or default: vkframes' default font). Also while shown; the
+settings not given are kept. Returns false (nothing changed) if <code>size</code>
+isn't &gt; 0.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~10"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shown~2"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shown</strong></td>
+            <td>
+<p>draw the names</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_mag~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_mag</strong></td>
+            <td>
+<p>the dimmest named (apparent magnitude)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>height in window units (&gt; 0)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>color [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-font"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>font</strong></td>
+            <td>
+<p>font file ('' for the default)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_texture_map"></span> <h3>private  function <a href='../proc/set_texture_map.html'>set_texture_map</a>(self, file) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Draw an image file as the sky (found with find_data_file); '' for none.
+Returns false if it cannot be read (the sky is then unchanged).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+<p>image file; '' for none</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-size_of"></span> <h3>private pure function <a href='../proc/size_of.html'>size_of</a>(a)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The number of columns of a (the stars' capacity).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~3"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(:,:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sky_direction"></span> <h3>private pure function <a href='../proc/sky_direction.html'>sky_direction</a>(ra, dec) result(dir)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The unit vector of a direction on the sky from its right ascension
+(hours) and declination (degrees), as the stars' (star_to_point).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ra~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ra</strong></td>
+            <td>
+<p>right ascension (hours)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dec~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dec</strong></td>
+            <td>
+<p>declination (degrees)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star_catalog"></span> <h3>private  function <a href='../proc/star_catalog.html'>star_catalog</a>(self) result(file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The star catalog file ('' for none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~4"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star_magnitude_range"></span> <h3>private pure function <a href='../proc/star_magnitude_range.html'>star_magnitude_range</a>(self) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The range of magnitudes of the stars read.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~8"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (2)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star_magnitudes"></span> <h3>private pure function <a href='../proc/star_magnitudes.html'>star_magnitudes</a>(self) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The magnitude range drawn (as set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~5"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (2)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star_names"></span> <h3>private pure function <a href='../proc/star_names.html'>star_names</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Whether the star names are drawn (as set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~11"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star_sizes"></span> <h3>private pure function <a href='../proc/star_sizes.html'>star_sizes</a>(self) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The size range of the stars (window units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~6"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (2)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-texture_map"></span> <h3>private  function <a href='../proc/texture_map.html'>texture_map</a>(self) result(file)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The texture file ('' for none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~2"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_name"></span> <h3>private  subroutine <a href='../proc/add_name.html'>add_name</a>(self, name, mag)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Remember the name of the star just read (self%n_stars), if it has one.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~37"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+<p>its name ('' for none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mag~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mag</strong></td>
+            <td>
+<p>its apparent magnitude</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_attitude"></span> <h3>private  subroutine <a href='../proc/apply_attitude.html'>apply_attitude</a>(self, n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The attitude matrix (column-major 4x4) into a sky node's style.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~34"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~3"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>a sky node, texture or stars (null: nothing done)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_mode"></span> <h3>private  subroutine <a href='../proc/apply_mode.html'>apply_mode</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Show or hide the texture, the constellations and the stars (and their
+names), as the draw mode says.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~33"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_name_attitude"></span> <h3>private  subroutine <a href='../proc/apply_name_attitude.html'>apply_name_attitude</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sky's attitude into the star names' transform.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~32"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-constellation_line"></span> <h3>private pure subroutine <a href='../proc/constellation_line.html'>constellation_line</a>(self, i, a, b)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Constellation line i (1 to num_constellation_lines): its ends'
+directions (unit vectors, sky frame).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~22"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+<p>1 to num_constellation_lines</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(3)</td>
+            <td>
+<p>unit vectors, sky frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(3)</td>
+            <td>
+<p>unit vectors, sky frame</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-constellation_lines"></span> <h3>private pure subroutine <a href='../proc/constellation_lines.html'>constellation_lines</a>(self, i, first, last)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Constellation i's lines (1 to num_constellations): first .. last (see
+constellation_line; none if last &lt; first).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~21"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~4"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+<p>1 to num_constellations</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-first~2"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>first</strong></td>
+            <td>
+<p>its lines</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-last~2"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>last</strong></td>
+            <td>
+<p>its lines</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-make_line_node"></span> <h3>private  subroutine <a href='../proc/make_line_node.html'>make_line_node</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The constellations node for the lines read and the settings, in place of
+the old one (none unless shown).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~30"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-make_name_node"></span> <h3>private  subroutine <a href='../proc/make_name_node.html'>make_name_node</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The star names node for the current names and settings, in place of the
+old one: a label per named star drawn up to the names' magnitude, under
+the stars' switch (shown with them), turned by the sky's attitude.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~31"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-make_star_node"></span> <h3>private  subroutine <a href='../proc/make_star_node.html'>make_star_node</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The star node for the current stars, in place of the old one.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~29"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-make_texture_node"></span> <h3>private  subroutine <a href='../proc/make_texture_node.html'>make_texture_node</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The texture node for the current image, in place of the old one.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~28"></span>
+              type(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_attitude"></span> <h3>private  subroutine <a href='../proc/set_attitude.html'>set_attitude</a>(self, q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The sky's attitude in the root frame (quaternion [x, y, z, w]): e.g. to
+turn an equatorial catalog into an ecliptic root frame.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~25"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>quaternion [x, y, z, w] (any length &gt; 0)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_draw_mode"></span> <h3>private  subroutine <a href='../proc/set_draw_mode.html'>set_draw_mode</a>(self, mode)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>What to draw: SKY_NONE, or SKY_TEXTURE + SKY_STARS (default; each only
+if given).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~23"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mode~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mode</strong></td>
+            <td>
+<p>SKY_NONE, or a sum of SKY_TEXTURE and SKY_STARS</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star"></span> <h3>private pure subroutine <a href='../proc/star.html'>star</a>(self, i, direction, rgb, size)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Star i (1 to num_stars): its direction (unit vector, sky frame), color
+(rgb, dimmed) and size (window units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~9"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+<p>1 to num_stars</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-direction"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>direction</strong>(3)</td>
+            <td>
+<p>unit vector, sky frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgb"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgb</strong>(3)</td>
+            <td>
+<p>color, dimmed (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star_name"></span> <h3>private  subroutine <a href='../proc/star_name.html'>star_name</a>(self, i, name, mag, which)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Named star i (1 to num_star_names): its name, apparent magnitude and
+star (1 to num_stars: see <code>star</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~14"></span>
+              class(<a href='../type/skysphere.html'>SkySphere</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+<p>1 to num_star_names</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~2"></span>
+              character(len=:),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+<p>the catalog's name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mag~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mag</strong></td>
+            <td>
+<p>apparent magnitude</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-which"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>which</strong></td>
+            <td>
+<p>the star (1 to num_stars)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-star_to_point"></span> <h3>private pure subroutine <a href='../proc/star_to_point.html'>star_to_point</a>(ra, dec, mag, ci, dir, rgb, size)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A star's direction, color (from its B-V color index: Ballesteros'
+temperature, then Tanner Helland's temperature to RGB) and raw size
+(OpenFrames' SkySphere::StarToPoint).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ra~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ra</strong></td>
+            <td>
+<p>right ascension and declination (radians)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dec~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dec</strong></td>
+            <td>
+<p>right ascension and declination (radians)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mag~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mag</strong></td>
+            <td>
+<p>apparent magnitude and B-V color index</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ci~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ci</strong></td>
+            <td>
+<p>apparent magnitude and B-V color index</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dir~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dir</strong>(3)</td>
+            <td>
+<p>unit vector</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgb~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgb</strong>(3)</td>
+            <td>
+<p>color (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>raw size (as raw_size)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

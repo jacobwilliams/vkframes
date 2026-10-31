@@ -1,0 +1,688 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>PickHit &ndash; vkframes </title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>PickHit
+      <small>Derived Type</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title="<p> 1.2% of total for derived types.</p>Including implementation: 14 statements,  0.1% of total for derived types.">14 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_frames.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_frames.f90.html'>vkf_frames.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_frames.html'>vkf_frames</a></li>
+            <li class="breadcrumb-item active" aria-current="page">PickHit</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/pickhit.html#variable-artist~2">artist</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-distance~4">distance</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-frame~12">frame</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-index~8">index</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-kind~7">kind</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-latitude">latitude</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-local~2">local</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-longitude">longitude</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-marker~3">marker</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-pixels~6">pixels</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-position~16">position</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-time~11">time</a>
+            <a class="list-group-item" href="../type/pickhit.html#variable-trajectory~2">trajectory</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../type/pickhit.html#src">PickHit</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      <h2 id="type-def-statement">
+        type, public :: PickHit</h2>
+    <p>What a pick found (WindowProxy%pick): the frame it belongs to and, for
+trajectories, the artist (select type to use it) and the trajectory.</p>
+<br>      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Inherits</h3>
+        </div>
+        <div class="card-body">
+          <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: type~~pickhit~~InheritsGraph Pages: 1 -->
+<svg id="typepickhitInheritsGraph" width="641pt" height="92pt"
+ viewBox="0.00 0.00 641.00 92.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="type~~pickhit~~InheritsGraph" class="graph" transform="scale(0.505389 0.505389) rotate(0) translate(4 177.5)">
+<title>type~~pickhit~~InheritsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-177.5 1264.33,-177.5 1264.33,4 -4,4"/>
+<!-- type~pickhit -->
+<g id="type~~pickhit~~InheritsGraph_node1" class="node">
+<title>type~pickhit</title>
+<polygon fill="none" stroke="black" points="1260.33,-28.13 1206.33,-28.13 1206.33,-3.87 1260.33,-3.87 1260.33,-28.13"/>
+<text xml:space="preserve" text-anchor="middle" x="1233.33" y="-12.4" font-family="Helvetica,sans-Serif" font-size="10.50">PickHit</text>
+</g>
+<!-- type~referenceframe -->
+<g id="type~~pickhit~~InheritsGraph_node2" class="node">
+<title>type~referenceframe</title>
+<g id="a_type~~pickhit~~InheritsGraph_node2"><a xlink:href="../type/referenceframe.html" xlink:title="ReferenceFrame">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="1142.58,-83.14 1043.31,-83.14 1043.31,-58.87 1142.58,-58.87 1142.58,-83.14"/>
+<text xml:space="preserve" text-anchor="middle" x="1092.94" y="-67.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame</text>
+</a>
+</g>
+</g>
+<!-- type~pickhit&#45;&gt;type~referenceframe -->
+<g id="type~~pickhit~~InheritsGraph_edge1" class="edge">
+<title>type~pickhit&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1205.98,-26.47C1186.21,-34.33 1158.75,-45.24 1135.96,-54.3"/>
+<polygon fill="#000000" stroke="#000000" points="1134.95,-50.94 1126.95,-57.88 1137.53,-57.44 1134.95,-50.94"/>
+<text xml:space="preserve" text-anchor="middle" x="1174.45" y="-45.73" font-family="Helvetica,sans-Serif" font-size="9.50">frame</text>
+</g>
+<!-- type~trajectory -->
+<g id="type~~pickhit~~InheritsGraph_node3" class="node">
+<title>type~trajectory</title>
+<g id="a_type~~pickhit~~InheritsGraph_node3"><a xlink:href="../type/trajectory.html" xlink:title="Trajectory">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="64.02,-28.13 0,-28.13 0,-3.87 64.02,-3.87 64.02,-28.13"/>
+<text xml:space="preserve" text-anchor="middle" x="32.01" y="-12.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory</text>
+</a>
+</g>
+</g>
+<!-- type~pickhit&#45;&gt;type~trajectory -->
+<g id="type~~pickhit~~InheritsGraph_edge2" class="edge">
+<title>type~pickhit&#45;&gt;type~trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1205.91,-11.11C1178.13,-6.41 1133.13,0 1093.94,0 1093.94,0 1093.94,0 155.78,0 129.03,0 99.26,-3.78 75.75,-7.67"/>
+<polygon fill="#000000" stroke="#000000" points="75.15,-4.22 65.9,-9.37 76.35,-11.12 75.15,-4.22"/>
+<text xml:space="preserve" text-anchor="middle" x="340.05" y="-2.23" font-family="Helvetica,sans-Serif" font-size="9.50">trajectory</text>
+</g>
+<!-- c_ptr -->
+<g id="type~~pickhit~~InheritsGraph_node4" class="node">
+<title>c_ptr</title>
+<polygon fill="#5cb85c" stroke="#5cb85c" points="367.05,-151.13 313.05,-151.13 313.05,-126.86 367.05,-126.86 367.05,-151.13"/>
+<text xml:space="preserve" text-anchor="middle" x="340.05" y="-135.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">c_ptr</text>
+</g>
+<!-- type~referenceframe&#45;&gt;c_ptr -->
+<g id="type~~pickhit~~InheritsGraph_edge5" class="edge">
+<title>type~referenceframe&#45;&gt;c_ptr</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1077.52,-83.62C1064.76,-93.92 1045.14,-107.76 1025.31,-114 788.92,-188.37 483.78,-158.2 378.61,-144.43"/>
+<polygon fill="#000000" stroke="#000000" points="379.24,-140.98 368.86,-143.12 378.31,-147.92 379.24,-140.98"/>
+<text xml:space="preserve" text-anchor="middle" x="718.93" y="-164.48" font-family="Helvetica,sans-Serif" font-size="9.50">light_node, light_switch, node_, contents_node, axis_node, axis_label_node, axis_arrow, axis_text, name_label_node, name_text</text>
+</g>
+<!-- type~framepointer -->
+<g id="type~~pickhit~~InheritsGraph_node5" class="node">
+<title>type~framepointer</title>
+<g id="a_type~~pickhit~~InheritsGraph_node5"><a xlink:href="../type/framepointer.html" xlink:title="FramePointer">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="381.44,-104.14 298.67,-104.14 298.67,-79.86 381.44,-79.86 381.44,-104.14"/>
+<text xml:space="preserve" text-anchor="middle" x="340.05" y="-88.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">FramePointer</text>
+</a>
+</g>
+</g>
+<!-- type~referenceframe&#45;&gt;type~framepointer -->
+<g id="type~~pickhit~~InheritsGraph_edge3" class="edge">
+<title>type~referenceframe&#45;&gt;type~framepointer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1042.95,-80.77C1037.02,-81.67 1031.04,-82.45 1025.31,-83 790.06,-105.57 507.27,-98.5 392.85,-94.22"/>
+<polygon fill="#000000" stroke="#000000" points="393.31,-90.74 383.18,-93.85 393.04,-97.73 393.31,-90.74"/>
+<text xml:space="preserve" text-anchor="middle" x="718.93" y="-100.97" font-family="Helvetica,sans-Serif" font-size="9.50">children, parents</text>
+</g>
+<!-- type~trajectoryfollower -->
+<g id="type~~pickhit~~InheritsGraph_node6" class="node">
+<title>type~trajectoryfollower</title>
+<g id="a_type~~pickhit~~InheritsGraph_node6"><a xlink:href="../type/trajectoryfollower.html" xlink:title="TrajectoryFollower">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="394.56,-53.13 285.54,-53.13 285.54,-28.87 394.56,-28.87 394.56,-53.13"/>
+<text xml:space="preserve" text-anchor="middle" x="340.05" y="-37.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower</text>
+</a>
+</g>
+</g>
+<!-- type~referenceframe&#45;&gt;type~trajectoryfollower -->
+<g id="type~~pickhit~~InheritsGraph_edge4" class="edge">
+<title>type~referenceframe&#45;&gt;type~trajectoryfollower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1073.98,-58.39C1061.09,-50.15 1042.97,-40.13 1025.31,-35.75 893.15,-2.95 548.64,-30.76 412.56,-35.75 410.5,-35.83 408.41,-35.91 406.31,-36.01"/>
+<polygon fill="#000000" stroke="#000000" points="406.22,-32.51 396.42,-36.54 406.6,-39.5 406.22,-32.51"/>
+<text xml:space="preserve" text-anchor="middle" x="718.93" y="-37.98" font-family="Helvetica,sans-Serif" font-size="9.50">follower_</text>
+</g>
+<!-- type~framepointer&#45;&gt;type~referenceframe -->
+<g id="type~~pickhit~~InheritsGraph_edge6" class="edge">
+<title>type~framepointer&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M374.03,-79.46C385.98,-75.53 399.71,-71.7 412.56,-69.75 638.83,-35.36 912.4,-53.82 1031.58,-64.77"/>
+<polygon fill="#000000" stroke="#000000" points="1031.17,-68.25 1041.46,-65.7 1031.83,-61.28 1031.17,-68.25"/>
+<text xml:space="preserve" text-anchor="middle" x="718.93" y="-71.97" font-family="Helvetica,sans-Serif" font-size="9.50">p</text>
+</g>
+<!-- type~datasource -->
+<g id="type~~pickhit~~InheritsGraph_node7" class="node">
+<title>type~datasource</title>
+<g id="a_type~~pickhit~~InheritsGraph_node7"><a xlink:href="../type/datasource.html" xlink:title="DataSource">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="193.66,-94.14 119.9,-94.14 119.9,-69.86 193.66,-69.86 193.66,-94.14"/>
+<text xml:space="preserve" text-anchor="middle" x="156.78" y="-78.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DataSource</text>
+</a>
+</g>
+</g>
+<!-- type~trajectoryfollower&#45;&gt;type~datasource -->
+<g id="type~~pickhit~~InheritsGraph_edge8" class="edge">
+<title>type~trajectoryfollower&#45;&gt;type~datasource</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M285.15,-53.19C259.75,-58.94 229.7,-65.73 205.18,-71.28"/>
+<polygon fill="#000000" stroke="#000000" points="204.44,-67.86 195.46,-73.48 205.98,-74.69 204.44,-67.86"/>
+<text xml:space="preserve" text-anchor="middle" x="246.54" y="-68.6" font-family="Helvetica,sans-Serif" font-size="9.50">sources_</text>
+</g>
+<!-- type~trajectorypointer -->
+<g id="type~~pickhit~~InheritsGraph_node8" class="node">
+<title>type~trajectorypointer</title>
+<g id="a_type~~pickhit~~InheritsGraph_node8"><a xlink:href="../type/trajectorypointer.html" xlink:title="TrajectoryPointer">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="207.54,-52.13 106.02,-52.13 106.02,-27.87 207.54,-27.87 207.54,-52.13"/>
+<text xml:space="preserve" text-anchor="middle" x="156.78" y="-36.4" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryPointer</text>
+</a>
+</g>
+</g>
+<!-- type~trajectoryfollower&#45;&gt;type~trajectorypointer -->
+<g id="type~~pickhit~~InheritsGraph_edge7" class="edge">
+<title>type~trajectoryfollower&#45;&gt;type~trajectorypointer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M285.15,-40.7C264.36,-40.59 240.47,-40.46 219.04,-40.34"/>
+<polygon fill="#000000" stroke="#000000" points="219.28,-36.84 209.26,-40.28 219.24,-43.84 219.28,-36.84"/>
+<text xml:space="preserve" text-anchor="middle" x="246.54" y="-42.81" font-family="Helvetica,sans-Serif" font-size="9.50">trajs</text>
+</g>
+<!-- type~trajectorypointer&#45;&gt;type~trajectory -->
+<g id="type~~pickhit~~InheritsGraph_edge9" class="edge">
+<title>type~trajectorypointer&#45;&gt;type~trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M105.84,-30.24C95.73,-28.26 85.18,-26.2 75.36,-24.28"/>
+<polygon fill="#000000" stroke="#000000" points="76.2,-20.88 65.71,-22.39 74.86,-27.75 76.2,-20.88"/>
+<text xml:space="preserve" text-anchor="middle" x="85.02" y="-28.79" font-family="Helvetica,sans-Serif" font-size="9.50">p</text>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var pantypepickhitInheritsGraph = svgPanZoom('#typepickhitInheritsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#InheritsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="InheritsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="184pt" height="32pt"
+ viewBox="0.00 0.00 184.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 179.88,-28.27 179.88,4 -4,4"/>
+<!-- Type -->
+<g id="node1" class="node">
+<title>Type</title>
+<polygon fill="#5cb85c" stroke="#5cb85c" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="175.88,-24.27 72.12,-24.27 72.12,0 175.88,0 175.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="124" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a derived type to the parent type which it
+extends. Dashed arrows point from a derived type to the other
+types it contains as a components, with a label listing the name(s) of
+said component(s).
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    <br>
+
+    <section>
+    <h2>Components</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-artist~2"></span>
+              class(*),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>artist</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                <p>the trajectory artist (curves, segments, markers)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-distance~4"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>distance</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+                <p>its depth from the eye (nearest first)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~12"></span>
+              class(<a href='referenceframe.html'>ReferenceFrame</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                <p>the frame hit (what it draws, or its origin)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-index~8"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>index</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>For curves, the trajectory point the hit is after (on the segment from it
+to the next); segments: the segment (from point 1 + (index - 1) *
+stride); markers: the point (start, end) or the intermediate
+marker's number</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kind~7"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kind</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>PICK_*</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-latitude"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>latitude</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+                <p>(bodies: geodetic, radians (Sphere, TerrainBody))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-local~2"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>local</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+                <p>the point hit, in the frame's coordinates</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-longitude"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>longitude</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+                <p>(bodies: geodetic, radians (Sphere, TerrainBody))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-marker~3"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>marker</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>(markers: MARKER_START, MARKER_END or MARKER_INTERMEDIATE)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pixels~6"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pixels</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+                <p>its distance from the cursor (framebuffer pixels; 0 on a body)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~16"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+                <p>the point hit, in the root frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-time~11"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>time</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+                <p>(trajectories: the time there (interpolated on curves))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-trajectory~2"></span>
+              type(<a href='trajectory.html'>Trajectory</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>trajectory</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                <p>(trajectories: the artist's trajectory)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
+    
+
+
+
+    <section>
+    <h3><span class="anchor" id="src"></span>Source Code</h3>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="p">,</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">PickHit</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">                                 </span><span class="c">!! PICK_*</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">ReferenceFrame</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">   </span><span class="c">!! the frame hit (what it draws, or its origin)</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">artist</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">               </span><span class="c">!! the trajectory artist (curves, segments, markers)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">trajectory</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">   </span><span class="c">!! (trajectories: the artist&#39;s trajectory)</span>
+<span class="w">        </span><span class="c">!&gt; For curves, the trajectory point the hit is after (on the segment from it</span>
+<span class="w">        </span><span class="c">!&gt; to the next); segments: the segment (from point 1 + (index - 1) *</span>
+<span class="w">        </span><span class="c">!&gt; stride); markers: the point (start, end) or the intermediate</span>
+<span class="w">        </span><span class="c">!&gt; marker&#39;s number</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">marker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">                               </span><span class="c">!! (markers: MARKER_START, MARKER_END or MARKER_INTERMEDIATE)</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w">                           </span><span class="c">!! (trajectories: the time there (interpolated on curves))</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">position</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w">                    </span><span class="c">!! the point hit, in the root frame</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">local</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w">                       </span><span class="c">!! the point hit, in the frame&#39;s coordinates</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w">                       </span><span class="c">!! its depth from the eye (nearest first)</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pixels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w">                         </span><span class="c">!! its distance from the cursor (framebuffer pixels; 0 on a body)</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">latitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="n">longitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w">   </span><span class="c">!! (bodies: geodetic, radians (Sphere, TerrainBody))</span>
+<span class="w">    </span><span class="k">end type </span><span class="n">PickHit</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

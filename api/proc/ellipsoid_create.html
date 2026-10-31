@@ -1,0 +1,746 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>ellipsoid_create &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>ellipsoid_create
+      <small>Function</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">35 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_geometry.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_geometry.f90.html'>vkf_geometry.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_geometry.html'>vkf_geometry</a></li>
+            <li class="breadcrumb-item active" aria-current="page">ellipsoid_create</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/ellipsoid_create.html#src">ellipsoid_create</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public  function ellipsoid_create(radii, rgba, texture, n_lon, n_lat, night_texture, translucent) result(mesh)  
+</h2>
+    
+
+    <p>An ellipsoid mesh node with semi-axes <code>radii</code> (x, y, z) and color (<code>rgba</code>,
+multiplying the texture), with an optional equirectangular texture and
+night texture (image handles; the night texture shows where the light
+is weak). <code>n_lon</code> and <code>n_lat</code> default to 128 and 64 segments. With
+<code>translucent</code>, a translucent surface (its material's alpha; drawn after
+the opaque scene, sorted by depth). Null on failure.</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radii~4"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(3)
+            </td>
+            <td>::</td>
+            <td><strong>radii</strong></td>
+            <td>
+                <p>semi-axes along x, y, z</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~24"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              dimension(4)
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong></td>
+            <td>
+                <p>color [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-texture~2"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>texture</strong></td>
+            <td>
+                <p>image handle of the (day) texture</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_lon~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_lon</strong></td>
+            <td>
+                <p>segments in longitude (default 128)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_lat~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_lat</strong></td>
+            <td>
+                <p>segments in latitude (default 64)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-night_texture~2"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>night_texture</strong></td>
+            <td>
+                <p>image handle of the night texture</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-translucent"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>translucent</strong></td>
+            <td>
+                <p>a translucent surface (default false)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-mesh~11"></span>
+          type(c_ptr)
+        </small>
+      </h3>
+      
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~ellipsoid_create~~CallsGraph Pages: 1 -->
+<svg id="procellipsoid_createCallsGraph" width="392pt" height="200pt"
+ viewBox="0.00 0.00 392.00 200.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~ellipsoid_create~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 196.27)">
+<title>proc~~ellipsoid_create~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-196.27 388.06,-196.27 388.06,4 -4,4"/>
+<!-- proc~ellipsoid_create -->
+<g id="proc~~ellipsoid_create~~CallsGraph_node1" class="node">
+<title>proc~ellipsoid_create</title>
+<polygon fill="none" stroke="black" points="94.77,-108.27 0,-108.27 0,-84 94.77,-84 94.77,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="47.38" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50">ellipsoid_create</text>
+</g>
+<!-- interface~vkf_mesh_create -->
+<g id="proc~~ellipsoid_create~~CallsGraph_node2" class="node">
+<title>interface~vkf_mesh_create</title>
+<g id="a_proc~~ellipsoid_create~~CallsGraph_node2"><a xlink:href="../interface/vkf_mesh_create.html" xlink:title="vkf_mesh_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="242.04,-192.27 141.27,-192.27 141.27,-168 242.04,-168 242.04,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.66" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_create</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_create -->
+<g id="proc~~ellipsoid_create~~CallsGraph_edge1" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_create</title>
+<path fill="none" stroke="#000000" d="M62.02,-108.75C77.64,-122.66 104.47,-144.94 130.77,-159.13 133.41,-160.56 136.16,-161.92 138.97,-163.21"/>
+<polygon fill="#000000" stroke="#000000" points="137.36,-166.32 147.93,-166.99 140.08,-159.88 137.36,-166.32"/>
+</g>
+<!-- interface~vkf_mesh_set_bound -->
+<g id="proc~~ellipsoid_create~~CallsGraph_node3" class="node">
+<title>interface~vkf_mesh_set_bound</title>
+<g id="a_proc~~ellipsoid_create~~CallsGraph_node3"><a xlink:href="../interface/vkf_mesh_set_bound.html" xlink:title="vkf_mesh_set_bound">
+<polygon fill="#a7506f" stroke="#a7506f" points="252.54,-150.27 130.77,-150.27 130.77,-126 252.54,-126 252.54,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.66" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_set_bound</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_set_bound -->
+<g id="proc~~ellipsoid_create~~CallsGraph_edge2" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_set_bound</title>
+<path fill="none" stroke="#000000" d="M91.07,-108.74C105.56,-113.01 121.94,-117.85 137.16,-122.34"/>
+<polygon fill="#000000" stroke="#000000" points="135.97,-125.64 146.55,-125.11 137.95,-118.93 135.97,-125.64"/>
+</g>
+<!-- proc~ellipsoid -->
+<g id="proc~~ellipsoid_create~~CallsGraph_node4" class="node">
+<title>proc~ellipsoid</title>
+<g id="a_proc~~ellipsoid_create~~CallsGraph_node4"><a xlink:href="../proc/ellipsoid.html" xlink:title="ellipsoid">
+<polygon fill="#d9534f" stroke="#d9534f" points="219.54,-108.27 163.77,-108.27 163.77,-84 219.54,-84 219.54,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.66" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ellipsoid</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;proc~ellipsoid -->
+<g id="proc~~ellipsoid_create~~CallsGraph_edge3" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;proc~ellipsoid</title>
+<path fill="none" stroke="#000000" d="M94.97,-96.14C113.49,-96.14 134.55,-96.14 152.19,-96.14"/>
+<polygon fill="#000000" stroke="#000000" points="151.98,-99.64 161.98,-96.14 151.98,-92.64 151.98,-99.64"/>
+</g>
+<!-- proc~ellipsoid_size -->
+<g id="proc~~ellipsoid_create~~CallsGraph_node5" class="node">
+<title>proc~ellipsoid_size</title>
+<g id="a_proc~~ellipsoid_create~~CallsGraph_node5"><a xlink:href="../proc/ellipsoid_size.html" xlink:title="ellipsoid_size">
+<polygon fill="#d9534f" stroke="#d9534f" points="232.29,-66.27 151.02,-66.27 151.02,-42 232.29,-42 232.29,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.66" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ellipsoid_size</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;proc~ellipsoid_size -->
+<g id="proc~~ellipsoid_create~~CallsGraph_edge4" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;proc~ellipsoid_size</title>
+<path fill="none" stroke="#000000" d="M91.07,-83.53C106.5,-78.98 124.07,-73.79 140.1,-69.06"/>
+<polygon fill="#000000" stroke="#000000" points="140.87,-72.48 149.47,-66.29 138.89,-65.77 140.87,-72.48"/>
+</g>
+<!-- proc~mesh_arrays -->
+<g id="proc~~ellipsoid_create~~CallsGraph_node6" class="node">
+<title>proc~mesh_arrays</title>
+<g id="a_proc~~ellipsoid_create~~CallsGraph_node6"><a xlink:href="../proc/mesh_arrays.html" xlink:title="mesh_arrays">
+<polygon fill="#d9534f" stroke="#d9534f" points="231.54,-24.27 151.77,-24.27 151.77,0 231.54,0 231.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.66" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">mesh_arrays</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;proc~mesh_arrays -->
+<g id="proc~~ellipsoid_create~~CallsGraph_edge5" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;proc~mesh_arrays</title>
+<path fill="none" stroke="#000000" d="M62.02,-83.52C77.64,-69.61 104.47,-47.33 130.77,-33.13 134.02,-31.38 137.44,-29.73 140.94,-28.18"/>
+<polygon fill="#000000" stroke="#000000" points="142.22,-31.43 150.15,-24.41 139.57,-24.96 142.22,-31.43"/>
+</g>
+<!-- interface~vkf_mesh_array -->
+<g id="proc~~ellipsoid_create~~CallsGraph_node7" class="node">
+<title>interface~vkf_mesh_array</title>
+<g id="a_proc~~ellipsoid_create~~CallsGraph_node7"><a xlink:href="../interface/vkf_mesh_array.html" xlink:title="vkf_mesh_array">
+<polygon fill="#a7506f" stroke="#a7506f" points="384.06,-24.27 288.54,-24.27 288.54,0 384.06,0 384.06,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="336.3" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_array</text>
+</a>
+</g>
+</g>
+<!-- proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array -->
+<g id="proc~~ellipsoid_create~~CallsGraph_edge6" class="edge">
+<title>proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array</title>
+<path fill="none" stroke="#000000" d="M232.01,-12.13C245.88,-12.13 261.77,-12.13 276.87,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="276.71,-15.64 286.71,-12.14 276.71,-8.64 276.71,-15.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~ellipsoid_create~~CalledByGraph Pages: 1 -->
+<svg id="procellipsoid_createCalledByGraph" width="446pt" height="114pt"
+ viewBox="0.00 0.00 446.00 114.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~ellipsoid_create~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 110.27)">
+<title>proc~~ellipsoid_create~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-110.27 442.06,-110.27 442.06,4 -4,4"/>
+<!-- proc~ellipsoid_create -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_node1" class="node">
+<title>proc~ellipsoid_create</title>
+<polygon fill="none" stroke="black" points="438.06,-66.27 343.29,-66.27 343.29,-42 438.06,-42 438.06,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="390.67" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50">ellipsoid_create</text>
+</g>
+<!-- proc~build_lod_mesh -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_node2" class="node">
+<title>proc~build_lod_mesh</title>
+<g id="a_proc~~ellipsoid_create~~CalledByGraph_node2"><a xlink:href="../proc/build_lod_mesh.html" xlink:title="build_lod_mesh">
+<polygon fill="#d9534f" stroke="#d9534f" points="307.29,-66.27 213.27,-66.27 213.27,-42 307.29,-42 307.29,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="260.28" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">build_lod_mesh</text>
+</a>
+</g>
+</g>
+<!-- proc~build_lod_mesh&#45;&gt;proc~ellipsoid_create -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_edge1" class="edge">
+<title>proc~build_lod_mesh&#45;&gt;proc~ellipsoid_create</title>
+<path fill="none" stroke="#000000" d="M307.63,-54.13C315.45,-54.13 323.64,-54.13 331.7,-54.13"/>
+<polygon fill="#000000" stroke="#000000" points="331.44,-57.64 341.44,-54.14 331.44,-50.64 331.44,-57.64"/>
+</g>
+<!-- proc~sphere_build_contents -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_node3" class="node">
+<title>proc~sphere_build_contents</title>
+<g id="a_proc~~ellipsoid_create~~CalledByGraph_node3"><a xlink:href="../proc/sphere_build_contents.html" xlink:title="Sphere%sphere_build_contents">
+<polygon fill="#d9534f" stroke="#d9534f" points="177.27,-106.27 0,-106.27 0,-82 177.27,-82 177.27,-106.27"/>
+<text xml:space="preserve" text-anchor="middle" x="88.63" y="-90.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%sphere_build_contents</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_build_contents&#45;&gt;proc~ellipsoid_create -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_edge2" class="edge">
+<title>proc~sphere_build_contents&#45;&gt;proc~ellipsoid_create</title>
+<path fill="none" stroke="#000000" d="M177.69,-89.71C217.46,-86.88 264.94,-82.33 307.29,-75.14 316.29,-73.61 325.75,-71.59 334.92,-69.41"/>
+<polygon fill="#000000" stroke="#000000" points="335.58,-72.85 344.45,-67.06 333.9,-66.06 335.58,-72.85"/>
+</g>
+<!-- proc~sphere_build_contents&#45;&gt;proc~build_lod_mesh -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_edge4" class="edge">
+<title>proc~sphere_build_contents&#45;&gt;proc~build_lod_mesh</title>
+<path fill="none" stroke="#000000" d="M142.85,-81.59C161.61,-77.16 182.78,-72.17 201.88,-67.67"/>
+<polygon fill="#000000" stroke="#000000" points="202.44,-71.13 211.37,-65.43 200.84,-64.32 202.44,-71.13"/>
+</g>
+<!-- proc~sphere_create -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_node4" class="node">
+<title>proc~sphere_create</title>
+<g id="a_proc~~ellipsoid_create~~CalledByGraph_node4"><a xlink:href="../proc/sphere_create.html" xlink:title="sphere_create">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="303.54,-24.27 217.02,-24.27 217.02,0 303.54,0 303.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="260.28" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">sphere_create</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_create&#45;&gt;proc~ellipsoid_create -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_edge3" class="edge">
+<title>proc~sphere_create&#45;&gt;proc~ellipsoid_create</title>
+<path fill="none" stroke="#000000" d="M299.8,-24.74C312.63,-28.93 327.08,-33.66 340.6,-38.08"/>
+<polygon fill="#000000" stroke="#000000" points="339.15,-41.29 349.74,-41.07 341.32,-34.64 339.15,-41.29"/>
+</g>
+<!-- proc~sphere_update -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_node5" class="node">
+<title>proc~sphere_update</title>
+<g id="a_proc~~ellipsoid_create~~CalledByGraph_node5"><a xlink:href="../proc/sphere_update.html" xlink:title="Sphere%sphere_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="157.39,-64.27 19.87,-64.27 19.87,-40 157.39,-40 157.39,-64.27"/>
+<text xml:space="preserve" text-anchor="middle" x="88.63" y="-48.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%sphere_update</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_update&#45;&gt;proc~build_lod_mesh -->
+<g id="proc~~ellipsoid_create~~CalledByGraph_edge5" class="edge">
+<title>proc~sphere_update&#45;&gt;proc~build_lod_mesh</title>
+<path fill="none" stroke="#000000" d="M157.66,-52.94C172.13,-53.11 187.29,-53.29 201.35,-53.45"/>
+<polygon fill="#000000" stroke="#000000" points="201.3,-56.95 211.34,-53.57 201.38,-49.95 201.3,-56.95"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">function </span><span class="n">ellipsoid_create</span><span class="p">(</span><span class="n">radii</span><span class="p">,</span><span class="w"> </span><span class="n">rgba</span><span class="p">,</span><span class="w"> </span><span class="n">texture</span><span class="p">,</span><span class="w"> </span><span class="n">n_lon</span><span class="p">,</span><span class="w"> </span><span class="n">n_lat</span><span class="p">,</span><span class="w"> </span><span class="n">night_texture</span><span class="p">,</span><span class="w"> </span><span class="n">translucent</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="kt">c_double</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">radii</span><span class="w">   </span><span class="c">!! semi-axes along x, y, z</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">rgba</span><span class="w">     </span><span class="c">!! color [r, g, b, a] (0 to 1)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">texture</span><span class="w">        </span><span class="c">!! image handle of the (day) texture</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">night_texture</span><span class="w">  </span><span class="c">!! image handle of the night texture</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n_lon</span><span class="w">              </span><span class="c">!! segments in longitude (default 128)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n_lat</span><span class="w">              </span><span class="c">!! segments in latitude (default 64)</span>
+<span class="w">        </span><span class="kt">logical</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">translucent</span><span class="w">        </span><span class="c">!! a translucent surface (default false)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">mesh</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:,:),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">xyz</span><span class="p">,</span><span class="w"> </span><span class="n">normals</span><span class="p">,</span><span class="w"> </span><span class="n">uv</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="kt">c_int32_t</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">indices</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">tex</span><span class="p">,</span><span class="w"> </span><span class="n">night</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">nx</span><span class="p">,</span><span class="w"> </span><span class="n">ny</span><span class="p">,</span><span class="w"> </span><span class="n">n_vertices</span><span class="p">,</span><span class="w"> </span><span class="n">n_indices</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="kt">c_int</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">flags</span><span class="w"></span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">see_through</span><span class="w"></span>
+<span class="w">        </span><span class="n">nx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">128</span><span class="w"></span>
+<span class="w">        </span><span class="n">ny</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">64</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">n_lon</span><span class="p">))</span><span class="w"> </span><span class="n">nx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_lon</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">n_lat</span><span class="p">))</span><span class="w"> </span><span class="n">ny</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n_lat</span><span class="w"></span>
+<span class="w">        </span><span class="n">tex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">c_null_ptr</span>
+<span class="nb">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">texture</span><span class="p">))</span><span class="w"> </span><span class="n">tex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">texture</span><span class="w"></span>
+<span class="w">        </span><span class="n">night</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">c_null_ptr</span>
+<span class="nb">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">night_texture</span><span class="p">))</span><span class="w"> </span><span class="n">night</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">night_texture</span><span class="w"></span>
+<span class="w">        </span><span class="n">see_through</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">translucent</span><span class="p">))</span><span class="w"> </span><span class="n">see_through</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">translucent</span><span class="w"></span>
+<span class="w">        </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">merge</span><span class="p">(</span><span class="mi">8_c_int</span><span class="p">,</span><span class="w"> </span><span class="mi">0_c_int</span><span class="p">,</span><span class="w"> </span><span class="n">see_through</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">ellipsoid_size</span><span class="p">(</span><span class="n">nx</span><span class="p">,</span><span class="w"> </span><span class="n">ny</span><span class="p">,</span><span class="w"> </span><span class="n">n_vertices</span><span class="p">,</span><span class="w"> </span><span class="n">n_indices</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">mesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vkf_mesh_create</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">n_vertices</span><span class="p">,</span><span class="w"> </span><span class="kt">c_int</span><span class="p">),</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">n_indices</span><span class="p">,</span><span class="w"> </span><span class="kt">c_int</span><span class="p">),</span><span class="w"> </span><span class="n">rgba</span><span class="p">,</span><span class="w"> </span><span class="n">tex</span><span class="p">,</span><span class="w"> </span><span class="n">night</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">c_associated</span><span class="p">(</span><span class="n">mesh</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        call </span><span class="n">mesh_arrays</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">n_vertices</span><span class="p">,</span><span class="w"> </span><span class="n">n_indices</span><span class="p">,</span><span class="w"> </span><span class="n">xyz</span><span class="p">,</span><span class="w"> </span><span class="n">normals</span><span class="p">,</span><span class="w"> </span><span class="n">uv</span><span class="p">,</span><span class="w"> </span><span class="n">indices</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">ellipsoid</span><span class="p">(</span><span class="n">radii</span><span class="p">,</span><span class="w"> </span><span class="n">nx</span><span class="p">,</span><span class="w"> </span><span class="n">ny</span><span class="p">,</span><span class="w"> </span><span class="n">xyz</span><span class="p">,</span><span class="w"> </span><span class="n">normals</span><span class="p">,</span><span class="w"> </span><span class="n">uv</span><span class="p">,</span><span class="w"> </span><span class="n">indices</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">see_through</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">vkf_mesh_set_bound</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_c_double</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_c_double</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_c_double</span><span class="p">,</span><span class="w"> </span><span class="nb">maxval</span><span class="p">(</span><span class="n">radii</span><span class="p">))</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;vkframes: could not set a translucent mesh&#39;&#39;s bound&#39;</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">    end function </span><span class="n">ellipsoid_create</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

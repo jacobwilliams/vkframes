@@ -1,0 +1,4066 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_line_chain &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_line_chain
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 4.3% of total for modules and submodules.">549 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_line_chain.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_line_chain.f90.html'>vkf_line_chain.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_line_chain</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_chain.html#variable-chain_markers">CHAIN_MARKERS</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#variable-chain_ribbon">CHAIN_RIBBON</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#variable-chain_segments">CHAIN_SEGMENTS</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#variable-chain_strip">CHAIN_STRIP</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#variable-lod_levels">lod_levels</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#variable-max_chunk">max_chunk</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#variable-min_chunk">min_chunk</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_chain.html#type-linechain">LineChain</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#type-linechunk">LineChunk</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#type-lodlevel">LodLevel</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-dash_mode_of">dash_mode_of</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-distance">distance</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-is_built">is_built</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-is_colored">is_colored</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-lod_error~2">lod_error</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-num_chunks~2">num_chunks</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-point~2">point</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-point_color">point_color</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-segment_distance">segment_distance</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-apply_style~2">apply_style</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-chunk_bounds">chunk_bounds</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-color_slice">color_slice</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-detach~2">detach</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-draw">draw</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-draw_range">draw_range</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-init">init</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-line_buffer">line_buffer</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-measure">measure</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-move_chunks">move_chunks</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-release~2">release</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-reserve~2">reserve</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-send_lod">send_lod</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_compile">set_compile</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_dash_mode">set_dash_mode</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_highlight">set_highlight</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_lod">set_lod</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_marker_style">set_marker_style</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_pattern~2">set_pattern</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_style">set_style</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-set_trail~2">set_trail</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-slice">slice</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-split_distances">split_distances</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-split_points">split_points</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-style_node">style_node</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-update_lod">update_lod</a>
+            <a class="list-group-item" href="../module/vkf_line_chain.html#proc-written">written</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>A growing set of points drawn from a chain of GPU buffers ("chunks"), for
+the trajectory artists: a line strip, separate segments (pairs of points),
+markers (one per point) or a ribbon (a translucent surface through pairs of
+points: a quad between each pair and the next). Points are written in place, as (high, low)
+float pairs for double precision (see src/vsg/vkf_layer.cpp: EyeRelative),
+with a strip's distance along it (for dash patterns, see shaders/line.vert;
+measured from the trajectory's points), and only the chunks written to are
+uploaded again. A full chain gets new chunks, each as large as the chain so
+far or as what is needed at once, but at least min_chunk and at most
+max_chunk points, so nothing is ever copied or reallocated, and changing a
+point uploads at most max_chunk points again. In a strip, consecutive chunks
+share their end point so that the line is continuous; in a ribbon, their
+end pair.</p>
+<p>Level of detail (strips): seen from far away, a dense trajectory is mostly
+segments shorter than a pixel. For each chunk, the chain keeps the bounding
+sphere of its points and, for strides 2, 4, ... 2^lod_levels, a bound on how
+far the points skipped can be from the segments drawn (every stride-th point
+and the last), and gives them to the renderer (vkf_line_set_lod), which picks
+the stride per view (src/vsg/vkf_layer.cpp: EyeRelative). The bounds are
+built level by level: a segment at stride 2s is within the larger of its two
+halves' bounds, plus its middle point's distance from it, of the points it
+skips (the halves' segments lie within that distance of it). They are
+updated only for the segments the points written change.</p>
+<p>Writing points i1 .. i2 (indices along the whole chain):</p>
+<div class="codehilite"><pre><span></span><code><span class="n">call</span><span class="w"> </span><span class="n">chain</span><span class="o">%</span><span class="n">reserve</span><span class="p">(</span><span class="n">i2</span><span class="p">)</span><span class="w"></span>
+<span class="n">do</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">chain</span><span class="o">%</span><span class="n">num_chunks</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="n">call</span><span class="w"> </span><span class="n">chain</span><span class="o">%</span><span class="n">slice</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">i1</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="p">,</span><span class="w"> </span><span class="n">lo</span><span class="p">,</span><span class="w"> </span><span class="n">hi</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w">      </span><span class="o">!</span><span class="w"> </span><span class="n">p</span><span class="p">:</span><span class="w"> </span><span class="n">points</span><span class="w"> </span><span class="n">lo</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="n">hi</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">chunk</span><span class="w"> </span><span class="n">j</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">.</span><span class="ow">not</span><span class="o">.</span><span class="w"> </span><span class="n">associated</span><span class="p">(</span><span class="n">p</span><span class="p">))</span><span class="w"> </span><span class="n">cycle</span><span class="w"></span>
+<span class="w">    </span><span class="o">...</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="n">p</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="p">:,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="n">hi</span><span class="o">-</span><span class="n">lo</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">split_points</span><span class="p">)</span><span class="w"> </span><span class="o">...</span><span class="w"></span>
+<span class="n">end</span><span class="w"> </span><span class="n">do</span><span class="w"></span>
+<span class="n">call</span><span class="w"> </span><span class="n">chain</span><span class="o">%</span><span class="n">written</span><span class="p">(</span><span class="n">i1</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="p">)</span><span class="w">                     </span><span class="o">!</span><span class="w"> </span><span class="n">measure</span><span class="w"> </span><span class="p">(</span><span class="n">strips</span><span class="p">)</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">upload</span><span class="w"></span>
+<span class="n">call</span><span class="w"> </span><span class="n">chain</span><span class="o">%</span><span class="n">draw</span><span class="p">(</span><span class="n">i2</span><span class="p">)</span><span class="w"></span>
+</code></pre></div>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_line_chain~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_line_chainUsesGraph" width="320pt" height="94pt"
+ viewBox="0.00 0.00 320.00 94.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_line_chain~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 90.27)">
+<title>module~~vkf_line_chain~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-90.27 316.06,-90.27 316.06,4 -4,4"/>
+<!-- module~vkf_line_chain -->
+<g id="module~~vkf_line_chain~~UsesGraph_node1" class="node">
+<title>module~vkf_line_chain</title>
+<polygon fill="none" stroke="black" points="312.06,-66.27 225.54,-66.27 225.54,-42 312.06,-42 312.06,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="268.8" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_line_chain</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_line_chain~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_line_chain~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="88.02,-86.27 5.25,-86.27 5.25,-62 88.02,-62 88.02,-86.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-70.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_chain&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_chain~~UsesGraph_edge1" class="edge">
+<title>module~vkf_line_chain&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M228.8,-66.75C216.39,-70.19 202.51,-73.43 189.54,-75.14 160.07,-79.02 126.86,-79.02 99.98,-77.94"/>
+<polygon fill="#000000" stroke="#000000" points="100.16,-74.44 90.01,-77.46 99.83,-81.43 100.16,-74.44"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_line_chain~~UsesGraph_node3" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_line_chain~~UsesGraph_node3"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.16,-66.27 129.65,-66.27 129.65,-42 189.16,-42 189.16,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_chain&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_line_chain~~UsesGraph_edge2" class="edge">
+<title>module~vkf_line_chain&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.05,-54.13C217.03,-54.13 208.67,-54.13 200.73,-54.13"/>
+<polygon fill="#000000" stroke="#000000" points="201,-50.64 191,-54.14 201,-57.64 201,-50.64"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_line_chain~~UsesGraph_node4" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_line_chain~~UsesGraph_node4"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_chain&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_line_chain~~UsesGraph_edge3" class="edge">
+<title>module~vkf_line_chain&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M235.58,-41.53C224.62,-37.25 212.24,-32.41 200.73,-27.9"/>
+<polygon fill="#000000" stroke="#000000" points="202.04,-24.66 191.45,-24.28 199.49,-31.18 202.04,-24.66"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_line_chain~~UsesGraph_edge4" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.3,-59.39C120.08,-61.06 109.58,-62.95 99.26,-64.81"/>
+<polygon fill="#000000" stroke="#000000" points="98.91,-61.32 89.69,-66.54 100.16,-68.21 98.91,-61.32"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_line_chain~~UsesGraph_node5" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_line_chain~~UsesGraph_node5"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-24.27 0,-24.27 0,0 93.27,0 93.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_line_chain~~UsesGraph_edge5" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-12.13C121.52,-12.13 113.21,-12.13 104.84,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="104.98,-8.64 94.98,-12.14 104.98,-15.64 104.98,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_line_chain~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_line_chainUsedByGraph" width="546pt" height="192pt"
+ viewBox="0.00 0.00 546.00 192.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_line_chain~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 188.27)">
+<title>module~~vkf_line_chain~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-188.27 541.6,-188.27 541.6,4 -4,4"/>
+<!-- module~vkf_line_chain -->
+<g id="module~~vkf_line_chain~~UsedByGraph_node1" class="node">
+<title>module~vkf_line_chain</title>
+<polygon fill="none" stroke="black" points="86.52,-164.27 0,-164.27 0,-140 86.52,-140 86.52,-164.27"/>
+<text xml:space="preserve" text-anchor="middle" x="43.26" y="-148.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_line_chain</text>
+</g>
+<!-- module~vkf_artists -->
+<g id="module~~vkf_line_chain~~UsedByGraph_node2" class="node">
+<title>module~vkf_artists</title>
+<g id="a_module~~vkf_line_chain~~UsedByGraph_node2"><a xlink:href="../module/vkf_artists.html" xlink:title="vkf_artists">
+<polygon fill="#337ab7" stroke="#337ab7" points="187.29,-144.27 122.52,-144.27 122.52,-120 187.29,-120 187.29,-144.27"/>
+<text xml:space="preserve" text-anchor="middle" x="154.91" y="-128.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_line_chain -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_line_chain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M122.19,-137.92C114.63,-139.3 106.34,-140.81 98.09,-142.32"/>
+<polygon fill="#000000" stroke="#000000" points="97.62,-138.84 88.41,-144.08 98.87,-145.73 97.62,-138.84"/>
+</g>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_line_chain~~UsedByGraph_node3" class="node">
+<title>module~vkf_line_segments</title>
+<g id="a_module~~vkf_line_chain~~UsedByGraph_node3"><a xlink:href="../module/vkf_line_segments.html" xlink:title="vkf_line_segments">
+<polygon fill="#337ab7" stroke="#337ab7" points="332.31,-184.27 223.29,-184.27 223.29,-160 332.31,-160 332.31,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="277.8" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_line_chain -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge2" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_line_chain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M222.87,-167.5C185.29,-164.26 135.39,-159.97 97.89,-156.75"/>
+<polygon fill="#000000" stroke="#000000" points="98.45,-153.28 88.18,-155.91 97.85,-160.26 98.45,-153.28"/>
+</g>
+<!-- module~vkf_handles -->
+<g id="module~~vkf_line_chain~~UsedByGraph_node4" class="node">
+<title>module~vkf_handles</title>
+<g id="a_module~~vkf_line_chain~~UsedByGraph_node4"><a xlink:href="../module/vkf_handles.html" xlink:title="vkf_handles">
+<polygon fill="#337ab7" stroke="#337ab7" points="315.06,-64.27 240.54,-64.27 240.54,-40 315.06,-40 315.06,-64.27"/>
+<text xml:space="preserve" text-anchor="middle" x="277.8" y="-48.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge3" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M257.91,-64.64C238.13,-77.73 206.83,-98.44 184.12,-113.47"/>
+<polygon fill="#000000" stroke="#000000" points="182.33,-110.45 175.92,-118.89 186.2,-116.29 182.33,-110.45"/>
+</g>
+<!-- module~vkf_shapes -->
+<g id="module~~vkf_line_chain~~UsedByGraph_node5" class="node">
+<title>module~vkf_shapes</title>
+<g id="a_module~~vkf_line_chain~~UsedByGraph_node5"><a xlink:href="../module/vkf_shapes.html" xlink:title="vkf_shapes">
+<polygon fill="#337ab7" stroke="#337ab7" points="439.46,-104.27 369.44,-104.27 369.44,-80 439.46,-80 439.46,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="404.45" y="-88.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge4" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M376.95,-104.61C352.2,-115.3 313.92,-129.38 278.8,-132.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M276.8,-132.13C251.14,-134.15 222.33,-134.23 199.26,-133.77"/>
+<polygon fill="#000000" stroke="#000000" points="199.37,-130.28 189.29,-133.53 199.2,-137.27 199.37,-130.28"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_line_chain~~UsedByGraph_node6" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_line_chain~~UsedByGraph_node6"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="537.6,-84.27 476.58,-84.27 476.58,-60 537.6,-60 537.6,-84.27"/>
+<text xml:space="preserve" text-anchor="middle" x="507.09" y="-68.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge5" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M489.66,-84.71C470.52,-98.66 437.44,-120.72 405.45,-132.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M403.45,-132.13C351.27,-150.76 334.03,-127.8 278.8,-132.13"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge6" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M403.45,-132.13C379.92,-140.53 353.61,-149.09 331.25,-156.13"/>
+<polygon fill="#000000" stroke="#000000" points="330.23,-152.78 321.73,-159.11 332.32,-159.46 330.23,-152.78"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge8" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M476.38,-69.52C438.3,-66.17 371.81,-60.32 326.58,-56.34"/>
+<polygon fill="#000000" stroke="#000000" points="327.06,-52.87 316.79,-55.48 326.45,-59.84 327.06,-52.87"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shapes -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge9" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shapes</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M476.17,-78.08C468.19,-79.67 459.39,-81.42 450.78,-83.13"/>
+<polygon fill="#000000" stroke="#000000" points="450.28,-79.66 441.16,-85.04 451.65,-86.52 450.28,-79.66"/>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_line_chain~~UsedByGraph_node7" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_line_chain~~UsedByGraph_node7"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="440.58,-24.27 368.31,-24.27 368.31,0 440.58,0 440.58,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="404.45" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge10" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.24,-59.7C471.03,-51.23 451.98,-39.88 436.06,-30.38"/>
+<polygon fill="#000000" stroke="#000000" points="438.3,-27.65 427.92,-25.53 434.72,-33.66 438.3,-27.65"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_line_chain~~UsedByGraph_edge7" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.06,-23.49C355,-27.68 339.98,-32.5 326.04,-36.98"/>
+<polygon fill="#000000" stroke="#000000" points="325.03,-33.62 316.58,-40.01 327.17,-40.29 325.03,-33.62"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-chain_markers"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>CHAIN_MARKERS</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>a marker per point</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-chain_ribbon"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>CHAIN_RIBBON</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>a ribbon (a quad between each pair of points and the next)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-chain_segments"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>CHAIN_SEGMENTS</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>separate segments (pairs of points)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-chain_strip"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>CHAIN_STRIP</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>what a chain draws
+a line strip</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod_levels"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>lod_levels</strong></td>
+<td> =</td>
+                <td>12</td>
+            <td>
+                <p>strides up to 2^12 = 4096 (strips)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_chunk"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>max_chunk</strong></td>
+<td> =</td>
+                <td>65536</td>
+            <td>
+                <p>points in a chunk made for appending (1.5 MB)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-min_chunk"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>min_chunk</strong></td>
+<td> =</td>
+                <td>64</td>
+            <td>
+                <p>points in the smallest chunk</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-linechain"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/linechain.html'>LineChain</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A chain of point buffers (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-chunks"></span>
+              type(<a href='../type/linechunk.html'>LineChunk</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>chunks</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(capacity): the chunks, in chain order</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~40"></span>
+              real(kind=c_float),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(4)</td>
+<td> =</td>
+                <td>1.0_c_float</td>
+            <td>
+<p>[r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-colored~4"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>colored</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>(lines, markers: a color per point (color_slice))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compile_new"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>compile_new</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>chunks made from now on are compiled (the group is shown)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dash_length"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dash_length</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>(2: the pattern's length, scene units; 0 from the first view)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dash_mode~3"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dash_mode</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>(lines: 0 anchored, 1 screen-locked, 2 fixed length: vkf_line_set_dash_mode)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-group~16"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the group node the chunks are under (null: not built)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-highlight~3"></span>
+              real(kind=c_float),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>highlight</strong>(12)</td>
+<td> =</td>
+                <td>[1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float, 0.0_c_float, 40.0_c_float, 50.0_c_float, 12.0_c_float, 1.5_c_float, 0.0_c_float, 0.0_c_float, 0.0_c_float]</td>
+            <td>
+<p>(lines: highlight, see vkf_line_set_highlight)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-image~8"></span>
+              type(c_ptr),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>image</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>(markers: the image (shape 10))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kind~8"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kind</strong></td>
+<td> =</td>
+                <td>CHAIN_STRIP</td>
+            <td>
+<p>what is drawn: a CHAIN_* constant</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod~4"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lod</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>(strips: level of detail (else every point drawn))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_chunks"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_chunks</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of chunks</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern~10"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern</strong></td>
+<td> =</td>
+                <td>int(z&#39;FFFF&#39;)</td>
+            <td>
+<p>(lines: 16-bit dash pattern (z'FFFF': solid))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern_factor~4"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern_factor</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+<p>(lines: dash pattern (see line_set_pattern))</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~17"></span>
+              real(kind=c_float),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+<td> =</td>
+                <td>0.0_c_float</td>
+            <td>
+<p>(markers: attenuation radius)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shape~4"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shape</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>markers</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-trail"></span>
+              real(kind=c_float),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>trail</strong>(20)</td>
+<td> =</td>
+                <td>0.0_c_float</td>
+            <td>
+<p>(strips: the trail, see vkf_line_set_trail; z = 0: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~19"></span>
+              real(kind=c_float),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+<td> =</td>
+                <td>1.0_c_float</td>
+            <td>
+<p>line width, or marker size</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-chunk_bounds'>chunk_bounds</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-color_slice'>color_slice</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-dash_mode_of'>dash_mode_of</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-detach~2'>detach</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-distance~5'>distance</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-draw'>draw</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-draw_range'>draw_range</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-init'>init</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-is_built'>is_built</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-is_colored'>is_colored</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-lod_error~2'>lod_error</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-num_chunks~4'>num_chunks</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-point~5'>point</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-point_color'>point_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-release~6'>release</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-reserve~2'>reserve</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_compile'>set_compile</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_dash_mode~3'>set_dash_mode</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_highlight~4'>set_highlight</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_lod'>set_lod</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_marker_style'>set_marker_style</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_pattern~4'>set_pattern</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_style'>set_style</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-set_trail~2'>set_trail</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-slice'>slice</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-style_node'>style_node</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/linechain.html#boundprocedure-written'>written</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-linechunk"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/linechunk.html'>LineChunk</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A buffer holding points first .. first+capacity-1 of the chain.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-box_hi"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>box_hi</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>bounding box of the points written: upper corner</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-box_lo"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>box_lo</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>bounding box of the points written: lower corner</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-capacity~17"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>capacity</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of points it holds</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-first~7"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>first</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+<p>the chain index of its first point</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~19"></span>
+              type(c_ptr),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the line, marker or ribbon node</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lod~3"></span>
+              type(<a href='../type/lodlevel.html'>LodLevel</a>),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lod</strong>(lod_levels)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>error bounds at strides 2, 4, ... 2^lod_levels</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_written~3"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_written</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>points written (the bounds are for them)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-lodlevel"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/lodlevel.html'>LodLevel</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Error bounds of a strip's segments at one stride (level of detail).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bound~7"></span>
+              real(kind=c_float),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>bound</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(0 : segments - 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-dash_mode_of"></span> <h3>private pure function <a href='../proc/dash_mode_of.html'>dash_mode_of</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The dashes' layout (set_dash_mode).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~676"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-distance"></span> <h3>private  function <a href='../proc/distance.html'>distance</a>(self, i) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A strip's distance along it at point i, as written.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~683"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~54"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_built"></span> <h3>private pure function <a href='../proc/is_built.html'>is_built</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if the chain has a group to draw under (between <code>init</code> and <code>release</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~657"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_colored"></span> <h3>private pure function <a href='../proc/is_colored.html'>is_colored</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>For lines and markers, whether each point has its own color (init's <code>colored</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~658"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-lod_error~2"></span> <h3>private  function <a href='../proc/lod_error~2.html'>lod_error</a>(self, j) result(error)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Chunk j's error bounds: how far the points skipped can be from the
+segments drawn at stride 2^k (k = 1 .. lod_levels; 0 where not known).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~668"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~27"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=c_float), (lod_levels)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_chunks~2"></span> <h3>private pure function <a href='../proc/num_chunks~2.html'>num_chunks</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of chunks.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~659"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-point~2"></span> <h3>private  function <a href='../proc/point~2.html'>point</a>(self, i) result(v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Point i as written: read back from the buffers (zero if not held).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~681"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~52"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-point_color"></span> <h3>private  function <a href='../proc/point_color.html'>point_color</a>(self, i) result(rgba)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The color of point i of a colored chain, as stored (rgba; white if not colored).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~682"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i~53"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segment_distance"></span> <h3>private pure function <a href='../proc/segment_distance.html'>segment_distance</a>(v, a, b) result(d)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Distance from point v to the segment from a to b.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~37"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~30"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~19"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_style~2"></span> <h3>private  subroutine <a href='../proc/apply_style~2.html'>apply_style</a>(self, line)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Give the chain's style (color, width or size, pattern, highlight, marker shape) to the node <code>line</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~679"></span>
+              type(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~21"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-chunk_bounds"></span> <h3>private  subroutine <a href='../proc/chunk_bounds.html'>chunk_bounds</a>(self, j, first, n, lo, hi)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Chunk j's points (strips: first .. first + n - 1 of the chain) and the
+bounding box of them (n = 0 if none are measured yet), e.g. to skip a
+chunk when picking.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~680"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~35"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-first~8"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>first</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~76"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lo~17"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lo</strong>(3)</td>
+            <td>
+<p>the bounding box's corners</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hi~18"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hi</strong>(3)</td>
+            <td>
+<p>the bounding box's corners</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-color_slice"></span> <h3>private  subroutine <a href='../proc/color_slice.html'>color_slice</a>(self, j, i1, i2, lo, hi, c)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>As <code>slice</code>, for the colors of a colored chain: c(rgba, point) of points
+lo .. hi of chunk j (null if not colored or nothing there).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~662"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~21"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i1~15"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i1</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i2~14"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i2</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lo~12"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lo</strong></td>
+            <td>
+<p>chain indices (lo &gt; hi: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hi~13"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hi</strong></td>
+            <td>
+<p>chain indices (lo &gt; hi: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c~36"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:,:), pointer
+            </td>
+            <td>::</td>
+            <td><strong>c</strong></td>
+            <td>
+<p>(4, hi-lo+1): [r, g, b, a]</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-detach~2"></span> <h3>private  subroutine <a href='../proc/detach~2.html'>detach</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Remove the chunks from the group (also while running), and release them.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~655"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-draw"></span> <h3>private  subroutine <a href='../proc/draw.html'>draw</a>(self, k)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Draw points 1 .. k (no upload).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~669"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-k~79"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>k</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-draw_range"></span> <h3>private  subroutine <a href='../proc/draw_range.html'>draw_range</a>(self, i1, i2)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Draw points i1 .. i2 only (chain indices; none if i2 &lt; i1): e.g. a trace
+of decreasing times, its last points.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~670"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i1~17"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i1</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i2~16"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i2</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-init"></span> <h3>private  subroutine <a href='../proc/init.html'>init</a>(self, group, kind, image, colored)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Draw under <code>group</code> (a CHAIN_* kind; markers with <code>image</code>, a
+vkf_image_read handle, for the image shape). Chunks made later are
+compiled once set_compile says so.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~653"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-group~17"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kind~9"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kind</strong></td>
+            <td>
+<p>a CHAIN_* constant</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-image~9"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>image</strong></td>
+            <td>
+<p>(markers: a vkf_image_read handle)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-colored~5"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>colored</strong></td>
+            <td>
+<p>(lines, markers: a color per point (color_slice))</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-line_buffer"></span> <h3>public  subroutine <a href='../proc/line_buffer.html'>line_buffer</a>(line, p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The point buffer of a line or marker node: (xyz and distance, high/low,
+point).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~22"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~55"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:,:,:), pointer
+            </td>
+            <td>::</td>
+            <td><strong>p</strong></td>
+            <td>
+<p>(4, 2, capacity); null if none</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-measure"></span> <h3>private  subroutine <a href='../proc/measure.html'>measure</a>(self, j, lo, hi, x)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The distances along the strip of points lo .. hi of chunk j: from the
+previous point (in this chunk; the first point of a chunk after the
+first is the previous chunk's last, measured before), or 0 at point 1.
+From <code>x</code> (as in <code>written</code>) if given, else from the floats written.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~664"></span>
+              type(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~23"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lo~14"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lo</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hi~15"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hi</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~22"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(:,:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-move_chunks"></span> <h3>private  subroutine <a href='../proc/move_chunks.html'>move_chunks</a>(from, to)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Chunks moved to a new array (their level-of-detail bounds moved, not copied).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-from~6"></span>
+              type(<a href='../type/linechunk.html'>LineChunk</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>from</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-to~5"></span>
+              type(<a href='../type/linechunk.html'>LineChunk</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>to</strong>(:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-release~2"></span> <h3>private  subroutine <a href='../proc/release~2.html'>release</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Forget the chunks (after their group was removed from the scene): init
+starts again.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~654"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-reserve~2"></span> <h3>private  subroutine <a href='../proc/reserve~2.html'>reserve</a>(self, n)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Chunks for at least n points (at least one chunk). Separate segments and
+ribbons: chunks hold whole pairs (n should be even).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~660"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~73"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-send_lod"></span> <h3>private  subroutine <a href='../proc/send_lod.html'>send_lod</a>(self, j)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Give chunk j's level of detail to the renderer (none if switched off).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~666"></span>
+              type(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~25"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_compile"></span> <h3>private  subroutine <a href='../proc/set_compile.html'>set_compile</a>(self, compile)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Compile chunks made from now on (for the windows running): once the
+group is shown (not while building, when they are compiled with it).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~656"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-compile~4"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>compile</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_dash_mode"></span> <h3>private  subroutine <a href='../proc/set_dash_mode.html'>set_dash_mode</a>(self, mode, length)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>For lines, how the dashes are laid out: 0 anchored to the line (the
+default), 1 screen-locked (a constant length in pixels, following the
+line on screen), 2 a fixed length of the line (strips): <code>length</code> scene
+units for the pattern, or if 0 its length on screen when first drawn.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~675"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mode~17"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mode</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-length~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>length</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_highlight"></span> <h3>private  subroutine <a href='../proc/set_highlight.html'>set_highlight</a>(self, flags, color, spacing, speed, band, period)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>For lines, the highlight (see shaders/line.vert): <code>flags</code> (1 pulse, 2
+arrows; 0 none), its color (rgba), the arrows' spacing and speed (window
+units, and per second), the band's width (window units) and the pulse's
+period (s).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~673"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-flags~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>flags</strong></td>
+            <td>
+<p>1 pulse + 2 arrows (0: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~42"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(4)</td>
+            <td>
+<p>[r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-spacing~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>spacing</strong></td>
+            <td>
+<p>between arrows (window units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-speed~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>speed</strong></td>
+            <td>
+<p>of the arrows (window units per second)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-band"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>band</strong></td>
+            <td>
+<p>width of the band the arrows are drawn in (window units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-period"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>period</strong></td>
+            <td>
+<p>of the pulse (s)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_lod"></span> <h3>private  subroutine <a href='../proc/set_lod.html'>set_lod</a>(self, enabled)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Level of detail on (the default: seen from far away, a strip is drawn
+from fewer points, within half a pixel of all of them) or off (every
+point drawn).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~667"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-enabled~7"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>enabled</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_marker_style"></span> <h3>private  subroutine <a href='../proc/set_marker_style.html'>set_marker_style</a>(self, color, size, shape, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>For markers, the color (rgba), size (window units), shape (shaders/marker.frag)
+and attenuation radius (scene units, 0 for none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~678"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~43"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(4)</td>
+            <td>
+<p>[r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>(window units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shape~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shape</strong></td>
+            <td>
+<p>marker shape (shaders/marker.frag)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~18"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>attenuation radius (scene units; 0: none)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_pattern~2"></span> <h3>private  subroutine <a href='../proc/set_pattern~2.html'>set_pattern</a>(self, factor, pattern)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>For lines, a dash pattern (see line_set_pattern; z'FFFF' solid).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~671"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-factor~10"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>factor</strong></td>
+            <td>
+<p>repeat count of each bit of the pattern</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pattern~11"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pattern</strong></td>
+            <td>
+<p>16-bit dash pattern (z'FFFF': solid)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_style"></span> <h3>private  subroutine <a href='../proc/set_style.html'>set_style</a>(self, color, width)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Color (rgba) and width (window units) of the whole chain.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~672"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~41"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(4)</td>
+            <td>
+<p>[r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+<p>(window units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_trail~2"></span> <h3>private  subroutine <a href='../proc/set_trail~2.html'>set_trail</a>(self, values)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>For strips, the trail (see vkf_line_set_trail: 20 values; the third 0:
+none), given to every chunk (changed every frame the time does: a few
+floats per chunk uploaded).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~674"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-values~4"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>values</strong>(20)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-slice"></span> <h3>private  subroutine <a href='../proc/slice.html'>slice</a>(self, j, i1, i2, lo, hi, p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The part lo .. hi of points i1 .. i2 that chunk j holds, and its buffer
+p(xyz and distance, high/low, lo:hi) (null if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~661"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~20"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i1~14"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i1</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i2~13"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i2</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lo~11"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lo</strong></td>
+            <td>
+<p>chain indices (lo &gt; hi: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hi~12"></span>
+              integer,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hi</strong></td>
+            <td>
+<p>chain indices (lo &gt; hi: none)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~49"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(:,:,:), pointer
+            </td>
+            <td>::</td>
+            <td><strong>p</strong></td>
+            <td>
+<p>(4, 2, hi-lo+1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-split_distances"></span> <h3>public pure subroutine <a href='../proc/split_distances.html'>split_distances</a>(s, d)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Distances s(n) into d(high/low, n).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~32"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong>(:)</td>
+            <td>
+<p>(n)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-d~16"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>d</strong>(:,:)</td>
+            <td>
+<p>(2, n)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-split_points"></span> <h3>public pure subroutine <a href='../proc/split_points.html'>split_points</a>(x, p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Points x(3, n) into p(xyz and distance, high/low, n): the floats
+nearest, and the rest (the distances are left as they are).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~24"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(:,:)</td>
+            <td>
+<p>(3, n)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~54"></span>
+              real(kind=c_float),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>p</strong>(:,:,:)</td>
+            <td>
+<p>(4, 2, n)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-style_node"></span> <h3>private  subroutine <a href='../proc/style_node.html'>style_node</a>(self, line)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Give the chain's style to <code>line</code>, a node not in the chain (e.g. a
+curve's trace-mode tail, drawn as part of it).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~677"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line~20"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-update_lod"></span> <h3>private  subroutine <a href='../proc/update_lod.html'>update_lod</a>(self, j, lo, hi, x)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Points lo .. hi of chunk j (a strip's) were written, the last being hi:
+update the bounding box and the error bounds of the segments they change
+at each stride, and give them to the renderer. <code>x</code> as in <code>written</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~665"></span>
+              type(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-j~24"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>j</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lo~15"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lo</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hi~16"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hi</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~23"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(:,:)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-written"></span> <h3>private  subroutine <a href='../proc/written.html'>written</a>(self, i1, i2, x)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Points i1 .. i2 were written: measure a strip's distances along it (from
+the distance at point i1-1), update its level of detail, and upload the
+chunks holding them. <code>x</code>: the points in double precision, x(:, i) for
+chain point i (at least i1-1 .. i2), to measure from; without it, from
+the floats written. (i2 is the last point written in the chain.)</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~663"></span>
+              class(<a href='../type/linechain.html'>LineChain</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i1~16"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i1</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-i2~15"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>i2</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(:,:)</td>
+            <td>
+<p>(3, at least i1-1 .. i2): the points</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

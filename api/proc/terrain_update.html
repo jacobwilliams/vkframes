@@ -1,0 +1,954 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>terrain_update &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>terrain_update
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">20 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_terrain.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_terrain.f90.html'>vkf_terrain.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_terrain.html'>vkf_terrain</a></li>
+            <li class="breadcrumb-item active" aria-current="page">terrain_update</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/terrain_update.html#src">terrain_update</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private recursive subroutine terrain_update(self, t)  
+</h2>
+    
+
+    <p>Each frame: if the map's window has closed (the map was released with
+it), the map again for a window still open (compiled for the windows
+running), then the frame's update.</p>
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/terrainbody.html'>TerrainBody</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~130"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+                <p>simulation time (s)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~terrain_update~~CallsGraph Pages: 1 -->
+<svg id="procterrain_updateCallsGraph" width="641pt" height="438pt"
+ viewBox="0.00 0.00 641.00 438.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~terrain_update~~CallsGraph" class="graph" transform="scale(0.570224 0.570224) rotate(0) translate(4 763.27)">
+<title>proc~~terrain_update~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-763.27 1120.12,-763.27 1120.12,4 -4,4"/>
+<!-- proc~terrain_update -->
+<g id="proc~~terrain_update~~CallsGraph_node1" class="node">
+<title>proc~terrain_update</title>
+<polygon fill="none" stroke="black" points="163.77,-612.27 0,-612.27 0,-588 163.77,-588 163.77,-612.27"/>
+<text xml:space="preserve" text-anchor="middle" x="81.88" y="-596.53" font-family="Helvetica,sans-Serif" font-size="10.50">TerrainBody%terrain_update</text>
+</g>
+<!-- interface~vkf_compile_node -->
+<g id="proc~~terrain_update~~CallsGraph_node2" class="node">
+<title>interface~vkf_compile_node</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node2"><a xlink:href="../interface/vkf_compile_node.html" xlink:title="vkf_compile_node">
+<polygon fill="#a7506f" stroke="#a7506f" points="326.79,-759.27 219.27,-759.27 219.27,-735 326.79,-735 326.79,-759.27"/>
+<text xml:space="preserve" text-anchor="middle" x="273.03" y="-743.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_compile_node</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~terrain_update~~CallsGraph_edge1" class="edge">
+<title>proc~terrain_update&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M90.94,-612.59C107.92,-637.88 150,-695.42 199.77,-726.13 202.53,-727.84 205.44,-729.41 208.44,-730.86"/>
+<polygon fill="#000000" stroke="#000000" points="206.93,-734.02 217.5,-734.73 209.68,-727.58 206.93,-734.02"/>
+</g>
+<!-- interface~vkf_node_delete -->
+<g id="proc~~terrain_update~~CallsGraph_node3" class="node">
+<title>interface~vkf_node_delete</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node3"><a xlink:href="../interface/vkf_node_delete.html" xlink:title="vkf_node_delete">
+<polygon fill="#a7506f" stroke="#a7506f" points="322.29,-717.27 223.77,-717.27 223.77,-693 322.29,-693 322.29,-717.27"/>
+<text xml:space="preserve" text-anchor="middle" x="273.03" y="-701.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_delete</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~terrain_update~~CallsGraph_edge2" class="edge">
+<title>proc~terrain_update&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M96.98,-612.74C117.97,-630.92 159.33,-664.45 199.77,-684.13 203.93,-686.16 208.33,-688.03 212.81,-689.74"/>
+<polygon fill="#000000" stroke="#000000" points="211.34,-692.94 221.94,-692.96 213.67,-686.33 211.34,-692.94"/>
+</g>
+<!-- interface~vkf_node_remove_child -->
+<g id="proc~~terrain_update~~CallsGraph_node4" class="node">
+<title>interface~vkf_node_remove_child</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node4"><a xlink:href="../interface/vkf_node_remove_child.html" xlink:title="vkf_node_remove_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="341.04,-675.27 205.02,-675.27 205.02,-651 341.04,-651 341.04,-675.27"/>
+<text xml:space="preserve" text-anchor="middle" x="273.03" y="-659.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_remove_child</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;interface~vkf_node_remove_child -->
+<g id="proc~~terrain_update~~CallsGraph_edge3" class="edge">
+<title>proc~terrain_update&#45;&gt;interface~vkf_node_remove_child</title>
+<path fill="none" stroke="#000000" d="M116.2,-612.73C139.48,-621.38 171.36,-632.91 199.77,-642.13 205.15,-643.88 210.77,-645.64 216.4,-647.35"/>
+<polygon fill="#000000" stroke="#000000" points="215.15,-650.63 225.73,-650.14 217.16,-643.92 215.15,-650.63"/>
+</g>
+<!-- interface~vkf_rocky_map_alive -->
+<g id="proc~~terrain_update~~CallsGraph_node5" class="node">
+<title>interface~vkf_rocky_map_alive</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node5"><a xlink:href="../interface/vkf_rocky_map_alive.html" xlink:title="vkf_rocky_map_alive">
+<polygon fill="#a7506f" stroke="#a7506f" points="333.54,-633.27 212.52,-633.27 212.52,-609 333.54,-609 333.54,-633.27"/>
+<text xml:space="preserve" text-anchor="middle" x="273.03" y="-617.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_rocky_map_alive</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;interface~vkf_rocky_map_alive -->
+<g id="proc~~terrain_update~~CallsGraph_edge4" class="edge">
+<title>proc~terrain_update&#45;&gt;interface~vkf_rocky_map_alive</title>
+<path fill="none" stroke="#000000" d="M164.2,-609.16C176.41,-610.52 188.93,-611.91 200.91,-613.24"/>
+<polygon fill="#000000" stroke="#000000" points="200.38,-616.7 210.7,-614.33 201.15,-609.74 200.38,-616.7"/>
+</g>
+<!-- interface~vkf_viewer_any -->
+<g id="proc~~terrain_update~~CallsGraph_node6" class="node">
+<title>interface~vkf_viewer_any</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node6"><a xlink:href="../interface/vkf_viewer_any.html" xlink:title="vkf_viewer_any">
+<polygon fill="#a7506f" stroke="#a7506f" points="319.29,-591.27 226.77,-591.27 226.77,-567 319.29,-567 319.29,-591.27"/>
+<text xml:space="preserve" text-anchor="middle" x="273.03" y="-575.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_viewer_any</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;interface~vkf_viewer_any -->
+<g id="proc~~terrain_update~~CallsGraph_edge5" class="edge">
+<title>proc~terrain_update&#45;&gt;interface~vkf_viewer_any</title>
+<path fill="none" stroke="#000000" d="M164.2,-591.11C181.36,-589.2 199.11,-587.23 215.14,-585.45"/>
+<polygon fill="#000000" stroke="#000000" points="215.42,-588.94 224.97,-584.36 214.65,-581.98 215.42,-588.94"/>
+</g>
+<!-- proc~make_map -->
+<g id="proc~~terrain_update~~CallsGraph_node7" class="node">
+<title>proc~make_map</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node7"><a xlink:href="../proc/make_map.html" xlink:title="make_map">
+<polygon fill="#d9534f" stroke="#d9534f" points="308.42,-491.27 237.65,-491.27 237.65,-467 308.42,-467 308.42,-491.27"/>
+<text xml:space="preserve" text-anchor="middle" x="273.03" y="-475.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">make_map</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;proc~make_map -->
+<g id="proc~~terrain_update~~CallsGraph_edge6" class="edge">
+<title>proc~terrain_update&#45;&gt;proc~make_map</title>
+<path fill="none" stroke="#000000" d="M102.31,-587.64C125.49,-572.74 165.44,-547.08 199.77,-525.13 213.95,-516.07 229.71,-506.03 242.89,-497.65"/>
+<polygon fill="#000000" stroke="#000000" points="244.55,-500.74 251.11,-492.42 240.8,-494.84 244.55,-500.74"/>
+</g>
+<!-- proc~name -->
+<g id="proc~~terrain_update~~CallsGraph_node8" class="node">
+<title>proc~name</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node8"><a xlink:href="../proc/name.html" xlink:title="ReferenceFrame%name">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="731.21,-528.27 591.44,-528.27 591.44,-504 731.21,-504 731.21,-528.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-512.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%name</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;proc~name -->
+<g id="proc~~terrain_update~~CallsGraph_edge7" class="edge">
+<title>proc~terrain_update&#45;&gt;proc~name</title>
+<path fill="none" stroke="#000000" d="M111.58,-587.5C134.88,-577.82 168.82,-564.99 199.77,-558.13 270.06,-542.57 467.89,-528.2 580.07,-520.99"/>
+<polygon fill="#000000" stroke="#000000" points="580.05,-524.5 589.8,-520.37 579.6,-517.51 580.05,-524.5"/>
+</g>
+<!-- proc~update~3 -->
+<g id="proc~~terrain_update~~CallsGraph_node9" class="node">
+<title>proc~update~3</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node9"><a xlink:href="../proc/update~3.html" xlink:title="ReferenceFrame%update">
+<polygon fill="#d9534f" stroke="#d9534f" points="346.29,-363.27 199.77,-363.27 199.77,-339 346.29,-339 346.29,-363.27"/>
+<text xml:space="preserve" text-anchor="middle" x="273.03" y="-347.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%update</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;proc~update~3 -->
+<g id="proc~~terrain_update~~CallsGraph_edge8" class="edge">
+<title>proc~terrain_update&#45;&gt;proc~update~3</title>
+<path fill="none" stroke="#000000" d="M92.26,-587.79C122.45,-548.04 217.36,-423.1 255.71,-372.61"/>
+<polygon fill="#000000" stroke="#000000" points="258.42,-374.84 261.68,-364.76 252.84,-370.61 258.42,-374.84"/>
+</g>
+<!-- proc~make_map&#45;&gt;proc~name -->
+<g id="proc~~terrain_update~~CallsGraph_edge13" class="edge">
+<title>proc~make_map&#45;&gt;proc~name</title>
+<path fill="none" stroke="#000000" d="M308.52,-475.63C359.26,-471.23 456.84,-465.68 538.56,-478.13 553.2,-480.37 585.78,-490.64 613.55,-499.94"/>
+<polygon fill="#000000" stroke="#000000" points="612.28,-503.2 622.87,-503.09 614.52,-496.57 612.28,-503.2"/>
+</g>
+<!-- interface~vkf_node_add_child -->
+<g id="proc~~terrain_update~~CallsGraph_node10" class="node">
+<title>interface~vkf_node_add_child</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node10"><a xlink:href="../interface/vkf_node_add_child.html" xlink:title="vkf_node_add_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="518.31,-389.27 402.54,-389.27 402.54,-365 518.31,-365 518.31,-389.27"/>
+<text xml:space="preserve" text-anchor="middle" x="460.43" y="-373.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~make_map&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~terrain_update~~CallsGraph_edge9" class="edge">
+<title>proc~make_map&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M287.27,-466.56C306.65,-448.82 344.53,-416.57 382.29,-398.13 385.6,-396.52 389.04,-395.02 392.57,-393.62"/>
+<polygon fill="#000000" stroke="#000000" points="393.68,-396.94 401.89,-390.24 391.29,-390.36 393.68,-396.94"/>
+</g>
+<!-- interface~vkf_rocky_map_create -->
+<g id="proc~~terrain_update~~CallsGraph_node11" class="node">
+<title>interface~vkf_rocky_map_create</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node11"><a xlink:href="../interface/vkf_rocky_map_create.html" xlink:title="vkf_rocky_map_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="525.06,-511.27 395.79,-511.27 395.79,-487 525.06,-487 525.06,-511.27"/>
+<text xml:space="preserve" text-anchor="middle" x="460.43" y="-495.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_rocky_map_create</text>
+</a>
+</g>
+</g>
+<!-- proc~make_map&#45;&gt;interface~vkf_rocky_map_create -->
+<g id="proc~~terrain_update~~CallsGraph_edge10" class="edge">
+<title>proc~make_map&#45;&gt;interface~vkf_rocky_map_create</title>
+<path fill="none" stroke="#000000" d="M308.9,-482.9C330.1,-485.18 358.01,-488.2 384.04,-491"/>
+<polygon fill="#000000" stroke="#000000" points="383.62,-494.48 393.94,-492.07 384.37,-487.52 383.62,-494.48"/>
+</g>
+<!-- proc~apply_layer -->
+<g id="proc~~terrain_update~~CallsGraph_node12" class="node">
+<title>proc~apply_layer</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node12"><a xlink:href="../proc/apply_layer.html" xlink:title="apply_layer">
+<polygon fill="#d9534f" stroke="#d9534f" points="496.94,-431.27 423.92,-431.27 423.92,-407 496.94,-407 496.94,-431.27"/>
+<text xml:space="preserve" text-anchor="middle" x="460.43" y="-415.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_layer</text>
+</a>
+</g>
+</g>
+<!-- proc~make_map&#45;&gt;proc~apply_layer -->
+<g id="proc~~terrain_update~~CallsGraph_edge11" class="edge">
+<title>proc~make_map&#45;&gt;proc~apply_layer</title>
+<path fill="none" stroke="#000000" d="M308.9,-467.85C338.18,-458.38 380.26,-444.75 412.49,-434.32"/>
+<polygon fill="#000000" stroke="#000000" points="413.57,-437.65 422.01,-431.25 411.41,-430.99 413.57,-437.65"/>
+</g>
+<!-- proc~apply_settings -->
+<g id="proc~~terrain_update~~CallsGraph_node13" class="node">
+<title>proc~apply_settings</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node13"><a xlink:href="../proc/apply_settings.html" xlink:title="apply_settings">
+<polygon fill="#d9534f" stroke="#d9534f" points="504.06,-591.27 416.79,-591.27 416.79,-567 504.06,-567 504.06,-591.27"/>
+<text xml:space="preserve" text-anchor="middle" x="460.43" y="-575.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_settings</text>
+</a>
+</g>
+</g>
+<!-- proc~make_map&#45;&gt;proc~apply_settings -->
+<g id="proc~~terrain_update~~CallsGraph_edge12" class="edge">
+<title>proc~make_map&#45;&gt;proc~apply_settings</title>
+<path fill="none" stroke="#000000" d="M297.14,-491.6C329.61,-509.11 388.93,-541.11 426.16,-561.19"/>
+<polygon fill="#000000" stroke="#000000" points="424.23,-564.13 434.7,-565.8 427.56,-557.97 424.23,-564.13"/>
+</g>
+<!-- proc~update -->
+<g id="proc~~terrain_update~~CallsGraph_node14" class="node">
+<title>proc~update</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node14"><a xlink:href="../proc/update.html" xlink:title="TrajectoryFollower%update">
+<polygon fill="#d9534f" stroke="#d9534f" points="538.56,-268.27 382.29,-268.27 382.29,-244 538.56,-244 538.56,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="460.43" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%update</text>
+</a>
+</g>
+</g>
+<!-- proc~update~3&#45;&gt;proc~update -->
+<g id="proc~~terrain_update~~CallsGraph_edge14" class="edge">
+<title>proc~update~3&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M298.65,-338.52C331.01,-321.94 388.05,-292.71 424.76,-273.9"/>
+<polygon fill="#000000" stroke="#000000" points="426.35,-277.02 433.65,-269.34 423.16,-270.79 426.35,-277.02"/>
+</g>
+<!-- proc~apply_layer&#45;&gt;proc~name -->
+<g id="proc~~terrain_update~~CallsGraph_edge18" class="edge">
+<title>proc~apply_layer&#45;&gt;proc~name</title>
+<path fill="none" stroke="#000000" d="M497.05,-426.82C510.78,-430.86 526.14,-436.76 538.56,-445.13 558.94,-458.89 554.19,-473.37 574.56,-487.13 581.62,-491.91 589.54,-495.96 597.64,-499.38"/>
+<polygon fill="#000000" stroke="#000000" points="596.33,-502.63 606.92,-502.98 598.86,-496.1 596.33,-502.63"/>
+</g>
+<!-- interface~vkf_rocky_add_elevation -->
+<g id="proc~~terrain_update~~CallsGraph_node15" class="node">
+<title>interface~vkf_rocky_add_elevation</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node15"><a xlink:href="../interface/vkf_rocky_add_elevation.html" xlink:title="vkf_rocky_add_elevation">
+<polygon fill="#a7506f" stroke="#a7506f" points="731.96,-478.27 590.69,-478.27 590.69,-454 731.96,-454 731.96,-478.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-462.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_rocky_add_elevation</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_layer&#45;&gt;interface~vkf_rocky_add_elevation -->
+<g id="proc~~terrain_update~~CallsGraph_edge15" class="edge">
+<title>proc~apply_layer&#45;&gt;interface~vkf_rocky_add_elevation</title>
+<path fill="none" stroke="#000000" d="M496.98,-427.54C524.49,-434.04 563.3,-443.21 596.2,-450.98"/>
+<polygon fill="#000000" stroke="#000000" points="595.09,-454.32 605.62,-453.21 596.7,-447.5 595.09,-454.32"/>
+</g>
+<!-- interface~vkf_rocky_add_image -->
+<g id="proc~~terrain_update~~CallsGraph_node16" class="node">
+<title>interface~vkf_rocky_add_image</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node16"><a xlink:href="../interface/vkf_rocky_add_image.html" xlink:title="vkf_rocky_add_image">
+<polygon fill="#a7506f" stroke="#a7506f" points="724.08,-436.27 598.56,-436.27 598.56,-412 724.08,-412 724.08,-436.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-420.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_rocky_add_image</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_layer&#45;&gt;interface~vkf_rocky_add_image -->
+<g id="proc~~terrain_update~~CallsGraph_edge16" class="edge">
+<title>proc~apply_layer&#45;&gt;interface~vkf_rocky_add_image</title>
+<path fill="none" stroke="#000000" d="M496.98,-420.03C521.96,-420.66 556.27,-421.52 586.99,-422.29"/>
+<polygon fill="#000000" stroke="#000000" points="586.53,-425.78 596.61,-422.53 586.7,-418.78 586.53,-425.78"/>
+</g>
+<!-- proc~find_data_file -->
+<g id="proc~~terrain_update~~CallsGraph_node21" class="node">
+<title>proc~find_data_file</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node21"><a xlink:href="../proc/find_data_file.html" xlink:title="find_data_file">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="702.71,-394.27 619.94,-394.27 619.94,-370 702.71,-370 702.71,-394.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-378.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_data_file</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_layer&#45;&gt;proc~find_data_file -->
+<g id="proc~~terrain_update~~CallsGraph_edge17" class="edge">
+<title>proc~apply_layer&#45;&gt;proc~find_data_file</title>
+<path fill="none" stroke="#000000" d="M496.98,-412.52C528.04,-406.74 573.51,-398.28 608.59,-391.76"/>
+<polygon fill="#000000" stroke="#000000" points="608.9,-395.26 618.1,-389.99 607.62,-388.38 608.9,-395.26"/>
+</g>
+<!-- proc~apply_settings&#45;&gt;proc~name -->
+<g id="proc~~terrain_update~~CallsGraph_edge21" class="edge">
+<title>proc~apply_settings&#45;&gt;proc~name</title>
+<path fill="none" stroke="#000000" d="M498.88,-566.52C530.32,-555.93 570.74,-542.33 574.56,-541.13 584.45,-538.03 595.02,-534.85 605.24,-531.83"/>
+<polygon fill="#000000" stroke="#000000" points="606.08,-535.24 614.7,-529.07 604.11,-528.52 606.08,-535.24"/>
+</g>
+<!-- interface~vkf_rocky_map_settings -->
+<g id="proc~~terrain_update~~CallsGraph_node17" class="node">
+<title>interface~vkf_rocky_map_settings</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node17"><a xlink:href="../interface/vkf_rocky_map_settings.html" xlink:title="vkf_rocky_map_settings">
+<polygon fill="#a7506f" stroke="#a7506f" points="729.71,-616.27 592.94,-616.27 592.94,-592 729.71,-592 729.71,-616.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-600.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_rocky_map_settings</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_settings&#45;&gt;interface~vkf_rocky_map_settings -->
+<g id="proc~~terrain_update~~CallsGraph_edge19" class="edge">
+<title>proc~apply_settings&#45;&gt;interface~vkf_rocky_map_settings</title>
+<path fill="none" stroke="#000000" d="M504.09,-584.5C526.67,-587.34 555.11,-590.91 581.52,-594.23"/>
+<polygon fill="#000000" stroke="#000000" points="580.83,-597.67 591.18,-595.45 581.7,-590.73 580.83,-597.67"/>
+</g>
+<!-- proc~color~3 -->
+<g id="proc~~terrain_update~~CallsGraph_node19" class="node">
+<title>proc~color~3</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node19"><a xlink:href="../proc/color~3.html" xlink:title="ReferenceFrame%color">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="729.33,-574.27 593.31,-574.27 593.31,-550 729.33,-550 729.33,-574.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-558.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%color</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_settings&#45;&gt;proc~color~3 -->
+<g id="proc~~terrain_update~~CallsGraph_edge20" class="edge">
+<title>proc~apply_settings&#45;&gt;proc~color~3</title>
+<path fill="none" stroke="#000000" d="M504.09,-575.49C526.76,-573.55 555.36,-571.11 581.87,-568.84"/>
+<polygon fill="#000000" stroke="#000000" points="581.9,-572.35 591.57,-568.01 581.31,-565.38 581.9,-572.35"/>
+</g>
+<!-- proc~chosen_trajectory -->
+<g id="proc~~terrain_update~~CallsGraph_node18" class="node">
+<title>proc~chosen_trajectory</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node18"><a xlink:href="../proc/chosen_trajectory.html" xlink:title="chosen_trajectory">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="714.71,-352.27 607.94,-352.27 607.94,-328 714.71,-328 714.71,-352.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-336.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">chosen_trajectory</text>
+</a>
+</g>
+</g>
+<!-- proc~update&#45;&gt;proc~chosen_trajectory -->
+<g id="proc~~terrain_update~~CallsGraph_edge22" class="edge">
+<title>proc~update&#45;&gt;proc~chosen_trajectory</title>
+<path fill="none" stroke="#000000" d="M480.27,-268.71C502.12,-282.79 539.61,-305.41 574.56,-319.13 581.56,-321.88 589.02,-324.35 596.52,-326.54"/>
+<polygon fill="#000000" stroke="#000000" points="595.44,-329.87 606.01,-329.15 597.3,-323.12 595.44,-329.87"/>
+</g>
+<!-- proc~data_valid -->
+<g id="proc~~terrain_update~~CallsGraph_node20" class="node">
+<title>proc~data_valid</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node20"><a xlink:href="../proc/data_valid.html" xlink:title="TrajectoryFollower%data_valid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="748.08,-268.27 574.56,-268.27 574.56,-244 748.08,-244 748.08,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%data_valid</text>
+</a>
+</g>
+</g>
+<!-- proc~update&#45;&gt;proc~data_valid -->
+<g id="proc~~terrain_update~~CallsGraph_edge23" class="edge">
+<title>proc~update&#45;&gt;proc~data_valid</title>
+<path fill="none" stroke="#000000" d="M538.89,-256.13C546.75,-256.13 554.8,-256.13 562.84,-256.13"/>
+<polygon fill="#000000" stroke="#000000" points="562.65,-259.64 572.65,-256.14 562.65,-252.64 562.65,-259.64"/>
+</g>
+<!-- proc~interpolate_attitude -->
+<g id="proc~~terrain_update~~CallsGraph_node22" class="node">
+<title>proc~interpolate_attitude</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node22"><a xlink:href="../proc/interpolate_attitude.html" xlink:title="interpolate_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="719.58,-226.27 603.06,-226.27 603.06,-202 719.58,-202 719.58,-226.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-210.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~update&#45;&gt;proc~interpolate_attitude -->
+<g id="proc~~terrain_update~~CallsGraph_edge24" class="edge">
+<title>proc~update&#45;&gt;proc~interpolate_attitude</title>
+<path fill="none" stroke="#000000" d="M521.1,-243.53C543.32,-238.84 568.72,-233.48 591.68,-228.63"/>
+<polygon fill="#000000" stroke="#000000" points="592.2,-232.1 601.26,-226.61 590.75,-225.25 592.2,-232.1"/>
+</g>
+<!-- proc~interpolate_position -->
+<g id="proc~~terrain_update~~CallsGraph_node23" class="node">
+<title>proc~interpolate_position</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node23"><a xlink:href="../proc/interpolate_position.html" xlink:title="interpolate_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="719.96,-125.27 602.69,-125.27 602.69,-101 719.96,-101 719.96,-125.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-109.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_position</text>
+</a>
+</g>
+</g>
+<!-- proc~update&#45;&gt;proc~interpolate_position -->
+<g id="proc~~terrain_update~~CallsGraph_edge25" class="edge">
+<title>proc~update&#45;&gt;proc~interpolate_position</title>
+<path fill="none" stroke="#000000" d="M478.73,-243.69C513.55,-218.66 592.3,-162.04 633.72,-132.26"/>
+<polygon fill="#000000" stroke="#000000" points="635.61,-135.21 641.69,-126.53 631.52,-129.53 635.61,-135.21"/>
+</g>
+<!-- proc~time_index -->
+<g id="proc~~terrain_update~~CallsGraph_node24" class="node">
+<title>proc~time_index</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node24"><a xlink:href="../proc/time_index.html" xlink:title="Trajectory%time_index">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="727.08,-310.27 595.56,-310.27 595.56,-286 727.08,-286 727.08,-310.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-294.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_index</text>
+</a>
+</g>
+</g>
+<!-- proc~update&#45;&gt;proc~time_index -->
+<g id="proc~~terrain_update~~CallsGraph_edge26" class="edge">
+<title>proc~update&#45;&gt;proc~time_index</title>
+<path fill="none" stroke="#000000" d="M521.1,-268.74C542.64,-273.28 567.15,-278.46 589.54,-283.19"/>
+<polygon fill="#000000" stroke="#000000" points="588.7,-286.59 599.21,-285.23 590.15,-279.74 588.7,-286.59"/>
+</g>
+<!-- proc~wrapped_time -->
+<g id="proc~~terrain_update~~CallsGraph_node25" class="node">
+<title>proc~wrapped_time</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node25"><a xlink:href="../proc/wrapped_time.html" xlink:title="wrapped_time">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="704.96,-44.27 617.69,-44.27 617.69,-20 704.96,-20 704.96,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="661.32" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">wrapped_time</text>
+</a>
+</g>
+</g>
+<!-- proc~update&#45;&gt;proc~wrapped_time -->
+<g id="proc~~terrain_update~~CallsGraph_edge27" class="edge">
+<title>proc~update&#45;&gt;proc~wrapped_time</title>
+<path fill="none" stroke="#000000" d="M468.06,-243.51C483.76,-214.43 525.56,-141.46 574.56,-92.14 590.51,-76.08 611.24,-61.44 628.33,-50.65"/>
+<polygon fill="#000000" stroke="#000000" points="629.93,-53.77 636.61,-45.55 626.26,-47.81 629.93,-53.77"/>
+</g>
+<!-- proc~time_distance -->
+<g id="proc~~terrain_update~~CallsGraph_node33" class="node">
+<title>proc~time_distance</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node33"><a xlink:href="../proc/time_distance.html" xlink:title="Trajectory%time_distance">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="933.98,-352.27 785.96,-352.27 785.96,-328 933.98,-328 933.98,-352.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-336.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_distance</text>
+</a>
+</g>
+</g>
+<!-- proc~chosen_trajectory&#45;&gt;proc~time_distance -->
+<g id="proc~~terrain_update~~CallsGraph_edge28" class="edge">
+<title>proc~chosen_trajectory&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M715.02,-340.13C733.27,-340.13 754.21,-340.13 774.37,-340.13"/>
+<polygon fill="#000000" stroke="#000000" points="774.28,-343.64 784.28,-340.14 774.28,-336.64 774.28,-343.64"/>
+</g>
+<!-- proc~verify_data -->
+<g id="proc~~terrain_update~~CallsGraph_node35" class="node">
+<title>proc~verify_data</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node35"><a xlink:href="../proc/verify_data.html" xlink:title="Trajectory%verify_data">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="926.48,-310.27 793.46,-310.27 793.46,-286 926.48,-286 926.48,-310.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-294.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%verify_data</text>
+</a>
+</g>
+</g>
+<!-- proc~data_valid&#45;&gt;proc~verify_data -->
+<g id="proc~~terrain_update~~CallsGraph_edge29" class="edge">
+<title>proc~data_valid&#45;&gt;proc~verify_data</title>
+<path fill="none" stroke="#000000" d="M721.32,-268.74C742.61,-273.28 766.85,-278.46 788.99,-283.19"/>
+<polygon fill="#000000" stroke="#000000" points="788.02,-286.56 798.53,-285.23 789.48,-279.71 788.02,-286.56"/>
+</g>
+<!-- proc~find_in_dirs -->
+<g id="proc~~terrain_update~~CallsGraph_node27" class="node">
+<title>proc~find_in_dirs</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node27"><a xlink:href="../proc/find_in_dirs.html" xlink:title="find_in_dirs">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="895.73,-394.27 824.21,-394.27 824.21,-370 895.73,-370 895.73,-394.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-378.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">find_in_dirs</text>
+</a>
+</g>
+</g>
+<!-- proc~find_data_file&#45;&gt;proc~find_in_dirs -->
+<g id="proc~~terrain_update~~CallsGraph_edge30" class="edge">
+<title>proc~find_data_file&#45;&gt;proc~find_in_dirs</title>
+<path fill="none" stroke="#000000" d="M703.06,-382.13C734.97,-382.13 779.35,-382.13 812.61,-382.13"/>
+<polygon fill="#000000" stroke="#000000" points="812.35,-385.64 822.35,-382.14 812.35,-378.64 812.35,-385.64"/>
+</g>
+<!-- proc~attitude~2 -->
+<g id="proc~~terrain_update~~CallsGraph_node26" class="node">
+<title>proc~attitude~2</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node26"><a xlink:href="../proc/attitude~2.html" xlink:title="Trajectory%attitude">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="917.48,-268.27 802.46,-268.27 802.46,-244 917.48,-244 917.48,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~attitude~2 -->
+<g id="proc~~terrain_update~~CallsGraph_edge31" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~attitude~2</title>
+<path fill="none" stroke="#000000" d="M719.99,-226.45C742.2,-231.2 767.76,-236.66 790.86,-241.59"/>
+<polygon fill="#000000" stroke="#000000" points="789.98,-244.98 800.49,-243.65 791.45,-238.13 789.98,-244.98"/>
+</g>
+<!-- proc~num_attitudes -->
+<g id="proc~~terrain_update~~CallsGraph_node28" class="node">
+<title>proc~num_attitudes</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node28"><a xlink:href="../proc/num_attitudes.html" xlink:title="Trajectory%num_attitudes">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="934.73,-226.27 785.21,-226.27 785.21,-202 934.73,-202 934.73,-226.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-210.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_attitudes</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~num_attitudes -->
+<g id="proc~~terrain_update~~CallsGraph_edge32" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~num_attitudes</title>
+<path fill="none" stroke="#000000" d="M719.99,-214.13C736.71,-214.13 755.33,-214.13 773.38,-214.13"/>
+<polygon fill="#000000" stroke="#000000" points="773.3,-217.64 783.3,-214.14 773.3,-210.64 773.3,-217.64"/>
+</g>
+<!-- proc~quat_slerp -->
+<g id="proc~~terrain_update~~CallsGraph_node32" class="node">
+<title>proc~quat_slerp</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node32"><a xlink:href="../proc/quat_slerp.html" xlink:title="quat_slerp">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="893.48,-184.27 826.46,-184.27 826.46,-160 893.48,-160 893.48,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_slerp</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~quat_slerp -->
+<g id="proc~~terrain_update~~CallsGraph_edge33" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~quat_slerp</title>
+<path fill="none" stroke="#000000" d="M719.99,-201.82C750.37,-195.33 787.03,-187.5 815.07,-181.51"/>
+<polygon fill="#000000" stroke="#000000" points="815.61,-184.97 824.65,-179.46 814.14,-178.13 815.61,-184.97"/>
+</g>
+<!-- proc~num_points -->
+<g id="proc~~terrain_update~~CallsGraph_node29" class="node">
+<title>proc~num_points</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node29"><a xlink:href="../proc/num_points.html" xlink:title="Trajectory%num_points">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1111.62,-62.27 976.35,-62.27 976.35,-38 1111.62,-38 1111.62,-62.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1043.99" y="-46.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_points</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~num_points -->
+<g id="proc~~terrain_update~~CallsGraph_edge34" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M691.75,-100.64C716.05,-90.9 751.69,-77.92 784.08,-71.14 843.89,-58.6 912.92,-53.45 964.65,-51.38"/>
+<polygon fill="#000000" stroke="#000000" points="964.7,-54.88 974.57,-51.02 964.45,-47.89 964.7,-54.88"/>
+</g>
+<!-- proc~point -->
+<g id="proc~~terrain_update~~CallsGraph_node30" class="node">
+<title>proc~point</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node30"><a xlink:href="../proc/point.html" xlink:title="Trajectory%point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1094.37,-146.27 993.6,-146.27 993.6,-122 1094.37,-122 1094.37,-146.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1043.99" y="-130.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point -->
+<g id="proc~~terrain_update~~CallsGraph_edge35" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M720.13,-116.32C790.81,-120.22 909.89,-126.79 981.99,-130.77"/>
+<polygon fill="#000000" stroke="#000000" points="981.45,-134.25 991.63,-131.3 981.84,-127.26 981.45,-134.25"/>
+</g>
+<!-- proc~point_between -->
+<g id="proc~~terrain_update~~CallsGraph_node31" class="node">
+<title>proc~point_between</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node31"><a xlink:href="../proc/point_between.html" xlink:title="Trajectory%point_between">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="935.85,-104.27 784.08,-104.27 784.08,-80 935.85,-80 935.85,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-88.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point_between</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point_between -->
+<g id="proc~~terrain_update~~CallsGraph_edge36" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point_between</title>
+<path fill="none" stroke="#000000" d="M720.26,-106.95C736.69,-105.19 754.95,-103.24 772.67,-101.35"/>
+<polygon fill="#000000" stroke="#000000" points="772.84,-104.85 782.42,-100.31 772.1,-97.89 772.84,-104.85"/>
+</g>
+<!-- proc~time_index&#45;&gt;proc~time_distance -->
+<g id="proc~~terrain_update~~CallsGraph_edge37" class="edge">
+<title>proc~time_index&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M721.32,-310.74C742.61,-315.28 766.85,-320.46 788.99,-325.19"/>
+<polygon fill="#000000" stroke="#000000" points="788.02,-328.56 798.53,-327.23 789.48,-321.71 788.02,-328.56"/>
+</g>
+<!-- proc~time_range -->
+<g id="proc~~terrain_update~~CallsGraph_node34" class="node">
+<title>proc~time_range</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node34"><a xlink:href="../proc/time_range.html" xlink:title="Trajectory%time_range">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="927.23,-24.27 792.71,-24.27 792.71,0 927.23,0 927.23,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="859.97" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_range</text>
+</a>
+</g>
+</g>
+<!-- proc~wrapped_time&#45;&gt;proc~time_range -->
+<g id="proc~~terrain_update~~CallsGraph_edge38" class="edge">
+<title>proc~wrapped_time&#45;&gt;proc~time_range</title>
+<path fill="none" stroke="#000000" d="M704.99,-27.8C727.23,-25.53 755.13,-22.7 781.05,-20.06"/>
+<polygon fill="#000000" stroke="#000000" points="781.3,-23.55 790.9,-19.06 780.59,-16.59 781.3,-23.55"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~num_points -->
+<g id="proc~~terrain_update~~CallsGraph_edge39" class="edge">
+<title>proc~point_between&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M915.58,-79.53C935.02,-75.05 957.11,-69.95 977.37,-65.28"/>
+<polygon fill="#000000" stroke="#000000" points="977.98,-68.73 986.94,-63.07 976.41,-61.91 977.98,-68.73"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~point -->
+<g id="proc~~terrain_update~~CallsGraph_edge40" class="edge">
+<title>proc~point_between&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M915.58,-104.74C936.62,-109.59 960.78,-115.17 982.36,-120.15"/>
+<polygon fill="#000000" stroke="#000000" points="981.37,-123.51 991.9,-122.35 982.94,-116.69 981.37,-123.51"/>
+</g>
+<!-- proc~time_fraction -->
+<g id="proc~~terrain_update~~CallsGraph_node36" class="node">
+<title>proc~time_fraction</title>
+<g id="a_proc~~terrain_update~~CallsGraph_node36"><a xlink:href="../proc/time_fraction.html" xlink:title="Trajectory%time_fraction">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1116.12,-104.27 971.85,-104.27 971.85,-80 1116.12,-80 1116.12,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1043.99" y="-88.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_fraction</text>
+</a>
+</g>
+</g>
+<!-- proc~point_between&#45;&gt;proc~time_fraction -->
+<g id="proc~~terrain_update~~CallsGraph_edge41" class="edge">
+<title>proc~point_between&#45;&gt;proc~time_fraction</title>
+<path fill="none" stroke="#000000" d="M936.31,-92.14C944.13,-92.14 952.11,-92.14 960.01,-92.14"/>
+<polygon fill="#000000" stroke="#000000" points="959.98,-95.64 969.98,-92.14 959.98,-88.64 959.98,-95.64"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocterrain_updateCallsGraph = svgPanZoom('#procterrain_updateCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">recursive subroutine </span><span class="n">terrain_update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">TerrainBody</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w">           </span><span class="c">!! simulation time (s)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">viewer</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="kt">c_int</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">status</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">c_associated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">map</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">vkf_rocky_map_alive</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">map</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">viewer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vkf_viewer_any</span><span class="p">()</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">c_associated</span><span class="p">(</span><span class="n">viewer</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vkf_node_remove_child</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">map_group</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">map</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">call </span><span class="n">vkf_node_delete</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">map</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">call </span><span class="n">make_map</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">viewer</span><span class="p">)</span><span class="w"></span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">c_associated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">map</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        if</span><span class="w"> </span><span class="p">(</span><span class="n">vkf_compile_node</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">map</span><span class="p">)</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">                            </span><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;(a)&#39;</span><span class="p">)</span><span class="w"> </span><span class="s1">&#39;vkframes: TerrainBody &#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">()</span><span class="o">//</span><span class="s1">&#39;: could not compile the map&#39;</span><span class="w"></span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                end if</span>
+<span class="k">            end if</span>
+<span class="k">        end if</span>
+<span class="k">        call </span><span class="n">self</span><span class="p">%</span><span class="n">ReferenceFrame</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">terrain_update</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

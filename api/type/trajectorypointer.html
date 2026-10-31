@@ -1,0 +1,840 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>TrajectoryPointer &ndash; vkframes </title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>TrajectoryPointer
+      <small>Derived Type</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title="<p> 0.3% of total for derived types.</p>Including implementation: 3 statements,  0.0% of total for derived types.">3 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_follower.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_follower.f90.html'>vkf_follower.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_follower.html'>vkf_follower</a></li>
+            <li class="breadcrumb-item active" aria-current="page">TrajectoryPointer</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/trajectorypointer.html#variable-p~3">p</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../type/trajectorypointer.html#src">TrajectoryPointer</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      <h2 id="type-def-statement">
+        type, private :: TrajectoryPointer</h2>
+    <p>A pointer to a followed trajectory (for an array of them).</p>
+<br>      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Inherits</h3>
+        </div>
+        <div class="card-body">
+          <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: type~~trajectorypointer~~InheritsGraph Pages: 1 -->
+<svg id="typetrajectorypointerInheritsGraph" width="216pt" height="32pt"
+ viewBox="0.00 0.00 216.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="type~~trajectorypointer~~InheritsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>type~~trajectorypointer~~InheritsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 211.54,-28.27 211.54,4 -4,4"/>
+<!-- type~trajectorypointer -->
+<g id="type~~trajectorypointer~~InheritsGraph_node1" class="node">
+<title>type~trajectorypointer</title>
+<polygon fill="none" stroke="black" points="207.54,-24.27 106.02,-24.27 106.02,0 207.54,0 207.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="156.78" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">TrajectoryPointer</text>
+</g>
+<!-- type~trajectory -->
+<g id="type~~trajectorypointer~~InheritsGraph_node2" class="node">
+<title>type~trajectory</title>
+<g id="a_type~~trajectorypointer~~InheritsGraph_node2"><a xlink:href="../type/trajectory.html" xlink:title="Trajectory">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="64.02,-24.27 0,-24.27 0,0 64.02,0 64.02,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="32.01" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory</text>
+</a>
+</g>
+</g>
+<!-- type~trajectorypointer&#45;&gt;type~trajectory -->
+<g id="type~~trajectorypointer~~InheritsGraph_edge1" class="edge">
+<title>type~trajectorypointer&#45;&gt;type~trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M105.84,-12.13C95.84,-12.13 85.41,-12.13 75.68,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="75.74,-8.64 65.74,-12.14 75.74,-15.64 75.74,-8.64"/>
+<text xml:space="preserve" text-anchor="middle" x="85.02" y="-14.36" font-family="Helvetica,sans-Serif" font-size="9.50">p</text>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#InheritsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="InheritsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="184pt" height="32pt"
+ viewBox="0.00 0.00 184.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 179.88,-28.27 179.88,4 -4,4"/>
+<!-- Type -->
+<g id="node1" class="node">
+<title>Type</title>
+<polygon fill="#5cb85c" stroke="#5cb85c" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="175.88,-24.27 72.12,-24.27 72.12,0 175.88,0 175.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="124" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a derived type to the parent type which it
+extends. Dashed arrows point from a derived type to the other
+types it contains as a components, with a label listing the name(s) of
+said component(s).
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Inherited by</h3>
+        </div>
+        <div class="card-body">
+          <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: type~~trajectorypointer~~InheritedByGraph Pages: 1 -->
+<svg id="typetrajectorypointerInheritedByGraph" width="641pt" height="321pt"
+ viewBox="0.00 0.00 641.00 321.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="type~~trajectorypointer~~InheritedByGraph" class="graph" transform="scale(0.509584 0.509584) rotate(0) translate(4 625.27)">
+<title>type~~trajectorypointer~~InheritedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-625.27 1253.89,-625.27 1253.89,4 -4,4"/>
+<!-- type~trajectorypointer -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node1" class="node">
+<title>type~trajectorypointer</title>
+<polygon fill="none" stroke="black" points="101.52,-310.27 0,-310.27 0,-286 101.52,-286 101.52,-310.27"/>
+<text xml:space="preserve" text-anchor="middle" x="50.76" y="-294.53" font-family="Helvetica,sans-Serif" font-size="10.50">TrajectoryPointer</text>
+</g>
+<!-- type~trajectoryfollower -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node2" class="node">
+<title>type~trajectoryfollower</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node2"><a xlink:href="../type/trajectoryfollower.html" xlink:title="TrajectoryFollower">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="268.29,-310.27 159.27,-310.27 159.27,-286 268.29,-286 268.29,-310.27"/>
+<text xml:space="preserve" text-anchor="middle" x="213.78" y="-294.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower</text>
+</a>
+</g>
+</g>
+<!-- type~trajectoryfollower&#45;&gt;type~trajectorypointer -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge1" class="edge">
+<title>type~trajectoryfollower&#45;&gt;type~trajectorypointer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159.16,-298.13C144.44,-298.13 128.35,-298.13 113.22,-298.13"/>
+<polygon fill="#000000" stroke="#000000" points="113.39,-294.64 103.39,-298.14 113.39,-301.64 113.39,-294.64"/>
+<text xml:space="preserve" text-anchor="middle" x="130.4" y="-300.36" font-family="Helvetica,sans-Serif" font-size="9.50">trajs</text>
+</g>
+<!-- type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node3" class="node">
+<title>type~referenceframe</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node3"><a xlink:href="../type/referenceframe.html" xlink:title="ReferenceFrame">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="485.31,-276.27 386.04,-276.27 386.04,-252 485.31,-252 485.31,-276.27"/>
+<text xml:space="preserve" text-anchor="middle" x="435.68" y="-260.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame</text>
+</a>
+</g>
+</g>
+<!-- type~referenceframe&#45;&gt;type~trajectoryfollower -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge2" class="edge">
+<title>type~referenceframe&#45;&gt;type~trajectoryfollower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.6,-271.72C354.44,-276.54 313.75,-282.83 279.91,-288.07"/>
+<polygon fill="#000000" stroke="#000000" points="279.56,-284.58 270.21,-289.56 280.63,-291.5 279.56,-284.58"/>
+<text xml:space="preserve" text-anchor="middle" x="327.17" y="-288.39" font-family="Helvetica,sans-Serif" font-size="9.50">follower_</text>
+</g>
+<!-- type~framepointer -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node9" class="node">
+<title>type~framepointer</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node9"><a xlink:href="../type/framepointer.html" xlink:title="FramePointer">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="255.17,-255.27 172.4,-255.27 172.4,-231 255.17,-231 255.17,-255.27"/>
+<text xml:space="preserve" text-anchor="middle" x="213.78" y="-239.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">FramePointer</text>
+</a>
+</g>
+</g>
+<!-- type~referenceframe&#45;&gt;type~framepointer -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge24" class="edge">
+<title>type~referenceframe&#45;&gt;type~framepointer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.6,-259.45C350.31,-256.08 302.79,-251.54 266.84,-248.11"/>
+<polygon fill="#000000" stroke="#000000" points="267.39,-244.64 257.11,-247.18 266.73,-251.61 267.39,-244.64"/>
+<text xml:space="preserve" text-anchor="middle" x="327.17" y="-259.57" font-family="Helvetica,sans-Serif" font-size="9.50">children, parents</text>
+</g>
+<!-- type~coordinateaxes -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node4" class="node">
+<title>type~coordinateaxes</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node4"><a xlink:href="../type/coordinateaxes.html" xlink:title="CoordinateAxes">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="722.58,-621.27 626.31,-621.27 626.31,-597 722.58,-597 722.58,-621.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-605.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">CoordinateAxes</text>
+</a>
+</g>
+</g>
+<!-- type~coordinateaxes&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge12" class="edge">
+<title>type~coordinateaxes&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M627.66,-596.63C621.71,-594.21 615.85,-591.39 610.56,-588.13 577.73,-567.95 579.26,-550.91 548.93,-527.13"/>
+</g>
+<!-- type~customlinesegments -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node5" class="node">
+<title>type~customlinesegments</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node5"><a xlink:href="../type/customlinesegments.html" xlink:title="CustomLineSegments">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="738.33,-579.27 610.56,-579.27 610.56,-555 738.33,-555 738.33,-579.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-563.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">CustomLineSegments</text>
+</a>
+</g>
+</g>
+<!-- type~customlinesegments&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge13" class="edge">
+<title>type~customlinesegments&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M610.35,-556.1C589.25,-550.13 566.62,-541 548.93,-527.13"/>
+</g>
+<!-- type~draghandle -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node6" class="node">
+<title>type~draghandle</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node6"><a xlink:href="../type/draghandle.html" xlink:title="DragHandle">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="956.74,-540.27 880.72,-540.27 880.72,-516 956.74,-516 956.74,-540.27"/>
+<text xml:space="preserve" text-anchor="middle" x="918.73" y="-524.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DragHandle</text>
+</a>
+</g>
+</g>
+<!-- type~draghandle&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge8" class="edge">
+<title>type~draghandle&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M880.44,-530.62C791.85,-536.18 574.27,-547.55 548.93,-527.13"/>
+</g>
+<!-- type~drawabletrajectory -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node7" class="node">
+<title>type~drawabletrajectory</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node7"><a xlink:href="../type/drawabletrajectory.html" xlink:title="DrawableTrajectory">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="731.95,-402.27 616.93,-402.27 616.93,-378 731.95,-378 731.95,-402.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-386.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DrawableTrajectory</text>
+</a>
+</g>
+</g>
+<!-- type~drawabletrajectory&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge14" class="edge">
+<title>type~drawabletrajectory&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M635.52,-377.51C627.29,-374.76 618.63,-371.86 610.56,-369.13 583.14,-359.89 576.39,-357.27 548.93,-348.13"/>
+</g>
+<!-- type~framemanager -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node8" class="node">
+<title>type~framemanager</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node8"><a xlink:href="../type/framemanager.html" xlink:title="FrameManager">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="848.85,-500.27 756.33,-500.27 756.33,-476 848.85,-476 848.85,-500.27"/>
+<text xml:space="preserve" text-anchor="middle" x="802.59" y="-484.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">FrameManager</text>
+</a>
+</g>
+</g>
+<!-- type~framemanager&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge5" class="edge">
+<title>type~framemanager&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M756.21,-487.39C717.12,-487.7 659.44,-490.42 610.56,-501.88 581.74,-508.64 572.23,-545.4 548.93,-527.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M546.93,-527.13C470,-465.16 446.01,-340 439.17,-287.82"/>
+<polygon fill="#000000" stroke="#000000" points="442.66,-287.49 437.99,-277.98 435.71,-288.33 442.66,-287.49"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-504.11" font-family="Helvetica,sans-Serif" font-size="9.50">root</text>
+</g>
+<!-- type~framepointer&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge3" class="edge">
+<title>type~framepointer&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M255.63,-233.09C286.81,-227.05 330.63,-222.07 368.04,-230.88 381.05,-233.95 394.41,-239.96 405.73,-246.04"/>
+<polygon fill="#000000" stroke="#000000" points="403.73,-248.93 414.16,-250.81 407.18,-242.84 403.73,-248.93"/>
+<text xml:space="preserve" text-anchor="middle" x="327.17" y="-233.11" font-family="Helvetica,sans-Serif" font-size="9.50">p</text>
+</g>
+<!-- type~latlongrid -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node10" class="node">
+<title>type~latlongrid</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node10"><a xlink:href="../type/latlongrid.html" xlink:title="LatLonGrid">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="709.45,-360.27 639.43,-360.27 639.43,-336 709.45,-336 709.45,-360.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-344.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LatLonGrid</text>
+</a>
+</g>
+</g>
+<!-- type~latlongrid&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge10" class="edge">
+<title>type~latlongrid&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M638.96,-353.87C613.43,-356.76 578.16,-357.86 548.93,-348.13"/>
+</g>
+<!-- type~model -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node11" class="node">
+<title>type~model</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node11"><a xlink:href="../type/model.html" xlink:title="Model">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="701.44,-318.27 647.44,-318.27 647.44,-294 701.44,-294 701.44,-318.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-302.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Model</text>
+</a>
+</g>
+</g>
+<!-- type~model&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge9" class="edge">
+<title>type~model&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M647.12,-314.89C635.85,-318.64 622.56,-323.09 610.56,-327.13 583.14,-336.38 576.39,-357.27 548.93,-348.13"/>
+<path fill="none" stroke="#000000" d="M546.93,-348.13C509.97,-335.84 475.67,-305.51 455.44,-284.86"/>
+<polygon fill="#000000" stroke="#000000" points="458.14,-282.62 448.71,-277.79 453.07,-287.45 458.14,-282.62"/>
+</g>
+<!-- type~pickhit -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node12" class="node">
+<title>type~pickhit</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node12"><a xlink:href="../type/pickhit.html" xlink:title="PickHit">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="701.44,-276.27 647.44,-276.27 647.44,-252 701.44,-252 701.44,-276.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-260.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">PickHit</text>
+</a>
+</g>
+</g>
+<!-- type~pickhit&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge6" class="edge">
+<title>type~pickhit&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M647.2,-264.13C611.2,-264.13 545.44,-264.13 496.96,-264.13"/>
+<polygon fill="#000000" stroke="#000000" points="497.17,-260.64 487.17,-264.14 497.17,-267.64 497.17,-260.64"/>
+<text xml:space="preserve" text-anchor="middle" x="547.93" y="-266.36" font-family="Helvetica,sans-Serif" font-size="9.50">frame</text>
+</g>
+<!-- type~polyhedralcone -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node13" class="node">
+<title>type~polyhedralcone</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node13"><a xlink:href="../type/polyhedralcone.html" xlink:title="PolyhedralCone">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="722.2,-234.27 626.68,-234.27 626.68,-210 722.2,-210 722.2,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">PolyhedralCone</text>
+</a>
+</g>
+</g>
+<!-- type~polyhedralcone&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge19" class="edge">
+<title>type~polyhedralcone&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M635.52,-209.51C627.29,-206.76 618.63,-203.86 610.56,-201.13 583.14,-191.89 576.39,-171 548.93,-180.13"/>
+</g>
+<!-- type~polyhedron -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node14" class="node">
+<title>type~polyhedron</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node14"><a xlink:href="../type/polyhedron.html" xlink:title="Polyhedron">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="709.83,-192.27 639.06,-192.27 639.06,-168 709.83,-168 709.83,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Polyhedron</text>
+</a>
+</g>
+</g>
+<!-- type~polyhedron&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge15" class="edge">
+<title>type~polyhedron&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M638.69,-174.37C613.18,-171.5 578.06,-170.44 548.93,-180.13"/>
+</g>
+<!-- type~radialplane -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node15" class="node">
+<title>type~radialplane</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node15"><a xlink:href="../type/radialplane.html" xlink:title="RadialPlane">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="711.33,-150.27 637.56,-150.27 637.56,-126 711.33,-126 711.33,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">RadialPlane</text>
+</a>
+</g>
+</g>
+<!-- type~radialplane&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge18" class="edge">
+<title>type~radialplane&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M637.19,-150.2C628.46,-153.12 619.18,-156.23 610.56,-159.13 583.14,-168.38 576.39,-171 548.93,-180.13"/>
+<path fill="none" stroke="#000000" d="M546.93,-180.13C509.97,-192.43 475.67,-222.76 455.44,-243.41"/>
+<polygon fill="#000000" stroke="#000000" points="453.07,-240.82 448.71,-250.48 458.14,-245.65 453.07,-240.82"/>
+</g>
+<!-- type~shadowcones -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node16" class="node">
+<title>type~shadowcones</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node16"><a xlink:href="../type/shadowcones.html" xlink:title="ShadowCones">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="717.7,-108.27 631.18,-108.27 631.18,-84 717.7,-84 717.7,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ShadowCones</text>
+</a>
+</g>
+</g>
+<!-- type~shadowcones&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge7" class="edge">
+<title>type~shadowcones&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M631.03,-102.4C593.98,-109.69 540.46,-124.79 503.31,-154.88 474.84,-177.94 455.4,-216.62 445.17,-241.23"/>
+<polygon fill="#000000" stroke="#000000" points="441.99,-239.75 441.56,-250.34 448.5,-242.33 441.99,-239.75"/>
+<text xml:space="preserve" text-anchor="middle" x="547.93" y="-157.11" font-family="Helvetica,sans-Serif" font-size="9.50">body_, light_</text>
+</g>
+<!-- type~shadowcones&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge17" class="edge">
+<title>type~shadowcones&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M635.52,-83.51C627.29,-80.76 618.63,-77.86 610.56,-75.14 583.14,-65.89 573.75,-39.26 548.93,-54.13"/>
+</g>
+<!-- type~sphere -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node17" class="node">
+<title>type~sphere</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node17"><a xlink:href="../type/sphere.html" xlink:title="Sphere">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="701.44,-66.27 647.44,-66.27 647.44,-42 701.44,-42 701.44,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere</text>
+</a>
+</g>
+</g>
+<!-- type~sphere&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge16" class="edge">
+<title>type~sphere&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M647.06,-46.74C620.34,-40.86 578.79,-36.24 548.93,-54.13"/>
+</g>
+<!-- type~terrainbody -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node18" class="node">
+<title>type~terrainbody</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node18"><a xlink:href="../type/terrainbody.html" xlink:title="TerrainBody">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="712.08,-24.27 636.81,-24.27 636.81,0 712.08,0 712.08,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TerrainBody</text>
+</a>
+</g>
+</g>
+<!-- type~terrainbody&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge11" class="edge">
+<title>type~terrainbody&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" d="M636.52,-20.15C610.75,-26.77 576.23,-37.77 548.93,-54.13"/>
+<path fill="none" stroke="#000000" d="M546.93,-54.13C478.34,-95.24 450.37,-194.83 440.86,-240.51"/>
+<polygon fill="#000000" stroke="#000000" points="437.46,-239.66 438.98,-250.15 444.33,-241 437.46,-239.66"/>
+</g>
+<!-- type~view -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node19" class="node">
+<title>type~view</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node19"><a xlink:href="../type/view.html" xlink:title="View">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="701.44,-444.27 647.44,-444.27 647.44,-420 701.44,-420 701.44,-444.27"/>
+<text xml:space="preserve" text-anchor="middle" x="674.44" y="-428.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">View</text>
+</a>
+</g>
+</g>
+<!-- type~view&#45;&gt;type~referenceframe -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge4" class="edge">
+<title>type~view&#45;&gt;type~referenceframe</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M647.18,-426.67C611.3,-418.11 546.51,-398.6 503.31,-362.13 478.41,-341.11 458.81,-308.59 447.49,-286.84"/>
+<polygon fill="#000000" stroke="#000000" points="450.63,-285.3 443.02,-277.93 444.37,-288.43 450.63,-285.3"/>
+<text xml:space="preserve" text-anchor="middle" x="547.93" y="-411.79" font-family="Helvetica,sans-Serif" font-size="9.50">root, frame, lookat</text>
+</g>
+<!-- type~cameraflight -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node20" class="node">
+<title>type~cameraflight</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node20"><a xlink:href="../type/cameraflight.html" xlink:title="CameraFlight">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="960.49,-413.27 876.97,-413.27 876.97,-389 960.49,-389 960.49,-413.27"/>
+<text xml:space="preserve" text-anchor="middle" x="918.73" y="-397.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">CameraFlight</text>
+</a>
+</g>
+</g>
+<!-- type~cameraflight&#45;&gt;type~view -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge27" class="edge">
+<title>type~cameraflight&#45;&gt;type~view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M876.63,-406.39C830.78,-412.26 757.22,-421.67 712.9,-427.34"/>
+<polygon fill="#000000" stroke="#000000" points="712.74,-423.84 703.26,-428.58 713.62,-430.78 712.74,-423.84"/>
+<text xml:space="preserve" text-anchor="middle" x="802.59" y="-423.45" font-family="Helvetica,sans-Serif" font-size="9.50">from, to</text>
+</g>
+<!-- type~ellipticcone -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node21" class="node">
+<title>type~ellipticcone</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node21"><a xlink:href="../type/ellipticcone.html" xlink:title="EllipticCone">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="955.99,-234.27 881.47,-234.27 881.47,-210 955.99,-210 955.99,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="918.73" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">EllipticCone</text>
+</a>
+</g>
+</g>
+<!-- type~ellipticcone&#45;&gt;type~polyhedralcone -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge25" class="edge">
+<title>type~ellipticcone&#45;&gt;type~polyhedralcone</title>
+<path fill="none" stroke="#000000" d="M881.16,-220.48C858.73,-219.87 829.45,-219.82 803.59,-222.13"/>
+</g>
+<!-- type~rectangularcone -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node22" class="node">
+<title>type~rectangularcone</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node22"><a xlink:href="../type/rectangularcone.html" xlink:title="RectangularCone">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="970.62,-192.27 866.85,-192.27 866.85,-168 970.62,-168 970.62,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="918.73" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">RectangularCone</text>
+</a>
+</g>
+</g>
+<!-- type~rectangularcone&#45;&gt;type~polyhedralcone -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge26" class="edge">
+<title>type~rectangularcone&#45;&gt;type~polyhedralcone</title>
+<path fill="none" stroke="#000000" d="M886.03,-192.77C855.29,-204.86 812.08,-221.37 803.59,-222.13"/>
+<path fill="none" stroke="#000000" d="M801.59,-222.13C779.6,-224.11 755.36,-224.53 734.06,-224.31"/>
+<polygon fill="#000000" stroke="#000000" points="734.13,-220.81 724.07,-224.15 734.02,-227.81 734.13,-220.81"/>
+</g>
+<!-- type~timehandle -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node23" class="node">
+<title>type~timehandle</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node23"><a xlink:href="../type/timehandle.html" xlink:title="TimeHandle">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="1246.14,-560.27 1170.12,-560.27 1170.12,-536 1246.14,-536 1246.14,-560.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1208.13" y="-544.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TimeHandle</text>
+</a>
+</g>
+</g>
+<!-- type~timehandle&#45;&gt;type~draghandle -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge22" class="edge">
+<title>type~timehandle&#45;&gt;type~draghandle</title>
+<path fill="none" stroke="#000000" d="M1169.74,-547.97C1142.06,-547.89 1103.42,-547.85 1069.49,-548.13"/>
+</g>
+<!-- type~vectorhandle -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node24" class="node">
+<title>type~vectorhandle</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node24"><a xlink:href="../type/vectorhandle.html" xlink:title="VectorHandle">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="1249.89,-518.27 1166.37,-518.27 1166.37,-494 1249.89,-494 1249.89,-518.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1208.13" y="-502.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">VectorHandle</text>
+</a>
+</g>
+</g>
+<!-- type~vectorhandle&#45;&gt;type~draghandle -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge21" class="edge">
+<title>type~vectorhandle&#45;&gt;type~draghandle</title>
+<path fill="none" stroke="#000000" d="M1182.61,-518.63C1169.72,-525.04 1155.2,-531.94 1148.37,-534.13 1114.47,-545 1105.1,-547.84 1069.49,-548.13"/>
+<path fill="none" stroke="#000000" d="M1067.49,-548.13C1034.13,-548.41 996.91,-543.34 968.17,-538.23"/>
+<polygon fill="#000000" stroke="#000000" points="969.16,-534.86 958.69,-536.49 967.89,-541.74 969.16,-534.86"/>
+</g>
+<!-- type~viewpointer -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node25" class="node">
+<title>type~viewpointer</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node25"><a xlink:href="../type/viewpointer.html" xlink:title="ViewPointer">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="955.62,-371.27 881.85,-371.27 881.85,-347 955.62,-347 955.62,-371.27"/>
+<text xml:space="preserve" text-anchor="middle" x="918.73" y="-355.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ViewPointer</text>
+</a>
+</g>
+</g>
+<!-- type~viewpointer&#45;&gt;type~view -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge28" class="edge">
+<title>type~viewpointer&#45;&gt;type~view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M881.63,-361.81C847.68,-365.52 796.25,-374.3 756.33,-394.88 746.75,-399.83 747.64,-405.7 738.33,-411.13 730.43,-415.74 721.38,-419.52 712.65,-422.53"/>
+<polygon fill="#000000" stroke="#000000" points="711.8,-419.12 703.32,-425.48 713.91,-425.8 711.8,-419.12"/>
+<text xml:space="preserve" text-anchor="middle" x="802.59" y="-397.11" font-family="Helvetica,sans-Serif" font-size="9.50">p</text>
+</g>
+<!-- type~windowproxy -->
+<g id="type~~trajectorypointer~~InheritedByGraph_node26" class="node">
+<title>type~windowproxy</title>
+<g id="a_type~~trajectorypointer~~InheritedByGraph_node26"><a xlink:href="../type/windowproxy.html" xlink:title="WindowProxy">
+<polygon fill="#5cb85c" stroke="#5cb85c" points="1248.76,-461.27 1167.49,-461.27 1167.49,-437 1248.76,-437 1248.76,-461.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1208.13" y="-445.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy</text>
+</a>
+</g>
+</g>
+<!-- type~windowproxy&#45;&gt;type~draghandle -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge20" class="edge">
+<title>type~windowproxy&#45;&gt;type~draghandle</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1193.03,-461.55C1176.07,-476.46 1149.7,-499.54 1148.37,-500.13 1132.29,-507.28 1030.21,-517.84 968.01,-523.74"/>
+<polygon fill="#000000" stroke="#000000" points="968.02,-520.22 958.39,-524.64 968.68,-527.19 968.02,-520.22"/>
+<text xml:space="preserve" text-anchor="middle" x="1068.49" y="-523.5" font-family="Helvetica,sans-Serif" font-size="9.50">hovered_handle, dragged_handle</text>
+</g>
+<!-- type~windowproxy&#45;&gt;type~framemanager -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge23" class="edge">
+<title>type~windowproxy&#45;&gt;type~framemanager</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1167.16,-459.57C1160.9,-460.94 1154.48,-462.19 1148.37,-463.13 1047.87,-478.65 929.36,-484.58 860.71,-486.81"/>
+<polygon fill="#000000" stroke="#000000" points="860.71,-483.31 850.82,-487.12 860.93,-490.31 860.71,-483.31"/>
+<text xml:space="preserve" text-anchor="middle" x="1068.49" y="-482.1" font-family="Helvetica,sans-Serif" font-size="9.50">scene</text>
+</g>
+<!-- type~windowproxy&#45;&gt;type~view -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge29" class="edge">
+<title>type~windowproxy&#45;&gt;type~view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1167.02,-447.97C1088.29,-445.67 907.95,-440.3 756.33,-435.13 742.21,-434.65 726.7,-434.09 713.08,-433.58"/>
+<polygon fill="#000000" stroke="#000000" points="713.31,-430.08 703.18,-433.2 713.04,-437.08 713.31,-430.08"/>
+<text xml:space="preserve" text-anchor="middle" x="918.73" y="-444.23" font-family="Helvetica,sans-Serif" font-size="9.50">default_view, shown</text>
+</g>
+<!-- type~windowproxy&#45;&gt;type~cameraflight -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge30" class="edge">
+<title>type~windowproxy&#45;&gt;type~cameraflight</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1182.56,-436.58C1172.25,-431.84 1159.98,-426.88 1148.37,-423.88 1089.26,-408.63 1019.12,-403.49 972.26,-401.81"/>
+<polygon fill="#000000" stroke="#000000" points="972.48,-398.32 962.38,-401.51 972.27,-405.32 972.48,-398.32"/>
+<text xml:space="preserve" text-anchor="middle" x="1068.49" y="-426.11" font-family="Helvetica,sans-Serif" font-size="9.50">flight</text>
+</g>
+<!-- type~windowproxy&#45;&gt;type~viewpointer -->
+<g id="type~~trajectorypointer~~InheritedByGraph_edge31" class="edge">
+<title>type~windowproxy&#45;&gt;type~viewpointer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1199.09,-436.6C1189.1,-422.18 1170.62,-399.07 1148.37,-387.88 1090.91,-359.01 1015.46,-355.06 967.27,-356.12"/>
+<polygon fill="#000000" stroke="#000000" points="967.33,-352.62 957.45,-356.43 967.55,-359.61 967.33,-352.62"/>
+<text xml:space="preserve" text-anchor="middle" x="1068.49" y="-390.11" font-family="Helvetica,sans-Serif" font-size="9.50">views</text>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var pantypetrajectorypointerInheritedByGraph = svgPanZoom('#typetrajectorypointerInheritedByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#InheritedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="InheritedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="184pt" height="32pt"
+ viewBox="0.00 0.00 184.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 179.88,-28.27 179.88,4 -4,4"/>
+<!-- Type -->
+<g id="node1" class="node">
+<title>Type</title>
+<polygon fill="#5cb85c" stroke="#5cb85c" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="175.88,-24.27 72.12,-24.27 72.12,0 175.88,0 175.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="124" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a derived type to the parent type which it
+extends. Dashed arrows point from a derived type to the other
+types it contains as a components, with a label listing the name(s) of
+said component(s).
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    <br>
+
+    <section>
+    <h2>Components</h2>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~3"></span>
+              type(<a href='trajectory.html'>Trajectory</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>p</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+                <p>the trajectory (not owned)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    </section>
+    <br>
+    
+
+
+
+    <section>
+    <h3><span class="anchor" id="src"></span>Source Code</h3>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">type</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">TrajectoryPointer</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">Trajectory</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">    </span><span class="c">!! the trajectory (not owned)</span>
+<span class="w">    </span><span class="k">end type </span><span class="n">TrajectoryPointer</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

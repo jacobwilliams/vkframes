@@ -1,0 +1,726 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_files.f90 &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_files.f90
+      <small>Source File</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.4% of total for source files.">46 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_files.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+            <li class="breadcrumb-item active" aria-current="page">vkf_files.f90</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#mods-0"
+         aria-expanded="false" aria-controls="mods-0">
+         <h4 class="card-header bg-primary text-white">Modules</h4>
+      </a>
+      <div id="mods-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_files.html">vkf_files</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../sourcefile/vkf_files.f90.html#src">vkf_files.f90</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Files dependent on this one</h3>
+          </div>
+          <div class="card-body">
+            <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: sourcefile~~vkf_files.f90~~AfferentGraph Pages: 1 -->
+<svg id="sourcefilevkf_filesf90AfferentGraph" width="641pt" height="323pt"
+ viewBox="0.00 0.00 641.00 323.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph" class="graph" transform="scale(0.749585 0.749585) rotate(0) translate(4 426.92)">
+<title>sourcefile~~vkf_files.f90~~AfferentGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-426.92 851.14,-426.92 851.14,4 -4,4"/>
+<!-- sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node1" class="node">
+<title>sourcefile~vkf_files.f90</title>
+<polygon fill="none" stroke="black" points="74.52,-228.27 0,-228.27 0,-204 74.52,-204 74.52,-228.27"/>
+<text xml:space="preserve" text-anchor="middle" x="37.26" y="-212.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_files.f90</text>
+</g>
+<!-- sourcefile~vkf_shapes.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node2" class="node">
+<title>sourcefile~vkf_shapes.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node2"><a xlink:href="../sourcefile/vkf_shapes.f90.html" xlink:title="vkf_shapes.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="562.35,-24.27 472.08,-24.27 472.08,0 562.35,0 562.35,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="517.22" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge1" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M499.51,-24.7C476.13,-41.82 431.86,-72.58 390.44,-92.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-92.13C360.24,-105.45 174.65,-169.47 85.68,-199.94"/>
+<polygon fill="#000000" stroke="#000000" points="84.57,-196.62 76.24,-203.17 86.84,-203.24 84.57,-196.62"/>
+</g>
+<!-- sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node8" class="node">
+<title>sourcefile~vkf_frames.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node8"><a xlink:href="../sourcefile/vkf_frames.f90.html" xlink:title="vkf_frames.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="309.06,-188.27 218.79,-188.27 218.79,-164 309.06,-164 309.06,-188.27"/>
+<text xml:space="preserve" text-anchor="middle" x="263.93" y="-172.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge23" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-92.13C369.41,-101.12 363.04,-100.18 345.06,-111.13 323.7,-124.15 301.81,-142.3 286.31,-156.11"/>
+<polygon fill="#000000" stroke="#000000" points="284.16,-153.34 279.1,-162.65 288.86,-158.53 284.16,-153.34"/>
+</g>
+<!-- sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node11" class="node">
+<title>sourcefile~vkf_artists.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node11"><a xlink:href="../sourcefile/vkf_artists.f90.html" xlink:title="vkf_artists.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="431.95,-144.27 346.94,-144.27 346.94,-120 431.95,-120 431.95,-144.27"/>
+<text xml:space="preserve" text-anchor="middle" x="389.44" y="-128.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge32" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.9,-24.61C481.45,-28.33 474.99,-32.85 469.83,-38.13 445.94,-62.6 457.36,-81.32 433.83,-106.13 431.43,-108.67 428.73,-111.04 425.88,-113.24"/>
+<polygon fill="#000000" stroke="#000000" points="424,-110.29 417.71,-118.82 427.94,-116.07 424,-110.29"/>
+</g>
+<!-- sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node3" class="node">
+<title>sourcefile~vkf_sky.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node3"><a xlink:href="../sourcefile/vkf_sky.f90.html" xlink:title="vkf_sky.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="298.19,-268.27 229.67,-268.27 229.67,-244 298.19,-244 298.19,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="263.93" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge2" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.4,-268.59C251.54,-308.74 218.46,-431.21 147.66,-414.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M145.66,-414.13C70.64,-396.05 47.46,-288.21 40.78,-239.72"/>
+<polygon fill="#000000" stroke="#000000" points="44.28,-239.5 39.57,-230.01 37.33,-240.37 44.28,-239.5"/>
+</g>
+<!-- sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node6" class="node">
+<title>sourcefile~vkf_text.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node6"><a xlink:href="../sourcefile/vkf_text.f90.html" xlink:title="vkf_text.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="182.79,-228.27 110.52,-228.27 110.52,-204 182.79,-204 182.79,-228.27"/>
+<text xml:space="preserve" text-anchor="middle" x="146.66" y="-212.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge15" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M229.27,-244.46C218.18,-240.61 205.65,-236.26 193.79,-232.15"/>
+<polygon fill="#000000" stroke="#000000" points="195.18,-228.92 184.58,-228.95 192.88,-235.53 195.18,-228.92"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node4" class="node">
+<title>sourcefile~vkf_sphere.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node4"><a xlink:href="../sourcefile/vkf_sphere.f90.html" xlink:title="vkf_sphere.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="433.83,-386.27 345.06,-386.27 345.06,-362 433.83,-362 433.83,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="389.44" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge3" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M356.47,-386.69C331.84,-395.81 296.73,-407.66 264.93,-414.13"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge24" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M360.85,-361.69C355,-358.02 349.31,-353.51 345.06,-348.13 312.34,-306.81 333.18,-282 309.06,-235.13 302.09,-221.59 292.05,-207.87 283.31,-197.08"/>
+<polygon fill="#000000" stroke="#000000" points="286.14,-195.01 277.04,-189.59 280.77,-199.51 286.14,-195.01"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node5" class="node">
+<title>sourcefile~vkf_terrain.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node5"><a xlink:href="../sourcefile/vkf_terrain.f90.html" xlink:title="vkf_terrain.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="433.83,-306.27 345.06,-306.27 345.06,-282 433.83,-282 433.83,-306.27"/>
+<text xml:space="preserve" text-anchor="middle" x="389.44" y="-290.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge4" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M378.58,-306.66C354.91,-336.17 294.66,-408.08 264.93,-414.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M262.93,-414.13C212.72,-424.36 197.46,-426.14 147.66,-414.13"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge25" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M364.57,-281.65C357.96,-277.72 350.98,-273.1 345.06,-268.13 319.77,-246.96 295.6,-217.51 280.55,-197.69"/>
+<polygon fill="#000000" stroke="#000000" points="283.42,-195.69 274.64,-189.76 277.81,-199.87 283.42,-195.69"/>
+</g>
+<!-- sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge5" class="edge">
+<title>sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M110.19,-216.13C102.47,-216.13 94.17,-216.13 86.06,-216.13"/>
+<polygon fill="#000000" stroke="#000000" points="86.3,-212.64 76.3,-216.14 86.3,-219.64 86.3,-212.64"/>
+</g>
+<!-- sourcefile~vkframes.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node7" class="node">
+<title>sourcefile~vkframes.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node7"><a xlink:href="../sourcefile/vkframes.f90.html" xlink:title="vkframes.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="847.14,-184.27 765.87,-184.27 765.87,-160 847.14,-160 847.14,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="806.5" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge6" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-414.13C335.7,-398.92 318.72,-403.18 264.93,-414.13"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shapes.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge7" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shapes.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M799.48,-159.53C788.6,-138.12 763.65,-94.7 729.87,-71.13 705.66,-54.25 693.19,-64.15 666.24,-52.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-52.13C635.43,-39.3 601.56,-29.71 573.69,-23.14"/>
+<polygon fill="#000000" stroke="#000000" points="574.54,-19.75 564.02,-20.94 572.99,-26.57 574.54,-19.75"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge9" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sky.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.22,-414.13C460.69,-420.54 444.15,-429.63 390.44,-414.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-414.13C368.22,-408.3 360.74,-409.18 345.06,-395.13 308.79,-362.65 284.69,-309.73 273.05,-279.42"/>
+<polygon fill="#000000" stroke="#000000" points="276.34,-278.23 269.6,-270.06 269.78,-280.65 276.34,-278.23"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge11" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sphere.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-354.13C601.27,-385.08 587.92,-406.09 518.22,-414.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.22,-414.13C482.76,-418 446.25,-404.23 421.23,-391.82"/>
+<polygon fill="#000000" stroke="#000000" points="423.09,-388.83 412.6,-387.33 419.86,-395.05 423.09,-388.83"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge13" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_terrain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-354.13C624.08,-373.8 500.49,-334.31 433.94,-310.47"/>
+<polygon fill="#000000" stroke="#000000" points="435.4,-307.27 424.81,-307.16 433.02,-313.85 435.4,-307.27"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge28" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M766.89,-159.62C711.69,-143.36 607.07,-118.55 518.22,-132.13"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node9" class="node">
+<title>sourcefile~vkf_shadow.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node9"><a xlink:href="../sourcefile/vkf_shadow.f90.html" xlink:title="vkf_shadow.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="563.48,-386.27 470.96,-386.27 470.96,-362 563.48,-362 563.48,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="517.22" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shadow.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge29" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shadow.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-354.13C636.77,-367.59 603.12,-372.84 575.04,-374.61"/>
+<polygon fill="#000000" stroke="#000000" points="575.12,-371.1 565.3,-375.09 575.46,-378.1 575.12,-371.1"/>
+</g>
+<!-- sourcefile~vkf_window.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node10" class="node">
+<title>sourcefile~vkf_window.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node10"><a xlink:href="../sourcefile/vkf_window.f90.html" xlink:title="vkf_window.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="711.12,-264.27 619.35,-264.27 619.35,-240 711.12,-240 711.12,-264.27"/>
+<text xml:space="preserve" text-anchor="middle" x="665.24" y="-248.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_window.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge30" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_window.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M790.27,-184.63C775.47,-196.36 752.05,-213.9 729.87,-226.13 724.11,-229.31 717.89,-232.32 711.66,-235.1"/>
+<polygon fill="#000000" stroke="#000000" points="710.48,-231.79 702.65,-238.93 713.23,-238.23 710.48,-231.79"/>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge33" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-52.13C621.37,-33.03 491.9,-86.07 427.56,-114.89"/>
+<polygon fill="#000000" stroke="#000000" points="426.12,-111.7 418.46,-119.01 429.01,-118.08 426.12,-111.7"/>
+</g>
+<!-- sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node12" class="node">
+<title>sourcefile~vkf_handles.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node12"><a xlink:href="../sourcefile/vkf_handles.f90.html" xlink:title="vkf_handles.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="564.6,-184.27 469.83,-184.27 469.83,-160 564.6,-160 564.6,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="517.22" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge35" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_handles.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M775.2,-184.76C747.42,-195.37 704.87,-209.27 666.24,-212.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-212.13C644.87,-213.57 599.24,-200.03 564.1,-188.32"/>
+<polygon fill="#000000" stroke="#000000" points="565.6,-185.13 555,-185.25 563.36,-191.77 565.6,-185.13"/>
+</g>
+<!-- sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node13" class="node">
+<title>sourcefile~vkf_hud.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node13"><a xlink:href="../sourcefile/vkf_hud.f90.html" xlink:title="vkf_hud.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="553.73,-306.27 480.71,-306.27 480.71,-282 553.73,-282 553.73,-306.27"/>
+<text xml:space="preserve" text-anchor="middle" x="517.22" y="-290.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge37" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_hud.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M800.7,-184.59C786.48,-219.4 740.92,-317.56 666.24,-354.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-354.13C653.78,-359.25 592.94,-331.18 553.16,-311.69"/>
+<polygon fill="#000000" stroke="#000000" points="554.93,-308.66 544.41,-307.38 551.83,-314.94 554.93,-308.66"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node14" class="node">
+<title>sourcefile~vkf_line_segments.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node14"><a xlink:href="../sourcefile/vkf_line_segments.f90.html" xlink:title="vkf_line_segments.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="729.87,-104.27 600.6,-104.27 600.6,-80 729.87,-80 729.87,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="665.24" y="-88.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_line_segments.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge38" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_line_segments.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M790.27,-159.64C775.47,-147.91 752.05,-130.37 729.87,-118.13 724.11,-114.96 717.89,-111.95 711.66,-109.17"/>
+<polygon fill="#000000" stroke="#000000" points="713.23,-106.04 702.65,-105.34 710.48,-112.48 713.23,-106.04"/>
+</g>
+<!-- sourcefile~vkf_model.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node15" class="node">
+<title>sourcefile~vkf_model.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node15"><a xlink:href="../sourcefile/vkf_model.f90.html" xlink:title="vkf_model.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="708.5,-184.27 621.98,-184.27 621.98,-160 708.5,-160 708.5,-184.27"/>
+<text xml:space="preserve" text-anchor="middle" x="665.24" y="-168.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_model.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge39" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_model.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M765.6,-172.13C751.38,-172.13 735.12,-172.13 719.93,-172.13"/>
+<polygon fill="#000000" stroke="#000000" points="720.09,-168.64 710.09,-172.14 720.09,-175.64 720.09,-168.64"/>
+</g>
+<!-- sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_node16" class="node">
+<title>sourcefile~vkf_view.f90</title>
+<g id="a_sourcefile~~vkf_files.f90~~AfferentGraph_node16"><a xlink:href="../sourcefile/vkf_view.f90.html" xlink:title="vkf_view.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="555.23,-226.27 479.21,-226.27 479.21,-202 555.23,-202 555.23,-226.27"/>
+<text xml:space="preserve" text-anchor="middle" x="517.22" y="-210.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge41" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_view.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M664.24,-212.13C631.79,-214.54 595.18,-215.04 566.74,-214.94"/>
+<polygon fill="#000000" stroke="#000000" points="567.02,-211.44 556.99,-214.87 566.97,-218.44 567.02,-211.44"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge14" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M226.77,-188.68C216.37,-192.29 204.88,-196.28 193.96,-200.07"/>
+<polygon fill="#000000" stroke="#000000" points="193.02,-196.69 184.72,-203.27 195.31,-203.3 193.02,-196.69"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge10" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_sphere.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M470.81,-374.13C462.59,-374.13 453.93,-374.13 445.47,-374.13"/>
+<polygon fill="#000000" stroke="#000000" points="445.62,-370.64 435.62,-374.14 445.62,-377.64 445.62,-370.64"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge12" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_terrain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M492.21,-361.58C484.89,-357.51 476.91,-352.83 469.83,-348.13 452.94,-336.93 450.55,-331.59 433.83,-320.13 430.11,-317.58 426.13,-315.01 422.15,-312.52"/>
+<polygon fill="#000000" stroke="#000000" points="424.05,-309.58 413.69,-307.38 420.41,-315.56 424.05,-309.58"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge22" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M470.72,-362.84C426.62,-351.13 363.75,-332.19 345.06,-315.13 316.27,-288.85 328.86,-268.73 309.06,-235.13 301.32,-222.01 291.23,-208.32 282.65,-197.44"/>
+<polygon fill="#000000" stroke="#000000" points="285.55,-195.46 276.55,-189.87 280.1,-199.85 285.55,-195.46"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge8" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_sky.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-216.13C355.46,-211.33 319.37,-225.43 294.76,-238.19"/>
+<polygon fill="#000000" stroke="#000000" points="293.41,-234.94 286.29,-242.79 296.75,-241.09 293.41,-234.94"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge16" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-216.13C321.35,-209.79 243.27,-211.44 194.65,-213.53"/>
+<polygon fill="#000000" stroke="#000000" points="194.59,-210.03 184.76,-213.98 194.91,-217.02 194.59,-210.03"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge27" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M619.22,-250.09C579.67,-247.84 520.66,-243.39 469.83,-235.13 434.02,-229.32 426.35,-221.36 390.44,-216.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-216.13C358.48,-213.3 326.16,-202.54 302.1,-192.89"/>
+<polygon fill="#000000" stroke="#000000" points="303.64,-189.74 293.07,-189.15 300.97,-196.21 303.64,-189.74"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge34" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_handles.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M627.13,-239.55C618.13,-235.81 608.76,-231.31 600.6,-226.13 582.27,-214.52 582.71,-205.09 564.6,-193.13 562.83,-191.97 560.98,-190.83 559.09,-189.74"/>
+<polygon fill="#000000" stroke="#000000" points="561.2,-186.89 550.72,-185.3 557.92,-193.08 561.2,-186.89"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge36" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_hud.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M620.42,-264.74C602.98,-269.76 582.86,-275.54 565.12,-280.64"/>
+<polygon fill="#000000" stroke="#000000" points="564.24,-277.26 555.59,-283.38 566.17,-283.98 564.24,-277.26"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge40" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_view.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M619.23,-240.42C602.46,-236.06 583.36,-231.09 566.32,-226.65"/>
+<polygon fill="#000000" stroke="#000000" points="567.49,-223.34 556.93,-224.21 565.73,-230.12 567.49,-223.34"/>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge17" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M353.05,-144.74C340,-149.39 325.02,-154.73 311.15,-159.67"/>
+<polygon fill="#000000" stroke="#000000" points="310,-156.36 301.75,-163.02 312.35,-162.96 310,-156.36"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge18" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M469.63,-171.84C445.92,-171.76 416.64,-171.79 390.44,-172.13"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge31" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M476.77,-159.59C465.29,-155.94 452.61,-151.9 440.57,-148.08"/>
+<polygon fill="#000000" stroke="#000000" points="441.79,-144.79 431.2,-145.1 439.67,-151.46 441.79,-144.79"/>
+</g>
+<!-- sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge19" class="edge">
+<title>sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M480.43,-283.48C445.07,-272.32 389.91,-253.22 345.06,-230.13 325.67,-220.15 305.3,-206.38 289.96,-195.24"/>
+<polygon fill="#000000" stroke="#000000" points="292.44,-192.73 282.32,-189.61 288.29,-198.36 292.44,-192.73"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge20" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M627.54,-104.73C598.31,-114.14 556.15,-126.34 518.22,-132.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.22,-132.13C458.23,-141 449.1,-171.35 390.44,-172.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.44,-172.13C366.36,-172.43 342.07,-173.13 320.91,-173.87"/>
+<polygon fill="#000000" stroke="#000000" points="320.89,-170.37 311.02,-174.23 321.14,-177.36 320.89,-170.37"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge21" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M630.78,-159.56C594.78,-146.64 539.78,-128.84 518.22,-132.13"/>
+</g>
+<!-- sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkf_files.f90~~AfferentGraph_edge26" class="edge">
+<title>sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M486.19,-201.55C455.35,-189.09 409.26,-171.88 390.44,-172.13"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var pansourcefilevkf_filesf90AfferentGraph = svgPanZoom('#sourcefilevkf_filesf90AfferentGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#AfferentGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="AfferentGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="200pt" height="32pt"
+ viewBox="0.00 0.00 200.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 195.52,-28.27 195.52,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="191.52,-24.27 87.75,-24.27 87.75,0 191.52,0 191.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="139.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a file to a file which it depends on. A file
+is dependent upon another if the latter must be compiled before the former
+can be.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+          </div>
+        </div>
+<br>
+      <section>
+        <h2><span class="anchor" id="src"></span>Source Code</h2>
+        <div class="hl codehilite"><pre><span></span><a id="ln-1" name="ln-1" href="#ln-1"></a><span class="c">!&gt; Finding files: data files (e.g. the star catalog data/Stars_HYGv3.txt) by</span>
+<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="c">!&gt; name on a search path, as OpenFrames&#39; osgDB::findDataFile.</span>
+<a id="ln-3" name="ln-3" href="#ln-3"></a><span class="k">module </span><span class="n">vkf_files</span><span class="w"></span>
+<a id="ln-4" name="ln-4" href="#ln-4"></a>
+<a id="ln-5" name="ln-5" href="#ln-5"></a><span class="w">    </span><span class="k">implicit none</span>
+<a id="ln-6" name="ln-6" href="#ln-6"></a>
+<a id="ln-7" name="ln-7" href="#ln-7"></a><span class="k">    private</span>
+<a id="ln-8" name="ln-8" href="#ln-8"></a>
+<a id="ln-9" name="ln-9" href="#ln-9"></a><span class="k">    public</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">find_in_dirs</span><span class="p">,</span><span class="w"> </span><span class="n">find_data_file</span><span class="w"></span>
+<a id="ln-10" name="ln-10" href="#ln-10"></a>
+<a id="ln-11" name="ln-11" href="#ln-11"></a><span class="k">contains</span><span class="w"></span>
+<a id="ln-12" name="ln-12" href="#ln-12"></a>
+<a id="ln-13" name="ln-13" href="#ln-13"></a><span class="w">    </span><span class="c">!&gt; The path dir/name of the first directory in `dirs` (separated by &#39;;&#39; or</span>
+<a id="ln-14" name="ln-14" href="#ln-14"></a><span class="w">    </span><span class="c">!&gt; &#39;:&#39;, except a &#39;:&#39; after a drive letter) that has `name`, or &#39;&#39;.</span>
+<a id="ln-15" name="ln-15" href="#ln-15"></a><span class="w">    </span><span class="k">function </span><span class="n">find_in_dirs</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">dirs</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"></span>
+<a id="ln-16" name="ln-16" href="#ln-16"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w">        </span><span class="c">!! file name</span>
+<a id="ln-17" name="ln-17" href="#ln-17"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">dirs</span><span class="w">        </span><span class="c">!! directories, separated by &#39;;&#39; or &#39;:&#39;</span>
+<a id="ln-18" name="ln-18" href="#ln-18"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">path</span><span class="w"></span>
+<a id="ln-19" name="ln-19" href="#ln-19"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="w"></span>
+<a id="ln-20" name="ln-20" href="#ln-20"></a><span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exists</span><span class="w"></span>
+<a id="ln-21" name="ln-21" href="#ln-21"></a><span class="w">        </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"></span>
+<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="w">        </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<a id="ln-23" name="ln-23" href="#ln-23"></a><span class="w">        </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">dirs</span><span class="p">))</span><span class="w"></span>
+<a id="ln-24" name="ln-24" href="#ln-24"></a><span class="w">            </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
+<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="w">            </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">dirs</span><span class="p">))</span><span class="w"></span>
+<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dirs</span><span class="p">(</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;;&#39;</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">(</span><span class="n">dirs</span><span class="p">(</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="k">exit</span><span class="w">   </span><span class="c">! &#39;:&#39; not after a drive letter</span>
+<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="w">                </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="w">            </span><span class="k">end do</span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="k">            if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-30" name="ln-30" href="#ln-30"></a><span class="k">                inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="n">dirs</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;/&#39;</span><span class="o">//</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">exists</span><span class="p">)</span><span class="w"></span>
+<a id="ln-31" name="ln-31" href="#ln-31"></a><span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exists</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="k">                    </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dirs</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">//</span><span class="s1">&#39;/&#39;</span><span class="o">//</span><span class="n">name</span><span class="w"></span>
+<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="w">                    </span><span class="k">return</span>
+<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="k">                end if</span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="k">            end if</span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="k">            </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">        </span><span class="k">end do</span>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="k">    end function </span><span class="n">find_in_dirs</span><span class="w"></span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a>
+<a id="ln-40" name="ln-40" href="#ln-40"></a><span class="w">    </span><span class="c">!&gt; The path of data file `name`: `name` itself if it exists (a path, or a</span>
+<a id="ln-41" name="ln-41" href="#ln-41"></a><span class="w">    </span><span class="c">!&gt; file in the current directory), else the first match in the directories</span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">    </span><span class="c">!&gt; of the VKFRAMES_DATA_PATH environment variable; &#39;&#39; if not found.</span>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="w">    </span><span class="k">function </span><span class="n">find_data_file</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="w"></span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"></span>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="p">:),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">path</span><span class="w"></span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="w">        </span><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">env</span><span class="w"></span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">status</span><span class="w"></span>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">exists</span><span class="w"></span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">        </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"></span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="k">        inquire</span><span class="p">(</span><span class="k">file</span><span class="o">=</span><span class="nb">trim</span><span class="p">(</span><span class="n">name</span><span class="p">),</span><span class="w"> </span><span class="n">exist</span><span class="o">=</span><span class="n">exists</span><span class="p">)</span><span class="w"></span>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exists</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="k">            </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="w"></span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">            </span><span class="k">return</span>
+<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="k">        end if</span>
+<a id="ln-56" name="ln-56" href="#ln-56"></a><span class="k">        call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s1">&#39;VKFRAMES_DATA_PATH&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="n">status</span><span class="o">=</span><span class="n">status</span><span class="p">)</span><span class="w"></span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">find_in_dirs</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">name</span><span class="p">),</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">env</span><span class="p">))</span><span class="w"></span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a><span class="w">    </span><span class="k">end function </span><span class="n">find_data_file</span><span class="w"></span>
+<a id="ln-59" name="ln-59" href="#ln-59"></a>
+<a id="ln-60" name="ln-60" href="#ln-60"></a><span class="k">end module </span><span class="n">vkf_files</span><span class="w"></span>
+</pre></div>
+
+      </section>
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

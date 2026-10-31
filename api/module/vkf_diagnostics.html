@@ -1,0 +1,1242 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_diagnostics &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_diagnostics
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.5% of total for modules and submodules.">62 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_diagnostics.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_diagnostics.f90.html'>vkf_diagnostics.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_diagnostics</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_diagnostics.html#variable-vkframes_version">vkframes_version</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_diagnostics.html#type-deviceinfo">DeviceInfo</a>
+            <a class="list-group-item" href="../module/vkf_diagnostics.html#type-libraryversions">LibraryVersions</a>
+            <a class="list-group-item" href="../module/vkf_diagnostics.html#type-renderstats">RenderStats</a>
+            <a class="list-group-item" href="../module/vkf_diagnostics.html#type-scenecounts">SceneCounts</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_diagnostics.html#proc-library_versions">library_versions</a>
+            <a class="list-group-item" href="../module/vkf_diagnostics.html#proc-version_string">version_string</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Diagnostics (not in OpenFrames): what vkframes is built with and runs on,
+and how fast a window draws, for an information or debugging panel.</p>
+<ul>
+<li><code>library_versions()</code>: the versions of vkframes, VSG, vsgXchange, Dear
+  ImGui, the Vulkan headers it was built with and the Vulkan loader it runs
+  with (LibraryVersions).</li>
+<li>A window's <code>device_info()</code>: its Vulkan device and driver (DeviceInfo).</li>
+<li>A window's <code>render_stats()</code>: its frame rate and where a frame's time goes
+  (RenderStats), measured at every frame at no cost: the program's part
+  (the scene's update and the event handler), and the renderer's: waiting
+  for the next image to draw into (with vsync, this is mostly waiting for
+  the display), recording and submitting, and presenting; the GPU's time
+  for the frame (timestamps around its commands, read frames later, so it
+  lags a few frames; not measured on devices without timestamps); and the
+  device's memory in use and its budget (if the driver says).</li>
+<li>A window's <code>scene_counts()</code>: the size of its scene graph (SceneCounts),
+  counted when asked (a traversal of the whole graph: for an occasional
+  update, not every frame).</li>
+</ul>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_diagnostics~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_diagnosticsUsesGraph" width="326pt" height="126pt"
+ viewBox="0.00 0.00 326.00 126.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_diagnostics~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 121.73)">
+<title>module~~vkf_diagnostics~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-121.73 322.06,-121.73 322.06,4 -4,4"/>
+<!-- module~vkf_diagnostics -->
+<g id="module~~vkf_diagnostics~~UsesGraph_node1" class="node">
+<title>module~vkf_diagnostics</title>
+<polygon fill="none" stroke="black" points="318.06,-84.27 225.54,-84.27 225.54,-60 318.06,-60 318.06,-84.27"/>
+<text xml:space="preserve" text-anchor="middle" x="271.8" y="-68.54" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_diagnostics</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_diagnostics~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_diagnostics~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="88.02,-114.27 5.25,-114.27 5.25,-90 88.02,-90 88.02,-114.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-98.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_diagnostics&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_diagnostics~~UsesGraph_edge1" class="edge">
+<title>module~vkf_diagnostics&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.4,-84.58C236.53,-94.51 212.6,-107.65 189.54,-113.14 160.2,-120.12 126.58,-117.94 99.43,-113.75"/>
+<polygon fill="#000000" stroke="#000000" points="100.15,-110.33 89.71,-112.11 98.98,-117.23 100.15,-110.33"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_diagnostics~~UsesGraph_node3" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_diagnostics~~UsesGraph_node3"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-53.27 0,-53.27 0,-29 93.27,-29 93.27,-53.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-37.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_diagnostics&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_diagnostics~~UsesGraph_edge2" class="edge">
+<title>module~vkf_diagnostics&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.1,-65.79C190.32,-60.95 142.22,-54.27 104.88,-49.09"/>
+<polygon fill="#000000" stroke="#000000" points="105.54,-45.65 95.16,-47.74 104.58,-52.58 105.54,-45.65"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_diagnostics~~UsesGraph_node4" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_diagnostics~~UsesGraph_node4"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.16,-104.27 129.65,-104.27 129.65,-80 189.16,-80 189.16,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-88.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_diagnostics&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_diagnostics~~UsesGraph_edge3" class="edge">
+<title>module~vkf_diagnostics&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.26,-80.39C217.12,-81.86 208.69,-83.39 200.71,-84.83"/>
+<polygon fill="#000000" stroke="#000000" points="200.13,-81.38 190.91,-86.61 201.38,-88.27 200.13,-81.38"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_diagnostics~~UsesGraph_node5" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_diagnostics~~UsesGraph_node5"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_diagnostics&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_diagnostics~~UsesGraph_edge4" class="edge">
+<title>module~vkf_diagnostics&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.66,-59.56C231.91,-51 210.83,-39.54 193.34,-30.03"/>
+<polygon fill="#000000" stroke="#000000" points="195.3,-27.12 184.85,-25.42 191.96,-33.27 195.3,-27.12"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_diagnostics~~UsesGraph_edge5" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.3,-94.76C120.17,-95.59 109.81,-96.52 99.59,-97.44"/>
+<polygon fill="#000000" stroke="#000000" points="99.36,-93.95 89.71,-98.34 99.99,-100.92 99.36,-93.95"/>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_diagnostics~~UsesGraph_edge6" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-19.83C121.44,-21.81 113.02,-24.02 104.56,-26.23"/>
+<polygon fill="#000000" stroke="#000000" points="103.72,-22.83 94.93,-28.75 105.49,-29.6 103.72,-22.83"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_diagnostics~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_diagnosticsUsedByGraph" width="306pt" height="52pt"
+ viewBox="0.00 0.00 306.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_diagnostics~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_diagnostics~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 301.81,-48.27 301.81,4 -4,4"/>
+<!-- module~vkf_diagnostics -->
+<g id="module~~vkf_diagnostics~~UsedByGraph_node1" class="node">
+<title>module~vkf_diagnostics</title>
+<polygon fill="none" stroke="black" points="92.52,-44.27 0,-44.27 0,-20 92.52,-20 92.52,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.26" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_diagnostics</text>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_diagnostics~~UsedByGraph_node2" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_diagnostics~~UsedByGraph_node2"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-24.27 128.52,-24.27 128.52,0 200.79,0 200.79,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="164.66" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_diagnostics -->
+<g id="module~~vkf_diagnostics~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_diagnostics</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M128.1,-18.24C120.47,-19.56 112.23,-20.97 104.02,-22.38"/>
+<polygon fill="#000000" stroke="#000000" points="103.67,-18.89 94.4,-24.03 104.85,-25.79 103.67,-18.89"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_diagnostics~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_diagnostics~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="297.81,-44.27 236.79,-44.27 236.79,-20 297.81,-20 297.81,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="267.3" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_diagnostics -->
+<g id="module~~vkf_diagnostics~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_diagnostics</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M236.3,-32.69C225.15,-32.87 212.39,-33.05 200.79,-33.13 168.67,-33.38 160.64,-33.33 128.52,-33.13 120.66,-33.09 112.37,-33.01 104.21,-32.92"/>
+<polygon fill="#000000" stroke="#000000" points="104.37,-29.43 94.33,-32.81 104.29,-36.43 104.37,-29.43"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_diagnostics~~UsedByGraph_edge3" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M236.38,-26.19C228.73,-24.67 220.32,-23 212.06,-21.36"/>
+<polygon fill="#000000" stroke="#000000" points="212.94,-17.96 202.45,-19.45 211.57,-24.83 212.94,-17.96"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vkframes_version"></span>
+              character(len=*),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>vkframes_version</strong></td>
+<td> =</td>
+                <td>&#39;0.0.1&#39;</td>
+            <td>
+                <p>vkframes' version (fpm.toml's).</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-deviceinfo"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/deviceinfo.html'>DeviceInfo</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A window's Vulkan device and driver (each '' if unknown).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-driver"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>driver</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>its driver's name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-driver_info"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>driver_info</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>its driver's information (e.g. its version)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kind~10"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>kind</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>integrated GPU, discrete GPU, virtual GPU, CPU or other</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~24"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the device (e.g. "Apple M3 Max")</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vulkan"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>vulkan</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the Vulkan version it supports</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-libraryversions"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/libraryversions.html'>LibraryVersions</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>The versions of vkframes and the libraries it uses (each '' if unknown).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-imgui"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>imgui</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>Dear ImGui (GUI panels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vkframes"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>vkframes</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>vkframes</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsg"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>vsg</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>VulkanSceneGraph</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vsgxchange"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>vsgxchange</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>vsgXchange (images, models, fonts)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vulkan_headers"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>vulkan_headers</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the Vulkan headers vkframes was built with</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vulkan_loader"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>vulkan_loader</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the Vulkan loader it runs with (its instance version)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-renderstats"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/renderstats.html'>RenderStats</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A window's frame rate and frame times (see the module documentation).
+Times are in milliseconds; the rate and frame time are averaged over
+about half a second, the rest are the last frame's.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-acquire_ms"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>acquire_ms</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>waiting for the next image to draw into</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fps~3"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fps</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>frames per second</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame_ms"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frame_ms</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the time between frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frames~3"></span>
+              integer(kind=int64),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frames</strong></td>
+<td> =</td>
+                <td>0_int64</td>
+            <td>
+<p>frames drawn</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-gpu_memory_budget"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>gpu_memory_budget</strong></td>
+<td> =</td>
+                <td>-1.0_wp</td>
+            <td>
+<p>device memory available to the program (bytes; -1: unknown)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-gpu_memory_used"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>gpu_memory_used</strong></td>
+<td> =</td>
+                <td>-1.0_wp</td>
+            <td>
+<p>device memory in use (bytes; -1: unknown)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-gpu_ms"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>gpu_ms</strong></td>
+<td> =</td>
+                <td>-1.0_wp</td>
+            <td>
+<p>the GPU's time for a frame (-1: not measured)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-height~9"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>height</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>the image's size (framebuffer pixels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-present_ms"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>present_ms</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>presenting the image</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-program_ms"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>program_ms</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the program's part of frame(): the scene's update, the handler</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-record_ms"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>record_ms</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>recording and submitting the GPU's commands</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~27"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>the image's size (framebuffer pixels)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-scenecounts"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/scenecounts.html'>SceneCounts</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>The size of a window's scene graph: what is switched off isn't counted.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-draws"></span>
+              integer(kind=int64),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>draws</strong></td>
+<td> =</td>
+                <td>0_int64</td>
+            <td>
+<p>draw commands</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nodes~6"></span>
+              integer(kind=int64),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nodes</strong></td>
+<td> =</td>
+                <td>0_int64</td>
+            <td>
+<p>nodes</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vertices~4"></span>
+              integer(kind=int64),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>vertices</strong></td>
+<td> =</td>
+                <td>0_int64</td>
+            <td>
+<p>vertices drawn (indices for indexed draws, times instances)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-library_versions"></span> <h3>public  function <a href='../proc/library_versions.html'>library_versions</a>() result(v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The versions of vkframes and the libraries it uses.</p>
+
+  <h4>Arguments</h4>
+    <em>None</em>
+    <h4>
+    Return Value
+    <small>type(<a href='../type/libraryversions.html'>LibraryVersions</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-version_string"></span> <h3>private  function <a href='../proc/version_string.html'>version_string</a>(which) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The rendering layer's version string <code>which</code> (see vkf_version), '' if unknown.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-which~12"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>which</strong></td>
+            <td>
+<p>1 VSG ... 5 the Vulkan loader</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,2480 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_pick &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_pick
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.1% of total for modules and submodules.">268 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_pick.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_pick.f90.html'>vkf_pick.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_pick</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_pick.html#type-pickcamera">PickCamera</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-pick_camera">pick_camera</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-point_pick">point_pick</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-project">project</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-ray_ellipsoid">ray_ellipsoid</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-ray_line">ray_line</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-ray_plane">ray_plane</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-ray_sphere">ray_sphere</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-segment_pick">segment_pick</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-sphere_near">sphere_near</a>
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-wants">wants</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_pick.html#proc-ray">ray</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Picking geometry: what is under a point of a window (WindowProxy%pick).</p>
+<p>A PickCamera is the camera and the cursor of a pick, in the scene's root
+frame: the eye and its axes (right, up, forward), the projection, the
+viewport's size and the cursor's position (-1 to 1, y up, as the window's
+events). Frames test their contents against it (ReferenceFrame%pick and
+its extensions):
+* points and line segments on the screen, within a tolerance in pixels
+  (<code>point_pick</code>, <code>segment_pick</code>: the closest point of a segment, its
+  fraction along the segment in the scene, perspective-correct, and its
+  depth), for trajectories, markers and frames' origins;
+* a ray from the eye through the cursor against an ellipsoid (<code>ray</code>,
+  <code>ray_ellipsoid</code>), for bodies;
+* the ray against a plane, a sphere and a line (<code>ray_plane</code>,
+  <code>ray_sphere</code>, <code>ray_line</code>), for dragging (WindowProxy%cursor_ray, and
+  vkf_handles' constraints);
+* bounding spheres on the screen (<code>sphere_near</code>), to skip whole chunks of
+  a long trajectory.
+Depths are distances along the view direction (perspective) or from the
+eye's plane (orthographic); points closer than <code>near</code> are behind the eye.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_pick~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_pickUsesGraph" width="288pt" height="32pt"
+ viewBox="0.00 0.00 288.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_pick~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>module~~vkf_pick~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 283.81,-28.27 283.81,4 -4,4"/>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_pick~~UsesGraph_node1" class="node">
+<title>module~vkf_pick</title>
+<polygon fill="none" stroke="black" points="279.81,-24.27 225.54,-24.27 225.54,0 279.81,0 279.81,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="252.68" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_pick</text>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_pick~~UsesGraph_node2" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_pick~~UsesGraph_node2"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_pick~~UsesGraph_edge1" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.28,-12.13C217.76,-12.13 209.39,-12.13 201.24,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="201.46,-8.64 191.46,-12.14 201.46,-15.64 201.46,-8.64"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_pick~~UsesGraph_node3" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_pick~~UsesGraph_node3"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-24.27 0,-24.27 0,0 93.27,0 93.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_pick~~UsesGraph_edge2" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-12.13C121.52,-12.13 113.21,-12.13 104.84,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="104.98,-8.64 94.98,-12.14 104.98,-15.64 104.98,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_pick~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_pickUsedByGraph" width="625pt" height="383pt"
+ viewBox="0.00 0.00 625.00 383.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_pick~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 378.94)">
+<title>module~~vkf_pick~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-378.94 621.37,-378.94 621.37,4 -4,4"/>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_node1" class="node">
+<title>module~vkf_pick</title>
+<polygon fill="none" stroke="black" points="54.27,-178.19 0,-178.19 0,-153.92 54.27,-153.92 54.27,-178.19"/>
+<text xml:space="preserve" text-anchor="middle" x="27.13" y="-162.45" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_pick</text>
+</g>
+<!-- module~vkf_artists -->
+<g id="module~~vkf_pick~~UsedByGraph_node2" class="node">
+<title>module~vkf_artists</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node2"><a xlink:href="../module/vkf_artists.html" xlink:title="vkf_artists">
+<polygon fill="#337ab7" stroke="#337ab7" points="262.94,-279.19 198.17,-279.19 198.17,-254.92 262.94,-254.92 262.94,-279.19"/>
+<text xml:space="preserve" text-anchor="middle" x="230.55" y="-263.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M207.26,-279.52C185.39,-289.95 151.72,-301.06 126.28,-287.05"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_node3" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node3"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="160.29,-178.19 90.27,-178.19 90.27,-153.92 160.29,-153.92 160.29,-178.19"/>
+<text xml:space="preserve" text-anchor="middle" x="125.28" y="-162.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge12" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M212.55,-254.59C207.2,-250.45 201.37,-245.71 196.29,-241.05 177.52,-223.85 157.88,-202.48 144.2,-186.95"/>
+<polygon fill="#000000" stroke="#000000" points="147.09,-184.94 137.88,-179.7 141.81,-189.54 147.09,-184.94"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge2" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M89.84,-166.05C82.02,-166.05 73.68,-166.05 65.73,-166.05"/>
+<polygon fill="#000000" stroke="#000000" points="66,-162.55 56,-166.05 66,-169.55 66,-162.55"/>
+</g>
+<!-- module~vkf_handles -->
+<g id="module~~vkf_pick~~UsedByGraph_node4" class="node">
+<title>module~vkf_handles</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node4"><a xlink:href="../module/vkf_handles.html" xlink:title="vkf_handles">
+<polygon fill="#337ab7" stroke="#337ab7" points="375.33,-319.19 300.81,-319.19 300.81,-294.92 375.33,-294.92 375.33,-319.19"/>
+<text xml:space="preserve" text-anchor="middle" x="338.07" y="-303.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge3" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M300.61,-311.97C256.46,-316.12 181.18,-317.28 126.28,-287.05"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_pick~~UsedByGraph_edge9" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M303.97,-294.51C294.38,-290.87 283.79,-286.86 273.72,-283.04"/>
+<polygon fill="#000000" stroke="#000000" points="275.1,-279.82 264.5,-279.55 272.61,-286.36 275.1,-279.82"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge13" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M312.96,-294.52C308.76,-291.94 304.54,-289.08 300.81,-286.05 282.23,-270.99 283.43,-261.07 264.81,-246.05 251.56,-235.37 246.38,-235.42 231.55,-227.05"/>
+</g>
+<!-- module~vkf_model -->
+<g id="module~~vkf_pick~~UsedByGraph_node5" class="node">
+<title>module~vkf_model</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node5"><a xlink:href="../module/vkf_model.html" xlink:title="vkf_model">
+<polygon fill="#337ab7" stroke="#337ab7" points="263.69,-359.19 197.42,-359.19 197.42,-334.92 263.69,-334.92 263.69,-359.19"/>
+<text xml:space="preserve" text-anchor="middle" x="230.55" y="-343.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge4" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M208.75,-334.59C188,-322.25 155.16,-302.96 126.28,-287.05"/>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge16" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M222.45,-334.61C205.21,-304.39 160.92,-226.76 138.98,-188.32"/>
+<polygon fill="#000000" stroke="#000000" points="142.17,-186.85 134.18,-179.9 136.09,-190.32 142.17,-186.85"/>
+</g>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_pick~~UsedByGraph_node6" class="node">
+<title>module~vkf_sphere</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node6"><a xlink:href="../module/vkf_sphere.html" xlink:title="vkf_sphere">
+<polygon fill="#337ab7" stroke="#337ab7" points="264.81,-115.19 196.29,-115.19 196.29,-90.92 264.81,-90.92 264.81,-115.19"/>
+<text xml:space="preserve" text-anchor="middle" x="230.55" y="-99.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge5" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.16,-95.69C175.02,-92.75 147.73,-92.24 126.28,-103.05"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge19" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M209.15,-115.5C194.01,-124.73 173.14,-137.46 156.14,-147.84"/>
+<polygon fill="#000000" stroke="#000000" points="154.65,-144.65 147.93,-152.85 158.29,-150.63 154.65,-144.65"/>
+</g>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_pick~~UsedByGraph_node7" class="node">
+<title>module~vkf_terrain</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node7"><a xlink:href="../module/vkf_terrain.html" xlink:title="vkf_terrain">
+<polygon fill="#337ab7" stroke="#337ab7" points="264.81,-35.19 196.29,-35.19 196.29,-10.92 264.81,-10.92 264.81,-35.19"/>
+<text xml:space="preserve" text-anchor="middle" x="230.55" y="-19.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge6" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M208.85,-35.51C204.62,-38.22 200.26,-41.15 196.29,-44.05 163.45,-68.08 162.62,-84.74 126.28,-103.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M124.28,-103.05C99.24,-115.68 72.72,-133.42 53.9,-146.86"/>
+<polygon fill="#000000" stroke="#000000" points="52.07,-143.86 46.02,-152.56 56.18,-149.53 52.07,-143.86"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge20" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M210.73,-35.56C205.65,-39.49 200.43,-44.11 196.29,-49.05 174.34,-75.27 178.07,-87.84 160.29,-117.05 154.72,-126.21 148.09,-135.97 142.17,-144.35"/>
+<polygon fill="#000000" stroke="#000000" points="139.52,-142.04 136.54,-152.21 145.21,-146.12 139.52,-142.04"/>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_pick~~UsedByGraph_node8" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node8"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="501.98,-197.19 429.71,-197.19 429.71,-172.92 501.98,-172.92 501.98,-197.19"/>
+<text xml:space="preserve" text-anchor="middle" x="465.84" y="-181.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge7" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M229.55,-189.05C166.51,-194.49 181.57,-317.83 126.28,-287.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M124.28,-287.05C83.71,-264.48 54.06,-217.14 39.1,-188.83"/>
+<polygon fill="#000000" stroke="#000000" points="42.27,-187.34 34.62,-180.01 36.03,-190.51 42.27,-187.34"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge22" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M429.46,-195.34C413.13,-199.57 393.41,-203.96 375.33,-206.05 342.43,-209.86 333.69,-210.03 300.81,-206.05 269.34,-202.25 263.24,-188.75 231.55,-189.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M229.55,-189.05C209.7,-190.77 188.13,-186.9 169.86,-181.87"/>
+<polygon fill="#000000" stroke="#000000" points="170.99,-178.56 160.4,-179.06 168.99,-185.27 170.99,-178.56"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_pick~~UsedByGraph_edge24" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.99,-197.39C441.03,-217.65 409.07,-258.47 375.33,-286.05 374.4,-286.81 373.44,-287.56 372.46,-288.3"/>
+<polygon fill="#000000" stroke="#000000" points="370.79,-285.2 364.45,-293.7 374.7,-291.01 370.79,-285.2"/>
+</g>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_pick~~UsedByGraph_node10" class="node">
+<title>module~vkf_hud</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node10"><a xlink:href="../module/vkf_hud.html" xlink:title="vkf_hud">
+<polygon fill="#337ab7" stroke="#337ab7" points="365.07,-197.19 311.07,-197.19 311.07,-172.92 365.07,-172.92 365.07,-197.19"/>
+<text xml:space="preserve" text-anchor="middle" x="338.07" y="-181.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_pick~~UsedByGraph_edge32" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M429.47,-185.05C412.94,-185.05 393.25,-185.05 376.48,-185.05"/>
+<polygon fill="#000000" stroke="#000000" points="376.92,-181.55 366.92,-185.05 376.92,-188.55 376.92,-181.55"/>
+</g>
+<!-- module~vkf_view -->
+<g id="module~~vkf_pick~~UsedByGraph_node14" class="node">
+<title>module~vkf_view</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node14"><a xlink:href="../module/vkf_view.html" xlink:title="vkf_view">
+<polygon fill="#337ab7" stroke="#337ab7" points="366.33,-155.19 309.81,-155.19 309.81,-130.92 366.33,-130.92 366.33,-155.19"/>
+<text xml:space="preserve" text-anchor="middle" x="338.07" y="-139.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_pick~~UsedByGraph_edge37" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M429.47,-173.24C413.14,-167.79 393.73,-161.31 377.08,-155.75"/>
+<polygon fill="#000000" stroke="#000000" points="378.64,-152.58 368.04,-152.73 376.42,-159.22 378.64,-152.58"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_pick~~UsedByGraph_node9" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node9"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="617.37,-117.19 556.35,-117.19 556.35,-92.92 617.37,-92.92 617.37,-117.19"/>
+<text xml:space="preserve" text-anchor="middle" x="586.86" y="-101.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_pick~~UsedByGraph_edge8" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M337.07,-347.05C303.69,-344.99 297.92,-363.34 264.81,-368.05 234.66,-372.35 223.98,-380.72 196.29,-368.05 153.02,-348.26 167.86,-310.2 126.28,-287.05"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_pick~~UsedByGraph_edge11" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-347.05C413.34,-368.79 394.86,-350.5 339.07,-347.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M337.07,-347.05C298.72,-344.69 265.47,-311.31 247.01,-288.43"/>
+<polygon fill="#000000" stroke="#000000" points="249.83,-286.36 240.95,-280.58 244.29,-290.64 249.83,-286.36"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge23" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M556.34,-102.66C532.15,-101.28 497.09,-100.58 466.84,-105.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-105.05C409.54,-113.24 393.26,-89.33 339.07,-103.05"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_pick~~UsedByGraph_edge25" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-347.05C431.11,-361.29 390.49,-342.17 364.72,-325.79"/>
+<polygon fill="#000000" stroke="#000000" points="366.81,-322.98 356.55,-320.34 362.92,-328.8 366.81,-322.98"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_model -->
+<g id="module~~vkf_pick~~UsedByGraph_edge26" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_model</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M337.07,-347.05C316.78,-345.8 294.25,-345.63 275.24,-345.85"/>
+<polygon fill="#000000" stroke="#000000" points="275.37,-342.35 265.42,-346 275.48,-349.34 275.37,-342.35"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_pick~~UsedByGraph_edge28" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-25.05C446.13,-19.43 334.94,-61.71 273.06,-86.28"/>
+<polygon fill="#000000" stroke="#000000" points="271.88,-82.98 263.89,-89.94 274.47,-89.48 271.88,-82.98"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_pick~~UsedByGraph_edge30" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M575.44,-92.7C563.4,-79.11 542.4,-57.44 520.35,-44.05 498.78,-30.96 490.97,-32.44 466.84,-25.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-25.05C394.56,-3.54 373.65,5.76 300.81,-4.05 292.65,-5.15 284.1,-6.95 275.9,-9.01"/>
+<polygon fill="#000000" stroke="#000000" points="275.2,-5.57 266.46,-11.55 277.02,-12.33 275.2,-5.57"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_pick~~UsedByGraph_edge31" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M567.26,-117.55C547.79,-130.65 516.97,-151.36 494.61,-166.39"/>
+<polygon fill="#000000" stroke="#000000" points="492.91,-163.31 486.56,-171.8 496.81,-169.12 492.91,-163.31"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_pick~~UsedByGraph_edge33" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-105.05C417.71,-112.03 415.85,-138.99 375.33,-164.05 373.9,-164.94 372.43,-165.84 370.94,-166.73"/>
+<polygon fill="#000000" stroke="#000000" points="369.17,-163.72 362.35,-171.83 372.74,-169.74 369.17,-163.72"/>
+</g>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_pick~~UsedByGraph_node11" class="node">
+<title>module~vkf_line_segments</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node11"><a xlink:href="../module/vkf_line_segments.html" xlink:title="vkf_line_segments">
+<polygon fill="#337ab7" stroke="#337ab7" points="520.35,-77.19 411.33,-77.19 411.33,-52.92 520.35,-52.92 520.35,-77.19"/>
+<text xml:space="preserve" text-anchor="middle" x="465.84" y="-61.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_pick~~UsedByGraph_edge34" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M556.13,-95.06C543.75,-90.9 529.04,-85.96 515.17,-81.3"/>
+<polygon fill="#000000" stroke="#000000" points="516.32,-77.99 505.73,-78.12 514.09,-84.63 516.32,-77.99"/>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_pick~~UsedByGraph_node12" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node12"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="374.58,-37.19 301.56,-37.19 301.56,-12.92 374.58,-12.92 374.58,-37.19"/>
+<text xml:space="preserve" text-anchor="middle" x="338.07" y="-21.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_pick~~UsedByGraph_edge35" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-25.05C439.59,-17.46 410.18,-17.03 386.15,-18.7"/>
+<polygon fill="#000000" stroke="#000000" points="386.01,-15.2 376.34,-19.53 386.6,-22.17 386.01,-15.2"/>
+</g>
+<!-- module~vkf_shapes -->
+<g id="module~~vkf_pick~~UsedByGraph_node13" class="node">
+<title>module~vkf_shapes</title>
+<g id="a_module~~vkf_pick~~UsedByGraph_node13"><a xlink:href="../module/vkf_shapes.html" xlink:title="vkf_shapes">
+<polygon fill="#337ab7" stroke="#337ab7" points="373.08,-277.19 303.06,-277.19 303.06,-252.92 373.08,-252.92 373.08,-277.19"/>
+<text xml:space="preserve" text-anchor="middle" x="338.07" y="-261.45" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shapes -->
+<g id="module~~vkf_pick~~UsedByGraph_edge36" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shapes</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M584.93,-117.44C580.88,-161.13 560.44,-307.54 466.84,-347.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-347.05C420.49,-365.78 416.08,-311.69 375.33,-286.05 373.94,-285.18 372.52,-284.3 371.08,-283.42"/>
+<polygon fill="#000000" stroke="#000000" points="373.15,-280.58 362.77,-278.46 369.56,-286.59 373.15,-280.58"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_pick~~UsedByGraph_edge38" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.84,-105.05C434.71,-109.51 401.79,-119.66 377.19,-128.35"/>
+<polygon fill="#000000" stroke="#000000" points="376.14,-125 367.93,-131.7 378.53,-131.59 376.14,-125"/>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge14" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M313.15,-172.5C287.36,-159.51 247.83,-141.35 231.55,-143.05"/>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge15" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M426.56,-77.61C401.77,-85.49 368.7,-95.55 339.07,-103.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M337.07,-103.05C288.45,-115.37 281.43,-137.83 231.55,-143.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M229.55,-143.05C210.28,-145.07 189.35,-149.34 171.41,-153.65"/>
+<polygon fill="#000000" stroke="#000000" points="170.71,-150.22 161.85,-156.03 172.4,-157.01 170.71,-150.22"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge17" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M301.08,-34.29C271.08,-43.18 228.24,-58.74 196.29,-82.05 173,-99.05 152.7,-125.44 140.04,-144.1"/>
+<polygon fill="#000000" stroke="#000000" points="137.23,-142.02 134.66,-152.3 143.08,-145.86 137.23,-142.02"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_pick~~UsedByGraph_edge27" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M319.31,-37.67C313.4,-41.9 306.81,-46.65 300.81,-51.05 286.18,-61.79 269.95,-73.96 256.88,-83.83"/>
+<polygon fill="#000000" stroke="#000000" points="255.06,-80.82 249.19,-89.64 259.28,-86.4 255.06,-80.82"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_pick~~UsedByGraph_edge29" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M301.35,-24.38C293.38,-24.23 284.84,-24.06 276.55,-23.91"/>
+<polygon fill="#000000" stroke="#000000" points="276.68,-20.41 266.61,-23.72 276.55,-27.41 276.68,-20.41"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_pick~~UsedByGraph_edge10" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M302.81,-265.7C293.74,-265.88 283.84,-266.06 274.37,-266.24"/>
+<polygon fill="#000000" stroke="#000000" points="274.58,-262.74 264.65,-266.43 274.71,-269.74 274.58,-262.74"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge18" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M303.02,-255.98C281.71,-249.54 254.11,-239.78 231.55,-227.05"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M229.55,-227.05C204.88,-213.14 177.27,-196.79 156.81,-184.52"/>
+<polygon fill="#000000" stroke="#000000" points="158.77,-181.62 148.4,-179.47 155.17,-187.62 158.77,-181.62"/>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_pick~~UsedByGraph_edge21" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.66,-141.49C288.31,-140.65 257.97,-140.28 231.55,-143.05"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-pickcamera"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/pickcamera.html'>PickCamera</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>The camera and cursor of a pick (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-aspect"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>aspect</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>width / height</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the eye (root frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-forward"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>forward</strong>(3)</td>
+<td> =</td>
+                <td>[0.0_wp, 1.0_wp, 0.0_wp]</td>
+            <td>
+<p>the view direction (unit vector, root frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-half_h"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>half_h</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>half the viewport (framebuffer pixels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-half_w"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>half_w</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>half the viewport (framebuffer pixels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kinds"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kinds</strong></td>
+<td> =</td>
+                <td>-1</td>
+            <td>
+<p>the kinds of hits wanted: bit k for kind k (all)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_depth"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_depth</strong></td>
+<td> =</td>
+                <td>huge(1.0_wp)</td>
+            <td>
+<p>hits deeper than this aren't wanted (nearest only)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-near"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>near</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the smallest depth in front of the eye</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ortho"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ortho</strong>(4)</td>
+<td> =</td>
+                <td>[-1.0_wp, 1.0_wp, -1.0_wp, 1.0_wp]</td>
+            <td>
+<p>(orthographic: left, right, bottom, top)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-perspective"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>perspective</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>(true: perspective; false: orthographic)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pixel_ratio"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pixel_ratio</strong></td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>framebuffer pixels per window unit (for line widths, marker sizes)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-right"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>right</strong>(3)</td>
+<td> =</td>
+                <td>[1.0_wp, 0.0_wp, 0.0_wp]</td>
+            <td>
+<p>the camera's right axis (unit vector, root frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-tan_y"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>tan_y</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>tan(vertical field of view / 2)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-tolerance"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>tolerance</strong></td>
+<td> =</td>
+                <td>6.0_wp</td>
+            <td>
+<p>framebuffer pixels</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+<td> =</td>
+                <td>[0.0_wp, 0.0_wp, 1.0_wp]</td>
+            <td>
+<p>the camera's up axis (unit vector, root frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the cursor (-1 to 1, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-y"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the cursor (-1 to 1, y up)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-pick_camera"></span> <h3>public pure function <a href='../proc/pick_camera.html'>pick_camera</a>(eye, center, up, perspective, fovy, aspect, ortho, width, height, x, y, tolerance) result(cam)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The camera of a pick: eye, center and up (root frame), a perspective
+projection (<code>fovy</code>, degrees, and <code>aspect</code>) or an orthographic one
+(<code>ortho</code>: left, right, bottom, top), a viewport of <code>width</code> x <code>height</code>
+framebuffer pixels, the cursor (x, y: -1 to 1, y up) and the tolerance
+(framebuffer pixels).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+            <td>
+<p>the camera (root frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the camera (root frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+            <td>
+<p>the camera (root frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-perspective~2"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>perspective</strong></td>
+            <td>
+<p>(true: perspective; false: orthographic)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fovy"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fovy</strong></td>
+            <td>
+<p>vertical field of view (degrees; perspective)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-aspect~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>aspect</strong></td>
+            <td>
+<p>width / height (perspective)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ortho~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ortho</strong>(4)</td>
+            <td>
+<p>left, right, bottom, top (orthographic)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+<p>the viewport (framebuffer pixels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-height"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>height</strong></td>
+            <td>
+<p>the viewport (framebuffer pixels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+<p>the cursor (-1 to 1, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-y~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong></td>
+            <td>
+<p>the cursor (-1 to 1, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-tolerance~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>tolerance</strong></td>
+            <td>
+<p>(framebuffer pixels)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/pickcamera.html'>PickCamera</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-point_pick"></span> <h3>public  function <a href='../proc/point_pick.html'>point_pick</a>(cam, p, pixels, depth, extra) result(hit)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Point p (root frame) is within the tolerance (plus <code>extra</code> pixels, e.g.
+half a marker's size) of the cursor: its distance from it (pixels) and
+its depth.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~4"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>p</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pixels"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pixels</strong></td>
+            <td>
+<p>distance from the cursor (framebuffer pixels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-depth~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>depth</strong></td>
+            <td>
+<p>(scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-extra"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>extra</strong></td>
+            <td>
+<p>added to the tolerance (framebuffer pixels)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-project"></span> <h3>public  function <a href='../proc/project.html'>project</a>(cam, p, sx, sy, depth) result(visible)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The screen offset (framebuffer pixels) of point p (root frame) from the
+cursor, and its depth; false if it is behind the eye.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~3"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>p</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sx"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sx</strong></td>
+            <td>
+<p>offset from the cursor (framebuffer pixels, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sy"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sy</strong></td>
+            <td>
+<p>offset from the cursor (framebuffer pixels, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-depth"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>depth</strong></td>
+            <td>
+<p>(scene units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-ray_ellipsoid"></span> <h3>public  function <a href='../proc/ray_ellipsoid.html'>ray_ellipsoid</a>(origin, dir, center, axes, radii, distance, point, local) result(hit)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the ray (origin, unit dir) first meets the ellipsoid centered at
+<code>center</code> with semi-axes <code>radii</code> along the columns of <code>axes</code> (unit
+vectors): the distance along the ray, the point, and the point in the
+ellipsoid's axes (from its center). False if it misses (or the
+ellipsoid is behind).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-origin~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>origin</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dir~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dir</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the ellipsoid's center</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-axes"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>axes</strong>(3,3)</td>
+            <td>
+<p>its axes (columns: unit vectors)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radii"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radii</strong>(3)</td>
+            <td>
+<p>its semi-axes along them</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-distance"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>distance</strong></td>
+            <td>
+<p>along the ray (huge() if missed)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-point"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>point</strong>(3)</td>
+            <td>
+<p>the point met</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-local"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>local</strong>(3)</td>
+            <td>
+<p>the point in the ellipsoid's axes, from its center</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-ray_line"></span> <h3>public  function <a href='../proc/ray_line.html'>ray_line</a>(origin, dir, point, axis, s, line_point) result(hit)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The point of the line through <code>point</code> along <code>axis</code> closest to the ray
+(origin, unit dir): its parameter <code>s</code> (the point is point + s * axis,
+axis normalized) and the point. False if the ray and the line are
+parallel (within 1e-6 of it, as a sine squared), or the closest point
+of the ray is behind its origin.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-origin~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>origin</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dir~8"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dir</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-point~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>point</strong>(3)</td>
+            <td>
+<p>the line (axis: any length but 0)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-axis"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>axis</strong>(3)</td>
+            <td>
+<p>the line (axis: any length but 0)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>along the line (scene units, from <code>point</code>)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-line_point"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>line_point</strong>(3)</td>
+            <td>
+<p>the point of the line</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-ray_plane"></span> <h3>public  function <a href='../proc/ray_plane.html'>ray_plane</a>(origin, dir, point, normal, distance, hit_point) result(hit)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the ray (origin, unit dir) meets the plane through <code>point</code> with
+normal <code>normal</code>: the distance along the ray and the point. False if the
+ray is parallel to the plane (within 1e-6 of it, as a cosine) or the
+plane is behind.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-origin~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>origin</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dir~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dir</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-point~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>point</strong>(3)</td>
+            <td>
+<p>the plane (normal: any length but 0)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-normal"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>normal</strong>(3)</td>
+            <td>
+<p>the plane (normal: any length but 0)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-distance~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>distance</strong></td>
+            <td>
+<p>along the ray (huge() if missed)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hit_point"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hit_point</strong>(3)</td>
+            <td>
+<p>the point met</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-ray_sphere"></span> <h3>public  function <a href='../proc/ray_sphere.html'>ray_sphere</a>(origin, dir, center, radius, near, far) result(hit)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the ray (origin, unit dir) meets the sphere of <code>center</code> and
+<code>radius</code>: the distances along the ray of where it enters and leaves
+(<code>near</code> &lt;= <code>far</code>; <code>near</code> &lt; 0 if the origin is inside). False if it
+misses, or the sphere is behind.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-origin~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>origin</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dir~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dir</strong>(3)</td>
+            <td>
+<p>the ray (dir: a unit vector)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the sphere's center</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>its radius (&gt; 0)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-near~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>near</strong></td>
+            <td>
+<p>distances along the ray (huge() if missed)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-far"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>far</strong></td>
+            <td>
+<p>distances along the ray (huge() if missed)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-segment_pick"></span> <h3>public  function <a href='../proc/segment_pick.html'>segment_pick</a>(cam, a, b, pixels, s, depth, extra) result(hit)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Segment a-b (root frame) passes within the tolerance (plus <code>extra</code>
+pixels, e.g. half the line's width) of the cursor: the distance
+(pixels) of its closest point, the fraction <code>s</code> of the way from a to b
+of that point in the scene (perspective-correct), and its depth. The
+part behind the eye is cut off.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~5"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pixels~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pixels</strong></td>
+            <td>
+<p>distance from the cursor (framebuffer pixels)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>fraction of the way from a to b (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-depth~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>depth</strong></td>
+            <td>
+<p>(scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-extra~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>extra</strong></td>
+            <td>
+<p>added to the tolerance (framebuffer pixels)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-sphere_near"></span> <h3>public  function <a href='../proc/sphere_near.html'>sphere_near</a>(cam, c, r, extra) result(near)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A sphere (root frame: center c, radius r) might be within the tolerance
+(plus <code>extra</code> pixels) of the cursor on the screen (false only if it
+surely isn't: to skip what it bounds).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~6"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-c"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>c</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-extra~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>extra</strong></td>
+            <td>
+<p>added to the tolerance (framebuffer pixels)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-wants"></span> <h3>public pure function <a href='../proc/wants.html'>wants</a>(cam, kind)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Hits of <code>kind</code> (vkf_frames' PICK_*) are wanted.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~2"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-kind"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>kind</strong></td>
+            <td>
+<p>a PICK_* constant of vkf_frames</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-ray"></span> <h3>public pure subroutine <a href='../proc/ray.html'>ray</a>(cam, origin, dir)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The ray from the eye through the cursor (root frame; <code>dir</code> a unit vector).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~7"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-origin"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>origin</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-dir~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>dir</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

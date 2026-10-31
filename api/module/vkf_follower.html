@@ -1,0 +1,2824 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_follower &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_follower
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.4% of total for modules and submodules.">303 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_follower.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_follower.f90.html'>vkf_follower.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_follower</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_follower.html#variable-follow_attitude">FOLLOW_ATTITUDE</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#variable-follow_limit">FOLLOW_LIMIT</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#variable-follow_loop">FOLLOW_LOOP</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#variable-follow_position">FOLLOW_POSITION</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_follower.html#type-trajectoryfollower">TrajectoryFollower</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#type-trajectorypointer">TrajectoryPointer</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-chosen_trajectory">chosen_trajectory</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-data_sources">data_sources</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-data_valid">data_valid</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-follow_data">follow_data</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-follow_mode">follow_mode</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-is_following_time">is_following_time</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-last_time">last_time</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-last_trajectory">last_trajectory</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-num_trajectories">num_trajectories</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_x_data">set_x_data</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_y_data">set_y_data</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_z_data">set_z_data</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-using_default_data">using_default_data</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-wrapped_time">wrapped_time</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-add_trajectory">add_trajectory</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-interpolate_attitude">interpolate_attitude</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-interpolate_position">interpolate_position</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-remove_all">remove_all</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-remove_trajectory">remove_trajectory</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_default_data">set_default_data</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_follow_type">set_follow_type</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_offset_time">set_offset_time</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_time">set_time</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-set_trajectory">set_trajectory</a>
+            <a class="list-group-item" href="../module/vkf_follower.html#proc-update">update</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Following trajectories: the position and attitude of a frame from one or more
+trajectories at the current time, as OpenFrames' TrajectoryFollower.</p>
+<p>With several trajectories, the one followed at time t is the one whose time
+range contains t, or the closest one. If t is outside all of them, FOLLOW_LOOP
+wraps it into their combined time range and FOLLOW_LIMIT holds the ends.
+Positions are interpolated linearly, attitudes by slerp.</p>
+<p>The time is either the global simulation time plus an offset
+(<code>set_offset_time</code>, the default with offset 0) or a fixed time (<code>set_time</code>).
+The trajectories are not owned: they must stay alive while followed.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_trajectory.html'>vkf_trajectory</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_follower~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_followerUsesGraph" width="452pt" height="87pt"
+ viewBox="0.00 0.00 452.00 87.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_follower~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 82.89)">
+<title>module~~vkf_follower~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-82.89 447.58,-82.89 447.58,4 -4,4"/>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_follower~~UsesGraph_node1" class="node">
+<title>module~vkf_follower</title>
+<polygon fill="none" stroke="black" points="443.58,-57.89 368.31,-57.89 368.31,-33.62 443.58,-33.62 443.58,-57.89"/>
+<text xml:space="preserve" text-anchor="middle" x="405.94" y="-42.15" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_follower</text>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_follower~~UsesGraph_node2" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_follower~~UsesGraph_node2"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-78.89 140.52,-78.89 140.52,-54.62 200.79,-54.62 200.79,-78.89"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-63.15" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_follower~~UsesGraph_edge1" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M367.98,-49.08C325.61,-52.9 256.38,-59.13 212.46,-63.08"/>
+<polygon fill="#000000" stroke="#000000" points="212.21,-59.59 202.57,-63.97 212.84,-66.56 212.21,-59.59"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_follower~~UsesGraph_node3" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_follower~~UsesGraph_node3"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="332.31,-37.89 248.04,-37.89 248.04,-13.62 332.31,-13.62 332.31,-37.89"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-22.15" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_follower~~UsesGraph_edge2" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.01,-39.26C360.33,-37.91 352.11,-36.47 343.99,-35.04"/>
+<polygon fill="#000000" stroke="#000000" points="344.6,-31.59 334.15,-33.31 343.39,-38.49 344.6,-31.59"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_follower~~UsesGraph_node5" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_follower~~UsesGraph_node5"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-37.89 0,-37.89 0,-13.62 93.27,-13.62 93.27,-37.89"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-22.15" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_follower~~UsesGraph_edge3" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-56.83C126.84,-52.37 110.82,-46.98 95.87,-41.96"/>
+<polygon fill="#000000" stroke="#000000" points="97.25,-38.73 86.66,-38.87 95.02,-45.37 97.25,-38.73"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_follower~~UsesGraph_edge6" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M253.28,-38.28C240.07,-42.89 225.03,-48.13 211.5,-52.85"/>
+<polygon fill="#000000" stroke="#000000" points="210.74,-49.41 202.46,-56.01 213.05,-56.02 210.74,-49.41"/>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_follower~~UsesGraph_node4" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_follower~~UsesGraph_node4"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-36.89 129.27,-36.89 129.27,-12.62 212.04,-12.62 212.04,-36.89"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-21.15" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_follower~~UsesGraph_edge4" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.74,-25.4C239.93,-25.33 231.66,-25.26 223.57,-25.2"/>
+<polygon fill="#000000" stroke="#000000" points="223.86,-21.7 213.83,-25.11 223.8,-28.7 223.86,-21.7"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_follower~~UsesGraph_edge5" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M253.13,-13.23C240.32,-9.39 225.69,-5.66 212.04,-3.75 175.61,1.34 165.74,1.07 129.27,-3.75 118.58,-5.17 107.3,-7.58 96.65,-10.31"/>
+<polygon fill="#000000" stroke="#000000" points="96.03,-6.85 87.29,-12.84 97.86,-13.61 96.03,-6.85"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_follower~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_followerUsedByGraph" width="641pt" height="476pt"
+ viewBox="0.00 0.00 641.00 476.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_follower~~UsedByGraph" class="graph" transform="scale(0.984836 0.984836) rotate(0) translate(4 479.21)">
+<title>module~~vkf_follower~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-479.21 646.87,-479.21 646.87,4 -4,4"/>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_follower~~UsedByGraph_node1" class="node">
+<title>module~vkf_follower</title>
+<polygon fill="none" stroke="black" points="75.27,-153.21 0,-153.21 0,-128.94 75.27,-128.94 75.27,-153.21"/>
+<text xml:space="preserve" text-anchor="middle" x="37.63" y="-137.48" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_follower</text>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_node2" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node2"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="181.29,-273.21 111.27,-273.21 111.27,-248.94 181.29,-248.94 181.29,-273.21"/>
+<text xml:space="preserve" text-anchor="middle" x="146.28" y="-257.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_follower~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M134.27,-248.69C116.07,-228.21 79.51,-187.07 57.24,-162.01"/>
+<polygon fill="#000000" stroke="#000000" points="60.01,-159.86 50.75,-154.71 54.78,-164.51 60.01,-159.86"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_follower~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="642.87,-193.21 581.85,-193.21 581.85,-168.94 642.87,-168.94 642.87,-193.21"/>
+<text xml:space="preserve" text-anchor="middle" x="612.36" y="-177.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_follower~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M608.53,-168.71C600.27,-136.05 572.73,-48.14 510.34,-21.08"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-21.08C348.31,48.34 139.54,-73.29 65.84,-122.13"/>
+<polygon fill="#000000" stroke="#000000" points="63.95,-119.18 57.61,-127.66 67.86,-124.99 63.95,-119.18"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge14" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-383.08C457.51,-414.29 458.55,-449.05 400.57,-463.08"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M398.57,-463.08C395.01,-463.94 275.96,-424.94 272.8,-423.08"/>
+</g>
+<!-- module~vkf_artists -->
+<g id="module~~vkf_follower~~UsedByGraph_node4" class="node">
+<title>module~vkf_artists</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node4"><a xlink:href="../module/vkf_artists.html" xlink:title="vkf_artists">
+<polygon fill="#337ab7" stroke="#337ab7" points="304.19,-375.21 239.42,-375.21 239.42,-350.94 304.19,-350.94 304.19,-375.21"/>
+<text xml:space="preserve" text-anchor="middle" x="271.8" y="-359.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_follower~~UsedByGraph_edge17" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-383.08C477.05,-402.16 374.79,-384.88 315.8,-372.69"/>
+<polygon fill="#000000" stroke="#000000" points="316.6,-369.28 306.1,-370.64 315.16,-376.13 316.6,-369.28"/>
+</g>
+<!-- module~vkf_handles -->
+<g id="module~~vkf_follower~~UsedByGraph_node5" class="node">
+<title>module~vkf_handles</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node5"><a xlink:href="../module/vkf_handles.html" xlink:title="vkf_handles">
+<polygon fill="#337ab7" stroke="#337ab7" points="436.83,-355.21 362.31,-355.21 362.31,-330.94 436.83,-330.94 436.83,-355.21"/>
+<text xml:space="preserve" text-anchor="middle" x="399.57" y="-339.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_follower~~UsedByGraph_edge19" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-383.08C495.25,-391.06 459.07,-375.06 432.22,-360.98"/>
+<polygon fill="#000000" stroke="#000000" points="433.89,-357.91 423.43,-356.26 430.58,-364.08 433.89,-357.91"/>
+</g>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_follower~~UsedByGraph_node6" class="node">
+<title>module~vkf_hud</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node6"><a xlink:href="../module/vkf_hud.html" xlink:title="vkf_hud">
+<polygon fill="#337ab7" stroke="#337ab7" points="426.57,-313.21 372.57,-313.21 372.57,-288.94 426.57,-288.94 426.57,-313.21"/>
+<text xml:space="preserve" text-anchor="middle" x="399.57" y="-297.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_follower~~UsedByGraph_edge21" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M609.64,-193.61C603.8,-230.7 580.97,-339.99 510.34,-383.08"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-383.08C472.68,-404.83 470.94,-346.2 436.83,-322.08 435.66,-321.25 434.46,-320.42 433.23,-319.61"/>
+<polygon fill="#000000" stroke="#000000" points="435.21,-316.72 424.88,-314.37 431.49,-322.65 435.21,-316.72"/>
+</g>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_follower~~UsedByGraph_node7" class="node">
+<title>module~vkf_line_segments</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node7"><a xlink:href="../module/vkf_line_segments.html" xlink:title="vkf_line_segments">
+<polygon fill="#337ab7" stroke="#337ab7" points="326.31,-213.21 217.29,-213.21 217.29,-188.94 326.31,-188.94 326.31,-213.21"/>
+<text xml:space="preserve" text-anchor="middle" x="271.8" y="-197.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_follower~~UsedByGraph_edge22" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-181.08C450.52,-181.08 385.01,-187.13 337.78,-192.58"/>
+<polygon fill="#000000" stroke="#000000" points="337.5,-189.09 327.98,-193.73 338.32,-196.04 337.5,-189.09"/>
+</g>
+<!-- module~vkf_model -->
+<g id="module~~vkf_follower~~UsedByGraph_node8" class="node">
+<title>module~vkf_model</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node8"><a xlink:href="../module/vkf_model.html" xlink:title="vkf_model">
+<polygon fill="#337ab7" stroke="#337ab7" points="304.94,-475.21 238.67,-475.21 238.67,-450.94 304.94,-450.94 304.94,-475.21"/>
+<text xml:space="preserve" text-anchor="middle" x="271.8" y="-459.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_model -->
+<g id="module~~vkf_follower~~UsedByGraph_edge23" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_model</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M398.57,-463.08C371.94,-469.51 341.2,-469.64 316.78,-468.1"/>
+<polygon fill="#000000" stroke="#000000" points="317.09,-464.61 306.85,-467.34 316.56,-471.59 317.09,-464.61"/>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_follower~~UsedByGraph_node9" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node9"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="545.85,-133.21 472.83,-133.21 472.83,-108.94 545.85,-108.94 545.85,-133.21"/>
+<text xml:space="preserve" text-anchor="middle" x="509.34" y="-117.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_follower~~UsedByGraph_edge24" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M590.43,-168.64C576.17,-160.17 557.05,-148.82 541.07,-139.32"/>
+<polygon fill="#000000" stroke="#000000" points="543.28,-136.57 532.89,-134.47 539.7,-142.59 543.28,-136.57"/>
+</g>
+<!-- module~vkf_shapes -->
+<g id="module~~vkf_follower~~UsedByGraph_node10" class="node">
+<title>module~vkf_shapes</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node10"><a xlink:href="../module/vkf_shapes.html" xlink:title="vkf_shapes">
+<polygon fill="#337ab7" stroke="#337ab7" points="434.58,-435.21 364.56,-435.21 364.56,-410.94 434.58,-410.94 434.58,-435.21"/>
+<text xml:space="preserve" text-anchor="middle" x="399.57" y="-419.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shapes -->
+<g id="module~~vkf_follower~~UsedByGraph_edge25" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shapes</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-383.08C488.93,-394.91 465.46,-404.14 445.38,-410.73"/>
+<polygon fill="#000000" stroke="#000000" points="444.55,-407.32 436.07,-413.66 446.66,-414 444.55,-407.32"/>
+</g>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_follower~~UsedByGraph_node11" class="node">
+<title>module~vkf_sphere</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node11"><a xlink:href="../module/vkf_sphere.html" xlink:title="vkf_sphere">
+<polygon fill="#337ab7" stroke="#337ab7" points="433.83,-153.21 365.31,-153.21 365.31,-128.94 433.83,-128.94 433.83,-153.21"/>
+<text xml:space="preserve" text-anchor="middle" x="399.57" y="-137.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_follower~~UsedByGraph_edge27" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M581.74,-181.08C561.61,-181.08 534.37,-181.08 510.34,-181.08"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-181.08C480.85,-181.08 451.75,-169.5 430.72,-158.8"/>
+<polygon fill="#000000" stroke="#000000" points="432.61,-155.84 422.14,-154.22 429.32,-162.02 432.61,-155.84"/>
+</g>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_follower~~UsedByGraph_node12" class="node">
+<title>module~vkf_terrain</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node12"><a xlink:href="../module/vkf_terrain.html" xlink:title="vkf_terrain">
+<polygon fill="#337ab7" stroke="#337ab7" points="433.83,-73.21 365.31,-73.21 365.31,-48.94 433.83,-48.94 433.83,-73.21"/>
+<text xml:space="preserve" text-anchor="middle" x="399.57" y="-57.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_follower~~UsedByGraph_edge29" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-21.08C494.52,-15.08 459.52,-30.07 433.13,-43.37"/>
+<polygon fill="#000000" stroke="#000000" points="431.77,-40.14 424.49,-47.83 434.98,-46.36 431.77,-40.14"/>
+</g>
+<!-- module~vkf_view -->
+<g id="module~~vkf_follower~~UsedByGraph_node13" class="node">
+<title>module~vkf_view</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node13"><a xlink:href="../module/vkf_view.html" xlink:title="vkf_view">
+<polygon fill="#337ab7" stroke="#337ab7" points="427.83,-233.21 371.31,-233.21 371.31,-208.94 427.83,-208.94 427.83,-233.21"/>
+<text xml:space="preserve" text-anchor="middle" x="399.57" y="-217.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_follower~~UsedByGraph_edge31" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.34,-181.08C480.85,-181.08 451.75,-192.65 430.72,-203.35"/>
+<polygon fill="#000000" stroke="#000000" points="429.32,-200.13 422.14,-207.93 432.61,-206.31 429.32,-200.13"/>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_follower~~UsedByGraph_node14" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_follower~~UsedByGraph_node14"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="545.48,-273.21 473.21,-273.21 473.21,-248.94 545.48,-248.94 545.48,-273.21"/>
+<text xml:space="preserve" text-anchor="middle" x="509.34" y="-257.48" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_follower~~UsedByGraph_edge32" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M595.58,-193.58C579.34,-206.43 553.83,-226.64 534.94,-241.59"/>
+<polygon fill="#000000" stroke="#000000" points="532.87,-238.77 527.2,-247.72 537.21,-244.26 532.87,-238.77"/>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge3" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M255.65,-350.57C234.63,-333.21 196.39,-301.63 171.41,-281"/>
+<polygon fill="#000000" stroke="#000000" points="173.66,-278.32 163.72,-274.65 169.2,-283.71 173.66,-278.32"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge4" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M376.17,-330.45C371.55,-327.75 366.74,-324.86 362.31,-322.08 321.56,-296.44 320.79,-264.9 272.8,-261.08"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_follower~~UsedByGraph_edge15" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M361.85,-348.91C347.41,-351.21 330.72,-353.86 315.73,-356.25"/>
+<polygon fill="#000000" stroke="#000000" points="315.47,-352.75 306.15,-357.77 316.57,-359.66 315.47,-352.75"/>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge5" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.3,-288.83C347.34,-278.15 308.43,-263.92 272.8,-261.08"/>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge6" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M244.91,-213.65C227.04,-222.33 203.04,-233.99 183.3,-243.58"/>
+<polygon fill="#000000" stroke="#000000" points="181.97,-240.34 174.5,-247.85 185.03,-246.63 181.97,-240.34"/>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge7" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M238.23,-451.97C230.62,-448.18 223.05,-443.28 217.29,-437.08 176.07,-392.7 157.92,-321.08 150.99,-284.38"/>
+<polygon fill="#000000" stroke="#000000" points="154.49,-284.1 149.31,-274.86 147.6,-285.31 154.49,-284.1"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge8" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M476.74,-108.56C429.68,-92.03 339.6,-68.58 272.8,-101.08"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_follower~~UsedByGraph_edge26" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M472.45,-127.74C463.76,-129.35 454.35,-131.09 445.31,-132.77"/>
+<polygon fill="#000000" stroke="#000000" points="444.79,-129.31 435.6,-134.57 446.07,-136.19 444.79,-129.31"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_follower~~UsedByGraph_edge28" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.75,-108.5C470.37,-99.94 449.79,-88.48 432.72,-78.97"/>
+<polygon fill="#000000" stroke="#000000" points="434.89,-76.18 424.45,-74.37 431.49,-82.3 434.89,-76.18"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge9" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M364.07,-432.05C337.3,-437.01 300.25,-439.29 272.8,-423.08"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M270.8,-423.08C245.46,-408.11 236.9,-406.02 217.29,-384.08 189.91,-353.43 168.42,-310.33 156.82,-284.13"/>
+<polygon fill="#000000" stroke="#000000" points="160.09,-282.89 152.92,-275.09 153.67,-285.66 160.09,-282.89"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_follower~~UsedByGraph_edge16" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M372.2,-410.5C354.01,-401.82 329.57,-390.16 309.48,-380.57"/>
+<polygon fill="#000000" stroke="#000000" points="311.03,-377.44 300.5,-376.29 308.02,-383.75 311.03,-377.44"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge10" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.92,-128.7C358.57,-111.05 310.51,-82.73 272.8,-101.08"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge11" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M364.99,-68.92C339.06,-75.64 302.68,-86.54 272.8,-101.08"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M270.8,-101.08C211.89,-129.74 173.21,-201.68 156.59,-238.54"/>
+<polygon fill="#000000" stroke="#000000" points="153.52,-236.81 152.74,-247.38 159.94,-239.61 153.52,-236.81"/>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge12" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M376.92,-233.55C352.34,-246.38 310.71,-264.1 272.8,-261.08"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M270.8,-261.08C245.11,-259.03 216.31,-258.9 192.99,-259.35"/>
+<polygon fill="#000000" stroke="#000000" points="193.11,-255.84 183.19,-259.58 193.27,-262.84 193.11,-255.84"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_follower~~UsedByGraph_edge13" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M472.76,-262.83C426.57,-264.71 343.52,-266.71 272.8,-261.08"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_follower~~UsedByGraph_edge18" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M495.23,-273.53C481.32,-286.44 458.41,-306.81 436.83,-322.08 435.66,-322.9 434.46,-323.73 433.23,-324.54"/>
+<polygon fill="#000000" stroke="#000000" points="431.49,-321.5 424.88,-329.78 435.21,-327.43 431.49,-321.5"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_follower~~UsedByGraph_edge20" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M474.54,-273.62C462.72,-278.01 449.4,-282.95 437.36,-287.42"/>
+<polygon fill="#000000" stroke="#000000" points="436.31,-284.08 428.15,-290.84 438.74,-290.64 436.31,-284.08"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_follower~~UsedByGraph_edge30" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M474.54,-248.53C463.22,-244.33 450.52,-239.61 438.88,-235.29"/>
+<polygon fill="#000000" stroke="#000000" points="440.13,-232.03 429.54,-231.83 437.7,-238.59 440.13,-232.03"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_followerUsedByGraph = svgPanZoom('#modulevkf_followerUsedByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-follow_attitude"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>FOLLOW_ATTITUDE</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>follow the attitude</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-follow_limit"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>FOLLOW_LIMIT</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>hold the first/last point outside the time range</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-follow_loop"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>FOLLOW_LOOP</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>follow modes (OpenFrames' FollowMode)
+wrap the time into the trajectories' time range</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-follow_position"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>FOLLOW_POSITION</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>what to follow (OpenFrames' FollowData), combined with ior
+follow the position</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-trajectoryfollower"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>Follows trajectories (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-current"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>current</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>index (in trajs) of the trajectory last followed</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>data_</strong></td>
+<td> =</td>
+                <td>FOLLOW_POSITION+FOLLOW_ATTITUDE</td>
+            <td>
+<p>what is followed (FOLLOW_* combined with ior)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_data"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>default_data</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>(true: sources_ are the trajectories' positions)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-follow_time"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>follow_time</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>(true: simulation time + time_value; false: time_value)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-last_time_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>last_time_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>time (after looping) at the last update (s)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mode_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mode_</strong></td>
+<td> =</td>
+                <td>FOLLOW_LOOP</td>
+            <td>
+<p>FOLLOW_LOOP or FOLLOW_LIMIT</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~6"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>number of followed trajectories</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources_"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources_</strong>(3)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>where the followed position's x, y, z come from</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-time_value"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>time_value</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>time offset or fixed time (s)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-trajs"></span>
+              type(<a href='../type/trajectorypointer.html'>TrajectoryPointer</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>trajs</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>(capacity): the followed trajectories</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-add_trajectory'>add_trajectory</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-data_sources'>data_sources</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-data_valid'>data_valid</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-follow_data'>follow_data</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-follow_mode'>follow_mode</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-is_following_time'>is_following_time</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-last_time'>last_time</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-last_trajectory'>last_trajectory</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-num_trajectories'>num_trajectories</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-remove_all'>remove_all</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-remove_trajectory'>remove_trajectory</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_default_data'>set_default_data</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_follow_type'>set_follow_type</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_offset_time'>set_offset_time</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_time'>set_time</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_trajectory'>set_trajectory</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_x_data'>set_x_data</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_y_data'>set_y_data</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-set_z_data'>set_z_data</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-update'>update</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/trajectoryfollower.html#boundprocedure-using_default_data'>using_default_data</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-trajectorypointer"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/trajectorypointer.html'>TrajectoryPointer</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A pointer to a followed trajectory (for an array of them).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-p~3"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>p</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>the trajectory (not owned)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-chosen_trajectory"></span> <h3>private  function <a href='../proc/chosen_trajectory.html'>chosen_trajectory</a>(self, t) result(k)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The trajectory to follow at time t: the current one if it contains t,
+else the first that does, else the closest.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~60"></span>
+              type(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-data_sources"></span> <h3>private pure function <a href='../proc/data_sources.html'>data_sources</a>(self) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the followed position's x, y and z come from.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~49"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/datasource.html'>DataSource</a>), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-data_valid"></span> <h3>private pure function <a href='../proc/data_valid.html'>data_valid</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if every followed trajectory has the data the position sources use.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~52"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-follow_data"></span> <h3>private pure function <a href='../proc/follow_data.html'>follow_data</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>What is followed: FOLLOW_POSITION and/or FOLLOW_ATTITUDE (combined with ior).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~45"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-follow_mode"></span> <h3>private pure function <a href='../proc/follow_mode.html'>follow_mode</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>How time outside the trajectories is handled: FOLLOW_LOOP or FOLLOW_LIMIT.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~44"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_following_time"></span> <h3>private pure function <a href='../proc/is_following_time.html'>is_following_time</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if following the simulation time plus an offset, false for a fixed time.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~55"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-last_time"></span> <h3>private pure function <a href='../proc/last_time.html'>last_time</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The time (after looping) at the last update.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~56"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-last_trajectory"></span> <h3>private  function <a href='../proc/last_trajectory.html'>last_trajectory</a>(self) result(traj)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The trajectory followed at the last update (null if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~57"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/trajectory.html'>Trajectory</a>), pointer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_trajectories"></span> <h3>private pure function <a href='../proc/num_trajectories.html'>num_trajectories</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of trajectories followed.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~42"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_x_data"></span> <h3>private  function <a href='../proc/set_x_data.html'>set_x_data</a>(self, src) result(valid)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the x, y and z of the followed position come from (default: the
+trajectories' positions). Returns whether all followed trajectories have
+those data.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~46"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-src"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_y_data"></span> <h3>private  function <a href='../proc/set_y_data.html'>set_y_data</a>(self, src) result(valid)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the y of the followed position comes from (see <code>set_x_data</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~47"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-src~2"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_z_data"></span> <h3>private  function <a href='../proc/set_z_data.html'>set_z_data</a>(self, src) result(valid)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the z of the followed position comes from (see <code>set_x_data</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~48"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-src~3"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>src</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-using_default_data"></span> <h3>private pure function <a href='../proc/using_default_data.html'>using_default_data</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if the followed position is the trajectories' positions (<code>set_default_data</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~51"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-wrapped_time"></span> <h3>private  function <a href='../proc/wrapped_time.html'>wrapped_time</a>(self, t) result(tw)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>For FOLLOW_LOOP, t wrapped into the combined time range of the trajectories.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~59"></span>
+              type(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_trajectory"></span> <h3>private  subroutine <a href='../proc/add_trajectory.html'>add_trajectory</a>(self, traj)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Also follow <code>traj</code> (no effect if it is already followed).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~39"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-traj~2"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>traj</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-interpolate_attitude"></span> <h3>private  subroutine <a href='../proc/interpolate_attitude.html'>interpolate_attitude</a>(traj, t, status, index, attitude, ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Slerp of the attitude at time t; the first/last attitude outside the time
+range. <code>status</code> and <code>index</code>: the trajectory's time_index for t.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-traj~7"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>traj</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-status~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>status</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-index~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>index</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-attitude~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>attitude</strong>(4)</td>
+            <td>
+<p>quaternion [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~8"></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+<p>false if there is no attitude (attitude unchanged)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-interpolate_position"></span> <h3>private  subroutine <a href='../proc/interpolate_position.html'>interpolate_position</a>(traj, sources, t, status, index, position, ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Linear interpolation of the position (from <code>sources</code>) at time t; the
+first/last point outside the time range. <code>status</code> and <code>index</code>: the
+trajectory's time_index for t.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-traj~6"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>traj</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sources"></span>
+              type(<a href='../type/datasource.html'>DataSource</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sources</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-status~4"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>status</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-index"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>index</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ok~7"></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ok</strong></td>
+            <td>
+<p>false if there is no position (position unchanged)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-remove_all"></span> <h3>private  subroutine <a href='../proc/remove_all.html'>remove_all</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Stop following all trajectories.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~41"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-remove_trajectory"></span> <h3>private  subroutine <a href='../proc/remove_trajectory.html'>remove_trajectory</a>(self, traj)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Stop following <code>traj</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~40"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-traj~3"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>traj</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_default_data"></span> <h3>private  subroutine <a href='../proc/set_default_data.html'>set_default_data</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Use the trajectories' positions (per the first trajectory's DOF).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~50"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_follow_type"></span> <h3>private  subroutine <a href='../proc/set_follow_type.html'>set_follow_type</a>(self, data, mode)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>What to follow (FOLLOW_POSITION and/or FOLLOW_ATTITUDE, combined with
+ior) and how (FOLLOW_LOOP or FOLLOW_LIMIT).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~43"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-data~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>data</strong></td>
+            <td>
+<p>FOLLOW_POSITION and/or FOLLOW_ATTITUDE (ior)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mode~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mode</strong></td>
+            <td>
+<p>FOLLOW_LOOP or FOLLOW_LIMIT</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_offset_time"></span> <h3>private  subroutine <a href='../proc/set_offset_time.html'>set_offset_time</a>(self, offset)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Follow at the simulation time plus <code>offset</code> (the default, offset 0).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~54"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-offset"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>offset</strong></td>
+            <td>
+<p>added to the simulation time (s)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_time"></span> <h3>private  subroutine <a href='../proc/set_time.html'>set_time</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Follow at a fixed time (independent of the simulation time).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~53"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the time (s)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_trajectory"></span> <h3>private  subroutine <a href='../proc/set_trajectory.html'>set_trajectory</a>(self, traj)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Follow only <code>traj</code> (none if it is not associated).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~38"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-traj"></span>
+              type(<a href='../type/trajectory.html'>Trajectory</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>traj</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-update"></span> <h3>private  subroutine <a href='../proc/update.html'>update</a>(self, sim_time, position, attitude, has_position, has_attitude)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The position and attitude at simulation time <code>sim_time</code>. <code>has_position</code>
+and <code>has_attitude</code> say whether each could be computed (and is being
+followed); otherwise <code>position</code> / <code>attitude</code> are left unchanged.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~58"></span>
+              class(<a href='../type/trajectoryfollower.html'>TrajectoryFollower</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-sim_time"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>sim_time</strong></td>
+            <td>
+<p>simulation time (s)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+            <td>
+<p>the followed position (in the trajectories' frame)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-attitude~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>attitude</strong>(4)</td>
+            <td>
+<p>the followed attitude (quaternion [x, y, z, w])</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-has_position"></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>has_position</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-has_attitude"></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>has_attitude</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-10-31 14:24 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>
