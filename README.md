@@ -7,7 +7,7 @@
 Spacecraft trajectory visualization for modern Fortran.
 
 [![Language](https://img.shields.io/badge/-Fortran-734f96?logo=fortran&logoColor=white)](https://github.com/topics/fortran)
-[![Build Status](https://github.com/jacobwilliams/vkframes/actions/workflows/CI.yml/badge.svg)](https://github.com/jacobwilliams/vkframes/actions)
+[![Build Status](https://github.com/jacobwilliams/vkframes/actions/workflows/ci.yml/badge.svg)](https://github.com/jacobwilliams/vkframes/actions)
 [![Docs](https://img.shields.io/badge/docs-API-blue)](https://jacobwilliams.github.io/vkframes/)
 
 **vkFrames** is heavily inspired by [OpenFrames](https://github.com/ravidavi/OpenFrames), the [OpenSceneGraph](https://openscenegraph.github.io/openscenegraph.io/)-based
