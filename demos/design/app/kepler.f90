@@ -41,8 +41,9 @@ contains
 
     !> The Stumpff functions C(z) and S(z).
     pure subroutine stumpff(z, c, s)
-        real(wp), intent(in) :: z
-        real(wp), intent(out) :: c, s
+        real(wp), intent(in) :: z                           !! alpha chi^2 (alpha: 1 / the semi-major axis)
+        real(wp), intent(out) :: c                          !! C(z)
+        real(wp), intent(out) :: s                          !! S(z)
         real(wp) :: sz
         if (z > 1.0e-6_wp) then
             sz = sqrt(z)
@@ -61,8 +62,12 @@ contains
     !> The state at universal anomaly `chi` from (r0, v0): position, velocity
     !> and the time since (s).
     pure subroutine state_at(r0, v0, chi, r, v, t)
-        real(wp), intent(in) :: r0(3), v0(3), chi
-        real(wp), intent(out) :: r(3), v(3), t
+        real(wp), intent(in) :: r0(3)                       !! the initial position (km)
+        real(wp), intent(in) :: v0(3)                       !! the initial velocity (km/s)
+        real(wp), intent(in) :: chi                         !! the universal anomaly (km^0.5)
+        real(wp), intent(out) :: r(3)                       !! the position there (km)
+        real(wp), intent(out) :: v(3)                       !! the velocity there (km/s)
+        real(wp), intent(out) :: t                          !! the time since (r0, v0) (s)
         real(wp) :: rn0, sigma, alpha, z, c, s, f, g, fdot, gdot, rn, smu
         smu = sqrt(mu)
         rn0 = norm2(r0)
@@ -82,7 +87,9 @@ contains
 
     !> The universal anomaly at time `duration` (s) after (r0, v0).
     function chi_at(r0, v0, duration) result(chi)
-        real(wp), intent(in) :: r0(3), v0(3), duration
+        real(wp), intent(in) :: r0(3)                       !! the initial position (km)
+        real(wp), intent(in) :: v0(3)                       !! the initial velocity (km/s)
+        real(wp), intent(in) :: duration                    !! the time after it (s; >= 0)
         real(wp) :: chi
         real(wp) :: lo, hi, t, r(3), v(3), alpha, step
         integer :: k
@@ -118,10 +125,13 @@ contains
     !> positions r) evenly along it (see the module documentation), cut where
     !> it first goes below the Earth's surface (`n` then fewer, `impact` true).
     subroutine propagate(r0, v0, duration, n, t, r, impact)
-        real(wp), intent(in) :: r0(3), v0(3), duration
+        real(wp), intent(in) :: r0(3)                       !! the initial position (km)
+        real(wp), intent(in) :: v0(3)                       !! the initial velocity (km/s)
+        real(wp), intent(in) :: duration                    !! how long (s)
         integer, intent(inout) :: n                         !! points wanted; points given
-        real(wp), intent(out) :: t(:), r(:,:)               !! (n), (3, n)
-        logical, intent(out) :: impact
+        real(wp), intent(out) :: t(:)                       !! the times (s from the start; n of them used)
+        real(wp), intent(out) :: r(:,:)                     !! the positions (3, n; km)
+        logical, intent(out) :: impact                      !! it goes below the surface (cut there)
         real(wp) :: chi_end, v(3)
         integer :: k
         impact = .false.
@@ -139,7 +149,8 @@ contains
 
     !> The orbital elements of a state (position, km; velocity, km/s).
     function elements_of(r, v) result(el)
-        real(wp), intent(in) :: r(3), v(3)
+        real(wp), intent(in) :: r(3)                        !! the position (km)
+        real(wp), intent(in) :: v(3)                        !! the velocity (km/s)
         type(Elements) :: el
         real(wp) :: rn, h(3), node(3), ev(3), nn
         rn = norm2(r)
@@ -181,7 +192,9 @@ contains
 
     !> The angle from a to b about the normal n (degrees, 0 to 360).
     pure real(wp) function angle_between(a, b, n) result(angle)
-        real(wp), intent(in) :: a(3), b(3), n(3)
+        real(wp), intent(in) :: a(3)                        !! from this direction
+        real(wp), intent(in) :: b(3)                        !! to this one
+        real(wp), intent(in) :: n(3)                        !! positive about this normal
         real(wp) :: c(3)
         c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
         angle = atan2(sign(norm2(c), dot_product(c, n)), dot_product(a, b)) * 180.0_wp / pi

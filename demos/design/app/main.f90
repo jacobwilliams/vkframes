@@ -102,6 +102,8 @@ contains
     ! ==================================================================
     ! the scene
 
+    !> The scene: the Earth, the two arrows, the orbit (and the one before a
+    !> drag, its apsides, an impact), and the sky.
     subroutine build_model()
         app%root = ReferenceFrame('ECI')
         call app%root%show_decorations(.false.)
@@ -215,7 +217,7 @@ contains
 
     !> The orbital elements as text: one item a line (`lines`), or on two lines.
     function elements_text(lines) result(text)
-        logical, intent(in) :: lines
+        logical, intent(in) :: lines                        !! true: one item a line (the dock); false: two lines (the HUD)
         character(len=:), allocatable :: text, sep, mid
         sep = ';  '
         mid = new_line('a')
@@ -239,8 +241,8 @@ contains
 
     !> x with `decimals` decimals (a leading zero kept: 0.5, -0.5).
     function num(x, decimals) result(text)
-        real(wp), intent(in) :: x
-        integer, intent(in) :: decimals
+        real(wp), intent(in) :: x                           !! the number
+        integer, intent(in) :: decimals                     !! decimals shown
         character(len=:), allocatable :: text
         character(len=32) :: buf, fmt
         write(fmt, '(a,i0,a)') '(f32.', decimals, ')'
@@ -255,9 +257,9 @@ contains
     !> again (and the orbit before the drag shown while it lasts).
     subroutine design_handle_drag(self, window, handle, stage)
         class(DesignHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        class(DragHandle), intent(inout), target :: handle
-        integer, intent(in) :: stage
+        class(WindowProxy), intent(inout) :: window         !! the window the arrow is dragged in
+        class(DragHandle), intent(inout), target :: handle  !! the arrow (app%r_handle or app%v_handle)
+        integer, intent(in) :: stage                        !! DRAG_START, DRAG_MOVE or DRAG_END
         class(DragHandle), pointer :: h
         real(wp), pointer :: t(:), r(:,:)
         h => handle
@@ -285,8 +287,8 @@ contains
     !> The callout: the value of the arrow under the cursor or dragged, next to its tip.
     subroutine design_before_draw(self, window, t)
         class(DesignHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: t
+        class(WindowProxy), intent(inout) :: window         !! the window about to draw
+        real(wp), intent(in) :: t                           !! the simulation time (s; paused here)
         real(wp) :: at(2), tip(3)
         character(len=:), allocatable :: text
         if (app%r_handle%hovered() .or. app%r_handle%dragged()) then
@@ -311,6 +313,8 @@ contains
     ! ==================================================================
     ! the window
 
+    !> The views, the HUD texts, and the QWindow the scene is drawn in, with
+    !> its events connected.
     subroutine build_window()
         app%views(1) = View(app%root, app%root)
         call app%views(1)%set_default_view_parameters(eye=[4000.0_wp, -38000.0_wp, 76000.0_wp], &
@@ -367,8 +371,9 @@ contains
         call app%proxy%pause_time(.true.)                        ! (the state is designed, not flown)
     end subroutine open_view
 
+    !> The window shown: the view opened (the first time), the frames started.
     subroutine on_expose(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         if (app%proxy%is_open() .or. .not. app%window%isExposed()) return
         call open_view()
         if (app%proxy%is_open()) call app%window%requestUpdate()
@@ -376,7 +381,7 @@ contains
 
     !> Render a frame, ask for the next one.
     subroutine on_update(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         if (app%window%devicePixelRatio() /= app%proxy%pixel_ratio()) &
             call app%proxy%resize(nint(app%window%width() * app%window%devicePixelRatio()), &
                                   nint(app%window%height() * app%window%devicePixelRatio()), &
@@ -427,9 +432,10 @@ contains
         end select
     end subroutine drag_test_step
 
+    !> The window resized: the view too, and a frame drawn at once.
     subroutine on_resize(event, data)
-        type(QResizeEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QResizeEvent), intent(in) :: event             !! the new size (logical pixels)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         real(wp) :: dpr
         if (.not. app%proxy%is_open()) return
         dpr = app%window%devicePixelRatio()
@@ -441,39 +447,45 @@ contains
     ! mouse and keys, forwarded (vkframes_qt: VSG's conventions); the window
     ! gives the drags of the arrows to the handler, the rest to the trackball
 
+    !> The mouse moved over the window: forwarded to the view.
     subroutine on_move(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QMouseEvent), intent(in) :: event              !! the pointer's position and buttons
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call forward_mouse(app%proxy, app%window, MOUSE_MOVE, event)
     end subroutine on_move
 
+    !> The mouse button pressed over the window: forwarded to the view.
     subroutine on_press(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QMouseEvent), intent(in) :: event              !! the pointer's position and buttons
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call forward_mouse(app%proxy, app%window, MOUSE_PRESS, event)
     end subroutine on_press
 
+    !> The mouse button released over the window: forwarded to the view.
     subroutine on_release(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QMouseEvent), intent(in) :: event              !! the pointer's position and buttons
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call forward_mouse(app%proxy, app%window, MOUSE_RELEASE, event)
     end subroutine on_release
 
+    !> The scroll wheel over the window: forwarded to the view (a zoom).
     subroutine on_wheel(event, data)
-        type(QWheelEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QWheelEvent), intent(in) :: event              !! the wheel's steps
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call forward_wheel(app%proxy, event)
     end subroutine on_wheel
 
+    !> A key pressed in the window: forwarded to the view.
     subroutine on_key_press(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QKeyEvent), intent(in) :: event                !! the key and its modifiers
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call forward_key(app%proxy, .true., event)
     end subroutine on_key_press
 
+    !> A key released in the window: forwarded to the view.
     subroutine on_key_release(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QKeyEvent), intent(in) :: event                !! the key and its modifiers
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call forward_key(app%proxy, .false., event)
     end subroutine on_key_release
 
@@ -482,8 +494,8 @@ contains
 
     !> A number of the state typed in: the arrows and the orbit from it.
     subroutine on_state(value, data)
-        real(c_double), intent(in) :: value
-        class(*), intent(inout), optional :: data
+        real(c_double), intent(in) :: value                 !! the box's new value (all six are read)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         integer :: k
         if (app%updating) return
         do k = 1, 3
@@ -501,67 +513,78 @@ contains
         call recompute()
     end subroutine show_state
 
+    !> The hours changed: the orbit drawn again.
     subroutine on_duration(value, data)
-        real(c_double), intent(in) :: value
-        class(*), intent(inout), optional :: data
+        real(c_double), intent(in) :: value                 !! hours (read by duration)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         if (app%updating) return
         call recompute()
     end subroutine on_duration
 
+    !> "One orbit" checked or not: the orbit drawn again.
     subroutine on_one_orbit(checked, data)
-        logical, intent(in) :: checked
-        class(*), intent(inout), optional :: data
+        logical, intent(in) :: checked                      !! true: one period (read by duration)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call recompute()
     end subroutine on_one_orbit
 
+    !> The velocity arrow's scale.
     subroutine on_v_scale(value, data)
-        real(c_double), intent(in) :: value
-        class(*), intent(inout), optional :: data
+        real(c_double), intent(in) :: value                 !! km per km/s
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call app%v_handle%set_display_scale(real(value, wp))
     end subroutine on_v_scale
 
+    !> How an arrow moves, chosen: the constraints set again.
     subroutine on_move_choice(index, data)
-        integer, intent(in) :: index
-        class(*), intent(inout), optional :: data
+        integer, intent(in) :: index                        !! the choice (both boxes are read)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call apply_constraints()
     end subroutine on_move_choice
 
+    !> The state as at the start, and its orbit.
     subroutine on_reset_state(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         app%r = start_r
         app%v = start_v
         call show_state()
     end subroutine on_reset_state
 
+    !> A view chosen: shown.
     subroutine on_view(index, data)
-        integer, intent(in) :: index
-        class(*), intent(inout), optional :: data
+        integer, intent(in) :: index                        !! the view (0-based)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         if (app%proxy%is_open()) call app%proxy%select_view(index + 1)
     end subroutine on_view
 
+    !> The view's camera reset.
     subroutine on_reset_view(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         type(View), pointer :: v
         v => app%proxy%current_view()
         call v%reset_view()
     end subroutine on_reset_view
 
+    !> Quit (--quit-after): the main window closed.
     subroutine on_quit(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call app%main%close()
     end subroutine on_quit
 
     !> The main window closes: close the view (waiting for the GPU) first.
     subroutine on_close(event, data)
-        type(QCloseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QCloseEvent), intent(in) :: event              !! the close (accepted)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call app%proxy%close()
     end subroutine on_close
 
     !> A spin box for a component: `decimals`, a step and a range.
     function component_box(value, low, high, step, decimals) result(box)
-        real(wp), intent(in) :: value, low, high, step
-        integer, intent(in) :: decimals
+        real(wp), intent(in) :: value                       !! the value shown first
+        real(wp), intent(in) :: low                         !! the smallest allowed
+        real(wp), intent(in) :: high                        !! the largest allowed
+        real(wp), intent(in) :: step                        !! the arrows' step
+        integer, intent(in) :: decimals                     !! decimals shown
         type(QDoubleSpinBox) :: box
         box = QDoubleSpinBox()
         call box%setRange(real(low, c_double), real(high, c_double))
@@ -571,6 +594,8 @@ contains
         call box%valueChanged%connect(on_state)
     end function component_box
 
+    !> The main window: the scene in the middle, the dock (the state, how the
+    !> arrows move, how long the orbit is drawn, its elements, the view) on the left.
     subroutine build_ui()
         type(QDockWidget) :: dock
         type(QWidget) :: panel

@@ -300,7 +300,8 @@ contains
     !> misses, or the sphere is behind.
     logical function ray_sphere(origin, dir, center, radius, near, far) result(hit)
         real(wp), intent(in) :: origin(3), dir(3)           !! the ray (dir: a unit vector)
-        real(wp), intent(in) :: center(3), radius
+        real(wp), intent(in) :: center(3)                   !! the sphere's center
+        real(wp), intent(in) :: radius                      !! its radius (> 0)
         real(wp), intent(out) :: near, far                  !! distances along the ray (huge() if missed)
         real(wp) :: o(3), b, c, disc
         hit = .false.

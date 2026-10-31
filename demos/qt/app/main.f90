@@ -954,9 +954,9 @@ contains
     !> The Sun's arrow dragged: the Sun moved to its direction (an astronomical unit away).
     subroutine demo_handle_drag(self, window, handle, stage)
         class(DemoEvents), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        class(DragHandle), intent(inout), target :: handle
-        integer, intent(in) :: stage
+        class(WindowProxy), intent(inout) :: window         !! the window the arrow is dragged in
+        class(DragHandle), intent(inout), target :: handle  !! the handle (only the Sun's arrow here)
+        integer, intent(in) :: stage                        !! DRAG_START, DRAG_MOVE or DRAG_END
         class(DragHandle), pointer :: h
         real(wp) :: d(3)
         h => handle
@@ -1300,9 +1300,10 @@ contains
         call app%earth_shadow%show_contents(checked)
     end subroutine on_show_shadow
 
+    !> The Sun's direction (its arrow) shown or hidden.
     subroutine on_show_sun_arrow(checked, data)
-        logical, intent(in) :: checked
-        class(*), intent(inout), optional :: data
+        logical, intent(in) :: checked                      !! true: shown
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
         call app%sun_arrow%show_contents(checked)
     end subroutine on_show_sun_arrow
 

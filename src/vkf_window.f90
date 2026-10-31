@@ -1077,8 +1077,8 @@ contains
     !> up) and no tolerance. False before the first frame (or closed).
     logical function view_camera(self, x, y, cam) result(ok)
         class(WindowProxy), intent(in) :: self
-        real(wp), intent(in) :: x, y
-        type(PickCamera), intent(out) :: cam
+        real(wp), intent(in) :: x, y                        !! the cursor: -1 to 1 across the window, y up
+        type(PickCamera), intent(out) :: cam                !! the view's camera, the cursor there
         real(wp) :: eye(3), center(3), up(3)
         integer(c_int) :: width, height
         ok = .false.
@@ -1599,7 +1599,7 @@ contains
     !> again what depends on it (see the module documentation).
     subroutine handler_handle_drag(self, window, handle, stage)
         class(WindowEventHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
+        class(WindowProxy), intent(inout) :: window         !! the window the handle is dragged in
         class(DragHandle), intent(inout), target :: handle  !! the handle (select type for its kind)
         integer, intent(in) :: stage                        !! DRAG_START, DRAG_MOVE or DRAG_END
     end subroutine handler_handle_drag
@@ -1676,7 +1676,7 @@ contains
     !> grab armed for it.
     subroutine hover_handle(self, x, y)
         class(WindowProxy), intent(inout), target :: self
-        real(wp), intent(in) :: x, y
+        real(wp), intent(in) :: x, y                        !! the cursor: -1 to 1 across the window, y up
         type(PickHit), allocatable :: hits(:)
         class(DragHandle), pointer :: found
         found => null()
@@ -1700,7 +1700,7 @@ contains
     !> A left press grabbed the mouse (the grab armed): the hovered handle grabbed.
     subroutine grab_handle(self, x, y)
         class(WindowProxy), intent(inout), target :: self
-        real(wp), intent(in) :: x, y
+        real(wp), intent(in) :: x, y                        !! the cursor: -1 to 1 across the window, y up
         real(wp) :: origin(3), dir(3)
         if (.not. associated(self%hovered_handle)) return
         if (.not. self%cursor_ray(x, y, origin, dir)) return
@@ -1712,7 +1712,7 @@ contains
     !> The grabbed handle dragged to (x, y).
     subroutine drag_handle(self, x, y)
         class(WindowProxy), intent(inout), target :: self
-        real(wp), intent(in) :: x, y
+        real(wp), intent(in) :: x, y                        !! the cursor: -1 to 1 across the window, y up
         real(wp) :: origin(3), dir(3)
         if (.not. associated(self%dragged_handle)) return
         if (.not. self%cursor_ray(x, y, origin, dir)) return
@@ -1724,7 +1724,7 @@ contains
     !> hovered.
     subroutine release_handle(self, x, y)
         class(WindowProxy), intent(inout), target :: self
-        real(wp), intent(in) :: x, y
+        real(wp), intent(in) :: x, y                        !! the cursor: -1 to 1 across the window, y up
         class(DragHandle), pointer :: released
         if (associated(self%dragged_handle)) then
             released => self%dragged_handle

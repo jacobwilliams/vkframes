@@ -100,7 +100,7 @@ module vkf_handles
             import :: DragHandle, wp
             implicit none
             class(DragHandle), intent(inout) :: self
-            real(wp), intent(in) :: p(3)
+            real(wp), intent(in) :: p(3)                    !! the new point (frame coordinates)
         end subroutine move_handle_point_interface
 
         !> Draw the handle as hovered, dragged or neither (`hovered`, `dragged`).
@@ -120,7 +120,7 @@ module vkf_handles
         real(wp) :: head_size_ = 0.0_wp                     !! the head's length (scene units; 0: 0.2 of the arrow)
         type(c_ptr) :: switch = c_null_ptr                  !! shows the arrow (not when the vector is 0)
         type(c_ptr) :: shaft = c_null_ptr, head = c_null_ptr  !! the transforms of the unit shaft and head
-        type(c_ptr) :: shaft_mesh = c_null_ptr, head_mesh = c_null_ptr
+        type(c_ptr) :: shaft_mesh = c_null_ptr, head_mesh = c_null_ptr  !! the unit shaft and head (colored by their materials)
     contains
         procedure :: set_vector, vector, tip
         procedure :: set_display_scale, display_scale
@@ -151,7 +151,7 @@ contains
     !> Whether the mouse may grab the handle (default true).
     subroutine set_draggable(self, draggable)
         class(DragHandle), intent(inout) :: self
-        logical, intent(in) :: draggable
+        logical, intent(in) :: draggable                    !! true: the mouse may grab it
         self%draggable_ = draggable
         if (.not. draggable .and. self%hovered_) call self%set_hovered(.false.)
     end subroutine set_draggable
@@ -193,7 +193,7 @@ contains
     !> The handle is under the cursor (set by the window), or not.
     subroutine set_hovered(self, hovered)
         class(DragHandle), intent(inout) :: self
-        logical, intent(in) :: hovered
+        logical, intent(in) :: hovered                      !! true: under the cursor
         if (hovered .eqv. self%hovered_) return
         self%hovered_ = hovered
         call self%show_state()
@@ -273,8 +273,10 @@ contains
     !> coordinates. False if it doesn't.
     logical function constrained(self, origin, dir, m, h) result(ok)
         class(DragHandle), intent(in) :: self
-        real(wp), intent(in) :: origin(3), dir(3), m(4,4)
-        real(wp), intent(out) :: h(3)
+        real(wp), intent(in) :: origin(3)                   !! the cursor's ray: its origin (root frame)
+        real(wp), intent(in) :: dir(3)                      !! its direction (a unit vector)
+        real(wp), intent(in) :: m(4,4)                      !! the frame's transform to the root
+        real(wp), intent(out) :: h(3)                       !! where it meets the constraint (frame coordinates)
         real(wp) :: p(3), a(3), c(3), w(3), q(3), t, near, far
         c = m(1:3, 4)
         p = matmul(m(1:3, 1:3), self%ref_point) + c
@@ -311,7 +313,7 @@ contains
     !> coordinates (default [1, 0, 0]), drawn `scale` times as long (default 1),
     !> in `color` ([r, g, b] or [r, g, b, a]). Its axes and labels are hidden.
     function new_vector_handle(name, vector, color, scale) result(h)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name                !! the frame's name
         real(wp), intent(in), optional :: vector(3)         !! frame coordinates
         real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         real(wp), intent(in), optional :: scale             !! display scale (scene units per vector unit; > 0)
@@ -327,7 +329,7 @@ contains
     !> The vector (frame coordinates); can change at any time.
     subroutine set_vector(self, vector)
         class(VectorHandle), intent(inout) :: self
-        real(wp), intent(in) :: vector(3)
+        real(wp), intent(in) :: vector(3)                   !! frame coordinates
         self%vector_ = vector
         call update_arrow(self)
     end subroutine set_vector
@@ -350,7 +352,7 @@ contains
     !> `scale` * vector.
     subroutine set_display_scale(self, scale)
         class(VectorHandle), intent(inout) :: self
-        real(wp), intent(in) :: scale
+        real(wp), intent(in) :: scale                       !! scene units per vector unit (> 0; else ignored)
         if (scale <= 0.0_wp) return
         self%scale_ = scale
         call update_arrow(self)
@@ -366,7 +368,7 @@ contains
     !> default): 0.2 of the arrow's length.
     subroutine set_head_size(self, size)
         class(VectorHandle), intent(inout) :: self
-        real(wp), intent(in) :: size
+        real(wp), intent(in) :: size                        !! the head's length (scene units; 0: 0.2 of the arrow)
         self%head_size_ = max(0.0_wp, size)
         call update_arrow(self)
     end subroutine set_head_size
@@ -385,6 +387,7 @@ contains
         call self%show_state()
     end subroutine vector_set_color
 
+    !> The point the mouse grabs: the tip.
     pure function vector_handle_point(self) result(p)
         class(VectorHandle), intent(in) :: self
         real(wp) :: p(3)
@@ -394,7 +397,7 @@ contains
     !> The tip dragged to `p`: the vector p / the display scale.
     subroutine vector_move_handle_point(self, p)
         class(VectorHandle), intent(inout) :: self
-        real(wp), intent(in) :: p(3)
+        real(wp), intent(in) :: p(3)                        !! the tip's new place (frame coordinates)
         call self%set_vector(p / self%scale_)
     end subroutine vector_move_handle_point
 
@@ -426,7 +429,8 @@ contains
     !> The arrow's bounding sphere (frame coordinates).
     subroutine vector_bound(self, center, radius)
         class(VectorHandle), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3)                  !! the bound's center (frame coordinates)
+        real(wp), intent(out) :: radius                     !! its radius (scene units)
         center = 0.5_wp * self%tip()
         radius = 0.5_wp * norm2(self%tip())
     end subroutine vector_bound
@@ -492,7 +496,10 @@ contains
     !> body and head lengths and radii), white (colored by its material), lit
     !> as frames' axes. Null on failure.
     function unit_part(body_length, head_length, body_radius, head_radius) result(mesh)
-        real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius
+        real(c_double), intent(in) :: body_length           !! the shaft's length (0: none)
+        real(c_double), intent(in) :: head_length           !! the head's length (0: a flat top)
+        real(c_double), intent(in) :: body_radius           !! the shaft's radius
+        real(c_double), intent(in) :: head_radius           !! the head's radius at its base
         type(c_ptr) :: mesh
         integer, parameter :: segments = 24
         real(c_float), dimension(:,:), pointer :: xyz, normals, uv
@@ -510,7 +517,9 @@ contains
     !> The arrow's length, its head's length and radius (scene units).
     pure subroutine arrow_sizes(self, len, head_len, head_radius)
         class(VectorHandle), intent(in) :: self
-        real(wp), intent(out) :: len, head_len, head_radius
+        real(wp), intent(out) :: len                        !! the arrow's length (the tip's distance)
+        real(wp), intent(out) :: head_len                   !! its head's length
+        real(wp), intent(out) :: head_radius                !! its head's radius
         len = norm2(self%tip())
         head_len = 0.2_wp * len
         if (self%head_size_ > 0.0_wp) head_len = min(self%head_size_, 0.5_wp * len)

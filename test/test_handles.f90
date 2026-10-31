@@ -19,11 +19,12 @@ module test_handles_recorder
 
 contains
 
+    !> A drag: its stage counted, the handle kept.
     subroutine recorder_handle_drag(self, window, handle, stage)
         class(DragRecorder), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        class(DragHandle), intent(inout), target :: handle
-        integer, intent(in) :: stage
+        class(WindowProxy), intent(inout) :: window         !! the window
+        class(DragHandle), intent(inout), target :: handle  !! the handle dragged
+        integer, intent(in) :: stage                        !! DRAG_START, DRAG_MOVE or DRAG_END
         select case (stage)
         case (DRAG_START)
             self%starts = self%starts + 1
@@ -35,19 +36,21 @@ contains
         self%last => handle
     end subroutine recorder_handle_drag
 
+    !> A button press given to the handler: counted.
     subroutine recorder_button_press(self, window, x, y, button)
         class(DragRecorder), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: x, y
-        integer, intent(in) :: button
+        class(WindowProxy), intent(inout) :: window         !! the window
+        real(wp), intent(in) :: x, y                        !! where (-1 to 1, y up)
+        integer, intent(in) :: button                       !! MOUSE_LEFT, MOUSE_MIDDLE or MOUSE_RIGHT
         self%button_presses = self%button_presses + 1
     end subroutine recorder_button_press
 
+    !> A button release given to the handler: counted.
     subroutine recorder_button_release(self, window, x, y, button)
         class(DragRecorder), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: x, y
-        integer, intent(in) :: button
+        class(WindowProxy), intent(inout) :: window         !! the window
+        real(wp), intent(in) :: x, y                        !! where (-1 to 1, y up)
+        integer, intent(in) :: button                       !! MOUSE_LEFT, MOUSE_MIDDLE or MOUSE_RIGHT
         self%button_releases = self%button_releases + 1
     end subroutine recorder_button_release
 
@@ -99,6 +102,7 @@ program test_handles
 contains
 
     ! (each call first, then its results checked: an expression's operands may be evaluated in any order)
+    !> ray_plane, ray_sphere and ray_line: where they meet, and where they miss.
     subroutine check_rays()
         real(wp) :: t, p(3), near, far, s
         logical :: hit
@@ -122,8 +126,10 @@ contains
     !> Grab the arrow's tip ([3, 0, 0] in the root) with `constraint`, by the
     !> ray (o0, d0) through it, drag it with the ray (o1, d1): its vector then.
     function dragged_vector(constraint, axis, o0, d0, o1, d1) result(v)
-        integer, intent(in) :: constraint
-        real(wp), intent(in) :: axis(3), o0(3), d0(3), o1(3), d1(3)
+        integer, intent(in) :: constraint                   !! HANDLE_*
+        real(wp), intent(in) :: axis(3)                     !! the constraint's normal or direction
+        real(wp), intent(in) :: o0(3), d0(3)                !! the ray grabbing it (origin, unit direction)
+        real(wp), intent(in) :: o1(3), d1(3)                !! the ray dragging it
         real(wp) :: v(3)
         call arrow%set_vector([1.0_wp, 0.0_wp, 0.0_wp])
         call arrow%set_constraint(constraint, axis)
@@ -134,6 +140,8 @@ contains
         v = arrow%vector()
     end function dragged_vector
 
+    !> Each constraint dragged with given rays, the far side of a sphere, the
+    !> grab's offset, and a handle that isn't draggable.
     subroutine check_constraints()
         real(wp), parameter :: x(3) = [1.0_wp, 0.0_wp, 0.0_wp], y(3) = [0.0_wp, 1.0_wp, 0.0_wp], z(3) = [0.0_wp, 0.0_wp, 1.0_wp]
         call check(near3(dragged_vector(HANDLE_FREE, z, [3.0_wp, -5.0_wp, 0.0_wp], y, [3.0_wp, -5.0_wp, 1.0_wp], y), &
@@ -158,6 +166,7 @@ contains
         call arrow%set_vector([1.0_wp, 0.0_wp, 0.0_wp])
     end subroutine check_constraints
 
+    !> The arrow picked at its tip (a PICK_HANDLE hit), not at its tail.
     subroutine check_pick()
         type(PickCamera) :: cam
         type(PickHit), allocatable :: found(:)
@@ -178,6 +187,9 @@ contains
         call check(n == 0, 'not picked at its tail')
     end subroutine check_pick
 
+    !> In a window: the cursor's ray, and the arrow hovered, grabbed, dragged and
+    !> released with forwarded mouse events; the camera unchanged; a press
+    !> elsewhere the handler's.
     subroutine check_window()
         integer(c_int) :: width, height
         real(wp) :: at(2), before(3,3), after(3,3), v0(3), v1(3)
@@ -243,14 +255,16 @@ contains
         call window%close()
     end subroutine check_window
 
+    !> The points are the same, within 1e-9.
     logical function near3(a, b)
-        real(wp), intent(in) :: a(3), b(3)
+        real(wp), intent(in) :: a(3), b(3)                  !! the points
         near3 = norm2(a - b) < 1.0e-9_wp
     end function near3
 
+    !> A check: counted and reported if it failed.
     subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
+        logical, intent(in) :: ok                           !! passed
+        character(len=*), intent(in) :: what                !! what is checked
         if (ok) return
         failures = failures + 1
         write(*, '(a)') 'FAIL: '//what
