@@ -41,6 +41,7 @@ program test_line_segments
     use, intrinsic :: iso_c_binding, only: c_null_ptr
     use vkframes
     use test_line_segments_links
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -52,9 +53,8 @@ program test_line_segments
     type(Link), target :: ab_link
     real(wp) :: a(3), b(3), ca(4), cb(4), p(3), q(4)
     real(wp) :: ends_a(3, 2), ends_b(3, 2)
-    integer :: seen, failures
+    integer :: seen
 
-    failures = 0
 
     ! two spacecraft moving along straight lines; the links' frame first in the tree
     path_a = Trajectory()
@@ -123,21 +123,6 @@ program test_line_segments
     call check(all(abs(ca(1:3) - [1.0_wp, 1.0_wp, 0.0_wp]) < 1.0e-6_wp), "the frame's new color")
     call check(links%line_width() == 3.0_wp, 'line width')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: CustomLineSegments'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('CustomLineSegments')
 
 end program test_line_segments

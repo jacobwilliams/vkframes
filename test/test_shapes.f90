@@ -7,13 +7,12 @@ program test_shapes
 
     use, intrinsic :: iso_c_binding, only: c_null_ptr, c_associated
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
     real(wp), parameter :: deg = pi / 180.0_wp
-    integer :: failures
 
-    failures = 0
     call check_quat_from_matrix()
     call check_cones()
     call check_look_at()
@@ -21,22 +20,9 @@ program test_shapes
     call check_polyhedra()
     call check_lights()
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: shapes (axes, grid, plane, cones, polyhedra), lights, materials'
+    call report('shapes (axes, grid, plane, cones, polyhedra), lights, materials')
 
 contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
     subroutine check_quat_from_matrix()
         real(wp) :: q(4), r(4), err

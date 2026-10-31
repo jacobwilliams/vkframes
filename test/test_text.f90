@@ -4,6 +4,7 @@ program test_text
 
     use vkf_text, only: find_font, default_font
     use vkframes, only: HUDText, wp, ALIGN_LEFT_BOTTOM, ALIGN_RIGHT_TOP
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -11,9 +12,7 @@ program test_text
     type(HUDText) :: hud, plain
     integer :: rev
     logical :: exists
-    integer :: failures
 
-    failures = 0
     path = find_font(default_font)
     write(*, '(a)') 'default font: '//path
     call check(len(path) > 0, 'the default font is found')
@@ -34,21 +33,6 @@ program test_text
     call hud%show(.false.)
     call check(hud%text() == '' .and. .not. hud%is_shown(), 'hidden: no text shown')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: fonts, HUD text'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('fonts, HUD text')
 
 end program test_text

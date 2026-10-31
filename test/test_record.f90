@@ -9,6 +9,7 @@ program test_record
 
     use, intrinsic :: iso_fortran_env, only: int64
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -19,10 +20,9 @@ program test_record
     type(FrameManager), target :: scene
     type(WindowProxy) :: window
     integer(int64) :: written
-    integer :: failures, k, unit, status, counted, width, height
+    integer :: k, unit, status, counted, width, height
     logical :: ok
 
-    failures = 0
     body = Sphere('Body', radius=1.0_wp, color=[0.3_wp, 0.6_wp, 1.0_wp])
     scene = FrameManager(body)
     if (.not. window%open(320, 240, 'vkframes: recording test')) then
@@ -88,18 +88,6 @@ program test_record
     call check(.not. window%stop_recording(), 'stopping then: not recording')
 
     call window%close()
-    if (failures > 0) error stop 1
-    write(*, '(a)') 'PASS: video recording (frames piped to ffmpeg, the time at the video''s pace)'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') 'FAIL: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('video recording (frames piped to ffmpeg, the time at the video''s pace)')
 
 end program test_record

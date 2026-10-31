@@ -642,6 +642,22 @@ Decided so far:
   in the runner VM permitting); the Qt demo built everywhere and run on
   Linux and macOS (allowed to fail while those paths are unproven). Captures
   are uploaded as artifacts.
+- **Duplication** (reviewed 2026-10-30): done: the demos' Qt event
+  plumbing (`vkframes_qt`'s `connect_view`), their launch scripts
+  (`fpm_vsg.run_qt_project`, which also resolves `--capture` and other path
+  options from where pixi runs, though the file doesn't exist yet), the
+  tests' checks (`test/vkf_checks.f90`), the trajectory interpolation
+  (`Trajectory%point_at`), trace mode's tail ends and `draw_trail`'s two
+  searches. Left:
+  - [ ] CurveArtist and RibbonArtist repeat their update (the chain made
+        again for colors, the points written, trace mode's range and tail):
+        a common parent holding the chain and the written and drawn counts
+        would let one routine do it, the ribbon's two points per point a
+        parameter.
+  - [ ] The demos' common options (`--capture`, `--capture-frame`,
+        `--quit-after`, `--recreate-surface`) and the capture in their
+        frame callbacks: a small options type in `vkframes_qt` parsed before
+        each demo's own options.
 - **Efficiency follow-ups** (trajectories can be very large; see also
   [openframes-compare.md](openframes-compare.md), the comparison with
   OpenFrames and its list of future work):

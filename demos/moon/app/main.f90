@@ -47,8 +47,7 @@ module moondemo
 
     use qt
     use vkframes
-    use vkframes_qt, only: qt_forward_mouse => forward_mouse, qt_forward_wheel => forward_wheel, &
-                           qt_forward_key => forward_key, watch_surface
+    use vkframes_qt, only: connect_view, ViewLink
     use iso_c_binding
     implicit none
 
@@ -93,6 +92,7 @@ module moondemo
         type(QWindow) :: window
         type(QWidget) :: container
         type(QtfEventFilter) :: events
+        type(ViewLink) :: view_link                         !! the window's events to the proxy (connect_view)
         type(WindowProxy) :: proxy
         type(View) :: views(n_views)
         integer :: frame = 0
@@ -372,7 +372,6 @@ contains
         u = v / norm2(v)
     end function unit
 
-
     !> The scene: the Moon, the Sun, the spacecraft and its orbit, the sky.
     subroutine build_model()
         real(wp) :: t, r(3), h, lon
@@ -599,14 +598,7 @@ contains
         app%events = QtfEventFilter(app%window)
         call app%events%exposeEvent%connect(on_expose)
         call app%events%updateRequest%connect(on_update)
-        call app%events%resizeEvent%connect(on_resize)
-        call app%events%mousePressEvent%connect(on_press)
-        call app%events%mouseReleaseEvent%connect(on_release)
-        call app%events%mouseMoveEvent%connect(on_move)
-        call app%events%wheelEvent%connect(on_wheel)
-        call app%events%keyPressEvent%connect(on_key_press)
-        call app%events%keyReleaseEvent%connect(on_key_release)
-        call watch_surface(app%events, app%proxy)               ! (closed if Qt destroys the native window)
+        call connect_view(app%view_link, app%events, app%proxy, app%window)   ! (mouse, keys, resizes, the surface)
     end subroutine build_window
 
     !> Open the view (on the window's first expose) and show the scene.
@@ -687,68 +679,6 @@ contains
         end if
         call app%window%requestUpdate()
     end subroutine on_update
-
-    subroutine on_resize(event, data)
-        type(QResizeEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        real(wp) :: dpr
-        if (.not. app%proxy%is_open()) return
-        dpr = app%window%devicePixelRatio()
-        call app%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr), pixel_ratio=dpr)
-        call app%window%requestUpdate()
-    end subroutine on_resize
-
-    ! ------------------------------------------------------------------
-    ! mouse and keys, forwarded to the trackball (VSG's conventions)
-
-    subroutine forward_mouse(kind, event)
-        integer, intent(in) :: kind
-        type(QMouseEvent), intent(in) :: event
-        call qt_forward_mouse(app%proxy, app%window, kind, event)
-    end subroutine forward_mouse
-
-    subroutine on_move(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_MOVE, event)
-    end subroutine on_move
-
-    subroutine on_press(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_PRESS, event)
-    end subroutine on_press
-
-    subroutine on_release(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_RELEASE, event)
-    end subroutine on_release
-
-    subroutine on_wheel(event, data)
-        type(QWheelEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call qt_forward_wheel(app%proxy, event)
-    end subroutine on_wheel
-
-
-    subroutine forward_key(pressed, event)
-        logical, intent(in) :: pressed
-        type(QKeyEvent), intent(in) :: event
-        call qt_forward_key(app%proxy, pressed, event)
-    end subroutine forward_key
-
-    subroutine on_key_press(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_key(.true., event)
-    end subroutine on_key_press
-
-    subroutine on_key_release(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_key(.false., event)
-    end subroutine on_key_release
 
     ! ==================================================================
     ! controls

@@ -14,6 +14,7 @@ program test_pick
     use vkframes
     use vkf_layer, only: vkf_viewer_size, vkf_viewer_pixel_ratio
     use vkf_pick, only: PickCamera, pick_camera, segment_pick
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -35,9 +36,8 @@ program test_pick
     real(wp) :: pos(2)
     integer(c_int) :: width, height
     real(wp) :: aspect, ratio, x, y
-    integer :: failures, k
+    integer :: k
 
-    failures = 0
     call check_geometry()
 
     ! the scene: a body at the origin, and a straight trajectory above it
@@ -201,11 +201,7 @@ program test_pick
     if (k > 0) call check(abs(hits(k)%time - 153.0_wp) < 1.0e-6_wp, 'trace: the time on the tail')
 
     call window%close()
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: picking (bodies, curves, markers, segments, trace mode), callouts'
+    call report('picking (bodies, curves, markers, segments, trace mode), callouts')
 
 contains
 
@@ -256,14 +252,5 @@ contains
         real(wp), intent(in) :: a(3), b(3), tol
         near3 = maxval(abs(a - b)) <= tol * max(1.0_wp, maxval(abs(b)))
     end function near3
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') 'FAIL: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
 end program test_pick

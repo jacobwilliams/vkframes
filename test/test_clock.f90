@@ -3,15 +3,14 @@
 program test_clock
 
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
     type(SimulationClock), target :: c, d, e
     type(SimulationClock), pointer :: pc, pd, pe
     real(wp) :: t, t_min, t_max
-    integer :: failures
 
-    failures = 0
     pc => c
     pd => d
     pe => e
@@ -51,21 +50,6 @@ program test_clock
     call check(d%synchronize(null()), 'unsynchronize')
     call check(d%time() == 60.0_wp .and. d%time_scale() == -1.0_wp, 'unsynchronized keeps time and scale')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: SimulationClock'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('SimulationClock')
 
 end program test_clock

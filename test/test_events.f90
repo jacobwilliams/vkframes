@@ -113,6 +113,7 @@ program test_events
     use vkframes
     use vkf_layer, only: vkf_viewer_size
     use test_events_recorder, only: Recorder
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -125,9 +126,7 @@ program test_events
     type(HUDText), target :: label
     type(View), pointer :: current
     integer(c_int) :: width, height
-    integer :: failures
 
-    failures = 0
     root = ReferenceFrame('Root')
     craft = ReferenceFrame('Craft')
     call craft%set_position([1.0_wp, 0.0_wp, 0.0_wp])
@@ -232,11 +231,7 @@ program test_events
     call check(window%frame() .and. window%frame(), 'opened again: drawn')
     call window%close()
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: window events (WindowEventHandler), built-in keys'
+    call report('window events (WindowEventHandler), built-in keys')
 
 contains
 
@@ -267,14 +262,5 @@ contains
         real(wp), intent(in) :: a, b
         near = abs(a - b) < 0.02_wp
     end function near
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') 'FAIL: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
 end program test_events

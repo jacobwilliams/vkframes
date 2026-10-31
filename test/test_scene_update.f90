@@ -7,6 +7,7 @@
 program test_scene_update
 
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -17,9 +18,8 @@ program test_scene_update
     type(SimulationClock), target :: master, other
     type(SimulationClock), pointer :: pm
     real(wp) :: t1, t2
-    integer :: seen_a, seen_b, failures
+    integer :: seen_a, seen_b
 
-    failures = 0
     traj = Trajectory()
     call traj%add(0.0_wp, pos=[0.0_wp, 0.0_wp, 0.0_wp])
     call traj%add(10.0_wp, pos=[10.0_wp, 0.0_wp, 0.0_wp])
@@ -78,21 +78,6 @@ program test_scene_update
     call scene%update(t2, seen_b)
     call check(scene%num_updates() == 8, 'different times: each updates')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: scene updated once per time across windows'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('scene updated once per time across windows')
 
 end program test_scene_update

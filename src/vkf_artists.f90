@@ -537,6 +537,26 @@ contains
         if (n > 1) decreasing_times = traj%time(n) < traj%time(1)
     end function decreasing_times
 
+    !> Trace mode's tail, for the points passed i1 .. i2 of the n written: from
+    !> the latest passed (k) toward the next in time (k2: i2 + 1, or i1 - 1 for
+    !> decreasing times); none (0, 0) without a trajectory.
+    subroutine tail_ends(traj, n, i1, i2, k, k2)
+        type(Trajectory), pointer, intent(in) :: traj
+        integer, intent(in) :: n                            !! the points written
+        integer, intent(in) :: i1, i2                       !! the points passed
+        integer, intent(out) :: k, k2                       !! the tail's ends
+        k = 0
+        k2 = 0
+        if (.not. associated(traj)) return
+        if (decreasing_times(traj, n)) then
+            k = i1
+            k2 = i1 - 1
+        else
+            k = i2
+            k2 = i2 + 1
+        end if
+    end subroutine tail_ends
+
     !> Number of points the data sources give: 0 for invalid sources or no
     !> trajectory, huge() if all are zero.
     integer function source_points(traj, sources) result(n)
@@ -943,7 +963,7 @@ contains
     subroutine curve_update(self, t)
         class(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        integer :: n, i1, i2
+        integer :: n, i1, i2, k, k2
         logical :: changed, redraw
         if (.not. self%chain%is_built()) return
         n = curve_points(self)
@@ -995,13 +1015,8 @@ contains
         self%first_drawn_ = i1
         self%n_drawn = max(0, i2 - i1 + 1)
         call self%chain%draw_range(i1, i2)
-        if (.not. associated(self%traj)) then
-            call update_tail(self, t, 0, 0)
-        else if (decreasing_times(self%traj, self%n_written)) then
-            call update_tail(self, t, i1, i1 - 1)           ! (toward the next point back: a later time)
-        else
-            call update_tail(self, t, i2, i2 + 1)
-        end if
+        call tail_ends(self%traj, self%n_written, i1, i2, k, k2)
+        call update_tail(self, t, k, k2)
         self%tail_time = t
     end subroutine curve_update
 
@@ -1110,8 +1125,8 @@ contains
             call self%chain%set_trail(values)
             return
         end if
-        i1 = max(1, keys_at_most(lo_key))                   ! the last point before the window, or the first
-        i2 = min(n, keys_below(hi_key) + 1)                 ! the first after it, or the last
+        i1 = max(1, keys_up_to(lo_key, .true.))                   ! the last point before the window, or the first
+        i2 = min(n, keys_up_to(hi_key, .false.) + 1)                 ! the first after it, or the last
         self%first_drawn_ = i1
         self%n_drawn = i2 - i1 + 1
         call self%chain%draw_range(i1, i2)
@@ -1149,39 +1164,24 @@ contains
             key = sgn * self%traj%time(i)
         end function key
 
-        !> The number of points with keys <= x (bisection).
-        integer function keys_at_most(x) result(m)
-            real(wp), intent(in) :: x
+        !> The number of points with keys below x, or at most x if `inclusive`
+        !> (bisection: the keys increase).
+        integer function keys_up_to(x, inclusive) result(m)
+            real(wp), intent(in) :: x                       !! the key
+            logical, intent(in) :: inclusive                !! keys equal to x counted
             integer :: low, high, mid
             low = 0
             high = n + 1
             do while (high - low > 1)
                 mid = (low + high) / 2
-                if (key(mid) <= x) then
+                if (key(mid) < x .or. (inclusive .and. key(mid) == x)) then
                     low = mid
                 else
                     high = mid
                 end if
             end do
             m = low
-        end function keys_at_most
-
-        !> The number of points with keys < x (bisection).
-        integer function keys_below(x) result(m)
-            real(wp), intent(in) :: x
-            integer :: low, high, mid
-            low = 0
-            high = n + 1
-            do while (high - low > 1)
-                mid = (low + high) / 2
-                if (key(mid) < x) then
-                    low = mid
-                else
-                    high = mid
-                end if
-            end do
-            m = low
-        end function keys_below
+        end function keys_up_to
 
         !> The distance along the curve at time tt: interpolated between the
         !> points about it (extrapolated beyond the ends).
@@ -1189,7 +1189,7 @@ contains
             real(wp), intent(in) :: tt
             integer :: j
             real(wp) :: t0, t1
-            j = max(1, min(n - 1, keys_at_most(sgn * tt)))
+            j = max(1, min(n - 1, keys_up_to(sgn * tt, .true.)))
             t0 = self%traj%time(j)
             t1 = self%traj%time(j + 1)
             s_at = self%chain%distance(j)
@@ -1888,7 +1888,7 @@ contains
     subroutine ribbon_update(self, t)
         class(RibbonArtist), intent(inout) :: self
         real(wp), intent(in) :: t
-        integer :: n, i1, i2
+        integer :: n, i1, i2, k, k2
         logical :: changed, redraw
         if (.not. self%chain%is_built()) return
         n = ribbon_points(self)
@@ -1932,13 +1932,8 @@ contains
         self%first_drawn_ = i1
         self%n_drawn = max(0, i2 - i1 + 1)
         call self%chain%draw_range(2 * i1 - 1, 2 * i2)
-        if (.not. associated(self%traj)) then
-            call update_ribbon_tail(self, t, 0, 0)
-        else if (decreasing_times(self%traj, self%n_written)) then
-            call update_ribbon_tail(self, t, i1, i1 - 1)
-        else
-            call update_ribbon_tail(self, t, i2, i2 + 1)
-        end if
+        call tail_ends(self%traj, self%n_written, i1, i2, k, k2)
+        call update_ribbon_tail(self, t, k, k2)
         self%tail_time = t
     end subroutine ribbon_update
 

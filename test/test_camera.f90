@@ -9,6 +9,7 @@
 program test_camera
 
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -18,9 +19,8 @@ program test_camera
     type(WindowProxy) :: window
     type(View), target :: view_a, view_b
     real(wp) :: eye(3), center(3), up(3), cam_b(3,3), target(3,3), mid(3), z(3)
-    integer :: failures, n
+    integer :: n
 
-    failures = 0
     root = ReferenceFrame('Root')
     craft = ReferenceFrame('Craft')
     call craft%set_position([100.0_wp, 0.0_wp, 0.0_wp])
@@ -120,11 +120,7 @@ program test_camera
     call check(turned_after_flick() < 1.0e-6_wp, 'a flick without throw: the camera stops')   ! (acos near 1: ~1e-8)
 
     call window%close()
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: camera (get, set, in the root frame), flights, view transitions'
+    call report('camera (get, set, in the root frame), flights, view transitions')
 
 contains
 
@@ -191,14 +187,5 @@ contains
         real(wp), intent(in) :: a(:), b(:)
         near = maxval(abs(a - b)) < tol * max(1.0_wp, maxval(abs(b)))
     end function near
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') 'FAIL: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
 end program test_camera

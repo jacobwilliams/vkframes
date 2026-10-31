@@ -36,7 +36,7 @@ module design_demo
 
     use qt
     use vkframes
-    use vkframes_qt, only: forward_mouse, forward_wheel, forward_key, watch_surface
+    use vkframes_qt, only: connect_view, ViewLink
     use kepler
     use iso_c_binding
 
@@ -80,6 +80,7 @@ module design_demo
         type(QWindow) :: window
         type(QWidget) :: container
         type(QtfEventFilter) :: events
+        type(ViewLink) :: view_link                         !! the window's events to the proxy (connect_view)
         type(WindowProxy) :: proxy
         type(View) :: views(n_views)
         integer :: frame = 0
@@ -396,14 +397,7 @@ contains
         app%events = QtfEventFilter(app%window)
         call app%events%exposeEvent%connect(on_expose)
         call app%events%updateRequest%connect(on_update)
-        call app%events%resizeEvent%connect(on_resize)
-        call app%events%mousePressEvent%connect(on_press)
-        call app%events%mouseReleaseEvent%connect(on_release)
-        call app%events%mouseMoveEvent%connect(on_move)
-        call app%events%wheelEvent%connect(on_wheel)
-        call app%events%keyPressEvent%connect(on_key_press)
-        call app%events%keyReleaseEvent%connect(on_key_release)
-        call watch_surface(app%events, app%proxy)               ! (closed if Qt destroys the native window)
+        call connect_view(app%view_link, app%events, app%proxy, app%window)   ! (mouse, keys, resizes, the surface)
     end subroutine build_window
 
     !> Open the view (on the window's first expose, or again on a new native
@@ -518,63 +512,6 @@ contains
                             num(app%t1 / 3600.0_wp, 3)//' h'
         end select
     end subroutine drag_test_step
-
-    !> The window resized: the view too, and a frame drawn at once.
-    subroutine on_resize(event, data)
-        type(QResizeEvent), intent(in) :: event             !! the new size (logical pixels)
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        real(wp) :: dpr
-        if (.not. app%proxy%is_open()) return
-        dpr = app%window%devicePixelRatio()
-        call app%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr), pixel_ratio=dpr)
-        call app%window%requestUpdate()
-    end subroutine on_resize
-
-    ! ------------------------------------------------------------------
-    ! mouse and keys, forwarded (vkframes_qt: VSG's conventions); the window
-    ! gives the drags of the arrows to the handler, the rest to the trackball
-
-    !> The mouse moved over the window: forwarded to the view.
-    subroutine on_move(event, data)
-        type(QMouseEvent), intent(in) :: event              !! the pointer's position and buttons
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        call forward_mouse(app%proxy, app%window, MOUSE_MOVE, event)
-    end subroutine on_move
-
-    !> The mouse button pressed over the window: forwarded to the view.
-    subroutine on_press(event, data)
-        type(QMouseEvent), intent(in) :: event              !! the pointer's position and buttons
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        call forward_mouse(app%proxy, app%window, MOUSE_PRESS, event)
-    end subroutine on_press
-
-    !> The mouse button released over the window: forwarded to the view.
-    subroutine on_release(event, data)
-        type(QMouseEvent), intent(in) :: event              !! the pointer's position and buttons
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        call forward_mouse(app%proxy, app%window, MOUSE_RELEASE, event)
-    end subroutine on_release
-
-    !> The scroll wheel over the window: forwarded to the view (a zoom).
-    subroutine on_wheel(event, data)
-        type(QWheelEvent), intent(in) :: event              !! the wheel's steps
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        call forward_wheel(app%proxy, event)
-    end subroutine on_wheel
-
-    !> A key pressed in the window: forwarded to the view.
-    subroutine on_key_press(event, data)
-        type(QKeyEvent), intent(in) :: event                !! the key and its modifiers
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        call forward_key(app%proxy, .true., event)
-    end subroutine on_key_press
-
-    !> A key released in the window: forwarded to the view.
-    subroutine on_key_release(event, data)
-        type(QKeyEvent), intent(in) :: event                !! the key and its modifiers
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        call forward_key(app%proxy, .false., event)
-    end subroutine on_key_release
 
     ! ==================================================================
     ! controls

@@ -325,6 +325,51 @@ def compile_shaders():
         os.utime(SHADER_CPP)                  # (up to date: newer than the shaders, so not compiled again)
 
 
+# Options of the demos and the benchmark whose values are files or folders
+PATH_OPTIONS = ("--capture", "--out", "--data", "--save-as")
+
+
+def demo_arguments(args, start):
+    """A demo's arguments, relative paths made absolute from `start` (where
+    pixi was run; pixi runs a demo in its own folder): the values of
+    PATH_OPTIONS always (e.g. a capture still to be written), other
+    arguments if they name a file or folder there (e.g. the trajectory
+    demo's file)."""
+    out = []
+    for k, a in enumerate(args):
+        option = args[k - 1] if k > 0 else None
+        if not (a.startswith("-") or os.path.isabs(a)) and \
+                (option in PATH_OPTIONS or os.path.exists(os.path.join(start, a))):
+            a = os.path.join(start, a)
+        out.append(a)
+    return out
+
+
+def run_qt_project(here, argv, usage, release=False, cxxflags=""):
+    """The main() of a qt-fortran project's demo.py (the demos, the
+    benchmark's vkframes app): `build` it, or `run` it with the arguments
+    after `run` (demo_arguments). fpm runs through qt-fortran's
+    tools/fpm_qt.py (Qt's settings, keeping vkframes' from settings());
+    `release`: fpm's release profile; `cxxflags`: added to the C++ flags."""
+    if not argv or argv[0] not in ("build", "run"):
+        sys.exit(usage)
+    os.chdir(here)
+    update_dependencies(here)                         # (qt-fortran fetched: its fpm_qt.py)
+    env_settings, dll_dir = settings()
+    env = dict(os.environ, **env_settings)
+    if cxxflags:
+        env["FPM_CXXFLAGS"] = (env.get("FPM_CXXFLAGS", "") + " " + cxxflags).strip()
+    if dll_dir:                                       # Windows: vkf.dll
+        env["PATH"] = dll_dir + os.pathsep + env.get("PATH", "")
+    profile = ["--profile", "release"] if release else []
+    if argv[0] == "build":
+        fpm = ["build", *profile]
+    else:
+        fpm = ["run", *profile, "--", *demo_arguments(argv[1:], os.environ.get("INIT_CWD", here))]
+    qt_tool = os.path.join(here, "build", "dependencies", "qt-fortran", "tools", "fpm_qt.py")
+    return subprocess.call([sys.executable, qt_tool, *fpm], env=env)
+
+
 def main(argv):
     if not argv:
         sys.exit(__doc__)

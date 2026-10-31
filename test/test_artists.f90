@@ -32,13 +32,12 @@ program test_artists
     use, intrinsic :: iso_c_binding, only: c_float
     use vkf_trajectory, only: SOURCE_POSOPT, SOURCE_TIME, SOURCE_ZERO
     use vkf_layer, only: vkf_switch_create
+    use vkf_checks, only: check, report
 
     implicit none
 
     real(wp), parameter :: r = 4.2e7_wp            ! large coordinates: floats alone would lose metres
-    integer :: failures
 
-    failures = 0
     call check_bulk_and_appends()
     call check_large_bulk()
     call check_level_of_detail()
@@ -56,22 +55,9 @@ program test_artists
     call check_trail(1.0_wp)
     call check_trail(-1.0_wp)
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: CurveArtist, SegmentArtist, MarkerArtist, DrawableTrajectory'
+    call report('CurveArtist, SegmentArtist, MarkerArtist, DrawableTrajectory')
 
 contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
     pure function orbit(t) result(p)
         real(wp), intent(in) :: t

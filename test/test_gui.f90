@@ -38,6 +38,7 @@ program test_gui
     use vkframes
     use vkf_layer, only: vkf_viewer_size
     use test_gui_presses, only: Presses
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -48,12 +49,11 @@ program test_gui
     type(Presses), target :: handler
     type(Gui) :: g1, g2
     integer(c_int) :: width, height
-    integer :: failures, clicks
+    integer :: clicks
     logical :: checked
     real(wp) :: amount = 1.0e4_wp
     integer :: choice = 2
 
-    failures = 0
     root = ReferenceFrame('Root')
     scene = FrameManager(root)
     if (.not. (w1%open(400, 300, 'vkframes: GUI test') .and. w2%open(300, 200, 'vkframes: GUI test 2'))) then
@@ -126,12 +126,8 @@ program test_gui
 
     call w2%close()
     call w1%close()
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: GUI panels (a button clicked, also after a resize and with no move first; events taken; ' // &
-                    'a GUI per window; a slider, a combo box)'
+    call report('GUI panels (a button clicked, also after a resize and with no move first; events taken; ' // &
+                'a GUI per window; a slider, a combo box)')
 
 contains
 
@@ -157,14 +153,5 @@ contains
             end if
         end do
     end subroutine frames
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') 'FAIL: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
 end program test_gui

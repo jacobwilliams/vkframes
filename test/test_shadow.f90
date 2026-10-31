@@ -9,6 +9,7 @@ program test_shadow
 
     use, intrinsic :: iso_c_binding, only: c_null_ptr
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -21,9 +22,8 @@ program test_shadow
     type(FrameManager) :: scene
     real(wp) :: m(4,4), d, z0, r0, z1, r1, apex
     logical :: drawn
-    integer :: seen, failures
+    integer :: seen
 
-    failures = 0
 
     ! the Sun at the origin; the Earth (turning) along an orbit; its shadow its child
     sun = Sphere('Sun', radius=rs)
@@ -100,11 +100,7 @@ program test_shadow
     call shadow%region_extent(SHADOW_ANTUMBRA, drawn)
     call check(.not. drawn .and. shadow%umbra_length() == huge(1.0_wp), 'larger body: no antumbra')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: ShadowCones'
+    call report('ShadowCones')
 
 contains
 
@@ -118,14 +114,5 @@ contains
         dist = abs(dz * (0.0_wp - r0) - dr * (zc - z0)) / hypot(dz, dr)
         tangent = abs(dist - rc) < 1.0e-6_wp * rc
     end function tangent
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
 end program test_shadow

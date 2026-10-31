@@ -2,7 +2,9 @@
 !> depend on Qt): Qt's mouse, wheel and key events turned into VSG's for a
 !> WindowProxy rendering into a QWindow (`forward_mouse`, `forward_wheel`,
 !> `forward_key`; the conversions `vsg_button`, `vsg_mask`, `vsg_key`), and
-!> the window's native surface going away (`watch_surface`).
+!> the window's native surface going away (`watch_surface`); and all of
+!> those connected at once for a QWindow showing a WindowProxy
+!> (`connect_view`, with its ViewLink).
 !>
 !> Keys: VSG's key symbols are X11 keysyms. Letters are lower case without
 !> Shift (the modified symbol upper case with it); other printable keys are
@@ -22,7 +24,15 @@ module vkframes_qt
 
     public :: vsg_button, vsg_mask, vsg_key
     public :: forward_mouse, forward_wheel, forward_key
-    public :: watch_surface
+    public :: watch_surface, connect_view
+
+    !> A QWindow showing a WindowProxy (`connect_view`): what its connections
+    !> forward to. It must stay alive while the window exists (e.g. a
+    !> component of the program's saved state).
+    type, public :: ViewLink
+        type(WindowProxy), pointer :: proxy => null()       !! the proxy rendering into the window (not owned)
+        type(QWindow), pointer :: window => null()          !! the window (not owned)
+    end type ViewLink
 
     ! VSG's modifier bits (vsg::KeyModifier)
     integer, parameter :: MODKEY_SHIFT = 1, MODKEY_CONTROL = 4, MODKEY_ALT = 8, MODKEY_META = 128
@@ -222,6 +232,124 @@ contains
         call proxy%key(pressed, symbol, modified_symbol, modifier)
         call event%accept()
     end subroutine forward_key
+
+    !> Connect a QWindow's events (`events`, its QtfEventFilter) to the
+    !> WindowProxy rendering into it, through `link` (set here; it must stay
+    !> alive while the window exists): the mouse (buttons, moves and the
+    !> wheel) and, unless `keys` is false (a program handling the keys
+    !> itself), the keys forwarded (forward_mouse, forward_wheel,
+    !> forward_key); a resize given to the proxy (at the window's pixel
+    !> ratio), with a frame requested; and, unless `surface` is false (a
+    !> program doing more when it goes), the native surface watched
+    !> (watch_surface). The window's expose and update requests are the
+    !> program's (when to open the view and draw).
+    subroutine connect_view(link, events, proxy, window, keys, surface)
+        type(ViewLink), intent(inout), target :: link       !! the link the connections use
+        type(QtfEventFilter), intent(in) :: events          !! the window's event filter
+        type(WindowProxy), intent(inout), target :: proxy   !! the proxy rendering into the window
+        type(QWindow), intent(in), target :: window         !! the window
+        logical, intent(in), optional :: keys               !! the keys forwarded (default true)
+        logical, intent(in), optional :: surface            !! the surface watched (default true)
+        logical :: with_keys, with_surface
+        with_keys = .true.
+        if (present(keys)) with_keys = keys
+        with_surface = .true.
+        if (present(surface)) with_surface = surface
+        link%proxy => proxy
+        link%window => window
+        call events%mousePressEvent%connect(on_view_press, link)
+        call events%mouseReleaseEvent%connect(on_view_release, link)
+        call events%mouseMoveEvent%connect(on_view_move, link)
+        call events%wheelEvent%connect(on_view_wheel, link)
+        if (with_keys) then
+            call events%keyPressEvent%connect(on_view_key_press, link)
+            call events%keyReleaseEvent%connect(on_view_key_release, link)
+        end if
+        call events%resizeEvent%connect(on_view_resize, link)
+        if (with_surface) call watch_surface(events, proxy)
+    end subroutine connect_view
+
+    !> A mouse button pressed over a linked window: to its proxy.
+    subroutine on_view_press(event, data)
+        type(QMouseEvent), intent(in) :: event              !! the button and the pointer's position
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        call forward_linked_mouse(MOUSE_PRESS, event, data)
+    end subroutine on_view_press
+
+    !> A mouse button released over a linked window: to its proxy.
+    subroutine on_view_release(event, data)
+        type(QMouseEvent), intent(in) :: event              !! the button and the pointer's position
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        call forward_linked_mouse(MOUSE_RELEASE, event, data)
+    end subroutine on_view_release
+
+    !> The mouse moved over a linked window: to its proxy.
+    subroutine on_view_move(event, data)
+        type(QMouseEvent), intent(in) :: event              !! the pointer's position and buttons
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        call forward_linked_mouse(MOUSE_MOVE, event, data)
+    end subroutine on_view_move
+
+    !> A mouse event of a linked window (`data`) to its proxy.
+    subroutine forward_linked_mouse(kind, event, data)
+        integer, intent(in) :: kind                         !! MOUSE_MOVE, MOUSE_PRESS or MOUSE_RELEASE
+        type(QMouseEvent), intent(in) :: event              !! the event
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        if (.not. present(data)) return
+        select type (data)
+        type is (ViewLink)
+            call forward_mouse(data%proxy, data%window, kind, event)
+        end select
+    end subroutine forward_linked_mouse
+
+    !> The wheel over a linked window: to its proxy.
+    subroutine on_view_wheel(event, data)
+        type(QWheelEvent), intent(in) :: event              !! the wheel's steps
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        if (.not. present(data)) return
+        select type (data)
+        type is (ViewLink)
+            call forward_wheel(data%proxy, event)
+        end select
+    end subroutine on_view_wheel
+
+    !> A key pressed in a linked window: to its proxy.
+    subroutine on_view_key_press(event, data)
+        type(QKeyEvent), intent(in) :: event                !! the key and its modifiers
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        if (.not. present(data)) return
+        select type (data)
+        type is (ViewLink)
+            call forward_key(data%proxy, .true., event)
+        end select
+    end subroutine on_view_key_press
+
+    !> A key released in a linked window: to its proxy.
+    subroutine on_view_key_release(event, data)
+        type(QKeyEvent), intent(in) :: event                !! the key and its modifiers
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        if (.not. present(data)) return
+        select type (data)
+        type is (ViewLink)
+            call forward_key(data%proxy, .false., event)
+        end select
+    end subroutine on_view_key_release
+
+    !> A linked window resized: its proxy too (framebuffer pixels, at the
+    !> window's pixel ratio), and a frame requested (drawn at the new size).
+    subroutine on_view_resize(event, data)
+        type(QResizeEvent), intent(in) :: event             !! the new size (logical pixels)
+        class(*), intent(inout), optional :: data           !! the ViewLink
+        real(wp) :: dpr
+        if (.not. present(data)) return
+        select type (data)
+        type is (ViewLink)
+            if (.not. data%proxy%is_open()) return
+            dpr = data%window%devicePixelRatio()
+            call data%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr), pixel_ratio=dpr)
+            call data%window%requestUpdate()
+        end select
+    end subroutine on_view_resize
 
     !> Close `proxy` when the window `events` filters is about to lose its
     !> native surface (Qt destroying it: re-parenting, `destroy`, the window

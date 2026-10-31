@@ -60,8 +60,7 @@ module trajdemo
 
     use qt
     use vkframes
-    use vkframes_qt, only: qt_forward_mouse => forward_mouse, qt_forward_wheel => forward_wheel, &
-                           qt_forward_key => forward_key, watch_surface
+    use vkframes_qt, only: connect_view, ViewLink
     use vkf_text, only: get_font
     use json_module, only: json_file, json_array, json_logical, json_string
     use iso_c_binding
@@ -140,6 +139,7 @@ module trajdemo
         type(QWindow) :: window
         type(QWidget) :: container
         type(QtfEventFilter) :: events
+        type(ViewLink) :: view_link                         !! the window's events to the proxy (connect_view)
         type(WindowProxy) :: proxy
         integer :: frame = 0
         type(QComboBox) :: view_choice
@@ -752,7 +752,6 @@ contains
         round_2 = unit * anint(x / unit)
     end function round_2
 
-
     !> Which markers segment s shows, and where its intermediate ones are
     !> (at most 10000 of them, for a time interval).
     subroutine apply_markers(s)
@@ -886,69 +885,6 @@ contains
         end if
         call app%window%requestUpdate()
     end subroutine on_update
-
-    !> New size: rebuild the swapchain (framebuffer pixels).
-    subroutine on_resize(event, data)
-        type(QResizeEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        real(wp) :: dpr
-        if (.not. app%proxy%is_open()) return
-        dpr = app%window%devicePixelRatio()
-        call app%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr), pixel_ratio=dpr)
-        call app%window%requestUpdate()
-    end subroutine on_resize
-
-
-
-    !> Forward a mouse event (MOUSE_MOVE, MOUSE_PRESS or MOUSE_RELEASE), in framebuffer pixels.
-    subroutine forward_mouse(kind, event)
-        integer, intent(in) :: kind
-        type(QMouseEvent), intent(in) :: event
-        call qt_forward_mouse(app%proxy, app%window, kind, event)
-    end subroutine forward_mouse
-
-    subroutine on_move(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_MOVE, event)
-    end subroutine on_move
-
-    subroutine on_press(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_PRESS, event)
-    end subroutine on_press
-
-    subroutine on_release(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_mouse(MOUSE_RELEASE, event)
-    end subroutine on_release
-
-    subroutine on_wheel(event, data)
-        type(QWheelEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call qt_forward_wheel(app%proxy, event)
-    end subroutine on_wheel
-
-
-    subroutine forward_key(pressed, event)
-        logical, intent(in) :: pressed
-        type(QKeyEvent), intent(in) :: event
-        call qt_forward_key(app%proxy, pressed, event)
-    end subroutine forward_key
-
-    subroutine on_key_press(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_key(.true., event)
-    end subroutine on_key_press
-
-    subroutine on_key_release(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        call forward_key(.false., event)
-    end subroutine on_key_release
 
     ! ==================================================================
     ! controls (GUI thread)
@@ -1503,14 +1439,7 @@ contains
         app%events = QtfEventFilter(app%window)
         call app%events%exposeEvent%connect(on_expose)
         call app%events%updateRequest%connect(on_update)
-        call app%events%resizeEvent%connect(on_resize)
-        call app%events%mousePressEvent%connect(on_press)
-        call app%events%mouseReleaseEvent%connect(on_release)
-        call app%events%mouseMoveEvent%connect(on_move)
-        call app%events%wheelEvent%connect(on_wheel)
-        call app%events%keyPressEvent%connect(on_key_press)
-        call app%events%keyReleaseEvent%connect(on_key_release)
-        call watch_surface(app%events, app%proxy)               ! (closed if Qt destroys the native window)
+        call connect_view(app%view_link, app%events, app%proxy, app%window)   ! (mouse, keys, resizes, the surface)
         app%stack = QStackedWidget()
         app%startup_message = QLabel('Starting...')
         call app%startup_message%setAlignment(Qt_AlignCenter)

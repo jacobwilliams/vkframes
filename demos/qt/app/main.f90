@@ -113,8 +113,7 @@ module vkdemo
 
     use qt
     use vkframes
-    use vkframes_qt, only: qt_forward_mouse => forward_mouse, qt_forward_wheel => forward_wheel, &
-                           qt_forward_key => forward_key
+    use vkframes_qt, only: connect_view, ViewLink
     use vkf_text, only: get_font
     use iso_c_binding
     implicit none
@@ -167,6 +166,7 @@ module vkdemo
         type(QWindow) :: window
         type(QWidget) :: container
         type(QtfEventFilter) :: events
+        type(ViewLink) :: link                                 !! its events to its proxy (connect_view)
         type(QComboBox) :: view_choice
         type(WindowProxy) :: proxy
         type(View) :: views(n_views)                           !! as view_names
@@ -370,7 +370,6 @@ contains
         call app%ticks%show_decorations(.false.)
         call app%ticks%show_contents(.false.)
 
-
         ! the spacecraft: OpenFrames' Hubble model, or a small sphere without the data
         ok = .false.
         if (len(app%data_dir) > 0) then
@@ -570,7 +569,6 @@ contains
         call frame%move_z_axis(o, length, body_radius=0.015_wp * length, head_radius=0.04_wp * length)
     end subroutine axes_from_center
 
-
     !> The Earth follows its rotation trajectory at a fixed time, which the demo
     !> advances itself: a speed change then changes the rotation rate without
     !> a jump in the Earth's attitude.
@@ -641,13 +639,7 @@ contains
         w%events = QtfEventFilter(w%window)
         call w%events%exposeEvent%connect(on_expose, w)
         call w%events%updateRequest%connect(on_update, w)
-        call w%events%resizeEvent%connect(on_resize, w)
-        call w%events%mousePressEvent%connect(on_press, w)
-        call w%events%mouseReleaseEvent%connect(on_release, w)
-        call w%events%mouseMoveEvent%connect(on_move, w)
-        call w%events%wheelEvent%connect(on_wheel, w)
-        call w%events%keyPressEvent%connect(on_key_press, w)
-        call w%events%keyReleaseEvent%connect(on_key_release, w)
+        call connect_view(w%link, w%events, w%proxy, w%window, surface=.false.)   ! (mouse, keys, resizes)
         call w%events%surfaceAboutToBeDestroyed%connect(on_surface_destroyed, w)   ! (Qt destroys the native window)
 
         if (k > 1) then
@@ -787,92 +779,6 @@ contains
             call w%window%requestUpdate()
         end select
     end subroutine on_update
-
-    !> New size: rebuild the swapchain (framebuffer pixels).
-    subroutine on_resize(event, data)
-        type(QResizeEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        real(wp) :: dpr
-        select type (w => data)
-        type is (view_window_t)
-            if (.not. w%proxy%is_open()) return
-            dpr = w%window%devicePixelRatio()
-            call w%proxy%resize(nint(event%width() * dpr), nint(event%height() * dpr), pixel_ratio=dpr)
-            call w%window%requestUpdate()
-        end select
-    end subroutine on_resize
-
-
-
-    !> Forward a mouse event (MOUSE_MOVE, MOUSE_PRESS or MOUSE_RELEASE), in framebuffer pixels.
-    subroutine forward_mouse(w, kind, event)
-        type(view_window_t), intent(inout) :: w
-        integer, intent(in) :: kind
-        type(QMouseEvent), intent(in) :: event
-        call qt_forward_mouse(w%proxy, w%window, kind, event)
-    end subroutine forward_mouse
-
-    subroutine on_move(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        select type (w => data)
-        type is (view_window_t)
-            call forward_mouse(w, MOUSE_MOVE, event)
-        end select
-    end subroutine on_move
-
-    subroutine on_press(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        select type (w => data)
-        type is (view_window_t)
-            call forward_mouse(w, MOUSE_PRESS, event)
-        end select
-    end subroutine on_press
-
-    subroutine on_release(event, data)
-        type(QMouseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        select type (w => data)
-        type is (view_window_t)
-            call forward_mouse(w, MOUSE_RELEASE, event)
-        end select
-    end subroutine on_release
-
-    subroutine on_wheel(event, data)
-        type(QWheelEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        select type (w => data)
-        type is (view_window_t)
-            call qt_forward_wheel(w%proxy, event)
-        end select
-    end subroutine on_wheel
-
-
-    subroutine forward_key(w, pressed, event)
-        type(view_window_t), intent(inout) :: w
-        logical, intent(in) :: pressed
-        type(QKeyEvent), intent(in) :: event
-        call qt_forward_key(w%proxy, pressed, event)
-    end subroutine forward_key
-
-    subroutine on_key_press(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        select type (w => data)
-        type is (view_window_t)
-            call forward_key(w, .true., event)
-        end select
-    end subroutine on_key_press
-
-    subroutine on_key_release(event, data)
-        type(QKeyEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
-        select type (w => data)
-        type is (view_window_t)
-            call forward_key(w, .false., event)
-        end select
-    end subroutine on_key_release
 
     !> Show the chosen view in this window (each view keeps its own camera).
     subroutine on_view(index, data)

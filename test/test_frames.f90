@@ -3,6 +3,7 @@
 program test_frames
 
     use vkframes
+    use vkf_checks, only: check, report, failures
 
     implicit none
 
@@ -13,9 +14,7 @@ program test_frames
     real(wp), parameter :: z(3) = [0.0_wp, 0.0_wp, 1.0_wp], tol = 1.0e-12_wp
     character(len=:), allocatable :: str
     character(len=*), parameter :: nl = new_line('a')
-    integer :: failures
 
-    failures = 0
     root = ReferenceFrame('Root')
     a = ReferenceFrame('A', [1.0_wp, 0.0_wp, 0.0_wp])
     b = ReferenceFrame('B')
@@ -79,21 +78,6 @@ program test_frames
     call b%detach()
     call check(b%num_parents() == 0 .and. a%num_children() == 0 .and. c%num_children() == 0, 'detach')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: ReferenceFrame'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('ReferenceFrame')
 
 end program test_frames

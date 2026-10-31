@@ -26,8 +26,6 @@ def main(argv):
     os.chdir(HERE)
     settings, dll_dir = fpm_vsg.settings()
     env = dict(os.environ, **settings)
-    # vkframes' data files (the Earth's and the Moon's textures), found by name
-    env["VKFRAMES_DATA_PATH"] = os.pathsep.join(p for p in (os.path.join(ROOT, "data"), env.get("VKFRAMES_DATA_PATH")) if p)
     if dll_dir:   # Windows: vkf.dll
         env["PATH"] = dll_dir + os.pathsep + env.get("PATH", "")
     # a relative file name: from where pixi was run (it runs this in demos/halo)

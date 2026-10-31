@@ -4,6 +4,7 @@
 program test_follower
 
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -13,9 +14,7 @@ program test_follower
     real(wp) :: pos(3), att(4)
     real(wp), parameter :: z(3) = [0.0_wp, 0.0_wp, 1.0_wp], tol = 1.0e-12_wp
     logical :: hp, ha
-    integer :: failures
 
-    failures = 0
     a = Trajectory()
     call a%add(0.0_wp, pos=[0.0_wp, 0.0_wp, 0.0_wp], att=quat_identity)
     call a%add(10.0_wp, pos=[10.0_wp, 20.0_wp, 30.0_wp], att=quat_from_axis_angle(z, 0.5_wp * pi))
@@ -79,21 +78,6 @@ program test_follower
     call f%update(3.0_wp, pos, att, hp, ha)
     call check(all(abs(pos - [4.0_wp, 8.0_wp, 12.0_wp]) < tol), 'default data sources again')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: TrajectoryFollower'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('TrajectoryFollower')
 
 end program test_follower

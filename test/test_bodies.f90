@@ -5,6 +5,7 @@ program test_bodies
 
     use, intrinsic :: iso_c_binding, only: c_null_ptr
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -13,9 +14,7 @@ program test_bodies
     type(FrameManager) :: scene
     class(ReferenceFrame), pointer :: root
     character(len=*), parameter :: nl = new_line('a')
-    integer :: failures
 
-    failures = 0
     earth = Sphere('Earth', radius=6378.137_wp)
     call check(earth%radius() == 6378.137_wp .and. all(earth%radii() == 6378.137_wp), 'sphere radius')
     call earth%set_sphere_scale([1.0_wp, 1.0_wp, 0.5_wp])
@@ -52,21 +51,6 @@ program test_bodies
     root => scene%frame()
     call check(associated(root, earth), 'FrameManager root')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: Sphere, Model, FrameManager'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('Sphere, Model, FrameManager')
 
 end program test_bodies

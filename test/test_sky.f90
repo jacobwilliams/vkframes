@@ -6,16 +6,16 @@
 program test_sky
 
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
     character(len=*), parameter :: catalog = 'data/Stars_HYGv3.txt'
     type(SkySphere) :: sky
     real(wp) :: dir(3), rgb(3), size, size1, ra, dec, m(2)
-    integer :: failures, i, unit
+    integer :: i, unit
     logical :: sizes_ok
 
-    failures = 0
 
     ! magnitudes -2 to 6: 5068 stars of the catalog (counted with awk)
     call check(sky%set_star_data(catalog, min_mag=-2.0_wp, max_mag=6.0_wp, max_stars=40000), 'read the catalog')
@@ -61,21 +61,6 @@ program test_sky
     call check(.not. sky%set_texture_map('does/not/exist.jpg') .and. sky%texture_map() == '', 'missing texture')
     call check(sky%draw_mode() == SKY_TEXTURE + SKY_STARS, 'default draw mode')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: SkySphere star catalog'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('SkySphere star catalog')
 
 end program test_sky

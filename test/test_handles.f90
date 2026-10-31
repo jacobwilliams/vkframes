@@ -96,6 +96,7 @@ program test_handles
     use vkf_pick, only: PickCamera, pick_camera
     use vkf_layer, only: vkf_viewer_size
     use test_handles_recorder, only: DragRecorder, LinePath, CirclePath
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -108,9 +109,7 @@ program test_handles
     type(View), target :: front
     type(DragRecorder), target :: rec
     type(PickHit), allocatable :: hits(:)
-    integer :: failures
 
-    failures = 0
     call check_rays()
 
     root = ReferenceFrame('Root')
@@ -123,12 +122,8 @@ program test_handles
     call check_time_handles()
     call check_window()
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' check(s)'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: handles (the cursor''s ray, VectorHandle''s constraints and pick, TimeHandle''s drags ' // &
-                    'and pick, TrajectoryPath, dragged with the mouse)'
+    call report('handles (the cursor''s ray, VectorHandle''s constraints and pick, TimeHandle''s drags ' // &
+                'and pick, TrajectoryPath, dragged with the mouse)')
 
 contains
 
@@ -356,14 +351,5 @@ contains
         real(wp), intent(in) :: a(3), b(3)                  !! the points
         near3 = norm2(a - b) < 1.0e-9_wp
     end function near3
-
-    !> A check: counted and reported if it failed.
-    subroutine check(ok, what)
-        logical, intent(in) :: ok                           !! passed
-        character(len=*), intent(in) :: what                !! what is checked
-        if (ok) return
-        failures = failures + 1
-        write(*, '(a)') 'FAIL: '//what
-    end subroutine check
 
 end program test_handles

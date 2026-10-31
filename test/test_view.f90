@@ -6,6 +6,7 @@
 program test_view
 
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -15,9 +16,7 @@ program test_view
     real(wp) :: m(4,4), p(4), eye(3), center(3), up(3), dist
     real(wp), parameter :: tol = 1.0e-9_wp, z(3) = [0.0_wp, 0.0_wp, 1.0_wp]
     logical :: ok
-    integer :: failures
 
-    failures = 0
     earth = Sphere('Earth', radius=2.0_wp)
     craft = ReferenceFrame('Craft')
     ok = earth%add_child(craft)
@@ -69,11 +68,7 @@ program test_view
 
     call check_camera_between()
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: View'
+    call report('View')
 
 contains
 
@@ -97,14 +92,5 @@ contains
                    'camera_between: the direction turned halfway')
         call check(maxval(abs(c(:, 3) - z)) < 1.0e-9_wp, 'camera_between: up kept')
     end subroutine check_camera_between
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
 
 end program test_view

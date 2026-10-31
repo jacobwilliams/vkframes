@@ -6,6 +6,7 @@ program test_trajectory
     use, intrinsic :: iso_c_binding, only: c_float
     use, intrinsic :: iso_fortran_env, only: int64
     use vkframes
+    use vkf_checks, only: check, report
 
     implicit none
 
@@ -17,9 +18,8 @@ program test_trajectory
     real(wp) :: t0, tf, v3(3)
     real(wp), allocatable :: v(:,:)
     logical :: ok
-    integer :: i, index, status, failures, rev, gen
+    integer :: i, index, status, rev, gen
 
-    failures = 0
 
     ! empty
     traj = Trajectory()
@@ -195,21 +195,6 @@ program test_trajectory
     call check(colored%num_colors() == 0, 'colors: cleared')
     call check(big%num_colors() == 0, 'colors: none unless added')
 
-    if (failures > 0) then
-        write(*, '(a,i0,a)') 'FAIL: ', failures, ' checks failed'
-        error stop 1
-    end if
-    write(*, '(a)') 'PASS: Trajectory'
-
-contains
-
-    subroutine check(ok, what)
-        logical, intent(in) :: ok
-        character(len=*), intent(in) :: what
-        if (.not. ok) then
-            write(*, '(a)') '  failed: '//what
-            failures = failures + 1
-        end if
-    end subroutine check
+    call report('Trajectory')
 
 end program test_trajectory
