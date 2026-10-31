@@ -5,7 +5,8 @@
 !> flight; View%set_camera gives a view its camera for when it is shown; the
 !> zoom speed scales a scroll step's zoom (a half step as a step at half the
 !> speed); a flick (a drag released while moving) keeps the camera turning
-!> with throw (on every platform: the release's time), and not without.
+!> with throw (on every platform: the release's time), and not without, nor
+!> after the view is reset (the space bar).
 program test_camera
 
     use vkframes
@@ -118,6 +119,8 @@ program test_camera
     call window%set_camera_throw(.false.)
     call check(.not. window%camera_throw(), 'camera throw off')
     call check(turned_after_flick() < 1.0e-6_wp, 'a flick without throw: the camera stops')   ! (acos near 1: ~1e-8)
+    call window%set_camera_throw(.true.)
+    call check(turned_after_flick(reset=.true.) < 1.0e-6_wp, 'a flick, then the view reset: the camera stops')
 
     call window%close()
     call report('camera (get, set, in the root frame), flights, view transitions')
@@ -126,8 +129,10 @@ contains
 
     !> A flick (a left press, moves a frame apart, the release a frame after
     !> the last move), then how far the eye turns over the next 10 frames
-    !> without input (radians).
-    real(wp) function turned_after_flick() result(angle)
+    !> without input (radians); with `reset`, after the view is reset (the
+    !> space bar) once flicked.
+    real(wp) function turned_after_flick(reset) result(angle)
+        logical, intent(in), optional :: reset
         real(wp) :: e0(3), e1(3)
         integer :: k
         call window%mouse(MOUSE_PRESS, 100, 120, 256, 1)
@@ -138,6 +143,15 @@ contains
         end do
         call window%mouse(MOUSE_RELEASE, 132, 120, 0, 1)
         call frame()
+        if (present(reset)) then
+            if (reset) then
+                call frame()                                ! (turning)
+                call window%key(.true., KEY_SPACE, KEY_SPACE, 0)
+                call window%key(.false., KEY_SPACE, KEY_SPACE, 0)
+                call frame()                                ! (the key handled)
+                call frame()                                ! (the view reset)
+            end if
+        end if
         call window%get_camera(eye, center, up)
         e0 = (eye - center) / norm2(eye - center)
         do k = 1, 10

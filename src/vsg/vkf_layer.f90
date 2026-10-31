@@ -216,7 +216,8 @@ module vkf_layer
             type(c_ptr), value :: viewer  !! viewer handle (vkf_viewer_create)
         end subroutine vkf_viewer_delete
 
-        !> Set the camera's eye, center and up vectors (view-frame coordinates). Returns 0, or -1 on failure.
+        !> Set the camera's eye, center and up vectors (view-frame coordinates); stops the trackball's throw (the
+        !> camera doesn't keep turning after it). Returns 0, or -1 on failure.
         integer(c_int) function vkf_viewer_look_at(viewer, eye, center, up) bind(C, name="vkf_viewer_look_at")
             import :: c_ptr, c_int, c_double
             implicit none

@@ -2370,7 +2370,8 @@ VKF_API int vkf_viewer_orthographic(void* viewer, double left, double right, dou
     return 0;
 }
 
-// Set the camera's eye, center and up vectors (3 doubles each, in view-frame coordinates).
+// Set the camera's eye, center and up vectors (3 doubles each, in view-frame
+// coordinates). Stops the trackball's throw: the camera doesn't keep turning.
 VKF_API int vkf_viewer_look_at(void* viewer, const double* eye, const double* center, const double* up)
 {
     auto v = static_cast<Viewer*>(viewer);
@@ -2380,6 +2381,12 @@ VKF_API int vkf_viewer_look_at(void* viewer, const double* eye, const double* ce
     lookAt->eye.set(eye[0], eye[1], eye[2]);
     lookAt->center.set(center[0], center[1], center[2]);
     lookAt->up.set(up[0], up[1], up[2]);
+    // the trackball's throw (the camera kept turning after a drag released
+    // while moving) stopped: the camera is the program's now (a reset,
+    // another view, a camera set, a flight). Through setViewpoint, at once (a
+    // subclass clearing its protected _thrown broke the trackball's mouse
+    // handling with the environment's VSG 1.1.16 build).
+    if (v->trackball) v->trackball->setViewpoint(vsg::LookAt::create(*lookAt), 0.0);
     return 0;
 }
 
