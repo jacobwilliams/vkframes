@@ -6,9 +6,9 @@
 !> converted again (after the font or VSG changed); shaders are named for
 !> their source and settings.
 !>
-!> The directory is VKFRAMES_CACHE_DIR if set, else the user's cache
-!> directory (macOS: ~/Library/Caches/vkframes; Linux: $XDG_CACHE_HOME or
-!> ~/.cache, then vkframes; Windows: %LOCALAPPDATA%/vkframes/cache), created
+!> The directory is `VKFRAMES_CACHE_DIR` if set, else the user's cache
+!> directory (macOS: `~/Library/Caches/vkframes`; Linux: `$XDG_CACHE_HOME` or
+!> `~/.cache`, then `vkframes`; Windows: `%LOCALAPPDATA%/vkframes/cache`), created
 !> (with its parents) if it doesn't exist; without one, nothing is cached
 !> (all is made at each launch). [[cache_directory]]
 !> says which; [[clear_cache]] deletes the cache's files, made again when next
