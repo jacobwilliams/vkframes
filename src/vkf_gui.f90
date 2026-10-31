@@ -45,14 +45,17 @@ contains
         is_valid = c_associated(self%handle)
     end function is_valid
 
-    !> A panel titled `title` ('##name': no title bar), with the widgets up to
-    !> [[end_panel]]. `position` ([x, y], 0 to 1 across the window, y up; default:
+    !> A panel titled `title`, with the widgets up to [[end_panel]]. A title
+    !> starting with `##` (e.g. `'##callout'`) gives a panel with no title bar,
+    !> e.g. a callout next to an object: what follows `##` still names the
+    !> panel (Dear ImGui tells panels apart and keeps their state by it), but
+    !> isn't shown. `position` ([x, y], 0 to 1 across the window, y up; default:
     !> where ImGui puts it) is where its point `pivot` is ([0, 0], the default:
     !> its top left; [0.5, 1]: the middle of its bottom); with `follow`, every
     !> frame (and it can't be moved), else at first.
     subroutine begin_panel(self, title, position, pivot, follow)
         class(Gui), intent(inout) :: self
-        character(len=*), intent(in) :: title           !! '##name': no title bar
+        character(len=*), intent(in) :: title           !! the title ('##' then a name: no title bar)
         real(wp), intent(in), optional :: position(2)   !! [x, y] (0 to 1 across the window, y up)
         real(wp), intent(in), optional :: pivot(2)      !! the panel's point at `position` (0 to 1, from its top left)
         logical, intent(in), optional :: follow         !! place it every frame (default false: at first)
