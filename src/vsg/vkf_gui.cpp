@@ -535,10 +535,10 @@ VKF_API void vkf_gui_same_line(void* gui)
 
 } // extern "C"
 
-#endif // VKF_EXTERNAL_LAYER
-
 // Dear ImGui's version (its header's), for vkf_version.
 const char* vkf::imgui_version()
 {
     return IMGUI_VERSION;
 }
+
+#endif // VKF_EXTERNAL_LAYER
