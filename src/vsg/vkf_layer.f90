@@ -64,8 +64,9 @@ module vkf_layer
             integer(c_int), value :: buflen                           !! the length of `buf`
         end function vkf_vulkan_device_name
 
-        !> The cache directory (src/vsg/vkf_cache.h: VKFRAMES_CACHE_DIR, or the user's cache directory)
-        !> into `buf` (not null-terminated); returns its length (0: none), or -1 if `buf` is too short.
+        !> The cache directory (src/vsg/vkf_cache.h: VKFRAMES_CACHE_DIR, or the user's cache directory;
+        !> created if it doesn't exist) into `buf` (not null-terminated); returns its length (0: none, or
+        !> it can't be created), or -1 if `buf` is too short.
         integer(c_int) function vkf_cache_directory(buf, buflen) bind(C, name="vkf_cache_directory")
             import :: c_int, c_char
             implicit none
@@ -73,8 +74,9 @@ module vkf_layer
             integer(c_int), value :: buflen                           !! the length of `buf`
         end function vkf_cache_directory
 
-        !> Delete the cache's files (converted fonts, compiled shaders; nothing else), and its directories
-        !> if left empty. Returns the number of files removed, or -1 if some couldn't be.
+        !> Delete the cache's files (converted fonts, compiled shaders; nothing else), and its fonts and
+        !> shaders directories if left empty (not the cache directory). Returns the number of files
+        !> removed, or -1 if some couldn't be.
         integer(c_int) function vkf_cache_clear() bind(C, name="vkf_cache_clear")
             import :: c_int
             implicit none

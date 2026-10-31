@@ -45,9 +45,9 @@ namespace vkf
     }
 
     // The directory for converted fonts and compiled shaders (vkf_cache_clear
-    // deletes them): VKFRAMES_CACHE_DIR, or the user's cache directory; empty
-    // if none.
-    std::filesystem::path cache_dir()
+    // deletes them), without creating it: VKFRAMES_CACHE_DIR, or the user's
+    // cache directory; empty if none.
+    std::filesystem::path cache_path()
     {
         namespace fs = std::filesystem;
         if (auto d = env_var("VKFRAMES_CACHE_DIR"); !d.empty()) return fs::path(d);
@@ -59,6 +59,24 @@ namespace vkf
         if (auto d = env_var("XDG_CACHE_HOME"); !d.empty()) return fs::path(d) / "vkframes";
         if (auto h = env_var("HOME"); !h.empty()) return fs::path(h) / ".cache" / "vkframes";
 #endif
+        return {};
+    }
+
+    // The cache directory (cache_path), created if it doesn't exist (with its
+    // parents: e.g. a VKFRAMES_CACHE_DIR not made yet). Empty if there is none,
+    // or it can't be created (said once): then nothing is cached.
+    std::filesystem::path cache_dir()
+    {
+        namespace fs = std::filesystem;
+        auto dir = cache_path();
+        if (dir.empty()) return dir;
+        std::error_code ec;
+        if (fs::is_directory(dir, ec)) return dir;
+        fs::create_directories(dir, ec);
+        if (fs::is_directory(dir, ec)) return dir;
+        static bool warned = false;
+        if (!warned) std::cerr << "vkframes: no cache: could not create " << dir.string() << std::endl;
+        warned = true;
         return {};
     }
 
@@ -93,28 +111,33 @@ namespace vkf
         std::ifstream in(font, std::ios::binary);
         if (!in) return {};
         std::string bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-        return dir / (font.stem().string() + "-" + cache_key(bytes + "|" + VSG_VERSION_STRING) + ".vsgb");
+        return dir / "fonts" / (font.stem().string() + "-" + cache_key(bytes + "|" + VSG_VERSION_STRING) + ".vsgb");
     }
 
-    // Remove the other cache files of the font that `kept` is a cache file of
-    // (a font's older conversions: the font changed, or VSG; and, from before
-    // fonts were named by their contents, one per copy of the font): the files
-    // named <the font's name>-<key>.vsgb, the key without a '-' (so
+    // Remove the other cache files of the font that `kept` (in the cache's
+    // fonts directory) is a cache file of: the font's older conversions (the
+    // font changed, or VSG), in the fonts directory, and those from before
+    // fonts had their directory, in the cache directory (from before fonts
+    // were named by their contents, one per copy of the font). They are the
+    // files named <the font's name>-<key>.vsgb, the key without a '-' (so
     // DejaVuSans-Bold's are not DejaVuSans's).
     void prune_font_cache(const std::filesystem::path& kept)
     {
         namespace fs = std::filesystem;
         const auto name = kept.stem().string();
         const auto font = name.substr(0, name.rfind('-'));
-        std::error_code ec;
-        for (const auto& entry : fs::directory_iterator(kept.parent_path(), ec))
+        for (const auto& dir : {kept.parent_path(), kept.parent_path().parent_path()})
         {
-            const auto& path = entry.path();
-            const auto stem = path.stem().string();
-            if (path.extension() != ".vsgb" || path.filename() == kept.filename()) continue;
-            if (stem.size() <= font.size() + 1 || stem.compare(0, font.size() + 1, font + "-") != 0) continue;
-            if (stem.find('-', font.size() + 1) != std::string::npos) continue;   // (another font's: font-Bold-...)
-            fs::remove(path, ec);
+            std::error_code ec;
+            for (const auto& entry : fs::directory_iterator(dir, ec))
+            {
+                const auto& path = entry.path();
+                const auto stem = path.stem().string();
+                if (path.extension() != ".vsgb" || path == kept) continue;
+                if (stem.size() <= font.size() + 1 || stem.compare(0, font.size() + 1, font + "-") != 0) continue;
+                if (stem.find('-', font.size() + 1) != std::string::npos) continue;   // (another font's: font-Bold-...)
+                fs::remove(path, ec);
+            }
         }
     }
 
@@ -231,8 +254,9 @@ namespace vkf
 extern "C" {
 
 // The cache directory (cache_dir: VKFRAMES_CACHE_DIR, or the user's cache
-// directory) into `buf` (not null-terminated); returns its length (0: there
-// is none), or -1 if `buf` is too short.
+// directory; created if it doesn't exist) into `buf` (not null-terminated);
+// returns its length (0: there is none, or it can't be created), or -1 if
+// `buf` is too short.
 VKF_API int vkf_cache_directory(char* buf, int buflen)
 {
     const auto dir = vkf::cache_dir().string();
@@ -241,10 +265,12 @@ VKF_API int vkf_cache_directory(char* buf, int buflen)
     return static_cast<int>(dir.size());
 }
 
-// Delete the cache's files: the converted fonts (*.vsgb), the compiled
-// shaders (shaders/*.spv) and temporary files left by a program stopped while
-// writing one; then the directories, if left empty. Nothing else is removed
-// (VKFRAMES_CACHE_DIR may be a directory shared with other files). They are
+// Delete the cache's files: the converted fonts (fonts/*.vsgb, and *.vsgb from
+// before fonts had their directory), the compiled shaders (shaders/*.spv) and
+// temporary files left by a program stopped while
+// writing one; then the fonts and shaders directories, if left empty. Nothing
+// else is removed, the cache directory itself kept (VKFRAMES_CACHE_DIR may be
+// a directory of the user's, shared with other files). They are
 // made again when next needed. Returns the number of files removed, or -1 if
 // some couldn't be.
 VKF_API int vkf_cache_clear()
@@ -252,7 +278,7 @@ VKF_API int vkf_cache_clear()
     try
     {
         namespace fs = std::filesystem;
-        const auto dir = vkf::cache_dir();
+        const auto dir = vkf::cache_path();                 // (not created: nothing to clear then)
         if (dir.empty()) return 0;
         int removed = 0;
         bool failed = false;
@@ -266,11 +292,12 @@ VKF_API int vkf_cache_clear()
                 else failed = true;
             }
         };
+        clear(dir / "fonts", ".vsgb");
         clear(dir / "shaders", ".spv");
-        clear(dir, ".vsgb");
+        clear(dir, ".vsgb");                                // (fonts from before they had their directory)
         std::error_code ec;
+        if (fs::is_empty(dir / "fonts", ec)) fs::remove(dir / "fonts", ec);
         if (fs::is_empty(dir / "shaders", ec)) fs::remove(dir / "shaders", ec);
-        if (fs::is_empty(dir, ec)) fs::remove(dir, ec);
         return failed ? -1 : removed;
     }
     catch (const std::exception& e)

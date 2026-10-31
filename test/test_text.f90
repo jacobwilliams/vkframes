@@ -48,17 +48,19 @@ contains
     !> The cache, with the font at `font`: see the program's documentation.
     subroutine check_cache(font)
         character(len=*), intent(in) :: font                !! a font file (DejaVuSans.ttf)
-        character(len=:), allocatable :: dir, changed, stale, other, unrelated
+        character(len=:), allocatable :: dir, changed, stale, legacy, other, unrelated
         logical :: exists
         dir = cache_directory()
         call check(index(dir, 'test-cache') > 0, 'the cache: the tests'' own (VKFRAMES_CACHE_DIR)')
         if (index(dir, 'test-cache') == 0) return          ! (not clearing anyone else's)
         call check(clear_cache() >= 0, 'cleared at the start')
         call read_font(font)                                 ! (converted, cached: the directory made)
-        stale = dir//'/DejaVuSans-0123456789abcdef.vsgb'    ! an older entry of the font
-        other = dir//'/DejaVuSans-Bold-0123456789abcdef.vsgb'   ! another font's
+        stale = dir//'/fonts/DejaVuSans-0123456789abcdef.vsgb' ! an older entry of the font
+        legacy = dir//'/DejaVuSans-11293210216752178976.vsgb'  ! one from before fonts had their directory
+        other = dir//'/fonts/DejaVuSans-Bold-0123456789abcdef.vsgb'   ! another font's
         unrelated = dir//'/notes.txt'                        ! not the cache's
         call write_file(stale, 'old')
+        call write_file(legacy, 'older')
         call write_file(other, 'bold')
         call write_file(unrelated, 'notes')
         ! the font changed (a byte appended): converted again, its other entries pruned
@@ -67,12 +69,16 @@ contains
         call read_font(changed)
         inquire(file=stale, exist=exists)
         call check(.not. exists, 'the cache: a font''s older entry pruned')
+        inquire(file=legacy, exist=exists)
+        call check(.not. exists, 'the cache: its entry from before fonts had their directory pruned')
         inquire(file=other, exist=exists)
         call check(exists, 'the cache: another font''s kept (DejaVuSans-Bold)')
         ! cleared: the two entries (the changed font's, the other font's), nothing else
         call check(clear_cache() == 2, 'clear_cache: the cache''s files removed')
         inquire(file=unrelated, exist=exists)
         call check(exists, 'clear_cache: other files kept')
+        inquire(file=dir//'/.', exist=exists)
+        call check(exists, 'clear_cache: the cache directory kept')
         call delete_file(unrelated)
         call delete_file(changed)
     end subroutine check_cache

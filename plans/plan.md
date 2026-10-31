@@ -646,8 +646,10 @@ Decided so far:
   `src/vkf_cache.f90`: `cache_directory`, `clear_cache`). Fonts were named
   for their path, so each pixi environment's copy of a font had its own 24
   MB entry, and nothing was ever removed (185 MB here): now named for their
-  contents (FNV-1a, stable across compilers; the shaders too), and a font's
-  other entries removed when it is written. `clear_cache` removes only the
+  contents (FNV-1a, stable across compilers; the shaders too), in a `fonts`
+  directory (as the shaders in `shaders`), and a font's other entries
+  removed when it is written (also those from before, in the cache
+  directory itself). `clear_cache` removes only the
   cache's own files (`VKFRAMES_CACHE_DIR` may be a shared directory).
   `pixi run test` uses build/test-cache (test_text clears it).
   - [ ] Untested: Windows (std::filesystem; the temporary file's rename

@@ -779,11 +779,12 @@ GLSL (tens of milliseconds each, on the first frame). It lives in
 `VKFRAMES_CACHE_DIR` if that's set, else in the user's cache directory
 (`~/Library/Caches/vkframes` on macOS, `~/.cache/vkframes` or
 `$XDG_CACHE_HOME/vkframes` on Linux, `%LOCALAPPDATA%\vkframes\cache` on
-Windows). Fonts are named for their contents, so copies of a font (e.g. in
+Windows), created if it doesn't exist. Fonts are named for their contents, so copies of a font (e.g. in
 several pixi environments) share an entry, and a font's older entries are
 removed when it is converted again (after the font or VSG changes).
 `cache_directory()` gives the directory, and `clear_cache()` deletes the
-cache's files (only those: the fonts' `.vsgb` and the shaders' `.spv`);
+cache's files (only those: the fonts' `.vsgb`, in its `fonts` directory, and
+the shaders' `.spv`, in `shaders`);
 they are made again when next needed. `pixi run test` gives the tests a
 cache of their own, in the build directory.
 
