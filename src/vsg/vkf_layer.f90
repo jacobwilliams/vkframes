@@ -15,6 +15,7 @@ module vkf_layer
     private
 
     public :: vkf_vulkan_device_name, vkf_driver_preload
+    public :: vkf_cache_directory, vkf_cache_clear
     public :: vkf_viewer_create, vkf_viewer_delete, vkf_viewer_look_at, vkf_viewer_perspective
     public :: vkf_viewer_set_pixel_ratio
     public :: vkf_viewer_get_look_at, vkf_viewer_set_view_transform, vkf_viewer_orthographic
@@ -62,6 +63,22 @@ module vkf_layer
             character(kind=c_char), dimension(*), intent(out) :: buf  !! the name (not null-terminated)
             integer(c_int), value :: buflen                           !! the length of `buf`
         end function vkf_vulkan_device_name
+
+        !> The cache directory (src/vsg/vkf_cache.h: VKFRAMES_CACHE_DIR, or the user's cache directory)
+        !> into `buf` (not null-terminated); returns its length (0: none), or -1 if `buf` is too short.
+        integer(c_int) function vkf_cache_directory(buf, buflen) bind(C, name="vkf_cache_directory")
+            import :: c_int, c_char
+            implicit none
+            character(kind=c_char), dimension(*), intent(out) :: buf  !! the directory (not null-terminated)
+            integer(c_int), value :: buflen                           !! the length of `buf`
+        end function vkf_cache_directory
+
+        !> Delete the cache's files (converted fonts, compiled shaders; nothing else), and its directories
+        !> if left empty. Returns the number of files removed, or -1 if some couldn't be.
+        integer(c_int) function vkf_cache_clear() bind(C, name="vkf_cache_clear")
+            import :: c_int
+            implicit none
+        end function vkf_cache_clear
 
         !> Start loading the Vulkan driver, on a thread of its own, for the first window (see
         !> DriverPreload in vkf_layer.cpp): called when a scene is set up, before its window opens.

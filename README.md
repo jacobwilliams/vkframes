@@ -769,8 +769,23 @@ shown.
 - the Moon's elevation, once downloaded (`pixi run -e rocky moon-data`).
 
 Data files are found by name on `VKFRAMES_DATA_PATH` (a list of
-directories), which the pixi tasks set. Converted fonts are cached in the
-user's cache directory, or in `VKFRAMES_CACHE_DIR` if it's set.
+directories), which the pixi tasks set.
+
+### The cache
+
+What is slow to make again at every launch is kept between runs: fonts
+converted for labels and HUD text (seconds each) and shaders compiled from
+GLSL (tens of milliseconds each, on the first frame). It lives in
+`VKFRAMES_CACHE_DIR` if that's set, else in the user's cache directory
+(`~/Library/Caches/vkframes` on macOS, `~/.cache/vkframes` or
+`$XDG_CACHE_HOME/vkframes` on Linux, `%LOCALAPPDATA%\vkframes\cache` on
+Windows). Fonts are named for their contents, so copies of a font (e.g. in
+several pixi environments) share an entry, and a font's older entries are
+removed when it is converted again (after the font or VSG changes).
+`cache_directory()` gives the directory, and `clear_cache()` deletes the
+cache's files (only those: the fonts' `.vsgb` and the shaders' `.spv`);
+they are made again when next needed. `pixi run test` gives the tests a
+cache of their own, in the build directory.
 
 ## License
 

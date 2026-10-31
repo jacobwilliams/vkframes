@@ -383,6 +383,9 @@ def main(argv):
     env = dict(os.environ, **env_settings)
     if dll_dir:
         env["PATH"] = dll_dir + os.pathsep + env.get("PATH", "")
+    if argv[0] == "test":
+        # the tests' own cache (they clear it), not the user's
+        env["VKFRAMES_CACHE_DIR"] = os.path.join(build_dir(), "test-cache")
     fc = os.environ.get("FPM_FC") or which("gfortran")
     cmd = [which("fpm"), argv[0], "--compiler", fc, "--build-dir", build_dir(), *argv[1:]]
     print("+", " ".join(cmd), flush=True)

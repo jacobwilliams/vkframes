@@ -28,6 +28,8 @@ using vkf::to_string;
 
 #include <vsg/all.h>
 #include <vsgXchange/all.h>
+
+#include "vkf_cache.h"
 #if defined(_WIN32)
 #    include <process.h>    // _getpid
 #    include <ole2.h>
@@ -2003,159 +2005,6 @@ namespace
                     if (auto view = grandchild.cast<vsg::View>()) view->setValue(display_size_key, vsg::vec2(width, height));
     }
 
-    // An environment variable's value ('' if unset).
-    std::string env_var(const char* name)
-    {
-#if defined(_WIN32)
-        char* value = nullptr;
-        size_t len = 0;
-        if (_dupenv_s(&value, &len, name) != 0 || !value) return {};
-        std::string result(value);
-        std::free(value);
-        return result;
-#else
-        const char* value = std::getenv(name);
-        return value ? std::string(value) : std::string();
-#endif
-    }
-
-    // The directory for converted fonts and compiled shaders:
-    // VKFRAMES_CACHE_DIR, or the user's cache directory; empty if none.
-    std::filesystem::path cache_dir()
-    {
-        namespace fs = std::filesystem;
-        if (auto d = env_var("VKFRAMES_CACHE_DIR"); !d.empty()) return fs::path(d);
-#if defined(_WIN32)
-        if (auto d = env_var("LOCALAPPDATA"); !d.empty()) return fs::path(d) / "vkframes" / "cache";
-#elif defined(__APPLE__)
-        if (auto h = env_var("HOME"); !h.empty()) return fs::path(h) / "Library" / "Caches" / "vkframes";
-#else
-        if (auto d = env_var("XDG_CACHE_HOME"); !d.empty()) return fs::path(d) / "vkframes";
-        if (auto h = env_var("HOME"); !h.empty()) return fs::path(h) / ".cache" / "vkframes";
-#endif
-        return {};
-    }
-
-    // The cache file of a font file: named for its path, size and time, so
-    // that a changed file is converted again.
-    std::filesystem::path font_cache_file(const std::filesystem::path& font)
-    {
-        namespace fs = std::filesystem;
-        const auto dir = cache_dir();
-        std::error_code ec;
-        const auto size = fs::file_size(font, ec);
-        // (a 64-bit count: libc++'s file clock counts in __int128, which std::to_string has not)
-        const auto time = static_cast<long long>(fs::last_write_time(font, ec).time_since_epoch().count());
-        if (dir.empty() || ec) return {};
-        const auto key = std::hash<std::string>{}(fs::absolute(font, ec).string() + "|" + std::to_string(size) + "|" +
-                                                  std::to_string(time) + "|" + VSG_VERSION_STRING);
-        return dir / (font.stem().string() + "-" + std::to_string(key) + ".vsgb");
-    }
-
-    // Save a file in the cache, safely with other programs using it: written
-    // (by `write`, given the path to write) to a temporary file of this
-    // process's own (its id and the time in its name), then renamed into place,
-    // which replaces a file in one step (readers see the old file or the new
-    // one, never part of one). If the rename fails (on Windows while another
-    // program reads the file) or anything else does, the temporary file is
-    // removed and the cache left as it is.
-    template <class Write>
-    void write_cache_file(const std::filesystem::path& cached, Write write)
-    {
-        namespace fs = std::filesystem;
-        std::error_code ec;
-        fs::create_directories(cached.parent_path(), ec);
-    #if defined(_WIN32)
-        const auto pid = _getpid();
-    #else
-        const auto pid = getpid();
-    #endif
-        auto tmp = cached;
-        tmp.replace_extension(".tmp" + std::to_string(pid) + "-" +
-                              std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) +
-                              cached.extension().string());
-        const bool written = write(tmp) && fs::file_size(tmp, ec) > 0 && !ec;
-        if (written) fs::rename(tmp, cached, ec);
-        if (!written || ec) fs::remove(tmp, ec);
-    }
-
-    void write_font_cache(const vsg::ref_ptr<vsg::Font>& font, const std::filesystem::path& cached)
-    {
-        write_cache_file(cached, [&](const std::filesystem::path& tmp) { return vsg::write(font, tmp.string(), read_options()); });
-    }
-
-    // Shader stages compiled from GLSL (vkframes' Phong and PBR fragment
-    // stages, see use_fragment_source, and VSG's vertex stage with them): VSG
-    // compiles them with glslang when their pipeline is first compiled, at
-    // every launch (about 45 ms for a Phong variant, on the first frame).
-    // Instead, their SPIR-V is kept in the cache (cache_dir), named for the
-    // stage, its source and settings and VSG's version, and read from there.
-    // The stages of each pipeline under `root` that have no SPIR-V get it from
-    // the cache, or are compiled here (for Vulkan 1.0, VSG's default: valid
-    // with any instance) and saved. Without a cache directory, VSG compiles
-    // them as before.
-    void use_cached_shaders(vsg::Object& root)
-    {
-        namespace fs = std::filesystem;
-        const auto dir = cache_dir();
-        if (dir.empty()) return;
-        struct Stages : vsg::Visitor
-        {
-            std::vector<vsg::ShaderStages> pipelines;
-            void apply(vsg::Node& node) override { node.traverse(*this); }
-            void apply(vsg::StateGroup& group) override
-            {
-                for (auto& command : group.stateCommands) command->accept(*this);
-                group.traverse(*this);
-            }
-            void apply(vsg::BindGraphicsPipeline& bind) override
-            {
-                if (bind.pipeline) pipelines.push_back(bind.pipeline->stages);
-            }
-        } stages;
-        root.accept(stages);
-
-        auto file_of = [&](const vsg::ShaderStage& stage) {
-            const auto& module = *stage.module;
-            std::ostringstream key;
-            key << stage.stage << '|' << stage.entryPointName << '|' << module.source << '|' << VSG_VERSION_STRING;
-            if (const auto& h = module.hints)
-            {
-                key << '|' << h->vulkanVersion << ',' << h->clientInputVersion << ',' << h->language << ',' << h->defaultVersion
-                    << ',' << h->target << ',' << h->forwardCompatible << ',' << h->generateDebugInfo << ',' << h->optimize;
-                for (const auto& define : h->defines) key << ',' << define;
-            }
-            return dir / "shaders" / (std::to_string(std::hash<std::string>{}(key.str())) + ".spv");
-        };
-        for (auto& pipeline : stages.pipelines)
-        {
-            vsg::ShaderStages uncached;
-            for (auto& stage : pipeline)
-            {
-                if (!stage || !stage->module || !stage->module->code.empty() || stage->module->source.empty()) continue;
-                std::ifstream in(file_of(*stage), std::ios::binary | std::ios::ate);
-                const auto bytes = in ? static_cast<std::size_t>(in.tellg()) : 0;
-                vsg::ShaderModule::SPIRV code(bytes / 4);
-                in.seekg(0);
-                if (bytes >= 20 && bytes % 4 == 0 && in.read(reinterpret_cast<char*>(code.data()), bytes) && code[0] == 0x07230203u)
-                    stage->module->code = std::move(code);
-                else
-                    uncached.push_back(stage);
-            }
-            if (uncached.empty()) continue;
-            vsg::ShaderCompiler compiler;
-            if (!compiler.compile(uncached)) continue;  // (VSG tries again, and reports the errors)
-            for (auto& stage : uncached)
-            {
-                const auto& code = stage->module->code;
-                if (code.empty()) continue;
-                write_cache_file(file_of(*stage), [&](const fs::path& tmp) {
-                    std::ofstream out(tmp, std::ios::binary);
-                    return static_cast<bool>(out.write(reinterpret_cast<const char*>(code.data()), code.size() * 4));
-                });
-            }
-        }
-    }
 } // namespace
 
 extern "C" {
@@ -3090,7 +2939,7 @@ VKF_API void* vkf_model_read(const char* filename, int filename_len)
             std::cerr << "vkf_model_read: could not read " << path << std::endl;
             return nullptr;
         }
-        use_cached_shaders(*node);
+        vkf::use_cached_shaders(*node);
         auto n = std::make_unique<Node>();
         n->node = node;
         return n.release();
@@ -3209,7 +3058,7 @@ VKF_API void* vkf_mesh_create(int n_vertices, int n_indices, const float* rgba, 
 
         auto stateGroup = vsg::StateGroup::create();
         config->copyTo(stateGroup);
-        use_cached_shaders(*stateGroup);
+        vkf::use_cached_shaders(*stateGroup);
         auto draw = vsg::VertexIndexDraw::create();
         draw->assignArrays(arrays);
         draw->assignIndices(mesh->indices);
@@ -3304,7 +3153,7 @@ VKF_API void* vkf_font_read(const char* filename, int filename_len)
 {
     return guarded("vkf_font_read", static_cast<void*>(nullptr), [&]() -> void* {
         const auto path = to_string(filename, filename_len);
-        const auto cached = font_cache_file(std::filesystem::path(path));
+        const auto cached = vkf::font_cache_file(std::filesystem::path(path));
         vsg::ref_ptr<vsg::Font> font;
         if (!cached.empty() && std::filesystem::exists(cached))
             font = vsg::read_cast<vsg::Font>(cached.string(), read_options());
@@ -3316,7 +3165,7 @@ VKF_API void* vkf_font_read(const char* filename, int filename_len)
                 std::cerr << "vkf_font_read: could not read " << path << std::endl;
                 return nullptr;
             }
-            if (!cached.empty()) write_font_cache(font, cached);
+            if (!cached.empty()) vkf::write_font_cache(font, cached, read_options());
         }
         auto f = std::make_unique<Font>();
         f->font = font;
