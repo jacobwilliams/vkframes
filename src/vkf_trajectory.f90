@@ -413,6 +413,17 @@ contains
 
     !> Add a point: a time with an optional position, attitude and color
     !> ([r, g, b] or [r, g, b, a]).
+    !>
+    !> A circular orbit, a point a minute (with `orbit%add`, the generic name):
+    !>
+    !> ```fortran
+    !> orbit = Trajectory()
+    !> do k = 0, 360
+    !>     t = 60.0_wp * k
+    !>     a = 2.0_wp * pi * t / 5400.0_wp
+    !>     call orbit%add(t, pos=7000.0_wp * [cos(a), sin(a), 0.0_wp])
+    !> end do
+    !> ```
     subroutine add_point(self, t, pos, att, color)
         class(Trajectory), intent(inout) :: self
         real(wp), intent(in) :: t                       !! time
@@ -429,6 +440,12 @@ contains
     !> attitudes `att(4, n)` and colors `color(3 or 4, n)`. Times, positions,
     !> attitudes and colors must all have been complete before (as many of each
     !> as times) for the given ones to line up with `t`.
+    !>
+    !> Points computed elsewhere, all at once (`times(n)`, `positions(3, n)`):
+    !>
+    !> ```fortran
+    !> call orbit%add(times, pos=positions)
+    !> ```
     subroutine add_points(self, t, pos, att, color)
         class(Trajectory), intent(inout) :: self
         real(wp), intent(in) :: t(:)                    !! (n): times

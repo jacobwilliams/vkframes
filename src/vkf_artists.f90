@@ -2841,6 +2841,17 @@ contains
 
     !> Add an artist (it must stay alive while added). Artists added after the
     !> frame is shown are built and compiled at the next update.
+    !>
+    !> An orbit drawn as a line, with markers at its start and end:
+    !>
+    !> ```fortran
+    !> orbit_line = CurveArtist(orbit, color=[1.0_wp, 0.8_wp, 0.2_wp], width=2.0_wp)
+    !> ends = MarkerArtist(orbit)
+    !> orbit_frame = DrawableTrajectory('Orbit')
+    !> call orbit_frame%add_artist(orbit_line)
+    !> call orbit_frame%add_artist(ends)
+    !> if (.not. earth%add_child(orbit_frame)) error stop 'add_child failed'
+    !> ```
     subroutine add_artist(self, a)
         class(DrawableTrajectory), intent(inout) :: self
         class(TrajectoryArtist), intent(in), target :: a

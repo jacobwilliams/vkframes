@@ -744,6 +744,18 @@ contains
 
     !> Add `child` to this frame's children. Returns false (and does nothing)
     !> for this frame itself or an ancestor of it; true if it is already a child.
+    !>
+    !> A scene: the Earth, with a spacecraft and the Moon as its children (their
+    !> positions are relative to it):
+    !>
+    !> ```fortran
+    !> earth = Sphere('Earth', radius=6378.137_wp)
+    !> craft = Sphere('Spacecraft', radius=200.0_wp, color=[1.0_wp, 0.3_wp, 0.2_wp])
+    !> moon = Sphere('Moon', radius=1737.4_wp)
+    !> call moon%set_position([384400.0_wp, 0.0_wp, 0.0_wp])
+    !> if (.not. (earth%add_child(craft) .and. earth%add_child(moon))) error stop 'add_child failed'
+    !> scene = FrameManager(earth)
+    !> ```
     logical function add_child(self, child) result(ok)
         class(ReferenceFrame), intent(inout), target :: self
         class(ReferenceFrame), intent(inout), target :: child
@@ -858,6 +870,11 @@ contains
     !> is true), with what to follow (`data`: FOLLOW_POSITION and/or
     !> FOLLOW_ATTITUDE; default both) and how (`mode`: FOLLOW_LOOP, the
     !> default, or FOLLOW_LIMIT). `traj` must stay alive while followed.
+    !>
+    !> ```fortran
+    !> call craft%follow(orbit)                                  ! position (and attitude, if any), looping
+    !> call craft%follow(orbit, data=FOLLOW_POSITION, mode=FOLLOW_LIMIT)   ! position only, held at the ends
+    !> ```
     subroutine follow(self, traj, data, mode, add)
         class(ReferenceFrame), intent(inout) :: self
         type(Trajectory), intent(in), target :: traj        !! the trajectory to follow (not owned)

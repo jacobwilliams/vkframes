@@ -355,6 +355,16 @@ contains
     !> are presented at the display's refresh; false: as soon as they are ready
     !> (where the driver allows it), e.g. to measure frame times. Returns false
     !> on failure.
+    !>
+    !> A window of its own showing a scene, run until it is closed:
+    !>
+    !> ```fortran
+    !> type(WindowProxy), target :: window
+    !> if (.not. window%open(800, 600, 'My mission')) error stop 'could not open a window'
+    !> call window%set_scene(scene)
+    !> call window%run()            ! or: do while (window%frame()) ... end do
+    !> call window%close()
+    !> ```
     logical function open(self, width, height, title, native_window, pixel_ratio, vsync) result(ok)
         class(WindowProxy), intent(inout) :: self
         integer, intent(in) :: width, height                !! window units (logical pixels)
@@ -611,6 +621,16 @@ contains
     !> recording or the watermark doesn't exist; ffmpeg's errors (e.g. an
     !> unknown encoder) show when it starts, at the next frame, and end the
     !> recording.
+    !>
+    !> Ten seconds of video, at 30 frames per second:
+    !>
+    !> ```fortran
+    !> if (.not. window%start_recording('orbit.mp4', fps=30.0_wp)) error stop 'could not record'
+    !> do k = 1, 300
+    !>     if (.not. window%frame()) exit
+    !> end do
+    !> if (.not. window%stop_recording()) write(*, '(a)') 'the recording failed'
+    !> ```
     logical function start_recording(self, file, fps, quality, codec, scale, options, watermark, watermark_width, &
                                      watermark_opacity, ffmpeg) result(ok)
         class(WindowProxy), intent(inout) :: self
@@ -975,6 +995,20 @@ contains
     ! views
 
     !> Add `v` to the end of the window's views (it must stay alive while added).
+    !>
+    !> Views of the Earth and of a spacecraft (`v` and `V` switch between them):
+    !>
+    !> ```fortran
+    !> earth_view = View(earth, earth)                                ! the Earth, turning with it
+    !> inertial_view = View(earth, craft, frame_type=ABSOLUTE_FRAME)  ! the spacecraft, in inertial axes
+    !> craft_view = View(earth, craft)                                ! the spacecraft, in its body axes
+    !> moon_view = View(earth, craft, moon)                           ! from the spacecraft, at the Moon
+    !> call window%add_view(earth_view)
+    !> call window%add_view(inertial_view)
+    !> call window%add_view(craft_view)
+    !> call window%add_view(moon_view)
+    !> call window%select_view(1)
+    !> ```
     subroutine add_view(self, v)
         class(WindowProxy), intent(inout) :: self
         type(View), intent(in), target :: v
@@ -1054,6 +1088,28 @@ contains
     !> `nearest`: only the nearest hit (cheaper: what is deeper than a hit
     !> found is skipped, e.g. to pick on every mouse move). Frames and
     !> artists can be left out (`set_pickable(.false.)`).
+    !>
+    !> What was clicked, from a WindowEventHandler extension's `button_press`
+    !> (registered with `window%set_event_handler(handler)`):
+    !>
+    !> ```fortran
+    !> subroutine on_click(self, window, x, y, button)
+    !>     class(ClickPicker), intent(inout) :: self
+    !>     class(WindowProxy), intent(inout) :: window
+    !>     real(wp), intent(in) :: x, y
+    !>     integer, intent(in) :: button
+    !>     type(PickHit), allocatable :: hits(:)
+    !>     call window%pick(x, y, hits)
+    !>     if (size(hits) == 0) return
+    !>     select case (hits(1)%kind)
+    !>     case (PICK_CURVE)
+    !>         write(*, '(a,f0.1,a)') 'picked the orbit at t = ', hits(1)%time, ' s'
+    !>     case (PICK_BODY)
+    !>         write(*, '(a,2f8.2)') 'picked '//hits(1)%frame%name()//' at lat, lon (deg) ', &
+    !>             hits(1)%latitude * 180.0_wp / pi, hits(1)%longitude * 180.0_wp / pi
+    !>     end select
+    !> end subroutine on_click
+    !> ```
     subroutine window_pick(self, x, y, hits, tolerance, kinds, nearest)
         class(WindowProxy), intent(in), target :: self
         real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
@@ -1263,6 +1319,38 @@ contains
     !> root frame's if `in_root` (as the frames are now). With `duration` (s),
     !> fly there from the camera shown. Before the view is shown, it is its
     !> camera when it is (View%set_camera).
+    !>
+    !> Common views of a planet of radius `re`, shown by a View of its frame (so in
+    !> its coordinates: z is the north pole). `up` must not point along the view.
+    !>
+    !> ```fortran
+    !> d = 3.0_wp * re                                         ! the camera's distance
+    !> center = [0.0_wp, 0.0_wp, 0.0_wp]                       ! looking at the planet's center
+    !> ! from the side, over the equator (as the default view: looking along +y)
+    !> call window%set_camera([0.0_wp, -d, 0.0_wp], center, [0.0_wp, 0.0_wp, 1.0_wp])
+    !> ! from above the north pole (+y up on the screen); from below the south pole
+    !> call window%set_camera([0.0_wp, 0.0_wp, d], center, [0.0_wp, 1.0_wp, 0.0_wp])
+    !> call window%set_camera([0.0_wp, 0.0_wp, -d], center, [0.0_wp, 1.0_wp, 0.0_wp])
+    !> ! over a latitude and longitude, flying there in 2 s
+    !> lat = 30.0_wp * pi / 180.0_wp
+    !> lon = 45.0_wp * pi / 180.0_wp
+    !> call window%set_camera(d * [cos(lat) * cos(lon), cos(lat) * sin(lon), sin(lat)], center, &
+    !>                        [0.0_wp, 0.0_wp, 1.0_wp], duration=2.0_wp)
+    !> ! zoom in: half the distance, the same direction
+    !> call window%get_camera(eye, center, up)
+    !> call window%set_camera(center + 0.5_wp * (eye - center), center, up)
+    !> ! in the root frame's coordinates, whatever frame the view follows
+    !> call window%set_camera([0.0_wp, 0.0_wp, 4.0_wp * re], [0.0_wp, 0.0_wp, 0.0_wp], &
+    !>                        [1.0_wp, 0.0_wp, 0.0_wp], in_root=.true.)
+    !> ```
+    !>
+    !> A chase camera, in a View of a spacecraft's frame (its body axes): behind it
+    !> (along -x) and a little above, looking at it.
+    !>
+    !> ```fortran
+    !> call window%set_camera([-1000.0_wp, 0.0_wp, 300.0_wp], [0.0_wp, 0.0_wp, 0.0_wp], &
+    !>                        [0.0_wp, 0.0_wp, 1.0_wp])
+    !> ```
     subroutine set_camera(self, eye, center, up, duration, in_root)
         class(WindowProxy), intent(inout), target :: self
         real(wp), intent(in) :: eye(3), center(3), up(3)    !! view frame's coordinates (or root's)
