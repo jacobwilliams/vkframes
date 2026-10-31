@@ -38,8 +38,8 @@
 !> sky (a SkySphere, behind the scene in every window) shows the HYG v3 star
 !> catalog (data/Stars_HYGv3.txt, found on VKFRAMES_DATA_PATH, which demo.py
 !> sets) and, with OpenFrames' data, its StarMap.tif texture (chosen from the
-!> dock), and the names of the brightest stars (to magnitude 3; from the
-!> dock). The Sun (a frame with a light source, an astronomical unit away)
+!> dock), the names of the brightest stars (to magnitude 3) and the
+!> constellations (data/inp_Constellation.txt; both from the dock). The Sun (a frame with a light source, an astronomical unit away)
 !> lights the scene: the Earth's day texture on the day side, its night texture
 !> (city lights) on the night side (data/2k_earth_daymap.jpg and
 !> 2k_earth_nightmap.jpg); without it, the window's headlight. Reference shapes
@@ -189,7 +189,7 @@ module vkdemo
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors, show_plane_swept
         type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los, show_shadow
-        type(QCheckBox) :: show_sun_arrow, star_names
+        type(QCheckBox) :: show_sun_arrow, star_names, constellations
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: dash_mode                           !! the orbits' dashes: anchored, fixed-length or screen-locked
         type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
@@ -1196,6 +1196,13 @@ contains
         if (.not. app%sky%set_star_names(checked, max_mag=3.0_wp)) write(*, '(a)') 'could not show the star names'
     end subroutine on_star_names
 
+    !> The constellations shown or not.
+    subroutine on_constellations(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        if (.not. app%sky%set_constellations(checked)) write(*, '(a)') 'could not show the constellations'
+    end subroutine on_constellations
+
     subroutine on_show_shadow(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -1459,6 +1466,9 @@ contains
         app%star_names = QCheckBox('Star names')
         call app%star_names%toggled%connect(on_star_names)
         call form%addRow('', app%star_names)
+        app%constellations = QCheckBox('Constellations')
+        call app%constellations%toggled%connect(on_constellations)
+        call form%addRow('', app%constellations)
         app%attenuate = QCheckBox('Shrink markers with distance')
         call app%attenuate%setChecked(.true.)                ! (the markers' default)
         call app%attenuate%toggled%connect(on_attenuate)

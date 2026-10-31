@@ -911,6 +911,16 @@ Decided so far:
       far plane, so the scene hides it), under a transform with the sky's
       attitude. Tested in `test_sky` (names read) and `live_changes` (shown
       while running); the Qt demo has a "Star names" box.
+- [x] Constellations (beyond OpenFrames): `SkySphere%set_constellations`
+      draws faint lines between the stars of a constellation file
+      (`data/inp_Constellation.txt`, Chris Dolan's outlines: "N name", then
+      "dec1 ra1 dec2 ra2" per line), in a color and width; off by default,
+      shown unless the draw mode is `SKY_NONE`. A sky lines pipeline
+      (`vkf_sky_lines_create`, shaders/sky_lines.vert, .frag): a
+      screen-space quad per segment between two directions, clipped to in
+      front of the eye, antialiased, at the far plane behind the stars.
+      Tested in `test_sky` (the file read) and `live_changes` (shown while
+      running); the Qt demo has a "Constellations" box.
 - [ ] Stars and sky texture in orthographic views (directions at infinity
       have no orthographic projection; drawn only in perspective views).
 

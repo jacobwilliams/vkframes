@@ -44,7 +44,7 @@ module vkf_layer
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
     public :: vkf_ribbon_create, vkf_line_set_highlight, vkf_line_set_trail, vkf_line_set_dash_mode
-    public :: vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
+    public :: vkf_stars_create, vkf_sky_lines_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed
     public :: vkf_sky_style, vkf_sky_style_changed
     public :: vulkan_device_name, line_set_points, line_set_style, line_set_pattern, line_set_segments, marker_set_style
     public :: mesh_arrays
@@ -910,6 +910,16 @@ module vkf_layer
             integer(c_int), value :: capacity  !! the most stars
         end function vkf_stars_create
 
+        !> Lines on the sky (up to `capacity`; initially none; e.g. constellations): segments between
+        !> directions, of the color and width of the style's parameters (vkf_sky_style). A node handle, or null on
+        !> failure. Fortran fills the buffer as the stars' (vkf_sky_stars: 8 floats per line, its first direction
+        !> x, y, z, unused, then its second) and calls vkf_sky_stars_changed.
+        type(c_ptr) function vkf_sky_lines_create(capacity) bind(C, name="vkf_sky_lines_create")
+            import :: c_ptr, c_int
+            implicit none
+            integer(c_int), value :: capacity  !! the most lines
+        end function vkf_sky_lines_create
+
         !> The sky texture: an image (equirectangular, as a Sphere's texture) on the sky seen from inside;
         !> a node handle, or null on failure.
         type(c_ptr) function vkf_sky_texture_create(image) bind(C, name="vkf_sky_texture_create")
@@ -923,8 +933,8 @@ module vkf_layer
         type(c_ptr) function vkf_sky_stars(node, capacity) bind(C, name="vkf_sky_stars")
             import :: c_ptr, c_int
             implicit none
-            type(c_ptr), value :: node              !! stars handle (vkf_stars_create)
-            integer(c_int), intent(out) :: capacity !! the buffer's capacity (stars)
+            type(c_ptr), value :: node              !! stars or lines handle (vkf_stars_create, vkf_sky_lines_create)
+            integer(c_int), intent(out) :: capacity !! the buffer's capacity (stars or lines)
         end function vkf_sky_stars
 
         !> The first `n` stars were written: draw them, and upload the buffer. Returns 0, or -1 on failure.
@@ -935,8 +945,9 @@ module vkf_layer
             integer(c_int), value :: n  !! the number of stars (at most the capacity)
         end function vkf_sky_stars_changed
 
-        !> The sky's style buffer: 20 floats, the attitude (a column-major 4x4 matrix, sky frame to root frame),
-        !> then 4 parameters (unused); call vkf_sky_style_changed after writing them. Null on failure.
+        !> The sky's style buffer: 24 floats, the attitude (a column-major 4x4 matrix, sky frame to root frame),
+        !> then 8 parameters (lines: width in window units, 3 unused, then the color r, g, b, a; unused by stars
+        !> and the texture); call vkf_sky_style_changed after writing them. Null on failure.
         type(c_ptr) function vkf_sky_style(node) bind(C, name="vkf_sky_style")
             import :: c_ptr
             implicit none

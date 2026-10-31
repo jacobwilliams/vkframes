@@ -1,7 +1,7 @@
 !> Changing a scene while it is shown: after 30 frames a Moon is added to the
 !> tree, the Earth's axes are moved (from its center, longer), HUD text is
 !> added and a starry sky is set; after 60 frames the Moon is removed and the
-!> names of the brightest stars are shown.
+!> names of the brightest stars and the constellations are shown.
 !>
 !> Arguments (optional): a file prefix to capture frames 50 and 80 to
 !> (prefix_50.png, prefix_80.png).
@@ -62,6 +62,7 @@ program live_changes
             if (.not. root%remove_child(moon)) error stop 'remove_child failed'
             call note%set_text('the Moon was removed')
             if (.not. sky%set_star_names(.true., max_mag=2.5_wp)) write(*, '(a)') 'could not show the star names'
+            if (.not. sky%set_constellations(.true.)) write(*, '(a)') 'could not show the constellations'
         end if
         running = window%frame()
         if (len_trim(prefix) > 0 .and. (frame == 50 .or. frame == 80) .and. running) then

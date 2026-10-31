@@ -367,14 +367,15 @@ namespace
     // A pipeline drawing from a storage buffer of points (no vertex buffers),
     // shared by all nodes of a kind, in all windows: line strips and segments
     // (shaders/line.vert, line.frag), markers (marker.vert, marker.frag, with a
-    // marker image), stars (stars.vert, stars.frag) and the sky texture
-    // (sky.vert, sky.frag: no points), ribbons (ribbon.vert, ribbon.frag:
+    // marker image), stars (stars.vert, stars.frag), the sky's lines
+    // (sky_lines.vert, sky_lines.frag: constellations, segments between
+    // directions) and the sky texture (sky.vert, sky.frag: no points), ribbons (ribbon.vert, ribbon.frag:
     // translucent surfaces between pairs of points). Bindings: 0 the points, 1
     // the style (or the sky's attitude), 2 an image, 3 the points' colors. The
     // sky kinds are drawn at the far plane without writing depth, stars blended
-    // by the brighter color; ribbons are depth tested but write no depth (as
+    // by the brighter color, sky lines by their alpha; ribbons are depth tested but write no depth (as
     // the transparent surfaces of vkf_mesh_create).
-    enum class PointsKind { lines, markers, stars, skyTexture, ribbons };
+    enum class PointsKind { lines, markers, stars, skyLines, skyTexture, ribbons };
 
     struct PointsPipeline
     {
@@ -432,7 +433,7 @@ namespace
                     attachment.colorBlendOp = attachment.alphaBlendOp = VK_BLEND_OP_MAX;
             }
             auto depth = vsg::DepthStencilState::create();
-            if (kind == PointsKind::stars || kind == PointsKind::skyTexture)
+            if (kind == PointsKind::stars || kind == PointsKind::skyLines || kind == PointsKind::skyTexture)
             {
                 depth->depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL; // at depth 0, where nothing was drawn
                 depth->depthWriteEnable = VK_FALSE;
@@ -497,6 +498,12 @@ namespace
     PointsPipeline& stars_pipeline()
     {
         static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::stars_vert, vkf_shaders::stars_frag, PointsKind::stars);
+        return *pipeline;
+    }
+
+    PointsPipeline& sky_lines_pipeline()
+    {
+        static PointsPipeline* pipeline = new PointsPipeline(vkf_shaders::sky_lines_vert, vkf_shaders::sky_lines_frag, PointsKind::skyLines);
         return *pipeline;
     }
 
@@ -1887,9 +1894,9 @@ namespace
         return a;
     }
 
-    // The sky's stars or texture (vkf_stars_create, vkf_sky_texture_create):
-    // stars hold 8 floats per star; style is the sky's attitude (a mat4) and
-    // parameters (a vec4).
+    // The sky's stars, lines or texture (vkf_stars_create, vkf_sky_lines_create,
+    // vkf_sky_texture_create): stars hold 8 floats per star (or per line);
+    // style is the sky's attitude (a mat4) and parameters (2 vec4s).
     struct SkyNode : Node
     {
         vsg::ref_ptr<vsg::floatArray> stars;
@@ -1899,7 +1906,7 @@ namespace
 
     vsg::ref_ptr<vsg::vec4Array> sky_style()
     {
-        auto style = dynamic_vec4_array(5);
+        auto style = dynamic_vec4_array(6);
         for (int i = 0; i < 4; ++i)
             style->at(i) = vsg::vec4(i == 0, i == 1, i == 2, i == 3); // the identity
         return style;
@@ -3558,14 +3565,12 @@ VKF_API int vkf_viewer_light_enable(void* viewer, int enabled)
 // ---------------------------------------------------------------------------
 // Sky: stars and texture at infinity, drawn behind the scene
 
-// Stars (up to capacity; initially none): Fortran fills the buffer in place
-// (vkf_sky_stars: per star, direction x, y, z, size in window units, then r,
-// g, b, -) and calls vkf_sky_stars_changed.
-VKF_API void* vkf_stars_create(int capacity)
+namespace
 {
-    if (capacity < 1) return nullptr;
-    return guarded("vkf_stars_create", static_cast<void*>(nullptr), [&]() -> void* {
-        auto& pipeline = stars_pipeline();
+    // A sky node drawing up to capacity items of 8 floats (stars or lines) with
+    // pipeline, 6 vertices each (a screen-space quad), at infinity.
+    void* sky_items_create(PointsPipeline& pipeline, int capacity)
+    {
         auto sky = std::make_unique<SkyNode>();
         sky->stars = vsg::floatArray::create(8 * static_cast<uint32_t>(capacity), 0.0f);
         sky->stars->properties.dataVariance = vsg::DYNAMIC_DATA;
@@ -3583,6 +3588,30 @@ VKF_API void* vkf_stars_create(int capacity)
         eyeRelative->addChild(stateGroup);
         sky->node = eyeRelative;
         return sky.release();
+    }
+}
+
+// Stars (up to capacity; initially none): Fortran fills the buffer in place
+// (vkf_sky_stars: per star, direction x, y, z, size in window units, then r,
+// g, b, -) and calls vkf_sky_stars_changed.
+VKF_API void* vkf_stars_create(int capacity)
+{
+    if (capacity < 1) return nullptr;
+    return guarded("vkf_stars_create", static_cast<void*>(nullptr), [&]() -> void* {
+        return sky_items_create(stars_pipeline(), capacity);
+    });
+}
+
+// Lines on the sky (up to capacity; initially none; e.g. constellations):
+// segments between directions, of a color and width (the style's parameters:
+// width in window units, -, -, -, then r, g, b, a). Fortran fills the buffer
+// as the stars' (vkf_sky_stars: per line, its first direction x, y, z, -, then
+// its second, -) and calls vkf_sky_stars_changed.
+VKF_API void* vkf_sky_lines_create(int capacity)
+{
+    if (capacity < 1) return nullptr;
+    return guarded("vkf_sky_lines_create", static_cast<void*>(nullptr), [&]() -> void* {
+        return sky_items_create(sky_lines_pipeline(), capacity);
     });
 }
 
@@ -3634,9 +3663,10 @@ VKF_API int vkf_sky_stars_changed(void* node, int n)
     return 0;
 }
 
-// The sky's style: 20 floats, the attitude (a column-major 4x4 matrix, sky
-// frame to root frame), then 4 parameters (unused); call
-// vkf_sky_style_changed after writing them.
+// The sky's style: 24 floats, the attitude (a column-major 4x4 matrix, sky
+// frame to root frame), then 8 parameters (lines: width, -, -, -, r, g, b, a;
+// unused by stars and the texture); call vkf_sky_style_changed after writing
+// them.
 VKF_API float* vkf_sky_style(void* node)
 {
     auto sky = dynamic_cast<SkyNode*>(static_cast<Node*>(node));

@@ -2,8 +2,9 @@
 !> catalog in data/ (OpenFrames' Stars/Stars_HYGv3.txt): the stars in a
 !> magnitude range, the limit on their number, Sirius' direction, sizes
 !> growing with brightness, a catalog with right ascension in degrees and no
-!> color index, the named stars (a name of two words) and their settings, and
-!> invalid settings or files.
+!> color index, the named stars (a name of two words) and their settings, the
+!> constellations (data/inp_Constellation.txt) and their settings, and invalid
+!> settings or files.
 program test_sky
 
     use vkframes
@@ -14,7 +15,8 @@ program test_sky
     character(len=*), parameter :: catalog = 'data/Stars_HYGv3.txt'
     type(SkySphere) :: sky
     real(wp) :: dir(3), rgb(3), size, size1, ra, dec, m(2)
-    integer :: i, unit, which
+    integer :: i, unit, which, first, last
+    real(wp) :: a(3), b(3)
     logical :: sizes_ok
     character(len=:), allocatable :: name
 
@@ -53,6 +55,29 @@ program test_sky
     call check(sky%set_star_names(.true., max_mag=2.0_wp) .and. sky%star_names(), 'names drawn')
     call check(sky%num_star_names_drawn() == 0, 'no names drawn before the sky is shown')
     call check(.not. sky%set_star_names(.true., size=0.0_wp), 'name size 0 rejected')
+
+    ! constellations: 87 of 763 lines (awk), Andromeda first, Orion's first line from Chi2 Ori
+    call check(.not. sky%constellations() .and. sky%num_constellations() == 0, 'no constellations by default')
+    call check(sky%set_constellations(.true., file='data/inp_Constellation.txt'), 'read the constellations')
+    write(*, '(a,i0,a,i0,a)') 'constellations: ', sky%num_constellations(), ' of ', sky%num_constellation_lines(), ' lines'
+    call check(sky%num_constellations() == 87 .and. sky%num_constellation_lines() == 763, 'constellations and lines')
+    call check(sky%constellation_name(1) == 'Andromeda' .and. sky%constellation_name(87) == 'Vulpecula', &
+               'constellation names')
+    call sky%constellation_lines(87, first, last)
+    call check(first == 762 .and. last == 763, "a constellation's lines")
+    do i = 1, sky%num_constellations()
+        if (sky%constellation_name(i) == 'Orion') exit
+    end do
+    call sky%constellation_lines(i, first, last)
+    call sky%constellation_line(first, a, b)
+    ra = 6.0649_wp / 24.0_wp * 2.0_wp * pi
+    dec = 20.1337_wp * pi / 180.0_wp
+    call check(maxval(abs(a - [cos(ra) * cos(dec), sin(ra) * cos(dec), sin(dec)])) < 1.0e-6_wp .and. &
+               abs(norm2(b) - 1.0_wp) < 1.0e-6_wp, "Orion's first line")
+    call check(.not. sky%set_constellations(.true., width=0.0_wp), 'constellation width 0 rejected')
+    call check(.not. sky%set_constellations(.true., file='does/not/exist.txt') .and. &
+               sky%num_constellation_lines() == 763, 'missing constellation file: those read kept')
+    call check(sky%set_constellations(.false.) .and. .not. sky%constellations(), 'constellations hidden')
 
     ! at most max_stars, in catalog order
     call check(sky%set_star_data(catalog, max_mag=8.0_wp, max_stars=1000) .and. sky%num_stars() == 1000, 'max_stars')

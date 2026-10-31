@@ -20,6 +20,12 @@
 !>   them up to a magnitude), as labels beside them, at infinity as the stars
 !>   (behind the scene); off by default (set_star_names). Shown with the
 !>   stars (draw mode SKY_STARS).
+!> * Constellations: faint lines between their stars, from a constellation
+!>   file (e.g. data/inp_Constellation.txt, Chris Dolan's outlines): "N name"
+!>   starts a constellation, then a line per segment, "dec1 ra1 dec2 ra2"
+!>   (degrees, hours), then an optional "# comment"; lines starting with "#"
+!>   are comments. Off by default (set_constellations); at infinity, behind
+!>   the stars, shown unless the draw mode is SKY_NONE.
 !>
 !> Both are drawn when given (draw mode SKY_TEXTURE + SKY_STARS); the stars
 !> over the texture, by the brighter color.
@@ -33,7 +39,7 @@ module vkf_sky
                          vkf_sky_style, vkf_sky_style_changed, vkf_image_read, vkf_image_delete, &
                          vkf_transform_create, vkf_switch_create, vkf_switch_set, vkf_node_add_child, &
                          vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_transform_set_matrix, &
-                         vkf_label_set_at_infinity
+                         vkf_label_set_at_infinity, vkf_sky_lines_create
 
     implicit none
 
@@ -43,6 +49,16 @@ module vkf_sky
     integer, parameter, public :: SKY_NONE = 0, SKY_TEXTURE = 1, SKY_STARS = 2
 
     integer, parameter :: NAME_ALIGNMENT = 1                !! star names' alignment: vkf_frames' ALIGN_LEFT_CENTER
+
+    !> The constellation file read when none is given: vkframes' (data/).
+    character(len=*), parameter, public :: default_constellations = 'inp_Constellation.txt'
+
+    !> A constellation of those read: its name and its lines (columns of
+    !> self%lines).
+    type :: Constellation
+        character(len=:), allocatable :: name               !! the file's name for it
+        integer :: first = 1, last = 0                      !! its lines: first .. last
+    end type Constellation
 
     !> A named star of those read: its name and magnitude, its direction in
     !> the stars read (self%stars).
@@ -75,6 +91,15 @@ module vkf_sky
         real(wp) :: names_rgba(4) = [0.6_wp, 0.7_wp, 0.9_wp, 1.0_wp]  !! color
         character(len=:), allocatable :: names_font         !! font ('' or unallocated: the default)
         integer :: n_labels = 0                             !! names drawn
+        ! constellations
+        character(len=:), allocatable :: constellation_file !! the file read (unallocated: none yet)
+        real(c_float), allocatable :: lines(:,:)            !! (8, n): the lines' ends, directions (x, y, z, -)
+        integer :: n_lines = 0                              !! lines read: columns of lines used
+        type(Constellation), allocatable :: groups(:)       !! the constellations read (n_groups of them)
+        integer :: n_groups = 0                             !! constellations read
+        logical :: lines_shown = .false.                    !! the constellations are drawn
+        real(wp) :: lines_rgba(4) = [0.35_wp, 0.5_wp, 0.8_wp, 0.45_wp]  !! their color (faint)
+        real(wp) :: lines_width = 1.0_wp                    !! window units
         ! rendering
         type(c_ptr) :: image = c_null_ptr                   !! the texture image (null: none)
         type(c_ptr) :: root = c_null_ptr                    !! the sky's node, a transform (null until made)
@@ -83,12 +108,16 @@ module vkf_sky
         type(c_ptr) :: texture_node = c_null_ptr            !! the texture drawing (null: none)
         type(c_ptr) :: star_node = c_null_ptr               !! the stars drawing (null: none)
         type(c_ptr) :: name_node = c_null_ptr               !! the star names, a transform: the attitude (null: none)
+        type(c_ptr) :: line_switch = c_null_ptr             !! shows or hides the constellations (draw mode)
+        type(c_ptr) :: line_node = c_null_ptr               !! the constellations drawing (null: none)
         logical :: shown = .false.                          !! made for a window: nodes made later are compiled
     contains
         procedure :: set_texture_map, texture_map
         procedure :: set_star_data, star_catalog, star_magnitudes, star_sizes
         procedure :: num_stars, star_magnitude_range, star
         procedure :: set_star_names, star_names, num_star_names, num_star_names_drawn, star_name
+        procedure :: set_constellations, constellations, constellation_file_read, num_constellations
+        procedure :: num_constellation_lines, constellation_name, constellation_lines, constellation_line
         procedure :: set_draw_mode, draw_mode
         procedure :: set_attitude, attitude
         procedure :: node
@@ -276,6 +305,88 @@ contains
         which = self%names(i)%star
     end subroutine star_name
 
+    !> Draw the constellations: faint lines between their stars, from
+    !> constellation file `file` (found with find_data_file; read when given,
+    !> or when first shown without one: default_constellations), `shown`
+    !> (default false), in color `rgba` (default a faint blue, alpha 0.45) and
+    !> `width` window units wide (default 1). Also while shown; the settings
+    !> not given are kept. Returns false if the file can't be read (the
+    !> constellations read before are kept) or `width` isn't > 0 (nothing
+    !> changed).
+    logical function set_constellations(self, shown, file, rgba, width) result(ok)
+        class(SkySphere), intent(inout) :: self
+        logical, intent(in) :: shown                        !! draw the constellations
+        character(len=*), intent(in), optional :: file      !! constellation file
+        real(wp), intent(in), optional :: rgba(4)           !! color [r, g, b, a] (0 to 1)
+        real(wp), intent(in), optional :: width             !! window units (> 0)
+        ok = .true.
+        if (present(width)) ok = width > 0.0_wp
+        if (.not. ok) return
+        self%lines_shown = shown
+        if (present(rgba)) self%lines_rgba = rgba
+        if (present(width)) self%lines_width = width
+        if (present(file)) then
+            ok = read_constellations(self, file)
+        else if (shown .and. .not. allocated(self%constellation_file)) then
+            ok = read_constellations(self, default_constellations)
+        end if
+        if (c_associated(self%root)) call make_line_node(self)
+    end function set_constellations
+
+    !> Whether the constellations are drawn (as set).
+    pure logical function constellations(self)
+        class(SkySphere), intent(in) :: self
+        constellations = self%lines_shown
+    end function constellations
+
+    !> The constellation file read ('' for none).
+    function constellation_file_read(self) result(file)
+        class(SkySphere), intent(in) :: self
+        character(len=:), allocatable :: file
+        file = ''
+        if (allocated(self%constellation_file)) file = self%constellation_file
+    end function constellation_file_read
+
+    !> Number of constellations read.
+    pure integer function num_constellations(self)
+        class(SkySphere), intent(in) :: self
+        num_constellations = self%n_groups
+    end function num_constellations
+
+    !> Number of constellation lines read (of all of them).
+    pure integer function num_constellation_lines(self)
+        class(SkySphere), intent(in) :: self
+        num_constellation_lines = self%n_lines
+    end function num_constellation_lines
+
+    !> Constellation i's name (1 to num_constellations).
+    function constellation_name(self, i) result(name)
+        class(SkySphere), intent(in) :: self
+        integer, intent(in) :: i                            !! 1 to num_constellations
+        character(len=:), allocatable :: name
+        name = self%groups(i)%name
+    end function constellation_name
+
+    !> Constellation i's lines (1 to num_constellations): first .. last (see
+    !> constellation_line; none if last < first).
+    pure subroutine constellation_lines(self, i, first, last)
+        class(SkySphere), intent(in) :: self
+        integer, intent(in) :: i                            !! 1 to num_constellations
+        integer, intent(out) :: first, last                 !! its lines
+        first = self%groups(i)%first
+        last = self%groups(i)%last
+    end subroutine constellation_lines
+
+    !> Constellation line i (1 to num_constellation_lines): its ends'
+    !> directions (unit vectors, sky frame).
+    pure subroutine constellation_line(self, i, a, b)
+        class(SkySphere), intent(in) :: self
+        integer, intent(in) :: i                            !! 1 to num_constellation_lines
+        real(wp), intent(out) :: a(3), b(3)                 !! unit vectors, sky frame
+        a = real(self%lines(1:3, i), wp)
+        b = real(self%lines(5:7, i), wp)
+    end subroutine constellation_line
+
     !> What to draw: SKY_NONE, or SKY_TEXTURE + SKY_STARS (default; each only
     !> if given).
     subroutine set_draw_mode(self, mode)
@@ -300,6 +411,7 @@ contains
         self%attitude_ = q / norm2(q)
         call apply_attitude(self, self%texture_node)
         call apply_attitude(self, self%star_node)
+        call apply_attitude(self, self%line_node)
         call apply_name_attitude(self)
     end subroutine set_attitude
 
@@ -321,9 +433,12 @@ contains
             self%root = vkf_transform_create()
             self%texture_switch = vkf_switch_create()
             self%star_switch = vkf_switch_create()
-            call check_status(vkf_node_add_child(self%root, self%texture_switch), 'SkySphere')   ! the texture first
-            call check_status(vkf_node_add_child(self%root, self%star_switch), 'SkySphere')
+            self%line_switch = vkf_switch_create()
+            call check_status(vkf_node_add_child(self%root, self%texture_switch), 'SkySphere')   ! the texture first,
+            call check_status(vkf_node_add_child(self%root, self%line_switch), 'SkySphere')      ! the constellations,
+            call check_status(vkf_node_add_child(self%root, self%star_switch), 'SkySphere')      ! the stars over them
             call make_texture_node(self)
+            call make_line_node(self)
             call make_star_node(self)
             self%shown = c_associated(viewer)          ! (the first nodes are compiled with the scene)
         end if
@@ -381,6 +496,41 @@ contains
         call apply_mode(self)
     end subroutine make_star_node
 
+    !> The constellations node for the lines read and the settings, in place of
+    !> the old one (none unless shown).
+    subroutine make_line_node(self)
+        type(SkySphere), intent(inout) :: self
+        real(c_float), dimension(:,:), pointer :: p
+        real(c_float), dimension(:), pointer :: style
+        integer(c_int) :: capacity
+        type(c_ptr) :: data
+        if (c_associated(self%line_node)) then
+            call check_status(vkf_node_remove_child(self%line_switch, self%line_node), 'SkySphere')
+            call vkf_node_delete(self%line_node)
+            self%line_node = c_null_ptr
+        end if
+        if (self%lines_shown .and. self%n_lines > 0) then
+            self%line_node = vkf_sky_lines_create(int(self%n_lines, c_int))
+            if (c_associated(self%line_node)) then
+                data = vkf_sky_stars(self%line_node, capacity)
+                if (c_associated(data)) then
+                    call c_f_pointer(data, p, [8, int(capacity)])
+                    p(:, 1:self%n_lines) = self%lines(:, 1:self%n_lines)
+                    call check_status(vkf_sky_stars_changed(self%line_node, int(self%n_lines, c_int)), 'SkySphere')
+                end if
+                data = vkf_sky_style(self%line_node)
+                if (c_associated(data)) then                ! (the attitude: apply_attitude)
+                    call c_f_pointer(data, style, [24])
+                    style(17:24) = real([self%lines_width, 0.0_wp, 0.0_wp, 0.0_wp, self%lines_rgba], c_float)
+                end if
+                call apply_attitude(self, self%line_node)
+                if (self%shown) call check_status(vkf_compile_node(self%line_node), 'SkySphere')
+                call check_status(vkf_node_add_child(self%line_switch, self%line_node), 'SkySphere')
+            end if
+        end if
+        call apply_mode(self)
+    end subroutine make_line_node
+
     !> The star names node for the current names and settings, in place of the
     !> old one: a label per named star drawn up to the names' magnitude, under
     !> the stars' switch (shown with them), turned by the sky's attitude.
@@ -426,7 +576,8 @@ contains
         call check_status(vkf_transform_set_matrix(self%name_node, m), 'SkySphere')
     end subroutine apply_name_attitude
 
-    !> Show or hide the texture and the stars, as the draw mode says.
+    !> Show or hide the texture, the constellations and the stars (and their
+    !> names), as the draw mode says.
     subroutine apply_mode(self)
         type(SkySphere), intent(in) :: self
         if (c_associated(self%texture_switch)) &
@@ -435,6 +586,8 @@ contains
         if (c_associated(self%star_switch)) &
             call check_status(vkf_switch_set(self%star_switch, merge(1_c_int, 0_c_int, iand(self%mode, SKY_STARS) /= 0)), &
                               'SkySphere')
+        if (c_associated(self%line_switch)) &
+            call check_status(vkf_switch_set(self%line_switch, merge(1_c_int, 0_c_int, self%mode /= SKY_NONE)), 'SkySphere')
     end subroutine apply_mode
 
     !> The attitude matrix (column-major 4x4) into a sky node's style.
@@ -532,6 +685,91 @@ contains
         if (self%n_stars == 0) self%mag_range = 0.0_wp
         ok = .true.
     end function read_stars
+
+    !> Read the constellations of `file` (found with find_data_file; '' for
+    !> none) into self%lines and self%groups, in place of those read before.
+    !> False (those kept) if it can't be found or read.
+    logical function read_constellations(self, file) result(ok)
+        type(SkySphere), intent(inout) :: self
+        character(len=*), intent(in) :: file                !! constellation file ('' for none)
+        character(len=:), allocatable :: path
+        character(len=1024) :: line
+        real(c_float), allocatable :: lines(:,:), tmp(:,:)
+        type(Constellation), allocatable :: groups(:), gtmp(:)
+        real(wp) :: v(4)
+        integer :: unit, status, n, ng, k
+
+        ok = .true.
+        if (len_trim(file) == 0) then
+            self%constellation_file = ''
+            self%n_lines = 0
+            self%n_groups = 0
+            return
+        end if
+        ok = .false.
+        path = find_data_file(file)
+        if (len(path) == 0) then
+            write(*, '(a)') 'vkframes: constellation file '//trim(file)//' not found (set VKFRAMES_DATA_PATH)'
+            return
+        end if
+        open(newunit=unit, file=path, status='old', action='read', iostat=status)
+        if (status /= 0) then
+            write(*, '(a)') 'vkframes: could not open the constellation file '//path
+            return
+        end if
+        allocate(lines(8, 1024), groups(128))
+        n = 0
+        ng = 0
+        do
+            read(unit, '(a)', iostat=status) line
+            if (status /= 0) exit
+            k = scan(line, achar(13))                       ! (CRLF line ends)
+            if (k > 0) line(k:) = ''
+            line = adjustl(line)
+            if (line(1:2) == 'N ') then                     ! a constellation
+                if (ng == size(groups)) then
+                    allocate(gtmp(2 * ng))
+                    gtmp(1:ng) = groups(1:ng)
+                    call move_alloc(gtmp, groups)
+                end if
+                ng = ng + 1
+                groups(ng) = Constellation(trim(adjustl(line(3:))), n + 1, n)
+                cycle
+            end if
+            if (len_trim(line) == 0 .or. line(1:1) == '#') cycle
+            k = index(line, '#')                            ! (a comment after the line)
+            if (k > 0) line(k:) = ''
+            read(line, *, iostat=status) v                  ! dec1, ra1, dec2, ra2 (degrees, hours)
+            if (status /= 0) cycle
+            if (n == size(lines, 2)) then
+                allocate(tmp(8, 2 * n))
+                tmp(:, 1:n) = lines(:, 1:n)
+                call move_alloc(tmp, lines)
+            end if
+            n = n + 1
+            lines(:, n) = real([sky_direction(v(2), v(1)), 0.0_wp, sky_direction(v(4), v(3)), 0.0_wp], c_float)
+            if (ng > 0) groups(ng)%last = n
+        end do
+        close(unit)
+        call move_alloc(lines, self%lines)
+        call move_alloc(groups, self%groups)
+        self%n_lines = n
+        self%n_groups = ng
+        self%constellation_file = trim(file)
+        ok = .true.
+    end function read_constellations
+
+    !> The unit vector of a direction on the sky from its right ascension
+    !> (hours) and declination (degrees), as the stars' (star_to_point).
+    pure function sky_direction(ra, dec) result(dir)
+        real(wp), intent(in) :: ra                          !! right ascension (hours)
+        real(wp), intent(in) :: dec                         !! declination (degrees)
+        real(wp) :: dir(3)
+        real(wp) :: a, d
+        a = ra / 24.0_wp * 2.0_wp * pi
+        d = dec * pi / 180.0_wp
+        dir = [cos(a) * cos(d), sin(a) * cos(d), sin(d)]
+    end function sky_direction
 
     !> Remember the name of the star just read (self%n_stars), if it has one.
     subroutine add_name(self, name, mag)
