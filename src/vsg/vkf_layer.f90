@@ -23,6 +23,7 @@ module vkf_layer
     public :: vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames
     public :: vkf_viewer_set_camera_controls
     public :: vkf_viewer_mouse, vkf_viewer_scroll, vkf_viewer_key, vkf_viewer_resize, vkf_viewer_close
+    public :: vkf_viewer_set_grab
     public :: vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio
     public :: vkf_viewer_frame_begin, vkf_viewer_frame_draw
     public :: check_status
@@ -137,7 +138,8 @@ module vkf_layer
         !> Each event (a column of `events`): kind (1 key press, 2 key release, 3 pointer move, 4 button press,
         !> 5 button release), key (modified: 'V' with shift), key base, modifiers, button, buttons held (mask),
         !> x, y (framebuffer pixels from the top left), and the render area (offset x, y, width, height).
-        !> Events taken by a GUI panel are not included.
+        !> Pointer events have key 1 while the mouse is grabbed (vkf_viewer_set_grab). Events taken by a
+        !> GUI panel are not included.
         integer(c_int) function vkf_viewer_events(viewer, events, capacity) bind(C, name="vkf_viewer_events")
             import :: c_ptr, c_int
             implicit none
@@ -145,6 +147,16 @@ module vkf_layer
             integer(c_int), intent(out) :: events(12, *) !! the events, 12 integers each
             integer(c_int), value :: capacity           !! the most events `events` holds
         end function vkf_viewer_events
+
+        !> Whether a left button press takes the mouse from the trackball (armed 1: a handle is under the
+        !> cursor), until the button is released: those events are given with key 1 (vkf_viewer_events).
+        !> Returns 0, or -1 on failure.
+        integer(c_int) function vkf_viewer_set_grab(viewer, armed) bind(C, name="vkf_viewer_set_grab")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: viewer                !! viewer handle (vkf_viewer_create)
+            integer(c_int), value :: armed              !! 1: armed; 0: not
+        end function vkf_viewer_set_grab
 
         !> Framebuffer pixels per window unit (2 on Retina; a host's window's as given).
         real(c_double) function vkf_viewer_pixel_ratio(viewer) bind(C, name="vkf_viewer_pixel_ratio")

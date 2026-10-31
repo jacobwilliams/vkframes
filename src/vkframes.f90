@@ -3,9 +3,10 @@
 !>
 !> This umbrella module only re-exports the public types, procedures and
 !> constants of the vkf_* modules (math, trajectories and followers, the
-!> clock, reference frames and what extends them, windows and views, HUD text
-!> and GUI panels, the sky, shapes, artists, line segments, shadows, terrain,
-!> file search); see each module for its documentation.
+!> clock, reference frames and what extends them, windows and views, handles
+!> and the cursor's ray, HUD text and GUI panels, the sky, shapes, artists,
+!> line segments, shadows, terrain, file search); see each module for its
+!> documentation.
 module vkframes
 
     use vkf_math, only: wp, pi, quat_identity, quat_from_axis_angle, quat_multiply, quat_conjugate, quat_from_matrix, &
@@ -17,7 +18,7 @@ module vkframes
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_LIMIT, FOLLOW_POSITION, FOLLOW_ATTITUDE
     use vkf_clock, only: SimulationClock, wall_time
     use vkf_frames, only: ReferenceFrame, FramePointer, NO_AXES, X_AXIS, Y_AXIS, Z_AXIS, ALL_AXES, &
-                          PickHit, PICK_FRAME, PICK_BODY, PICK_CURVE, PICK_SEGMENT, PICK_MARKER, &
+                          PickHit, PICK_FRAME, PICK_BODY, PICK_CURVE, PICK_SEGMENT, PICK_MARKER, PICK_HANDLE, &
                           ALIGN_LEFT_TOP, ALIGN_LEFT_CENTER, ALIGN_LEFT_BOTTOM, &
                           ALIGN_CENTER_TOP, ALIGN_CENTER_CENTER, ALIGN_CENTER_BOTTOM, &
                           ALIGN_RIGHT_TOP, ALIGN_RIGHT_CENTER, ALIGN_RIGHT_BOTTOM, &
@@ -25,10 +26,12 @@ module vkframes
     use vkf_sphere, only: Sphere
     use vkf_model, only: Model
     use vkf_window, only: FrameManager, WindowProxy, MOUSE_MOVE, MOUSE_PRESS, MOUSE_RELEASE, &
-                          WindowEventHandler, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT, &
+                          WindowEventHandler, MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT, DRAG_START, DRAG_MOVE, DRAG_END, &
                           KEY_SPACE, KEY_BACKSPACE, KEY_TAB, KEY_RETURN, KEY_ESCAPE, KEY_DELETE, KEY_HOME, &
                           KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN, KEY_PAGE_UP, KEY_PAGE_DOWN, KEY_END, KEY_INSERT, &
                           KEY_F1, MOD_SHIFT, MOD_CAPS_LOCK, MOD_CONTROL, MOD_ALT, MOD_NUM_LOCK, MOD_META
+    use vkf_handles, only: DragHandle, VectorHandle, HANDLE_FREE, HANDLE_PLANE, HANDLE_LINE, HANDLE_RADIAL, HANDLE_SPHERE
+    use vkf_pick, only: ray_plane, ray_sphere, ray_line
     use vkf_hud, only: HUDText
     use vkf_gui, only: Gui
     use vkf_sky, only: SkySphere, SKY_NONE, SKY_TEXTURE, SKY_STARS

@@ -196,6 +196,17 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     trace mode only what is drawn is picked. Frames and artists can be left
     out (`set_pickable`), a pick can ask for some kinds only, and for the
     nearest hit only (cheap enough for every mouse move).
+  - Handles (not in OpenFrames): things in the scene the mouse drags, to
+    design graphically. A `VectorHandle` is an arrow from its frame's origin
+    whose tip the mouse grabs and drags (a vector, times a display scale:
+    e.g. a velocity). Hovered, it lights up; a left drag on it moves it
+    instead of the camera, held to a constraint: in the plane facing the
+    camera, in a given plane, along a line, along itself (its length only)
+    or about its base (its direction only). The window's event handler is
+    told as it is grabbed, dragged and released (`handle_drag`), e.g. to
+    compute a trajectory again from the new state while it moves.
+    `cursor_ray(x, y, origin, direction)` gives the ray under the cursor,
+    with `ray_plane`, `ray_sphere` and `ray_line` to find where it points.
   - Keyboard and mouse: a program's `WindowEventHandler` (OpenFrames' window
     callbacks) is given key presses and releases, mouse motion and button
     presses and releases, also in embedded windows. OpenFrames' keys are
@@ -403,6 +414,9 @@ library:
   marks, the equatorial plane, a sensor cone.
 - **The Earth's shadow:** its umbra and penumbra (`ShadowCones`), pointing
   away from the Sun; the orbit passes through it.
+- **The Sun's direction:** an arrow from the Earth's center (a
+  `VectorHandle`) that turns with the mouse: dragging it moves the Sun, and
+  the day and night sides and the shadow follow.
 - **Views and time:** six views (of the Earth, of each spacecraft, and from
   each spacecraft toward the Earth or the other); a time scale, pause and a
   time slider.
@@ -430,7 +444,7 @@ pixi run -e qt qt-demo -- --windows 2 --shapes --los --shadow --position-marker 
 Options include `--view n`, `--windows n`, `--trace`, `--altitude-colors`,
 `--plane`, `--radius`,
 `--marker n`, `--position-marker n`, `--sky n`, `--shapes`, `--los`,
-`--shadow`,
+`--shadow`, `--sun-arrow`,
 `--pattern n`, `--capture file` and `--quit-after seconds`; the comment at
 the top of [demos/qt/app/main.f90](demos/qt/app/main.f90) explains them. To
 use OpenFrames' Hubble model and star map, point `OPENFRAMES_DATA` (or
@@ -574,6 +588,30 @@ until the chain is one continuous trajectory. Every iteration is recorded.
 
 ```sh
 pixi run -e qt shooting-demo
+```
+
+#### Trajectory design demo
+
+<img src="media/screenshots/design_demo.jpg" alt="The velocity arrow dragged: its speed next to its tip, the orbit from the new state, and the orbit before the drag dashed" width="300" align="right">
+
+[demos/design](demos/design): designing a trajectory with the mouse. A
+spacecraft's initial position and velocity are arrows about the Earth
+(`VectorHandle`): drag either one's tip and its orbit (two-body, exact, any
+conic) is computed again from the new state at each move of the mouse.
+
+- The position from the Earth's center (yellow) and the velocity at the
+  position (orange, 1500 km per km/s by default), the orbit from them
+  (cyan) with its apsides, and while dragging, the orbit before the drag
+  (dashed) and the arrow's value next to its tip. An orbit that hits the
+  Earth ends there.
+- How each arrow moves: freely, in the orbit's plane, along itself (the
+  altitude or the speed only) or about its base (the direction only).
+- The state as numbers (typed in, or following the drags), the orbit's
+  elements, how long it is drawn (one orbit, or hours), the velocity
+  arrow's scale, the view.
+
+```sh
+pixi run -e qt design-demo
 ```
 
 #### PySide6 demo

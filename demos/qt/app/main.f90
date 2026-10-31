@@ -55,6 +55,10 @@
 !> The Earth's shadow in sunlight (ShadowCones, a child of the Earth: umbra
 !> and penumbra, out to 10 Earth radii) can be shown from the dock; it turns
 !> away from the Sun as the Earth turns, and the spacecraft pass through it.
+!> The Sun's direction can be shown from the dock as an arrow from the
+!> Earth's center (a VectorHandle, dragged with the mouse on a sphere: its
+!> direction only): dragging it moves the Sun (the handler's handle_drag), so
+!> the day and night sides and the shadow follow the mouse.
 !> Changing a window's view flies its camera to the new view (a view
 !> transition, set from the dock; 0 s: a cut), as does resetting it.
 !> Each window has a WindowEventHandler (OpenFrames' window callbacks): `v` and
@@ -103,7 +107,7 @@
 !> with sky n (0 none, 1 stars, 2 texture, 3 both); `--shapes` with the grid,
 !> coordinate axes, plane and sensor cone shown; `--los` with the line of
 !> sight between the spacecraft shown; `--shadow` with the Earth's shadow
-!> shown; `--pattern n` with orbit
+!> shown; `--sun-arrow` with the Sun's direction (arrow) shown; `--pattern n` with orbit
 !> pattern n (0 solid, 1 dashed, 2 dotted, 3 dash-dot).
 module vkdemo
 
@@ -151,6 +155,7 @@ module vkdemo
         procedure :: mouse_motion => demo_mouse_motion
         procedure :: button_press => demo_button_press
         procedure :: before_draw => demo_before_draw
+        procedure :: handle_drag => demo_handle_drag
     end type DemoEvents
 
     !> One window showing the scene: a QWindow (in the main window, or in a
@@ -183,6 +188,7 @@ module vkdemo
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors, show_plane_swept
         type(QCheckBox) :: sun_light, show_grid, show_plane, show_sensor, show_ticks, show_los, show_shadow
+        type(QCheckBox) :: show_sun_arrow
         type(QComboBox) :: marker_shape                        !! none, or a MARKER_* shape
         type(QComboBox) :: dash_mode                           !! the orbits' dashes: anchored, fixed-length or screen-locked
         type(QComboBox) :: position_marker                     !! the spacecraft: bodies, or a MARKER_* shape
@@ -210,6 +216,7 @@ module vkdemo
         type(RadialPlane) :: equator                           !! the equatorial plane (inertial)
         type(EllipticCone) :: sensor                           !! spacecraft 1's nadir sensor
         type(ReferenceFrame) :: sun                            !! the light source
+        type(VectorHandle) :: sun_arrow                        !! the Sun's direction, dragged to move the Sun
         type(ShadowCones) :: earth_shadow                      !! the Earth's shadow in the Sun's light
         type(Trajectory) :: earth_rotation                     !! attitudes over one sidereal day
         real(wp) :: rotation_time = 0.0_wp                     !! time along earth_rotation (advances at speed x)
@@ -260,6 +267,7 @@ module vkdemo
         logical :: start_shapes = .false.
         logical :: start_los = .false.
         logical :: start_shadow = .false.
+        logical :: start_sun_arrow = .false.
     end type app_t
 
     !> The application (module-level, so that windows created later from slots
@@ -469,6 +477,14 @@ contains
         call app%sun%set_light_ambient([0.08_wp, 0.08_wp, 0.08_wp])
         call app%sun%set_light_specular([1.0_wp, 1.0_wp, 0.9_wp])
 
+        ! the Sun's direction: an arrow from the Earth's center, turned with the
+        ! mouse (its length kept), moving the Sun (demo_handle_drag; hidden at first)
+        app%sun_arrow = VectorHandle('Sun direction', vector=app%sun%position() / norm2(app%sun%position()), &
+                                     color=[1.0_wp, 0.85_wp, 0.3_wp], scale=2.2_wp * re)
+        call app%sun_arrow%set_head_size(0.3_wp * re)
+        call app%sun_arrow%set_constraint(HANDLE_SPHERE)
+        call app%sun_arrow%show_contents(.false.)
+
         ! the Earth's shadow: a child of the Earth, pointing away from the Sun
         ! (a plain frame here: its radius given), out to 10 Earth radii (hidden at first)
         app%earth_shadow = ShadowCones('Earth shadow', body=app%earth, light=app%sun, light_radius=695700.0_wp)
@@ -484,7 +500,7 @@ contains
                    app%inertial%add_child(app%orbit_frame) .and. app%inertial%add_child(app%spacecraft2) .and. &
                    app%inertial%add_child(app%orbit2_frame) .and. app%inertial%add_child(app%equator) .and. &
                    app%inertial%add_child(app%sun) .and. app%inertial%add_child(app%ticks) .and. &
-                   app%inertial%add_child(app%line_of_sight))) &
+                   app%inertial%add_child(app%line_of_sight) .and. app%inertial%add_child(app%sun_arrow))) &
             write(*, '(a)') 'vkframes: add_child failed'
         ! the readout of a click (a callout): a frame moved to the point picked,
         ! whose name label is the readout, on top of the scene
@@ -935,6 +951,20 @@ contains
     !> A click: what is under it (WindowProxy%pick), in the dock. An orbit or
     !> a marker: its time there (g goes to it) and altitude; a body: the
     !> latitude and longitude.
+    !> The Sun's arrow dragged: the Sun moved to its direction (an astronomical unit away).
+    subroutine demo_handle_drag(self, window, handle, stage)
+        class(DemoEvents), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        class(DragHandle), intent(inout), target :: handle
+        integer, intent(in) :: stage
+        class(DragHandle), pointer :: h
+        real(wp) :: d(3)
+        h => handle
+        if (stage /= DRAG_MOVE .or. .not. associated(h, app%sun_arrow)) return
+        d = app%sun_arrow%vector()
+        if (norm2(d) > 0.0_wp) call app%sun%set_position(1.495978707e8_wp * d / norm2(d))
+    end subroutine demo_handle_drag
+
     subroutine demo_button_press(self, window, x, y, button)
         class(DemoEvents), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window
@@ -1270,6 +1300,12 @@ contains
         call app%earth_shadow%show_contents(checked)
     end subroutine on_show_shadow
 
+    subroutine on_show_sun_arrow(checked, data)
+        logical, intent(in) :: checked
+        class(*), intent(inout), optional :: data
+        call app%sun_arrow%show_contents(checked)
+    end subroutine on_show_sun_arrow
+
     subroutine on_show_sensor(checked, data)
         logical, intent(in) :: checked
         class(*), intent(inout), optional :: data
@@ -1498,6 +1534,9 @@ contains
         app%show_shadow = QCheckBox("Earth's shadow")
         call app%show_shadow%toggled%connect(on_show_shadow)
         call form%addRow('', app%show_shadow)
+        app%show_sun_arrow = QCheckBox("The Sun's direction (drag the arrow)")
+        call app%show_sun_arrow%toggled%connect(on_show_sun_arrow)
+        call form%addRow('', app%show_sun_arrow)
         app%marker_shape = QComboBox()
         call app%marker_shape%addItems([character(len=15) :: 'None', 'Disk', 'Circle', 'Square', 'Plus', 'X', 'Target', &
                                         'Rose', 'Pulsing circle', 'Pulsing disk', 'Spiral'])
@@ -1604,6 +1643,8 @@ program vkframes_qt_demo
             app%start_los = .true.
         case ('--shadow')
             app%start_shadow = .true.
+        case ('--sun-arrow')
+            app%start_sun_arrow = .true.
         case ('--sky')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_sky
@@ -1645,6 +1686,7 @@ program vkframes_qt_demo
     call app%show_sensor%setChecked(app%start_shapes)
     call app%show_los%setChecked(app%start_los)
     call app%show_shadow%setChecked(app%start_shadow)
+    call app%show_sun_arrow%setChecked(app%start_sun_arrow)
     call on_sky(app%start_sky)
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)

@@ -74,6 +74,7 @@ module vkf_frames
     integer, parameter, public :: PICK_CURVE = 3        !! a trajectory's curve (CurveArtist)
     integer, parameter, public :: PICK_SEGMENT = 4      !! a trajectory's segment (SegmentArtist)
     integer, parameter, public :: PICK_MARKER = 5       !! a trajectory's marker (MarkerArtist)
+    integer, parameter, public :: PICK_HANDLE = 6       !! a handle the mouse drags (vkf_handles: VectorHandle)
 
     !> What a pick found (WindowProxy%pick): the frame it belongs to and, for
     !> trajectories, the artist (select type to use it) and the trajectory.

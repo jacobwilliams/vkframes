@@ -1407,6 +1407,72 @@ Interaction:
             time) as markers turned along the trajectory's direction on
             screen (markers are upright now): a marker shape and a rotation
             per marker.
+- [x] The cursor's ray and handles dragged with the mouse (2026-10-30), for
+      designing graphically:
+      - `WindowProxy%cursor_ray(x, y, origin, direction)`: the ray from the
+        eye through a point of the window (root frame), from the same pick
+        camera as `pick` and `screen_position` (one helper,
+        `view_camera`). `vkf_pick`: `ray_plane`, `ray_sphere` (both
+        crossings) and `ray_line` (the line's point closest to the ray).
+      - `src/vkf_handles.f90`: `DragHandle`, an abstract frame with a point
+        the mouse grabs (`handle_point`, `move_handle_point`, `show_state`)
+        and its constraint (`HANDLE_FREE`: the plane facing the camera;
+        `HANDLE_PLANE`, `HANDLE_LINE` with an axis; `HANDLE_RADIAL`: along
+        the line from the frame's origin; `HANDLE_SPHERE`: about the origin,
+        on the side grabbed), taken at the grab with the point's offset from
+        the cursor (no jump). `VectorHandle`: an arrow from its frame's
+        origin, the tip the handle; a unit shaft and head (vkf_geometry's
+        arrow) placed by two transforms, so a drag only sets two matrices;
+        colored through the material, lit when hovered and more when
+        dragged (emissive). Picked as `PICK_HANDLE` (the tip, and the head).
+      - The window (`vkf_window`): at each mouse move with no button held, a
+        pick of `PICK_HANDLE` only (while any handle has been shown) hovers
+        the handle under the cursor and arms a grab in the C++ layer
+        (`vkf_viewer_set_grab`). The layer's EventRecorder, which sees
+        events before VSG's trackball, then takes a left press and its moves
+        and release (marked handled: the trackball doesn't see them, so the
+        camera stays) and passes them to Fortran with key 1. The window
+        grabs, drags (`DragHandle%drag` with the cursor's ray) and releases
+        the handle and tells the handler (`handle_drag`: `DRAG_START`,
+        `DRAG_MOVE`, `DRAG_END`), not its button and motion callbacks.
+      - Tested: `test/test_handles.f90` (the rays; each constraint, the far
+        side of a sphere and the grab's offset, with given rays; the pick;
+        in a window: hovered, grabbed, dragged and released with forwarded
+        mouse events, the camera unchanged, the handler's presses not
+        called). Shown in `demos/design` (a trajectory's initial position
+        and velocity dragged, the orbit computed again at each move; a
+        scripted drag with `--drag-test`) and in the Qt demo (the Sun's
+        direction).
+      - Linux: `pixi run linux pixi run test` (lavapipe, Xvfb).
+      - [ ] Untested: Windows (VSG's Win32 window and a host's events take
+            the same path through the EventRecorder).
+- [ ] More handles and design tools, on `DragHandle` and the cursor's ray:
+      - [ ] A point handle (a marker or small sphere the mouse drags), e.g.
+            for a trajectory's patch points: in the shooting demo, drag a
+            segment's node and let the solver converge again from there;
+            pin or free a node with a click.
+      - [ ] Handles of a constant size on the screen (now in scene units,
+            or proportional to the arrow): scaled per view from the camera's
+            distance (VSG nodes are shared by windows: per view, as the
+            line widths are).
+      - [ ] Snapping and limits: to bodies, apsides, nodes, round values
+            (a key held), and a vector's length kept within a range.
+      - [ ] A maneuver-node editor: click a trajectory to place an
+            impulsive burn at the time picked, drag handles along its
+            prograde, normal and radial directions to set its delta-v; the
+            arc after it propagated again as it moves, with the osculating
+            orbit and the total delta-v shown.
+      - [ ] Dragging a marker along a trajectory to change the time (the
+            3D counterpart of a time slider): a handle held to the
+            trajectory's curve (the closest point to the cursor's ray).
+      - [ ] Waypoints: click points on a plane (the cursor's ray) to add
+            them, Lambert arcs between them, and drag a waypoint to see its
+            arcs and their delta-v change.
+      - [ ] Constraints shown on the trajectory: parts too close to a body,
+            inside a keep-out cone or in eclipse colored differently,
+            updated as the handles move (per-point colors, ShadowCones).
+      - [ ] Undo and redo of the edits: a small helper holding the history
+            of the handles' values (the program's state, not the scene's).
 
 Astrodynamics graphics:
 - [ ] **(first)** Ground tracks: a spacecraft's sub-satellite point traced on

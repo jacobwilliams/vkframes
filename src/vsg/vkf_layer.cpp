@@ -1388,6 +1388,8 @@ namespace
         Recorder recorder;                     // video recording (vkf_viewer_record_start)
         vsg::ref_ptr<vsg::Trackball> trackball;
         float zoomSpeed = 1.0f;                // scroll steps scaled by it (vkf_viewer_set_camera_controls)
+        bool grabArmed = false;                // a left press takes the mouse from the trackball (vkf_viewer_set_grab)
+        bool grabbing = false;                 // taken: until the button is released
     };
 
     // Records the window's keyboard and mouse events for Fortran (its event
@@ -1402,6 +1404,11 @@ namespace
     // the camera moving) only for a release in the same millisecond as the
     // last pointer event, which Windows' messages are, but not macOS's (nor
     // a host's events, forwarded one by one), so a flick never threw there.
+    // A grab (vkf_viewer_set_grab: Fortran found a handle under the cursor): a
+    // left button press then takes the mouse from the trackball until the
+    // button is released, the press, the moves and the release recorded with
+    // key 1 (a handle dragged, not the camera) and marked handled (the
+    // trackball ignores them, and without the press it has no drag to follow).
     class EventRecorder : public vsg::Inherit<vsg::Visitor, EventRecorder>
     {
     public:
@@ -1411,6 +1418,12 @@ namespace
         void apply(vsg::KeyReleaseEvent& e) override { key(2, e); }
         void apply(vsg::MoveEvent& e) override
         {
+            if (v->grabbing && !e.handled)
+            {
+                pointer(3, e, 0, 1);
+                e.handled = true;
+                return;
+            }
             if ((e.mask & (vsg::BUTTON_MASK_1 | vsg::BUTTON_MASK_2 | vsg::BUTTON_MASK_3)) != 0)
             {
                 lastDragMove = e.time;
@@ -1421,10 +1434,24 @@ namespace
         void apply(vsg::ButtonPressEvent& e) override
         {
             dragging = false;
+            if (v->grabArmed && !e.handled && (e.mask & vsg::BUTTON_MASK_1) != 0)
+            {
+                v->grabbing = true;
+                pointer(4, e, e.button, 1);
+                e.handled = true;
+                return;
+            }
             pointer(4, e, e.button);
         }
         void apply(vsg::ButtonReleaseEvent& e) override
         {
+            if (v->grabbing && !e.handled)
+            {
+                v->grabbing = false;
+                pointer(5, e, e.button, 1);
+                e.handled = true;
+                return;
+            }
             if (dragging && e.time >= lastDragMove && e.time - lastDragMove < throw_gap) e.time = lastDragMove;
             dragging = false;
             pointer(5, e, e.button);
@@ -1443,11 +1470,11 @@ namespace
             if (e.handled) return;                     // (taken by a GUI panel)
             record({kind, int32_t(e.keyModified), int32_t(e.keyBase), int32_t(e.keyModifier), 0, 0, 0, 0, 0, 0, 0, 0});
         }
-        void pointer(int32_t kind, vsg::PointerEvent& e, uint32_t button)
+        void pointer(int32_t kind, vsg::PointerEvent& e, uint32_t button, int32_t grabbed = 0)
         {
             if (e.handled) return;                     // (over a GUI panel)
             const auto area = v->camera->getRenderArea();
-            record({kind, 0, 0, 0, int32_t(button), int32_t(e.mask), e.x, e.y,
+            record({kind, grabbed, 0, 0, int32_t(button), int32_t(e.mask), e.x, e.y,
                     area.offset.x, area.offset.y, int32_t(area.extent.width), int32_t(area.extent.height)});
         }
         void record(const std::array<int32_t, 12>& event)
@@ -2749,6 +2776,17 @@ VKF_API int vkf_viewer_set_camera_controls(void* viewer, double zoom_speed, int 
     v->zoomSpeed = static_cast<float>(zoom_speed);
     v->trackball->zoomScale = zoom_speed;
     v->trackball->supportsThrow = throw_ != 0;
+    return 0;
+}
+
+// Whether a left button press takes the mouse from the trackball (armed 1:
+// a handle is under the cursor; see EventRecorder), until it is released.
+// Returns 0, or -1.
+VKF_API int vkf_viewer_set_grab(void* viewer, int armed)
+{
+    auto v = static_cast<Viewer*>(viewer);
+    if (!v) return -1;
+    v->grabArmed = armed != 0;
     return 0;
 }
 

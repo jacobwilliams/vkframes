@@ -11,6 +11,9 @@
 !>   depth), for trajectories, markers and frames' origins;
 !> * a ray from the eye through the cursor against an ellipsoid (`ray`,
 !>   `ray_ellipsoid`), for bodies;
+!> * the ray against a plane, a sphere and a line (`ray_plane`,
+!>   `ray_sphere`, `ray_line`), for dragging (WindowProxy%cursor_ray, and
+!>   vkf_handles' constraints);
 !> * bounding spheres on the screen (`sphere_near`), to skip whole chunks of
 !>   a long trajectory.
 !> Depths are distances along the view direction (perspective) or from the
@@ -43,6 +46,7 @@ module vkf_pick
     end type PickCamera
 
     public :: pick_camera, project, point_pick, segment_pick, sphere_near, ray, ray_ellipsoid, wants
+    public :: ray_plane, ray_sphere, ray_line
 
 contains
 
@@ -263,5 +267,83 @@ contains
         local = (o + t * d) * radii
         hit = .true.
     end function ray_ellipsoid
+
+    !> Where the ray (origin, unit dir) meets the plane through `point` with
+    !> normal `normal`: the distance along the ray and the point. False if the
+    !> ray is parallel to the plane (within 1e-6 of it, as a cosine) or the
+    !> plane is behind.
+    logical function ray_plane(origin, dir, point, normal, distance, hit_point) result(hit)
+        real(wp), intent(in) :: origin(3), dir(3)           !! the ray (dir: a unit vector)
+        real(wp), intent(in) :: point(3), normal(3)         !! the plane (normal: any length but 0)
+        real(wp), intent(out) :: distance                   !! along the ray (huge() if missed)
+        real(wp), intent(out) :: hit_point(3)               !! the point met
+        real(wp) :: n(3), d
+        hit = .false.
+        distance = huge(1.0_wp)
+        hit_point = 0.0_wp
+        if (norm2(normal) <= 0.0_wp) return
+        n = normal / norm2(normal)
+        d = dot_product(dir, n)
+        if (abs(d) < 1.0e-6_wp) return
+        distance = dot_product(point - origin, n) / d
+        if (distance < 0.0_wp) then
+            distance = huge(1.0_wp)
+            return
+        end if
+        hit_point = origin + distance * dir
+        hit = .true.
+    end function ray_plane
+
+    !> Where the ray (origin, unit dir) meets the sphere of `center` and
+    !> `radius`: the distances along the ray of where it enters and leaves
+    !> (`near` <= `far`; `near` < 0 if the origin is inside). False if it
+    !> misses, or the sphere is behind.
+    logical function ray_sphere(origin, dir, center, radius, near, far) result(hit)
+        real(wp), intent(in) :: origin(3), dir(3)           !! the ray (dir: a unit vector)
+        real(wp), intent(in) :: center(3), radius
+        real(wp), intent(out) :: near, far                  !! distances along the ray (huge() if missed)
+        real(wp) :: o(3), b, c, disc
+        hit = .false.
+        near = huge(1.0_wp)
+        far = huge(1.0_wp)
+        if (radius <= 0.0_wp) return
+        o = origin - center
+        b = dot_product(o, dir)
+        c = dot_product(o, o) - radius * radius
+        disc = b * b - c
+        if (disc < 0.0_wp) return
+        if (-b + sqrt(disc) < 0.0_wp) return
+        near = -b - sqrt(disc)
+        far = -b + sqrt(disc)
+        hit = .true.
+    end function ray_sphere
+
+    !> The point of the line through `point` along `axis` closest to the ray
+    !> (origin, unit dir): its parameter `s` (the point is point + s * axis,
+    !> axis normalized) and the point. False if the ray and the line are
+    !> parallel (within 1e-6 of it, as a sine squared), or the closest point
+    !> of the ray is behind its origin.
+    logical function ray_line(origin, dir, point, axis, s, line_point) result(hit)
+        real(wp), intent(in) :: origin(3), dir(3)           !! the ray (dir: a unit vector)
+        real(wp), intent(in) :: point(3), axis(3)           !! the line (axis: any length but 0)
+        real(wp), intent(out) :: s                          !! along the line (scene units, from `point`)
+        real(wp), intent(out) :: line_point(3)              !! the point of the line
+        real(wp) :: u(3), w(3), b, d, e, denom
+        hit = .false.
+        s = 0.0_wp
+        line_point = point
+        if (norm2(axis) <= 0.0_wp) return
+        u = axis / norm2(axis)
+        w = point - origin
+        b = dot_product(u, dir)
+        d = dot_product(u, w)
+        e = dot_product(dir, w)
+        denom = 1.0_wp - b * b
+        if (denom < 1.0e-6_wp) return
+        s = (b * e - d) / denom
+        if ((e + b * s) < 0.0_wp) return                    ! (the ray's closest point: origin + (e + b s) dir)
+        line_point = point + s * u
+        hit = .true.
+    end function ray_line
 
 end module vkf_pick

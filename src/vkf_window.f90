@@ -82,14 +82,29 @@
 !> half a line's width or a marker's size), bodies (the point on the surface,
 !> with latitude and longitude) and frames' origins. Each frame of the scene
 !> tests its own contents (ReferenceFrame%pick, vkf_pick); nothing is done
-!> until `pick` is called.
+!> until `pick` is called. `cursor_ray(x, y, origin, direction)` gives the ray
+!> from the eye through a point of the window (root frame), e.g. to place
+!> something where the cursor points (vkf_pick's ray_plane, ray_sphere,
+!> ray_line).
+!>
+!> Handles (vkf_handles: DragHandle, e.g. VectorHandle): while a scene shown
+!> in a window has handles, the window looks for one under the cursor at each
+!> mouse move (a pick of PICK_HANDLE only), hovers it (drawn brighter) and
+!> arms a grab: a left button press then grabs the handle instead of moving
+!> the camera, the moves drag it (DragHandle%drag, with the cursor's ray) and
+!> the release lets it go. The handler is told (`handle_drag`: DRAG_START,
+!> DRAG_MOVE, DRAG_END), not given those presses, moves and releases
+!> (`button_press`, `mouse_motion`, `button_release`). A handle is dragged
+!> from the frame after the event's, as other events are handled. The
+!> middle and right buttons move the camera over handles too.
 module vkf_window
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float
     use, intrinsic :: iso_fortran_env, only: int64
     use vkf_math, only: wp, rigid_inverse, identity_matrix
-    use vkf_frames, only: ReferenceFrame, PickHit
-    use vkf_pick, only: PickCamera, pick_camera, project
+    use vkf_frames, only: ReferenceFrame, PickHit, PICK_HANDLE
+    use vkf_pick, only: PickCamera, pick_camera, project, ray
+    use vkf_handles, only: DragHandle, handles_shown
     use vkf_clock, only: SimulationClock, wall_time
     use vkf_view, only: View, PERSPECTIVE, camera_between, transform_camera
     use vkf_hud, only: HUDText
@@ -106,7 +121,7 @@ module vkf_window
                          vkf_viewer_events, vkf_viewer_size, vkf_viewer_pixel_ratio, &
                          vkf_viewer_frame_begin, vkf_viewer_frame_draw, vkf_viewer_gui, &
                          vkf_viewer_record_start, vkf_viewer_record_stop, vkf_viewer_record_frames, &
-                         vkf_viewer_set_camera_controls, vkf_driver_preload
+                         vkf_viewer_set_camera_controls, vkf_driver_preload, vkf_viewer_set_grab
 
     implicit none
 
@@ -116,6 +131,8 @@ module vkf_window
     integer, parameter, public :: MOUSE_MOVE = 1, MOUSE_PRESS = 2, MOUSE_RELEASE = 3  !! WindowProxy%mouse kind
     !> mouse buttons (WindowEventHandler, WindowProxy%mouse)
     integer, parameter, public :: MOUSE_LEFT = 1, MOUSE_MIDDLE = 2, MOUSE_RIGHT = 3  !! button numbers
+    !> a handle's drag (WindowEventHandler%handle_drag): grabbed, moved, released
+    integer, parameter, public :: DRAG_START = 1, DRAG_MOVE = 2, DRAG_END = 3
     !> keys (WindowEventHandler): printable keys are their characters,
     !> iachar('a'), iachar('A') with shift; the others (VSG's key symbols):
     integer, parameter, public :: KEY_SPACE = 32, KEY_BACKSPACE = int(z'FF08'), KEY_TAB = int(z'FF09'), &
@@ -178,6 +195,7 @@ module vkf_window
         procedure :: button_press => handler_button_press
         procedure :: button_release => handler_button_release
         procedure :: before_draw => handler_before_draw
+        procedure :: handle_drag => handler_handle_drag
     end type WindowEventHandler
 
     !> A window showing a scene (see the module documentation).
@@ -207,6 +225,8 @@ module vkf_window
         logical :: light_on = .true.                        !! the window's light enabled (no frame's light source)
         ! keyboard and mouse
         class(WindowEventHandler), pointer :: handler => null()  !! the program's event handler (not owned)
+        class(DragHandle), pointer :: hovered_handle => null()   !! the handle under the cursor (not owned)
+        class(DragHandle), pointer :: dragged_handle => null()   !! the handle grabbed (not owned)
         logical :: default_keys_ = .true.                   !! the built-in keys on
         logical :: hosted = .false.                         !! in a host's window (its size from `resize`)
         ! camera transitions
@@ -238,7 +258,7 @@ module vkf_window
         procedure :: set_zoom_speed, zoom_speed, set_camera_throw, camera_throw
         ! picking (see the module documentation), and where points are on the screen
         procedure :: pick => window_pick
-        procedure :: screen_position
+        procedure :: screen_position, cursor_ray
         ! GUI panels (vkf_gui)
         procedure :: gui => window_gui
         ! HUD text (OpenFrames' RenderRectangle HUD)
@@ -365,6 +385,7 @@ contains
         logical :: ok
         integer :: k
         if (self%recording_) ok = self%stop_recording()
+        call forget_handles(self)
         if (c_associated(self%viewer_)) call vkf_viewer_delete(self%viewer_)
         self%viewer_ = c_null_ptr
         self%running = .false.
@@ -394,6 +415,7 @@ contains
     subroutine set_scene(self, fm)
         class(WindowProxy), intent(inout) :: self
         type(FrameManager), intent(in), target :: fm
+        call forget_handles(self)
         self%scene => fm
         self%scene_seen = -1
         self%scene_added = .false.
@@ -942,30 +964,20 @@ contains
         class(ReferenceFrame), pointer :: root
         type(PickCamera) :: cam
         type(PickHit) :: h
-        real(wp) :: eye(3), center(3), up(3), ratio, tol
-        integer(c_int) :: width, height
         integer :: n, i, j
         logical :: only_nearest
         n = 0
         only_nearest = .false.
         if (present(nearest)) only_nearest = nearest
         allocate(hits(8))
-        if (.not. self%is_open() .or. .not. associated(self%shown) .or. .not. associated(self%scene)) then
+        root => null()
+        if (associated(self%scene)) root => self%scene%frame()
+        if (.not. associated(root) .or. .not. view_camera(self, x, y, cam)) then
             hits = hits(1:0)
             return
         end if
-        root => self%scene%frame()
-        if (.not. associated(root) .or. vkf_viewer_size(self%viewer_, width, height) /= 0) then
-            hits = hits(1:0)
-            return
-        end if
-        call self%get_camera(eye, center, up, in_root=.true.)
-        ratio = vkf_viewer_pixel_ratio(self%viewer_)
-        tol = 4.0_wp
-        if (present(tolerance)) tol = tolerance
-        cam = pick_camera(eye, center, up, self%shown%projection_type() == PERSPECTIVE, self%shown%field_of_view(), &
-                          aspect_ratio(self), self%shown%orthographic_bounds(), int(width), int(height), x, y, tol * ratio)
-        cam%pixel_ratio = ratio
+        cam%tolerance = 4.0_wp * cam%pixel_ratio
+        if (present(tolerance)) cam%tolerance = tolerance * cam%pixel_ratio
         if (present(kinds)) then
             cam%kinds = 0
             do i = 1, size(kinds)
@@ -1036,20 +1048,48 @@ contains
         real(wp), intent(in) :: p(3)                        !! root frame
         real(wp), intent(out) :: position(2)                !! (x, y), 0 to 1 from the bottom left
         type(PickCamera) :: cam
-        real(wp) :: eye(3), center(3), up(3), sx, sy, depth
-        integer(c_int) :: width, height
+        real(wp) :: sx, sy, depth
         visible = .false.
         position = 0.0_wp
-        if (.not. self%is_open() .or. .not. associated(self%shown)) return
-        if (vkf_viewer_size(self%viewer_, width, height) /= 0) return
-        call self%get_camera(eye, center, up, in_root=.true.)
-        cam = pick_camera(eye, center, up, self%shown%projection_type() == PERSPECTIVE, self%shown%field_of_view(), &
-                          aspect_ratio(self), self%shown%orthographic_bounds(), int(width), int(height), &
-                          0.0_wp, 0.0_wp, 0.0_wp)
+        if (.not. view_camera(self, 0.0_wp, 0.0_wp, cam)) return
         if (.not. project(cam, p, sx, sy, depth)) return            ! (offsets from the center, in pixels)
         position = 0.5_wp * ([sx / cam%half_w, sy / cam%half_h] + 1.0_wp)
         visible = .true.
     end function screen_position
+
+    !> The ray from the eye through point (x, y) of the window (-1 to 1 across
+    !> it, y up: as the event handler's positions), in the root frame, as at
+    !> the last frame: its origin (the eye; in an orthographic view, on the
+    !> eye's plane) and its direction (a unit vector). False before the first
+    !> frame. E.g. where the cursor points on a plane: vkf_pick's ray_plane.
+    logical function cursor_ray(self, x, y, origin, direction) result(ok)
+        class(WindowProxy), intent(in) :: self
+        real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
+        real(wp), intent(out) :: origin(3), direction(3)    !! root frame (direction: a unit vector)
+        type(PickCamera) :: cam
+        origin = 0.0_wp
+        direction = [0.0_wp, 0.0_wp, -1.0_wp]
+        ok = view_camera(self, x, y, cam)
+        if (ok) call ray(cam, origin, direction)
+    end function cursor_ray
+
+    !> The pick camera of the view shown, with the cursor at (x, y) (-1 to 1, y
+    !> up) and no tolerance. False before the first frame (or closed).
+    logical function view_camera(self, x, y, cam) result(ok)
+        class(WindowProxy), intent(in) :: self
+        real(wp), intent(in) :: x, y
+        type(PickCamera), intent(out) :: cam
+        real(wp) :: eye(3), center(3), up(3)
+        integer(c_int) :: width, height
+        ok = .false.
+        if (.not. self%is_open() .or. .not. associated(self%shown)) return
+        if (vkf_viewer_size(self%viewer_, width, height) /= 0) return
+        call self%get_camera(eye, center, up, in_root=.true.)
+        cam = pick_camera(eye, center, up, self%shown%projection_type() == PERSPECTIVE, self%shown%field_of_view(), &
+                          aspect_ratio(self), self%shown%orthographic_bounds(), int(width), int(height), x, y, 0.0_wp)
+        cam%pixel_ratio = vkf_viewer_pixel_ratio(self%viewer_)
+        ok = .true.
+    end function view_camera
 
     ! ==================================================================
     ! the camera
@@ -1554,6 +1594,16 @@ contains
         real(wp), intent(in) :: t                           !! simulation time
     end subroutine handler_before_draw
 
+    !> A handle (vkf_handles) was grabbed (DRAG_START), dragged (DRAG_MOVE:
+    !> it has moved) or released (DRAG_END) with the mouse: e.g. compute
+    !> again what depends on it (see the module documentation).
+    subroutine handler_handle_drag(self, window, handle, stage)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window
+        class(DragHandle), intent(inout), target :: handle  !! the handle (select type for its kind)
+        integer, intent(in) :: stage                        !! DRAG_START, DRAG_MOVE or DRAG_END
+    end subroutine handler_handle_drag
+
     !> The keyboard and mouse events of the last frame, to the handler and the
     !> built-in keys (stopping if the window is closed meanwhile).
     subroutine dispatch_events(self)
@@ -1597,14 +1647,104 @@ contains
         case (KEY_RELEASE)
             if (associated(self%handler)) call self%handler%key_release(self, key, e(4))
         case (MOVE)
+            if (e(2) == 1) then                                              ! (grabbed: a handle dragged)
+                call drag_handle(self, x, y)
+                return
+            end if
+            if (all(iand(e(6), BUTTON_MASKS) == 0)) call hover_handle(self, x, y)    ! (no button held)
             if (associated(self%handler)) call self%handler%mouse_motion(self, x, y, iand(e(6), BUTTON_MASKS) /= 0)
         case (BUTTON_PRESS)
             self%flight%active = .false.                                     ! (the mouse takes the camera)
+            if (e(2) == 1) then
+                call grab_handle(self, x, y)
+                return
+            end if
             if (associated(self%handler)) call self%handler%button_press(self, x, y, e(5))
         case (BUTTON_RELEASE)
+            if (e(2) == 1) then
+                call release_handle(self, x, y)
+                return
+            end if
             if (associated(self%handler)) call self%handler%button_release(self, x, y, e(5))
         end select
     end subroutine dispatch_event
+
+    ! ------------------------------------------------------------------
+    ! handles (see the module documentation)
+
+    !> The handle under (x, y), if any, hovered (the one before not), and the
+    !> grab armed for it.
+    subroutine hover_handle(self, x, y)
+        class(WindowProxy), intent(inout), target :: self
+        real(wp), intent(in) :: x, y
+        type(PickHit), allocatable :: hits(:)
+        class(DragHandle), pointer :: found
+        found => null()
+        if (handles_shown()) then
+            call self%pick(x, y, hits, kinds=[PICK_HANDLE], nearest=.true.)
+            if (size(hits) > 0) then
+                select type (f => hits(1)%frame)
+                class is (DragHandle)
+                    if (f%draggable()) found => f
+                end select
+            end if
+        end if
+        if (associated(found, self%hovered_handle)) return
+        if (associated(self%hovered_handle)) call self%hovered_handle%set_hovered(.false.)
+        self%hovered_handle => found
+        if (associated(found)) call found%set_hovered(.true.)
+        if (vkf_viewer_set_grab(self%viewer_, merge(1_c_int, 0_c_int, associated(found))) /= 0) &
+            write(*, '(a)') 'vkframes: could not arm a grab'
+    end subroutine hover_handle
+
+    !> A left press grabbed the mouse (the grab armed): the hovered handle grabbed.
+    subroutine grab_handle(self, x, y)
+        class(WindowProxy), intent(inout), target :: self
+        real(wp), intent(in) :: x, y
+        real(wp) :: origin(3), dir(3)
+        if (.not. associated(self%hovered_handle)) return
+        if (.not. self%cursor_ray(x, y, origin, dir)) return
+        if (.not. self%hovered_handle%grab(origin, dir)) return
+        self%dragged_handle => self%hovered_handle
+        if (associated(self%handler)) call self%handler%handle_drag(self, self%dragged_handle, DRAG_START)
+    end subroutine grab_handle
+
+    !> The grabbed handle dragged to (x, y).
+    subroutine drag_handle(self, x, y)
+        class(WindowProxy), intent(inout), target :: self
+        real(wp), intent(in) :: x, y
+        real(wp) :: origin(3), dir(3)
+        if (.not. associated(self%dragged_handle)) return
+        if (.not. self%cursor_ray(x, y, origin, dir)) return
+        if (.not. self%dragged_handle%drag(origin, dir)) return
+        if (associated(self%handler)) call self%handler%handle_drag(self, self%dragged_handle, DRAG_MOVE)
+    end subroutine drag_handle
+
+    !> The grabbed handle released at (x, y); then the handle under the cursor
+    !> hovered.
+    subroutine release_handle(self, x, y)
+        class(WindowProxy), intent(inout), target :: self
+        real(wp), intent(in) :: x, y
+        class(DragHandle), pointer :: released
+        if (associated(self%dragged_handle)) then
+            released => self%dragged_handle
+            self%dragged_handle => null()
+            call released%release()
+            if (associated(self%handler)) call self%handler%handle_drag(self, released, DRAG_END)
+        end if
+        if (self%is_open()) call hover_handle(self, x, y)
+    end subroutine release_handle
+
+    !> No handle hovered or grabbed (the scene or the window changes).
+    subroutine forget_handles(self)
+        class(WindowProxy), intent(inout) :: self
+        integer(c_int) :: status
+        if (associated(self%dragged_handle)) call self%dragged_handle%release()
+        if (associated(self%hovered_handle)) call self%hovered_handle%set_hovered(.false.)
+        self%dragged_handle => null()
+        self%hovered_handle => null()
+        if (c_associated(self%viewer_)) status = vkf_viewer_set_grab(self%viewer_, 0_c_int)
+    end subroutine forget_handles
 
     !> The built-in keys (OpenFrames'): `v` the next view, `V` the previous
     !> one, the space bar resets the view; not with control, alt or meta held.
