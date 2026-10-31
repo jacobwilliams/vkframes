@@ -903,6 +903,14 @@ Decided so far:
       color (OpenFrames' RGBA_MAX). Data files are found by name on
       `VKFRAMES_DATA_PATH` (`find_data_file`). Tested headless
       (`test/test_sky.f90`); the Qt demo has a "Sky" choice.
+- [x] Star names (beyond OpenFrames): `SkySphere%set_star_names` labels
+      the named stars drawn (the catalog's `proper` field), up to a
+      magnitude, in a size, color and font; off by default, shown with the
+      stars. Labels at infinity (`vkf_label_set_at_infinity`: label.vert
+      takes the position as a direction and draws it just in front of the
+      far plane, so the scene hides it), under a transform with the sky's
+      attitude. Tested in `test_sky` (names read) and `live_changes` (shown
+      while running); the Qt demo has a "Star names" box.
 - [ ] Stars and sky texture in orthographic views (directions at infinity
       have no orthographic projection; drawn only in perspective views).
 

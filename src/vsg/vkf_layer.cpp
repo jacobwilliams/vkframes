@@ -625,17 +625,20 @@ namespace
 
     // Pushes the recorded view's viewport (offset 128) for its label children;
     // viewport[3] = 1 for HUD labels (drawn on top: label.vert puts them at the
-    // near plane).
+    // near plane), 2 for labels at infinity (their position a direction: at the
+    // far plane, as the sky's stars).
     class LabelGroup : public vsg::Inherit<vsg::Group, LabelGroup>
     {
     public:
         bool hud = false;
+        bool atInfinity = false;
 
         void traverse(vsg::RecordTraversal& visitor) const override
         {
             float viewport[4];
             recorded_viewport(visitor, viewport);
-            if (hud) viewport[3] = 1.0f;
+            if (atInfinity) viewport[3] = 2.0f;
+            else if (hud) viewport[3] = 1.0f;
             auto& commandBuffer = *visitor.getState()->_commandBuffer;
             auto& shaders = label_shaders();
             if (auto layout = shaders.pushLayout(commandBuffer.getDevice()))
@@ -3282,6 +3285,19 @@ VKF_API int vkf_label_set_on_top(void* label, int on)
     auto group = l->node.cast<LabelGroup>();
     if (!group) return -1;
     group->hud = on != 0;
+    return 0;
+}
+
+// Draw a label at infinity (on != 0: its position a direction, in its
+// parent's axes; at the far plane, behind the scene, as the sky's stars) or at
+// its position (0).
+VKF_API int vkf_label_set_at_infinity(void* label, int on)
+{
+    auto l = dynamic_cast<Label*>(static_cast<Node*>(label));
+    if (!l) return -1;
+    auto group = l->node.cast<LabelGroup>();
+    if (!group) return -1;
+    group->atInfinity = on != 0;
     return 0;
 }
 

@@ -16,17 +16,24 @@
 !>   maximum size (window units), colored from their color index, and the
 !>   smaller dimmed (OpenFrames' SkySphere::processStars and StarToPoint).
 !>
+!> * Star names: the names of the catalog's named stars drawn (those of
+!>   them up to a magnitude), as labels beside them, at infinity as the stars
+!>   (behind the scene); off by default (set_star_names). Shown with the
+!>   stars (draw mode SKY_STARS).
+!>
 !> Both are drawn when given (draw mode SKY_TEXTURE + SKY_STARS); the stars
 !> over the texture, by the brighter color.
 module vkf_sky
 
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
+    use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_double, c_f_pointer
     use vkf_math, only: wp, pi, quat_to_matrix
     use vkf_files, only: find_data_file
+    use vkf_text, only: label_create
     use vkf_layer, only: check_status, vkf_stars_create, vkf_sky_texture_create, vkf_sky_stars, vkf_sky_stars_changed, &
                          vkf_sky_style, vkf_sky_style_changed, vkf_image_read, vkf_image_delete, &
                          vkf_transform_create, vkf_switch_create, vkf_switch_set, vkf_node_add_child, &
-                         vkf_node_remove_child, vkf_node_delete, vkf_compile_node
+                         vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_transform_set_matrix, &
+                         vkf_label_set_at_infinity
 
     implicit none
 
@@ -34,6 +41,16 @@ module vkf_sky
 
     !> What a sky draws (OpenFrames' SkySphere::DrawMode; add them).
     integer, parameter, public :: SKY_NONE = 0, SKY_TEXTURE = 1, SKY_STARS = 2
+
+    integer, parameter :: NAME_ALIGNMENT = 1                !! star names' alignment: vkf_frames' ALIGN_LEFT_CENTER
+
+    !> A named star of those read: its name and magnitude, its direction in
+    !> the stars read (self%stars).
+    type :: StarName
+        character(len=:), allocatable :: text               !! the catalog's name
+        integer :: star = 0                                 !! the star's column in self%stars
+        real(wp) :: mag = 0.0_wp                            !! apparent magnitude
+    end type StarName
 
     !> The sky behind a scene (OpenFrames' SkySphere; see the module documentation).
     type, public :: SkySphere
@@ -49,6 +66,15 @@ module vkf_sky
         real(c_float), allocatable :: stars(:,:)            !! (8, n): direction, size, rgb, -
         integer :: n_stars = 0                              !! stars read: columns of stars used
         real(wp) :: mag_range(2) = 0.0_wp                   !! of the stars read
+        type(StarName), allocatable :: names(:)             !! the named stars read (n_names of them)
+        integer :: n_names = 0                              !! named stars read
+        ! star names
+        logical :: names_shown = .false.                    !! the names are drawn
+        real(wp) :: names_max_mag = huge(1.0_wp)            !! names of stars up to this magnitude
+        real(wp) :: names_size = 12.0_wp                    !! window units
+        real(wp) :: names_rgba(4) = [0.6_wp, 0.7_wp, 0.9_wp, 1.0_wp]  !! color
+        character(len=:), allocatable :: names_font         !! font ('' or unallocated: the default)
+        integer :: n_labels = 0                             !! names drawn
         ! rendering
         type(c_ptr) :: image = c_null_ptr                   !! the texture image (null: none)
         type(c_ptr) :: root = c_null_ptr                    !! the sky's node, a transform (null until made)
@@ -56,11 +82,13 @@ module vkf_sky
         type(c_ptr) :: star_switch = c_null_ptr             !! shows or hides the stars (draw mode)
         type(c_ptr) :: texture_node = c_null_ptr            !! the texture drawing (null: none)
         type(c_ptr) :: star_node = c_null_ptr               !! the stars drawing (null: none)
+        type(c_ptr) :: name_node = c_null_ptr               !! the star names, a transform: the attitude (null: none)
         logical :: shown = .false.                          !! made for a window: nodes made later are compiled
     contains
         procedure :: set_texture_map, texture_map
         procedure :: set_star_data, star_catalog, star_magnitudes, star_sizes
         procedure :: num_stars, star_magnitude_range, star
+        procedure :: set_star_names, star_names, num_star_names, num_star_names_drawn, star_name
         procedure :: set_draw_mode, draw_mode
         procedure :: set_attitude, attitude
         procedure :: node
@@ -191,6 +219,63 @@ contains
         rgb = real(self%stars(5:7, i), wp)
     end subroutine star
 
+    !> Draw the names of the named stars drawn (those of the catalog's last
+    !> field), beside them: `shown` (default false), of the stars up to
+    !> magnitude `max_mag` (default all of them), `size` window units tall
+    !> (default 12), in color `rgba` (default a pale blue) and font `font`
+    !> ('' or default: vkframes' default font). Also while shown; the
+    !> settings not given are kept. Returns false (nothing changed) if `size`
+    !> isn't > 0.
+    logical function set_star_names(self, shown, max_mag, size, rgba, font) result(ok)
+        class(SkySphere), intent(inout) :: self
+        logical, intent(in) :: shown                        !! draw the names
+        real(wp), intent(in), optional :: max_mag           !! the dimmest named (apparent magnitude)
+        real(wp), intent(in), optional :: size              !! height in window units (> 0)
+        real(wp), intent(in), optional :: rgba(4)           !! color [r, g, b, a] (0 to 1)
+        character(len=*), intent(in), optional :: font      !! font file ('' for the default)
+        ok = .true.
+        if (present(size)) ok = size > 0.0_wp
+        if (.not. ok) return
+        self%names_shown = shown
+        if (present(max_mag)) self%names_max_mag = max_mag
+        if (present(size)) self%names_size = size
+        if (present(rgba)) self%names_rgba = rgba
+        if (present(font)) self%names_font = font
+        if (c_associated(self%root)) call make_name_node(self)
+    end function set_star_names
+
+    !> Whether the star names are drawn (as set).
+    pure logical function star_names(self)
+        class(SkySphere), intent(in) :: self
+        star_names = self%names_shown
+    end function star_names
+
+    !> Number of named stars read (of the stars read).
+    pure integer function num_star_names(self)
+        class(SkySphere), intent(in) :: self
+        num_star_names = self%n_names
+    end function num_star_names
+
+    !> Number of star names drawn now (0 until the sky is shown, or if the
+    !> names aren't).
+    pure integer function num_star_names_drawn(self)
+        class(SkySphere), intent(in) :: self
+        num_star_names_drawn = self%n_labels
+    end function num_star_names_drawn
+
+    !> Named star i (1 to num_star_names): its name, apparent magnitude and
+    !> star (1 to num_stars: see `star`).
+    subroutine star_name(self, i, name, mag, which)
+        class(SkySphere), intent(in) :: self
+        integer, intent(in) :: i                            !! 1 to num_star_names
+        character(len=:), allocatable, intent(out) :: name  !! the catalog's name
+        real(wp), intent(out) :: mag                        !! apparent magnitude
+        integer, intent(out) :: which                       !! the star (1 to num_stars)
+        name = self%names(i)%text
+        mag = self%names(i)%mag
+        which = self%names(i)%star
+    end subroutine star_name
+
     !> What to draw: SKY_NONE, or SKY_TEXTURE + SKY_STARS (default; each only
     !> if given).
     subroutine set_draw_mode(self, mode)
@@ -215,6 +300,7 @@ contains
         self%attitude_ = q / norm2(q)
         call apply_attitude(self, self%texture_node)
         call apply_attitude(self, self%star_node)
+        call apply_name_attitude(self)
     end subroutine set_attitude
 
     !> The sky's attitude in the root frame (quaternion [x, y, z, w]).
@@ -291,8 +377,54 @@ contains
                 call check_status(vkf_node_add_child(self%star_switch, self%star_node), 'SkySphere')
             end if
         end if
+        call make_name_node(self)                     ! (the names after the stars: in front of them)
         call apply_mode(self)
     end subroutine make_star_node
+
+    !> The star names node for the current names and settings, in place of the
+    !> old one: a label per named star drawn up to the names' magnitude, under
+    !> the stars' switch (shown with them), turned by the sky's attitude.
+    subroutine make_name_node(self)
+        type(SkySphere), intent(inout) :: self
+        type(c_ptr) :: label
+        integer :: i
+        if (c_associated(self%name_node)) then
+            call check_status(vkf_node_remove_child(self%star_switch, self%name_node), 'SkySphere')
+            call vkf_node_delete(self%name_node)
+            self%name_node = c_null_ptr
+        end if
+        self%n_labels = 0
+        if (.not. self%names_shown .or. self%n_names == 0) return
+        if (.not. allocated(self%names_font)) self%names_font = ''
+        self%name_node = vkf_transform_create()
+        if (.not. c_associated(self%name_node)) return
+        do i = 1, self%n_names
+            if (self%names(i)%mag > self%names_max_mag) cycle
+            ! (two spaces: beside the star, not over it)
+            label = label_create('  '//self%names(i)%text, real(self%stars(1:3, self%names(i)%star), wp), &
+                                 self%names_rgba, self%names_size, 0.0_wp, NAME_ALIGNMENT, self%names_font)
+            if (.not. c_associated(label)) exit                ! (no font: said)
+            call check_status(vkf_label_set_at_infinity(label, 1_c_int), 'SkySphere')
+            call check_status(vkf_node_add_child(self%name_node, label), 'SkySphere')
+            call vkf_node_delete(label)                        ! (held by the node)
+            self%n_labels = self%n_labels + 1
+        end do
+        call apply_name_attitude(self)
+        if (self%shown) call check_status(vkf_compile_node(self%name_node), 'SkySphere')
+        call check_status(vkf_node_add_child(self%star_switch, self%name_node), 'SkySphere')
+        call apply_mode(self)
+    end subroutine make_name_node
+
+    !> The sky's attitude into the star names' transform.
+    subroutine apply_name_attitude(self)
+        type(SkySphere), intent(in) :: self
+        real(c_double) :: m(4, 4)
+        if (.not. c_associated(self%name_node)) return
+        m = 0.0_c_double
+        m(1:3, 1:3) = quat_to_matrix(self%attitude_)
+        m(4, 4) = 1.0_c_double
+        call check_status(vkf_transform_set_matrix(self%name_node, m), 'SkySphere')
+    end subroutine apply_name_attitude
 
     !> Show or hide the texture and the stars, as the draw mode says.
     subroutine apply_mode(self)
@@ -363,6 +495,7 @@ contains
         raw_min = raw_size(self%max_mag)
         if (.not. allocated(self%stars)) allocate(self%stars(8, min(self%max_stars, 1024)))
         self%n_stars = 0
+        self%n_names = 0
         self%mag_range = [huge(1.0_wp), -huge(1.0_wp)]
         do while (self%n_stars < self%max_stars)
             read(unit, '(a)', iostat=status) line
@@ -393,11 +526,54 @@ contains
             self%n_stars = self%n_stars + 1
             self%stars(:, self%n_stars) = real([dir, size, dim * rgb, 1.0_wp], c_float)
             self%mag_range = [min(self%mag_range(1), mag), max(self%mag_range(2), mag)]
+            call add_name(self, after_fields(line, 4), mag)
         end do
         close(unit)
         if (self%n_stars == 0) self%mag_range = 0.0_wp
         ok = .true.
     end function read_stars
+
+    !> Remember the name of the star just read (self%n_stars), if it has one.
+    subroutine add_name(self, name, mag)
+        type(SkySphere), intent(inout) :: self
+        character(len=*), intent(in) :: name                !! its name ('' for none)
+        real(wp), intent(in) :: mag                         !! its apparent magnitude
+        type(StarName), allocatable :: tmp(:)
+        if (len(name) == 0) return
+        if (.not. allocated(self%names)) allocate(self%names(64))
+        if (self%n_names == size(self%names)) then
+            allocate(tmp(2 * self%n_names))
+            tmp(1:self%n_names) = self%names(1:self%n_names)
+            call move_alloc(tmp, self%names)
+        end if
+        self%n_names = self%n_names + 1
+        self%names(self%n_names) = StarName(name, self%n_stars, mag)
+    end subroutine add_name
+
+    !> The text of `line` after its first n fields (separated by blanks or
+    !> tabs), trimmed: a star's name ('' if none: e.g. without a color index).
+    pure function after_fields(line, n) result(rest)
+        character(len=*), intent(in) :: line
+        integer, intent(in) :: n                            !! fields skipped
+        character(len=:), allocatable :: rest
+        character(len=*), parameter :: blanks = ' '//achar(9)//achar(13)
+        integer :: i, j, k
+        rest = ''
+        i = 1
+        do k = 1, n
+            j = verify(line(i:), blanks)                    ! the field's start
+            if (j == 0) return
+            i = i + j - 1
+            j = scan(line(i:), blanks)                      ! the blank after it
+            if (j == 0) return
+            i = i + j - 1
+        end do
+        j = verify(line(i:), blanks)                        ! the rest, without blanks around it
+        if (j == 0) return
+        i = i + j - 1
+        k = verify(line, blanks, back=.true.)
+        rest = line(i:k)
+    end function after_fields
 
     !> The number of columns of a (the stars' capacity).
     pure integer function size_of(a)

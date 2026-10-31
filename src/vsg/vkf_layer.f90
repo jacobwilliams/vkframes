@@ -39,7 +39,7 @@ module vkf_layer
               vkf_mesh_set_twilight
     public :: vkf_light_create, vkf_light_set, vkf_viewer_light, vkf_viewer_light_enable
     public :: vkf_font_read, vkf_font_delete, vkf_label_create, vkf_label_set_text, vkf_label_set_color
-    public :: vkf_label_set_layout, vkf_label_set_on_top
+    public :: vkf_label_set_layout, vkf_label_set_on_top, vkf_label_set_at_infinity
     public :: vkf_viewer_hud_add, vkf_viewer_hud_remove, vkf_viewer_remove_node
     public :: vkf_line_create, vkf_line_points, vkf_line_style, vkf_line_points_changed, vkf_line_style_changed
     public :: vkf_line_set_range, vkf_line_set_lod, vkf_marker_create, vkf_line_create_colored, vkf_line_colors
@@ -856,6 +856,15 @@ module vkf_layer
             type(c_ptr), value :: label  !! label handle (vkf_label_create)
             integer(c_int), value :: on  !! not 0: on top; 0: depth-tested
         end function vkf_label_set_on_top
+
+        !> Draw a label at infinity (on /= 0: its position a direction, in its parent's axes; at the far plane,
+        !> behind the scene, as the sky's stars) or at its position (0). Returns 0, or -1 if not a label.
+        integer(c_int) function vkf_label_set_at_infinity(label, on) bind(C, name="vkf_label_set_at_infinity")
+            import :: c_ptr, c_int
+            implicit none
+            type(c_ptr), value :: label  !! label handle (vkf_label_create)
+            integer(c_int), value :: on  !! 1: at infinity; 0: at its position
+        end function vkf_label_set_at_infinity
 
         !> Change a label's layout, in place. Returns 0, or -1 on failure.
         integer(c_int) function vkf_label_set_layout(label, position, size, max_size, halign, valign) &

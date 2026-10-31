@@ -15,6 +15,11 @@
 //   w < 0: an object size of -w (scene units), but no larger on screen than
 //          textLayout.outlineWidth window units, as OpenFrames' axis labels
 //          (OBJECT_COORDS_WITH_MAXIMUM_SCREEN_SIZE). Labels draw no outline.
+//
+// pc.viewport.w = 2: a label at infinity (the sky's star names): its position
+// a direction (the view's translation ignored), drawn at the far plane just in
+// front of the stars, so the scene is in front of it; none in an orthographic
+// view (as the stars).
 
 #define GLYPH_DIMENSIONS 0
 #define GLYPH_BEARINGS 1
@@ -42,7 +47,8 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
     vec4 viewport;          // xy = size of the view in framebuffer pixels,
                             // z = framebuffer pixels per window unit (2 on Retina),
-                            // w = 1 for HUD labels (drawn on top of the scene)
+                            // w = 1 for HUD labels (drawn on top of the scene),
+                            // 2 for labels at infinity
 } pc;
 
 layout(location = 0) in vec3 inPosition;
@@ -81,7 +87,8 @@ void main()
     vec3 pos = textLayout.horizontal.xyz * (horiAdvance + textLayout.horizontal.w + bearings.x + inPosition.x * dimensions.x) +
                textLayout.vertical.xyz * (vertAdvance + textLayout.vertical.w + bearings.y + (inPosition.y - 1.0) * dimensions.y);
 
-    vec4 center_eye = pc.modelview * vec4(textLayout.position.xyz, 1.0);
+    bool at_infinity = pc.viewport.w > 1.5;
+    vec4 center_eye = pc.modelview * vec4(textLayout.position.xyz, at_infinity ? 0.0 : 1.0);
 
     // eye-space units per framebuffer pixel at the label's depth, across and up
     // (w is the distance for a perspective projection, 1 for an orthographic
@@ -99,7 +106,14 @@ void main()
 
     gl_Position = pc.projection * (center_eye + vec4(pos.xy * scale, pos.z * scale.y, 0.0));
     gl_Position.z += inPosition.z * 0.0001;
-    if (pc.viewport.w > 0.5) gl_Position.z = gl_Position.w;   // HUD: at the near plane (reverse depth)
+    if (at_infinity)
+    {
+        if (gl_Position.w <= 0.0)
+            gl_Position = vec4(0.0, 0.0, 0.0, -1.0);  // behind the eye (or an orthographic view): not drawn
+        else
+            gl_Position.z = 1.0e-6 * gl_Position.w;    // just in front of the far plane (reverse depth: 0)
+    }
+    else if (pc.viewport.w > 0.5) gl_Position.z = gl_Position.w;   // HUD: at the near plane (reverse depth)
 
     fragColor = textLayout.color;
     outlineColor = textLayout.outlineColor;

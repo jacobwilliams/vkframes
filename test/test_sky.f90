@@ -2,7 +2,8 @@
 !> catalog in data/ (OpenFrames' Stars/Stars_HYGv3.txt): the stars in a
 !> magnitude range, the limit on their number, Sirius' direction, sizes
 !> growing with brightness, a catalog with right ascension in degrees and no
-!> color index, and invalid settings or files.
+!> color index, the named stars (a name of two words) and their settings, and
+!> invalid settings or files.
 program test_sky
 
     use vkframes
@@ -13,8 +14,9 @@ program test_sky
     character(len=*), parameter :: catalog = 'data/Stars_HYGv3.txt'
     type(SkySphere) :: sky
     real(wp) :: dir(3), rgb(3), size, size1, ra, dec, m(2)
-    integer :: i, unit
+    integer :: i, unit, which
     logical :: sizes_ok
+    character(len=:), allocatable :: name
 
 
     ! magnitudes -2 to 6: 5068 stars of the catalog (counted with awk)
@@ -40,6 +42,18 @@ program test_sky
     end do
     call check(sizes_ok, 'sizes from 1 up to the brightest star, unit directions')
 
+    ! named stars: 129 of magnitude -2 to 6 (awk), Sirius first; Rigil Kentaurus (two words) fourth
+    write(*, '(a,i0,a)') 'HYG v3: ', sky%num_star_names(), ' named stars of magnitude -2 to 6'
+    call check(sky%num_star_names() == 129, 'named stars')
+    call sky%star_name(1, name, size, which)
+    call check(name == 'Sirius' .and. which == 1 .and. abs(size + 1.44_wp) < 1.0e-9_wp, 'Sirius named')
+    call sky%star_name(4, name, size, which)
+    call check(name == 'Rigil Kentaurus', 'a name of two words')
+    call check(.not. sky%star_names() .and. sky%num_star_names_drawn() == 0, 'names not drawn by default')
+    call check(sky%set_star_names(.true., max_mag=2.0_wp) .and. sky%star_names(), 'names drawn')
+    call check(sky%num_star_names_drawn() == 0, 'no names drawn before the sky is shown')
+    call check(.not. sky%set_star_names(.true., size=0.0_wp), 'name size 0 rejected')
+
     ! at most max_stars, in catalog order
     call check(sky%set_star_data(catalog, max_mag=8.0_wp, max_stars=1000) .and. sky%num_stars() == 1000, 'max_stars')
 
@@ -53,6 +67,7 @@ program test_sky
     call sky%star(1, dir, rgb, size)
     call check(sky%num_stars() == 1 .and. maxval(abs(dir - [0.0_wp, 1.0_wp, 0.0_wp])) < 1.0e-6_wp, &
                'right ascension in degrees')
+    call check(sky%num_star_names() == 0, 'no names without a color index')
 
     ! invalid settings and files
     call check(.not. sky%set_star_data(catalog, min_mag=5.0_wp, max_mag=1.0_wp), 'min_mag > max_mag rejected')
