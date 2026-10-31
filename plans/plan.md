@@ -658,10 +658,14 @@ Decided so far:
         gives its chain's kind, point count, tail node, style, writer and
         tail drawing; the curve adds its trail between writing and drawing,
         and its level of detail to the chain. The ribbon gains `first_drawn`.
-  - [ ] The demos' common options (`--capture`, `--capture-frame`,
-        `--quit-after`, `--recreate-surface`) and the capture in their
-        frame callbacks: a small options type in `vkframes_qt` parsed before
-        each demo's own options.
+  - [x] The demos' common options: `vkframes_qt`'s `DemoOptions`
+        (`--capture`, `--capture-frame`, `--quit-after`,
+        `--recreate-surface`), taken (`take`) before each demo's own in its
+        argument loop; `after_frame` saves the frame (the Qt demo's other
+        windows to file_2, ...) and makes the surface again (now in every
+        Qt demo, not only the shooting demo's); `start_quit_timer` closes the
+        main window (the Qt demo keeps its own, closing its other windows
+        too).
 - **Efficiency follow-ups** (trajectories can be very large; see also
   [openframes-compare.md](openframes-compare.md), the comparison with
   OpenFrames and its list of future work):

@@ -113,7 +113,7 @@ module vkdemo
 
     use qt
     use vkframes
-    use vkframes_qt, only: connect_view, ViewLink
+    use vkframes_qt, only: connect_view, ViewLink, DemoOptions
     use vkf_text, only: get_font
     use iso_c_binding
     implicit none
@@ -249,12 +249,11 @@ module vkdemo
         integer :: picked_window = 0                           !! the window it was picked in (0: none)
         class(DrawableTrajectory), pointer :: highlighted => null()   !! the trajectory picked (highlighted)
         ! options
-        character(len=:), allocatable :: data_dir, capture
-        integer :: capture_frame = 120
+        character(len=:), allocatable :: data_dir
+        type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after, --recreate-surface
         integer :: start_view = 1
         integer :: start_windows = 1
         integer :: start_rotation_speed = 1
-        real(wp) :: quit_after = -1.0_wp
         logical :: test_resize = .false.
         logical :: start_trace = .false.
         logical :: start_altitude_colors = .false.
@@ -742,8 +741,6 @@ contains
     subroutine on_update(data)
         class(*), intent(inout), optional :: data
         character(len=40) :: text
-        character(len=:), allocatable :: file
-        integer :: dot
         real(wp) :: dpr
         select type (w => data)
         type is (view_window_t)
@@ -766,16 +763,7 @@ contains
                     app%slider_setting = .false.
                 end if
             end if
-            if (allocated(app%capture) .and. w%frame == app%capture_frame) then
-                file = app%capture
-                if (w%index > 1) then            ! file_2.png, ...
-                    dot = index(file, '.', back=.true.)
-                    if (dot == 0) dot = len(file) + 1
-                    write(text, '(a,i0)') '_', w%index
-                    file = file(1:dot-1)//trim(text)//file(dot:)
-                end if
-                if (w%proxy%capture(file)) write(*, '(a)') 'captured '//file
-            end if
+            if (app%options%after_frame(w%proxy, w%window, w%frame, w%index)) return   ! (a capture: file_2.png, ...)
             call w%window%requestUpdate()
         end select
     end subroutine on_update
@@ -1508,19 +1496,12 @@ program vkframes_qt_demo
     if (status == 0) app%data_dir = trim(arg)
     i = 1
     do while (i <= command_argument_count())
+        if (app%options%take(i)) cycle                      ! (--capture, --quit-after, ...: vkframes_qt)
         call get_command_argument(i, arg)
         select case (arg)
         case ('--data')
             call get_command_argument(i + 1, arg)
             app%data_dir = trim(arg)
-            i = i + 1
-        case ('--capture')
-            call get_command_argument(i + 1, arg)
-            app%capture = trim(arg)
-            i = i + 1
-        case ('--capture-frame')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%capture_frame
             i = i + 1
         case ('--view')
             call get_command_argument(i + 1, arg)
@@ -1568,10 +1549,6 @@ program vkframes_qt_demo
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_pattern
             i = i + 1
-        case ('--quit-after')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%quit_after
-            i = i + 1
         end select
         i = i + 1
     end do
@@ -1595,7 +1572,7 @@ program vkframes_qt_demo
     call app%show_shadow%setChecked(app%start_shadow)
     call app%show_sun_arrow%setChecked(app%start_sun_arrow)
     call on_sky(app%start_sky)
-    if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
+    if (app%options%quit_after > 0) call QTimer_singleShot(int(1000 * app%options%quit_after), on_quit)
     if (app%test_resize) call QTimer_singleShot(2000, on_test_resize)
     call app%main%resize(1100, 700)
     call app%main%show()

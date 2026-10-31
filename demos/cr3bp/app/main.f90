@@ -38,7 +38,7 @@ module cr3bp_demo
 
     use qt
     use vkframes
-    use vkframes_qt, only: connect_view, ViewLink
+    use vkframes_qt, only: connect_view, ViewLink, DemoOptions
     use vkf_text, only: get_font
     use cr3bp, only: propagate, jacobi, lagrange_points, sample_states, PROPAGATED, IMPACT_1, IMPACT_2, ESCAPED
     use iso_c_binding
@@ -117,13 +117,11 @@ module cr3bp_demo
         real(wp) :: animation_start = 0.0_wp                   !! the path's earliest time (s): where Animate starts
         logical :: building = .true.                           !! the GUI is being built (no updates yet)
         ! options
-        character(len=:), allocatable :: capture
-        integer :: capture_frame = 120
+        type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after, --recreate-surface
         integer :: select_at_start = 0
         real(wp) :: click_near(2) = huge(1.0_wp)               !! (--click-near: a click there, nondimensional)
         logical :: fate_at_start = .false.                     !! (--color-by fate)
         integer :: go_to = 0                                   !! (--go-to: fly to the Earth (1) or the Moon (2))
-        real(wp) :: quit_after = -1.0_wp
     end type app_t
 
     !> The application (module-level, so that it is a target: frames, artists
@@ -504,9 +502,7 @@ contains
         app%frame = app%frame + 1
         if (app%frame == 30 .and. app%click_near(1) < huge(1.0_wp)) call click_near()
         if (app%frame == 30 .and. app%go_to > 0) call go_to_body(app%go_to)
-        if (allocated(app%capture) .and. app%frame == app%capture_frame) then
-            if (app%proxy%capture(app%capture)) write(*, '(a)') 'captured '//app%capture
-        end if
+        if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
 
@@ -928,16 +924,9 @@ program vkframes_cr3bp_demo
     qapp = QApplication()
     i = 1
     do while (i <= command_argument_count())
+        if (app%options%take(i)) cycle                      ! (--capture, --quit-after, ...: vkframes_qt)
         call get_command_argument(i, arg)
         select case (arg)
-        case ('--capture')
-            call get_command_argument(i + 1, arg)
-            app%capture = trim(arg)
-            i = i + 1
-        case ('--capture-frame')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%capture_frame
-            i = i + 1
         case ('--select')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%select_at_start
@@ -956,10 +945,6 @@ program vkframes_cr3bp_demo
             call get_command_argument(i + 1, arg)
             app%go_to = merge(1, 2, arg == 'earth')
             i = i + 1
-        case ('--quit-after')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%quit_after
-            i = i + 1
         end select
         i = i + 1
     end do
@@ -969,7 +954,7 @@ program vkframes_cr3bp_demo
     if (app%fate_at_start) call app%color_by%setCurrentIndex(1)
     app%building = .false.
     call make_cloud()
-    if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
+    call app%options%start_quit_timer(app%main)
     call app%main%resize(1300, 850)
     call app%main%show()
     call QTimer_singleShot(0, on_startup)

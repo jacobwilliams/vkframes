@@ -60,7 +60,7 @@ module trajdemo
 
     use qt
     use vkframes
-    use vkframes_qt, only: connect_view, ViewLink
+    use vkframes_qt, only: connect_view, ViewLink, DemoOptions
     use vkf_text, only: get_font
     use json_module, only: json_file, json_array, json_logical, json_string
     use iso_c_binding
@@ -167,10 +167,9 @@ module trajdemo
         character(len=:), allocatable :: time_units            !! the first segment's, for the time shown
         real(wp) :: time_factor = 1.0_wp                       !! seconds per time unit
         ! options
-        character(len=:), allocatable :: file, capture, save_as
-        integer :: capture_frame = 120
+        character(len=:), allocatable :: file, save_as
+        type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after, --recreate-surface
         integer :: start_view = 1
-        real(wp) :: quit_after = -1.0_wp
         logical :: test_edit = .false.
     end type app_t
 
@@ -880,9 +879,7 @@ contains
             call app%time_slider%setValue(nint(slider_steps * (t - app%t0) / (app%tf - app%t0)))
             app%slider_setting = .false.
         end if
-        if (allocated(app%capture) .and. app%frame == app%capture_frame) then
-            if (app%proxy%capture(app%capture)) write(*, '(a)') 'captured '//app%capture
-        end if
+        if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
 
@@ -1361,12 +1358,6 @@ contains
         call save_as(app%save_as)
     end subroutine on_test_save
 
-    !> --quit-after
-    subroutine on_quit(data)
-        class(*), intent(inout), optional :: data
-        call app%main%close()
-    end subroutine on_quit
-
     !> The main window closes: with unsaved changes, save them, discard them or
     !> stay open; then close the view (waiting for the GPU) before Qt destroys
     !> its native window.
@@ -1630,23 +1621,12 @@ program vkframes_trajectory_demo
     app%file = ''
     i = 1
     do while (i <= command_argument_count())
+        if (app%options%take(i)) cycle                      ! (--capture, --quit-after, ...: vkframes_qt)
         call get_command_argument(i, arg)
         select case (arg)
-        case ('--capture')
-            call get_command_argument(i + 1, arg)
-            app%capture = trim(arg)
-            i = i + 1
-        case ('--capture-frame')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%capture_frame
-            i = i + 1
         case ('--view')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_view
-            i = i + 1
-        case ('--quit-after')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%quit_after
             i = i + 1
         case ('--test-edit')
             app%test_edit = .true.
@@ -1667,7 +1647,7 @@ program vkframes_trajectory_demo
     call build_ui()
     if (app%test_edit) call QTimer_singleShot(1500, on_test_edit)
     if (allocated(app%save_as)) call QTimer_singleShot(2500, on_test_save)
-    if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
+    call app%options%start_quit_timer(app%main)
     call app%main%resize(1200, 800)
     call app%main%show()
     call QTimer_singleShot(0, on_startup)

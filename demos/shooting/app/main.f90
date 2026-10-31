@@ -32,7 +32,7 @@ module shooting_demo
 
     use qt
     use vkframes
-    use vkframes_qt, only: connect_view, ViewLink
+    use vkframes_qt, only: connect_view, ViewLink, DemoOptions
     use shooting
     use iso_c_binding
 
@@ -102,10 +102,7 @@ module shooting_demo
         integer :: start_segments = 8, start_seed = 7, start_iteration = 0, start_view = 2
         real(wp) :: start_step = 0.3_wp, start_noise = 0.3_wp
         logical :: start_play = .false.
-        character(len=:), allocatable :: capture
-        integer :: capture_frame = 120
-        integer :: recreate_frame = -1                            !! (--recreate-surface: a test)
-        real(wp) :: quit_after = -1.0_wp
+        type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after, --recreate-surface
     end type app_t
 
     type(app_t), target, save :: app
@@ -481,16 +478,7 @@ contains
                                   pixel_ratio=app%window%devicePixelRatio())
         if (.not. app%proxy%frame()) return
         app%frame = app%frame + 1
-        if (allocated(app%capture) .and. app%frame == app%capture_frame) then
-            if (app%proxy%capture(app%capture)) write(*, '(a)') 'captured '//app%capture
-        end if
-        if (app%frame == app%recreate_frame) then                ! (a test: Qt destroys and remakes the native window)
-            write(*, '(a,i0)') 'shooting demo: native window destroyed and created again at frame ', app%frame
-            call app%window%destroy()
-            call app%window%create()
-            call app%window%show()
-            return
-        end if
+        if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
 
@@ -600,11 +588,6 @@ contains
         if (app%updating) return
         call app%iteration_slider%setValue(row)
     end subroutine on_iteration_row
-
-    subroutine on_quit(data)
-        class(*), intent(inout), optional :: data
-        call app%main%close()
-    end subroutine on_quit
 
     !> The main window closes: close the view (waiting for the GPU) first.
     subroutine on_close(event, data)
@@ -753,6 +736,7 @@ program vkframes_shooting_demo
     qapp = QApplication()
     i = 1
     do while (i <= command_argument_count())
+        if (app%options%take(i)) cycle                      ! (--capture, --quit-after, ...: vkframes_qt)
         call get_command_argument(i, arg)
         select case (arg)
         case ('--segments')
@@ -786,22 +770,6 @@ program vkframes_shooting_demo
             i = i + 1
         case ('--play')
             app%start_play = .true.
-        case ('--capture')
-            call get_command_argument(i + 1, arg)
-            app%capture = trim(arg)
-            i = i + 1
-        case ('--capture-frame')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%capture_frame
-            i = i + 1
-        case ('--recreate-surface')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%recreate_frame
-            i = i + 1
-        case ('--quit-after')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%quit_after
-            i = i + 1
         end select
         i = i + 1
     end do
@@ -813,7 +781,7 @@ program vkframes_shooting_demo
     call app%iteration_slider%setValue(app%start_iteration)
     call select_segment(app%selected)
     if (app%start_play) call on_play()
-    if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
+    call app%options%start_quit_timer(app%main)
     call app%main%resize(1400, 860)
     call app%main%show()
     ierr = qapp%exec()

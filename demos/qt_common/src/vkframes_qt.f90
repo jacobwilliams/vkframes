@@ -4,7 +4,8 @@
 !> `forward_key`; the conversions `vsg_button`, `vsg_mask`, `vsg_key`), and
 !> the window's native surface going away (`watch_surface`); and all of
 !> those connected at once for a QWindow showing a WindowProxy
-!> (`connect_view`, with its ViewLink).
+!> (`connect_view`, with its ViewLink); and the options the demos share, for
+!> screenshots and tests (DemoOptions).
 !>
 !> Keys: VSG's key symbols are X11 keysyms. Letters are lower case without
 !> Shift (the modified symbol upper case with it); other printable keys are
@@ -26,6 +27,25 @@ module vkframes_qt
     public :: forward_mouse, forward_wheel, forward_key
     public :: watch_surface, connect_view
 
+    !> The options the demos share (for screenshots and tests), taken from the
+    !> command line among each demo's own (`take`): `--capture file` saves
+    !> frame `--capture-frame n` (default: the demo's, set before parsing) to
+    !> the file; `--quit-after seconds` closes the main window then
+    !> (`start_quit_timer`); `--recreate-surface n` destroys the window's
+    !> native surface at frame n and creates it again (a test: the view
+    !> closes, and opens again on the next expose). `after_frame` does the
+    !> capture and the recreation.
+    type, public :: DemoOptions
+        character(len=:), allocatable :: capture            !! the file a frame is saved to (unallocated: none)
+        integer :: capture_frame = 120                      !! the frame saved
+        real(wp) :: quit_after = -1.0_wp                    !! seconds before quitting (< 0: never)
+        integer :: recreate_frame = -1                      !! the frame the surface is made again at (< 0: never)
+    contains
+        procedure :: take => options_take
+        procedure :: after_frame => options_after_frame
+        procedure :: start_quit_timer => options_start_quit_timer
+    end type DemoOptions
+
     !> A QWindow showing a WindowProxy (`connect_view`): what its connections
     !> forward to. It must stay alive while the window exists (e.g. a
     !> component of the program's saved state).
@@ -41,7 +61,7 @@ contains
 
     !> VSG's button number (1 left, 2 middle, 3 right; 0 other) for a Qt button.
     pure integer function vsg_button(qt_button)
-        integer, intent(in) :: qt_button
+        integer, intent(in) :: qt_button                    !! a Qt button (Qt_LeftButton, ...)
         select case (qt_button)
         case (Qt_LeftButton)
             vsg_button = 1
@@ -56,7 +76,7 @@ contains
 
     !> VSG's mask of the buttons held (256 left, 512 middle, 1024 right) for Qt's.
     pure integer function vsg_mask(qt_buttons)
-        integer, intent(in) :: qt_buttons
+        integer, intent(in) :: qt_buttons                   !! Qt's buttons held (an ior of Qt_*Button)
         vsg_mask = 0
         if (iand(qt_buttons, Qt_LeftButton) /= 0) vsg_mask = ior(vsg_mask, 256)
         if (iand(qt_buttons, Qt_MiddleButton) /= 0) vsg_mask = ior(vsg_mask, 512)
@@ -66,8 +86,10 @@ contains
     !> VSG's key symbol (without modifiers), modified symbol and modifier bits
     !> for a Qt key event; symbol 0 for a key VSG has no symbol for.
     subroutine vsg_key(event, symbol, modified_symbol, modifier)
-        type(QKeyEvent), intent(in) :: event
-        integer, intent(out) :: symbol, modified_symbol, modifier
+        type(QKeyEvent), intent(in) :: event                !! the key event
+        integer, intent(out) :: symbol                      !! VSG's key symbol without the modifiers (0: none)
+        integer, intent(out) :: modified_symbol             !! with them (e.g. upper case with Shift)
+        integer, intent(out) :: modifier                    !! VSG's modifier bits held
         character(len=:), allocatable :: text
         integer :: key, mods
         key = event%key()
@@ -106,7 +128,7 @@ contains
 
     !> VSG's keysym of a non-printing Qt key (0 if none).
     pure integer function special_symbol(key) result(symbol)
-        integer, intent(in) :: key
+        integer, intent(in) :: key                          !! Qt's key (Qt_Key_*)
         select case (key)
         case (Qt_Key_Escape)
             symbol = int(z'FF1B')
@@ -173,7 +195,7 @@ contains
 
     !> VSG's keysym of a keypad key (0 if none: e.g. its arrows, as the others).
     pure integer function keypad_symbol(key) result(symbol)
-        integer, intent(in) :: key
+        integer, intent(in) :: key                          !! Qt's key (Qt_Key_*), from the keypad
         select case (key)
         case (Qt_Key_0:Qt_Key_9)
             symbol = int(z'FFB0') + (key - Qt_Key_0)
@@ -199,10 +221,10 @@ contains
     !> A Qt mouse event of `window` to `proxy` (kind MOUSE_MOVE, MOUSE_PRESS
     !> or MOUSE_RELEASE), in framebuffer pixels; accepted.
     subroutine forward_mouse(proxy, window, kind, event)
-        type(WindowProxy), intent(inout) :: proxy
-        type(QWindow), intent(in) :: window
-        integer, intent(in) :: kind
-        type(QMouseEvent), intent(in) :: event
+        type(WindowProxy), intent(inout) :: proxy           !! the view the event goes to
+        type(QWindow), intent(in) :: window                 !! its window (its pixel ratio)
+        integer, intent(in) :: kind                         !! MOUSE_MOVE, MOUSE_PRESS or MOUSE_RELEASE
+        type(QMouseEvent), intent(in) :: event              !! the event (logical pixels)
         real(wp) :: dpr
         dpr = window%devicePixelRatio()
         call proxy%mouse(kind, nint(event%x() * dpr), nint(event%y() * dpr), vsg_mask(event%buttons()), &
@@ -213,8 +235,8 @@ contains
     !> A Qt wheel event to `proxy`, in wheel notches (a trackpad's are
     !> fractions); accepted (ignored if it has no vertical part).
     subroutine forward_wheel(proxy, event)
-        type(WindowProxy), intent(inout) :: proxy
-        type(QWheelEvent), intent(in) :: event
+        type(WindowProxy), intent(inout) :: proxy           !! the view the event goes to
+        type(QWheelEvent), intent(in) :: event              !! the event (angle deltas: 120 a notch)
         if (event%angleDeltaY() == 0) return
         call proxy%scroll(event%angleDeltaY() / 120.0_wp)
         call event%accept()
@@ -223,9 +245,9 @@ contains
     !> A Qt key press (`pressed`) or release to `proxy`, as VSG's key symbols;
     !> accepted, unless VSG has no symbol for the key.
     subroutine forward_key(proxy, pressed, event)
-        type(WindowProxy), intent(inout) :: proxy
-        logical, intent(in) :: pressed
-        type(QKeyEvent), intent(in) :: event
+        type(WindowProxy), intent(inout) :: proxy           !! the view the event goes to
+        logical, intent(in) :: pressed                      !! pressed (else released)
+        type(QKeyEvent), intent(in) :: event                !! the event
         integer :: symbol, modified_symbol, modifier
         call vsg_key(event, symbol, modified_symbol, modifier)
         if (symbol == 0) return
@@ -351,20 +373,100 @@ contains
         end select
     end subroutine on_view_resize
 
+    !> Take command-line argument i if it is one of the shared options (see
+    !> DemoOptions): its value read, and i moved past them both. False (i
+    !> unchanged) for any other argument: the demo's own.
+    logical function options_take(self, i) result(taken)
+        class(DemoOptions), intent(inout) :: self
+        integer, intent(inout) :: i                         !! the argument (the next one's after, if taken)
+        character(len=1024) :: arg, value
+        call get_command_argument(i, arg)
+        call get_command_argument(i + 1, value)
+        taken = .true.
+        select case (arg)
+        case ('--capture')
+            self%capture = trim(value)
+        case ('--capture-frame')
+            read(value, *) self%capture_frame
+        case ('--quit-after')
+            read(value, *) self%quit_after
+        case ('--recreate-surface')
+            read(value, *) self%recreate_frame
+        case default
+            taken = .false.
+            return
+        end select
+        i = i + 2
+    end function options_take
+
+    !> After frame `frame` of `proxy` in `window`: the frame saved if it is
+    !> --capture-frame (window `index` > 1 of several: to the file name with
+    !> _index before its extension); the native surface destroyed and created
+    !> again if it is --recreate-surface. True if the surface was: the caller
+    !> asks for no next frame (the expose that follows opens the view again).
+    logical function options_after_frame(self, proxy, window, frame, index) result(recreated)
+        class(DemoOptions), intent(in) :: self
+        type(WindowProxy), intent(inout) :: proxy           !! the view drawn
+        type(QWindow), intent(inout) :: window              !! its window
+        integer, intent(in) :: frame                        !! the frame just drawn (from 1)
+        integer, intent(in), optional :: index              !! the window's number (default 1)
+        character(len=:), allocatable :: file
+        character(len=16) :: suffix
+        integer :: dot
+        recreated = .false.
+        if (allocated(self%capture) .and. frame == self%capture_frame) then
+            file = self%capture
+            if (present(index)) then
+                if (index > 1) then                         ! file_2.png, ...
+                    dot = scan(file, '.', back=.true.)
+                    if (dot == 0) dot = len(file) + 1
+                    write(suffix, '(a,i0)') '_', index
+                    file = file(1:dot-1)//trim(suffix)//file(dot:)
+                end if
+            end if
+            if (proxy%capture(file)) write(*, '(a)') 'captured '//file
+        end if
+        if (frame == self%recreate_frame) then             ! (a test: Qt destroys and remakes the native window)
+            write(*, '(a,i0)') 'native window destroyed and created again at frame ', frame
+            call window%destroy()
+            call window%create()
+            call window%show()
+            recreated = .true.
+        end if
+    end function options_after_frame
+
+    !> With --quit-after: `main` closed after that many seconds (it must stay
+    !> alive until then).
+    subroutine options_start_quit_timer(self, main)
+        class(DemoOptions), intent(in) :: self
+        type(QMainWindow), intent(inout), target :: main    !! the window closed
+        if (self%quit_after > 0.0_wp) call QTimer_singleShot(nint(1000.0_wp * self%quit_after), on_quit_timer, main)
+    end subroutine options_start_quit_timer
+
+    !> The --quit-after time is up: the main window (`data`) closed.
+    subroutine on_quit_timer(data)
+        class(*), intent(inout), optional :: data           !! the QMainWindow
+        if (.not. present(data)) return
+        select type (data)
+        type is (QMainWindow)
+            call data%close()
+        end select
+    end subroutine on_quit_timer
+
     !> Close `proxy` when the window `events` filters is about to lose its
     !> native surface (Qt destroying it: re-parenting, `destroy`, the window
     !> deleted), while the surface still exists. The host opens it again on
     !> the window's next expose (as at first), with the proxy's views, HUD
     !> texts and scene as before.
     subroutine watch_surface(events, proxy)
-        type(QtfEventFilter), intent(in) :: events
-        type(WindowProxy), intent(inout), target :: proxy
+        type(QtfEventFilter), intent(in) :: events          !! the window's event filter
+        type(WindowProxy), intent(inout), target :: proxy   !! the view closed then (it must stay alive)
         call events%surfaceAboutToBeDestroyed%connect(on_surface_destroyed, proxy)
     end subroutine watch_surface
 
     !> The surface is going: stop rendering into it (waiting for the GPU).
     subroutine on_surface_destroyed(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! the WindowProxy
         select type (data)
         type is (WindowProxy)
             call data%close()

@@ -35,7 +35,7 @@ module rpo_demo
 
     use qt
     use vkframes
-    use vkframes_qt, only: connect_view, ViewLink
+    use vkframes_qt, only: connect_view, ViewLink, DemoOptions
     use vkf_text, only: get_font
     use cw, only: Burn, propagate_plan, radial_hops, sort_burns
     use iso_c_binding
@@ -110,9 +110,9 @@ module rpo_demo
         logical :: dirty = .false.                             !! the plan changed: propagated at the next frame
         logical :: building = .true.
         ! options
-        character(len=:), allocatable :: capture
-        integer :: capture_frame = 120, start_preset = 1, select_at_start = 0
-        real(wp) :: click_time = -1.0_wp, quit_after = -1.0_wp
+        type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after, --recreate-surface
+        integer :: start_preset = 1, select_at_start = 0
+        real(wp) :: click_time = -1.0_wp
         logical :: print_plan = .false.                        !! (--click: the plan printed when propagated)
         logical :: frame_pending = .false.                     !! a preset loaded: the camera framed on its plan
     end type app_t
@@ -598,9 +598,7 @@ contains
         if (.not. app%proxy%frame()) return
         app%frame = app%frame + 1
         if (app%frame == 30 .and. app%click_time >= 0.0_wp) call click_path(app%click_time)
-        if (allocated(app%capture) .and. app%frame == app%capture_frame) then
-            if (app%proxy%capture(app%capture)) write(*, '(a)') 'captured '//app%capture
-        end if
+        if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
 
@@ -935,16 +933,9 @@ program vkframes_rpo_demo
     qapp = QApplication()
     i = 1
     do while (i <= command_argument_count())
+        if (app%options%take(i)) cycle                      ! (--capture, --quit-after, ...: vkframes_qt)
         call get_command_argument(i, arg)
         select case (arg)
-        case ('--capture')
-            call get_command_argument(i + 1, arg)
-            app%capture = trim(arg)
-            i = i + 1
-        case ('--capture-frame')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%capture_frame
-            i = i + 1
         case ('--preset')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_preset
@@ -957,10 +948,6 @@ program vkframes_rpo_demo
             call get_command_argument(i + 1, arg)
             read(arg, *) app%click_time
             app%print_plan = .true.
-            i = i + 1
-        case ('--quit-after')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%quit_after
             i = i + 1
         end select
         i = i + 1
@@ -977,7 +964,7 @@ program vkframes_rpo_demo
     else
         call load_preset(1)
     end if
-    if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
+    call app%options%start_quit_timer(app%main)
     call app%main%resize(1400, 900)
     call app%main%show()
     call QTimer_singleShot(0, on_startup)

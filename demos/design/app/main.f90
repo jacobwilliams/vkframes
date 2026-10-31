@@ -36,7 +36,7 @@ module design_demo
 
     use qt
     use vkframes
-    use vkframes_qt, only: connect_view, ViewLink
+    use vkframes_qt, only: connect_view, ViewLink, DemoOptions
     use kepler
     use iso_c_binding
 
@@ -110,9 +110,7 @@ module design_demo
         logical :: cut_start = .false., cut_end = .false.   !! the trajectory below the surface before its start, after its end
         ! options
         integer :: start_view = 1
-        character(len=:), allocatable :: capture
-        integer :: capture_frame = 120
-        real(wp) :: quit_after = -1.0_wp
+        type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after, --recreate-surface
         logical :: drag_test = .false.
     end type app_t
 
@@ -443,9 +441,7 @@ contains
         if (.not. app%proxy%frame()) return
         app%frame = app%frame + 1
         if (app%drag_test) call drag_test_step()
-        if (allocated(app%capture) .and. app%frame == app%capture_frame) then
-            if (app%proxy%capture(app%capture)) write(*, '(a)') 'captured '//app%capture
-        end if
+        if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
 
@@ -595,12 +591,6 @@ contains
         call v%reset_view()
     end subroutine on_reset_view
 
-    !> Quit (--quit-after): the main window closed.
-    subroutine on_quit(data)
-        class(*), intent(inout), optional :: data           !! the connection's data (unused)
-        call app%main%close()
-    end subroutine on_quit
-
     !> The main window closes: close the view (waiting for the GPU) first.
     subroutine on_close(event, data)
         type(QCloseEvent), intent(in) :: event              !! the close (accepted)
@@ -746,24 +736,13 @@ program vkframes_design_demo
     qapp = QApplication()
     i = 1
     do while (i <= command_argument_count())
+        if (app%options%take(i)) cycle                      ! (--capture, --quit-after, ...: vkframes_qt)
         call get_command_argument(i, arg)
         select case (arg)
         case ('--view')
             call get_command_argument(i + 1, arg)
             read(arg, *) app%start_view
             app%start_view = max(1, min(n_views, app%start_view))
-            i = i + 1
-        case ('--capture')
-            call get_command_argument(i + 1, arg)
-            app%capture = trim(arg)
-            i = i + 1
-        case ('--capture-frame')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%capture_frame
-            i = i + 1
-        case ('--quit-after')
-            call get_command_argument(i + 1, arg)
-            read(arg, *) app%quit_after
             i = i + 1
         case ('--drag-test')
             app%drag_test = .true.
@@ -776,7 +755,7 @@ program vkframes_design_demo
     app%el = elements_of(app%r, app%v)
     app%t1 = 0.75_wp * app%el%period                        ! (three quarters of an orbit: the end clear of the state)
     call show_state()
-    if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
+    call app%options%start_quit_timer(app%main)
     call app%main%resize(1400, 860)
     call app%main%show()
     ierr = qapp%exec()

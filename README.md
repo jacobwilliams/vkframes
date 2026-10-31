@@ -389,8 +389,12 @@ depend on Qt, Python or OpenMP). Most run vkframes embedded in a host
 window: the GUI toolkit owns the window and forwards its events, and
 vkframes renders into it. The qt-fortran demos share
 [demos/qt_common](demos/qt_common/src/vkframes_qt.f90): Qt's mouse, wheel
-and key events forwarded as VSG's, and the view closed (then opened again)
-when Qt replaces a window's native surface. The halo manifolds demo instead
+and key events forwarded as VSG's (`connect_view`), the view closed (then
+opened again) when Qt replaces a window's native surface, and the options
+they all take for screenshots and tests (`DemoOptions`): `--capture file`
+saves frame `--capture-frame n`, `--quit-after seconds` closes the demo, and
+`--recreate-surface n` makes the window's native surface again at frame n.
+The halo manifolds demo instead
 uses vkframes' own window and its built-in GUI panels (Dear ImGui), so it
 needs no GUI toolkit.
 
