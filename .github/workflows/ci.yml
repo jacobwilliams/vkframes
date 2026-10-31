@@ -155,7 +155,16 @@ jobs:
           environments: default
 
       - name: Build the API docs
-        run: pixi run ford ford.md
+        run: pixi run docs
+
+      # Never publish the site without its API docs.
+      - name: Check the API docs
+        run: |
+          test -f web/api/index.html
+          test -f web/api/css/user.css
+          n=$(find web/api -name '*.html' | wc -l)
+          echo "API docs: $n pages"
+          test "$n" -gt 100
 
       - name: Publish web/ to gh-pages
         uses: peaceiris/actions-gh-pages@v4.1.0

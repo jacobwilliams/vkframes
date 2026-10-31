@@ -1,4 +1,4 @@
-!> Handles: things in the scene the mouse drags (not in OpenFrames), to
+!> Handles (not in OpenFrames): things in the scene the mouse drags, to
 !> design graphically, e.g. a trajectory's initial position and velocity.
 !>
 !> A DragHandle is a frame with a point the mouse can grab (`handle_point`,
