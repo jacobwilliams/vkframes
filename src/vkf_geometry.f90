@@ -40,7 +40,7 @@ contains
     !> the south pole (v = 1). The seam column and pole rows are duplicated so
     !> the texture wraps; triangles are counter-clockwise seen from outside, and
     !> the degenerate triangles at the poles are left out. Indices are 0-based.
-    !> Sizes are given by `ellipsoid_size`.
+    !> Sizes are given by [[ellipsoid_size]].
     pure subroutine ellipsoid(radii, n_lon, n_lat, xyz, normals, uv, indices)
         real(c_double), dimension(3), intent(in) :: radii   !! semi-axes along x, y, z
         integer, intent(in) :: n_lon  !! segments in longitude (>= 3)
@@ -134,7 +134,7 @@ contains
         end if
     end function ellipsoid_create
 
-    !> A sphere mesh node: `ellipsoid_create` with equal semi-axes.
+    !> A sphere mesh node: [[ellipsoid_create]] with equal semi-axes.
     function sphere_create(radius, rgba, texture, n_lon, n_lat) result(mesh)
         real(c_double), intent(in) :: radius                !! the sphere's radius
         real(c_float), dimension(4), intent(in) :: rgba     !! color [r, g, b, a] (0 to 1)
@@ -159,7 +159,7 @@ contains
     !> `body_radius`, then a head of length `head_length` and base radius
     !> `head_radius`, closed at the bottom of the body and of the head, with
     !> `n_segments` around. Triangles are counter-clockwise seen from outside;
-    !> indices are 0-based; uv is zero. Sizes are given by `arrow_size`.
+    !> indices are 0-based; uv is zero. Sizes are given by [[arrow_size]].
     subroutine arrow(base, direction, body_length, head_length, body_radius, head_radius, n_segments, &
                           xyz, normals, uv, indices)
         real(c_double), intent(in) :: base(3)           !! the arrow's base (start of the body)
@@ -256,7 +256,7 @@ contains
 
     end subroutine arrow
 
-    !> An arrow mesh node (see `arrow`) of color `rgba`, with 24 segments by
+    !> An arrow mesh node (see [[arrow]]) of color `rgba`, with 24 segments by
     !> default. Null on failure.
     function arrow_create(base, direction, body_length, head_length, body_radius, head_radius, rgba, n_segments) &
             result(mesh)

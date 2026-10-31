@@ -10,11 +10,11 @@
 !> release lets it go. The window's event handler is told (`handle_drag`,
 !> with DRAG_START, DRAG_MOVE and DRAG_END), e.g. to compute a trajectory again
 !> from the new state while the handle is dragged. Handles can also be moved
-!> by the program (VectorHandle%set_vector), and dragged by it (`grab`,
-!> `drag` and `release`, given the cursor's ray).
+!> by the program ([[VectorHandle:set_vector]]), and dragged by it ([[grab]],
+!> [[drag]] and [[release]], given the cursor's ray).
 !>
-!> Where the point goes is where the cursor's ray (WindowProxy%cursor_ray)
-!> meets the handle's constraint (`set_constraint`), as it was when the
+!> Where the point goes is where the cursor's ray ([[WindowProxy:cursor_ray]])
+!> meets the handle's constraint ([[set_constraint]]), as it was when the
 !> handle was grabbed, plus the point's offset from the cursor then (so the
 !> point doesn't jump to the cursor):
 !> * HANDLE_FREE (the default): the plane through the point facing the camera;
@@ -28,20 +28,20 @@
 !>   the ray.
 !> Normals and directions are in the frame's coordinates. A ray parallel to a
 !> plane or a line doesn't move the point. Positions go through the frames'
-!> first parents to the root (ReferenceFrame%world_matrix).
+!> first parents to the root ([[ReferenceFrame:world_matrix]]).
 !>
 !> Handles on the same spot of the screen (e.g. a trajectory's end marker on
 !> its state's arrow): the window hovers the one nearest the cursor on the
 !> screen; within a few pixels of each other, the one of the highest
-!> priority (`set_priority`; markers, TimeHandle, 1 by default, before
+!> priority ([[set_priority]]; markers, TimeHandle, 1 by default, before
 !> arrows, 0), then the nearest to the eye.
 !>
 !> A VectorHandle is an arrow from its frame's origin to its tip, the tip
-!> being the handle: a vector (`set_vector`, in the frame's coordinates)
-!> times a display scale (`set_display_scale`: e.g. 1000 s to draw a velocity
+!> being the handle: a vector ([[set_vector]], in the frame's coordinates)
+!> times a display scale ([[set_display_scale]]: e.g. 1000 s to draw a velocity
 !> in km/s as km). Dragging the tip changes the vector. The arrow is in the
 !> frame's color, lit as frames' axes (by how it faces the viewer); its head
-!> is `set_head_size` long (scene units; default 0.2 of the arrow, at most
+!> is [[set_head_size]] long (scene units; default 0.2 of the arrow, at most
 !> half of it). It is built once, as a unit shaft and head scaled and turned
 !> by two transforms: a new vector only sets them (cheap enough for every
 !> frame of a drag).
@@ -52,10 +52,10 @@
 !> trajectory's end, dragged to make it longer or shorter in time. The path
 !> needn't be drawn where the handle goes (beyond a trajectory's last point,
 !> the program propagates further). The frame is placed at the path's
-!> position for the time (`set_time`), so its name label (e.g. the time,
-!> `set_name`) goes with it; the marker is the size of MarkerArtist's
+!> position for the time ([[set_time]]), so its name label (e.g. the time,
+!> [[set_name]]) goes with it; the marker is the size of MarkerArtist's
 !> markers (window units, not shrinking with distance). A drag takes the time
-!> within `set_time_range` whose point is nearest the cursor's ray (as seen
+!> within [[set_time_range]] whose point is nearest the cursor's ray (as seen
 !> from the eye): among the path's points sampled at the grab, then refined
 !> between them; where the path passes near itself (orbits), the match
 !> nearest in time to the handle's time is taken, so it doesn't jump to
@@ -78,7 +78,7 @@ module vkf_handles
 
     private
 
-    !> A handle's constraint (`set_constraint`; see the module documentation).
+    !> A handle's constraint ([[set_constraint]]; see the module documentation).
     integer, parameter, public :: HANDLE_FREE = 0           !! the plane facing the camera
     integer, parameter, public :: HANDLE_PLANE = 1          !! a plane (its normal given)
     integer, parameter, public :: HANDLE_LINE = 2           !! a line (its direction given)
@@ -130,7 +130,7 @@ module vkf_handles
             real(wp), intent(in) :: p(3)                    !! the new point (frame coordinates)
         end subroutine move_handle_point_interface
 
-        !> Draw the handle as hovered, dragged or neither (`hovered`, `dragged`).
+        !> Draw the handle as hovered, dragged or neither ([[hovered]], [[dragged]]).
         subroutine show_state_interface(self)
             import :: DragHandle
             implicit none
@@ -162,7 +162,7 @@ module vkf_handles
         procedure :: build_contents => vector_build_contents
     end type VectorHandle
 
-    !> The VectorHandle constructor: `VectorHandle(...)` makes one (see `new_vector_handle` for its
+    !> The VectorHandle constructor: `VectorHandle(...)` makes one (see [[new_vector_handle]] for its
     !> arguments).
     interface VectorHandle
         module procedure new_vector_handle
@@ -196,7 +196,7 @@ module vkf_handles
         procedure :: position => trajectory_path_position
     end type TrajectoryPath
 
-    !> The TrajectoryPath constructor: `TrajectoryPath(...)` makes one (see `new_trajectory_path` for its
+    !> The TrajectoryPath constructor: `TrajectoryPath(...)` makes one (see [[new_trajectory_path]] for its
     !> arguments).
     interface TrajectoryPath
         module procedure new_trajectory_path
@@ -229,7 +229,7 @@ module vkf_handles
         procedure :: build_contents => time_build_contents
     end type TimeHandle
 
-    !> The TimeHandle constructor: `TimeHandle(...)` makes one (see `new_time_handle` for its
+    !> The TimeHandle constructor: `TimeHandle(...)` makes one (see [[new_time_handle]] for its
     !> arguments).
     interface TimeHandle
         module procedure new_time_handle
@@ -674,7 +674,7 @@ contains
         path%trajectory => traj
     end function new_trajectory_path
 
-    !> The trajectory's position at time `t` (Trajectory%point_at: linear
+    !> The trajectory's position at time `t` ([[Trajectory:point_at]]: linear
     !> between its points, its first or last point outside its times; 0 if
     !> it has none).
     function trajectory_path_position(self, t) result(p)

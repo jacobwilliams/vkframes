@@ -70,7 +70,7 @@ contains
         path = find_in_dirs(name, dirs)
     end function find_font
 
-    !> The font handle for `name` (found with `find_font`, read on first use);
+    !> The font handle for `name` (found with [[find_font]], read on first use);
     !> the default font if `name` is ''; null if it cannot be found or read.
     function get_font(name) result(font)
         character(len=*), intent(in) :: name        !! as find_font's ('': the default font)

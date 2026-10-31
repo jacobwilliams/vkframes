@@ -4,7 +4,7 @@
 !> The model is placed in its frame by its own transform:
 !> translate(model_position) * rotate(model_attitude) * scale(model_scale) *
 !> translate(-model_pivot), so e.g. the pivot can be the model's center
-!> (`model_bound`) and the scale can size it.
+!> ([[model_bound]]) and the scale can size it.
 module vkf_model
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int
@@ -42,7 +42,7 @@ module vkf_model
         procedure :: build_contents => model_build_contents
     end type Model
 
-    !> The Model constructor: `Model(...)` makes one (see `new_model` for its
+    !> The Model constructor: `Model(...)` makes one (see [[new_model]] for its
     !> arguments).
     interface Model
         module procedure new_model
@@ -51,7 +51,7 @@ module vkf_model
 contains
 
     !> A model frame named `name` (decorations of color `color`), with the
-    !> model file `file` if given (see `set_model`).
+    !> model file `file` if given (see [[set_model]]).
     function new_model(name, file, color) result(m)
         character(len=*), intent(in) :: name            !! the frame's name
         character(len=*), intent(in), optional :: file  !! model file (3ds, obj, glTF, ...)
@@ -167,7 +167,7 @@ contains
         call update_model_transform(self)
     end subroutine set_model_pivot
 
-    !> The model's pivot, in its own coordinates (see `set_model_pivot`).
+    !> The model's pivot, in its own coordinates (see [[set_model_pivot]]).
     pure function model_pivot(self) result(p)
         class(Model), intent(in) :: self
         real(wp) :: p(3)

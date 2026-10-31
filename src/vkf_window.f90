@@ -6,7 +6,7 @@
 !> A FrameManager holds the root frame of a scene. A WindowProxy shows one: in
 !> a window of its own, or in a host's native window (e.g. a Qt QWindow's
 !> `winId()`), in which case the host forwards the window's events
-!> (`mouse`, `scroll`, `key`, `resize`, `close`). Each `frame()` advances the
+!> ([[mouse]], [[scroll]], [[key]], [[resize]], [[close]]). Each `frame()` advances the
 !> simulation clock, updates the frames (followed trajectories), copies their
 !> positions and attitudes to the renderer, places the camera for the current
 !> View and draws.
@@ -14,47 +14,49 @@
 !> Several windows can show one scene (its render nodes are shared). The scene
 !> is updated once per simulation time: a window whose time is the one the
 !> scene was last updated for, by another window since this one's last frame,
-!> doesn't update it again (`FrameManager%update`). Windows whose clocks are
-!> synchronized (`SimulationClock%synchronize`) render the same time, their
+!> doesn't update it again ([[FrameManager:update]]). Windows whose clocks are
+!> synchronized ([[SimulationClock:synchronize]]) render the same time, their
 !> master's at its last frame, so they show the scene in the same state and
 !> update it once per round of frames, also while the time is paused (then
 !> each round still updates once, for data added meanwhile).
 !>
-!> A window has a list of views (`add_view`, `select_view`, `next_view`, ...);
+!> A window has a list of views ([[add_view]], [[select_view]], [[next_view]], ...);
 !> each keeps its own camera (the trackball) while another one is shown.
 !> Without views, a default view of the scene's root frame is used.
 !>
 !> Keyboard and mouse (OpenFrames' WindowProxy callbacks, setKeyPressCallback,
 !> setMouseMotionCallback, setButtonPressCallback, setButtonReleaseCallback):
 !> a program's WindowEventHandler, an extension overriding the procedures it
-!> wants (`key_press`, `key_release`, `mouse_motion`, `button_press`,
-!> `button_release`), is given the window's events (`set_event_handler`),
+!> wants ([[WindowEventHandler:key_press]], [[WindowEventHandler:key_release]],
+!> [[WindowEventHandler:mouse_motion]], [[WindowEventHandler:button_press]],
+!> [[WindowEventHandler:button_release]]), is given the window's events
+!> ([[set_event_handler]]),
 !> also those a host forwards. They're passed on after the frame in which they
 !> arrived (from `frame()`), so a handler may change anything, the window
 !> included (its views, its time, closing it). Positions are in -1 to 1 across
 !> the window, y up, as OpenFrames'. The built-in keys, as OpenFrames': `v` the
 !> next view, `V` the previous one, the space bar resets the view (unless the
-!> handler's `key_press` says it handled the key, or `set_default_keys(.false.)`).
+!> handler's [[WindowEventHandler:key_press]] says it handled the key, or `set_default_keys(.false.)`).
 !> The mouse moves the camera (the trackball); the keys don't.
 !>
 !> Each frame, the handler's `before_draw(window, t)` is called once the
 !> scene is at the frame's time and the camera is placed (the trackball's
 !> moves included), just before drawing: what it changes (HUD text, labels,
 !> frames' positions) is in this frame, e.g. a callout kept next to a moving
-!> object (`screen_position`) without lagging a frame behind, whoever runs
+!> object ([[screen_position]]) without lagging a frame behind, whoever runs
 !> the frame loop (the program or a host GUI).
 !>
 !> The camera (OpenFrames' trackball getTransformation / setTransformation):
-!> `get_camera` and `set_camera` (eye, center, up in the shown view's frame,
+!> [[get_camera]] and [[set_camera]] (eye, center, up in the shown view's frame,
 !> or in its root frame with `in_root`). Smooth transitions (not in
-!> OpenFrames): `set_camera` with a `duration` flies there, and with
+!> OpenFrames): [[set_camera]] with a `duration` flies there, and with
 !> `set_view_transition(seconds)` (default 0: a cut, as OpenFrames) changing
 !> the view (select_view, next_view, previous_view, the keys v and V; or with
 !> their own `duration`) and resetting it (the space bar) fly from the camera
 !> shown to the new one. A flight moves the center along a straight line, the
 !> distance geometrically and the orientation by the shortest rotation, eased
 !> in and out, in the root frame (both views' frames as they move), over the
-!> wall-clock time given (the video's while recording); a mouse press, `stop_transition` or another flight
+!> wall-clock time given (the video's while recording); a mouse press, [[stop_transition]] or another flight
 !> ends it.
 !>
 !> Video recording (not in OpenFrames, which has only screenshots):
@@ -71,8 +73,8 @@
 !> video by ffmpeg (`watermark`). The video's size is its first frame's (a window
 !> resized while recording is cropped or padded).
 !>
-!> The mouse's sensitivity: `set_zoom_speed` (the zoom per wheel or trackpad
-!> step and per right drag; default 1, VSG's) and `set_camera_throw` (the
+!> The mouse's sensitivity: [[set_zoom_speed]] (the zoom per wheel or trackpad
+!> step and per right drag; default 1, VSG's) and [[set_camera_throw]] (the
 !> camera keeps moving after a drag released while moving; default on).
 !>
 !> Picking (not in OpenFrames): `pick(x, y, hits)` gives what is under a
@@ -81,8 +83,8 @@
 !> time there), segments and markers (within a few pixels: `tolerance`, plus
 !> half a line's width or a marker's size), bodies (the point on the surface,
 !> with latitude and longitude) and frames' origins. Each frame of the scene
-!> tests its own contents (ReferenceFrame%pick, vkf_pick); nothing is done
-!> until `pick` is called. `cursor_ray(x, y, origin, direction)` gives the ray
+!> tests its own contents ([[ReferenceFrame:pick]], vkf_pick); nothing is done
+!> until [[WindowProxy:pick]] is called. `cursor_ray(x, y, origin, direction)` gives the ray
 !> from the eye through a point of the window (root frame), e.g. to place
 !> something where the cursor points (vkf_pick's ray_plane, ray_sphere,
 !> ray_line).
@@ -91,10 +93,11 @@
 !> in a window has handles, the window looks for one under the cursor at each
 !> mouse move (a pick of PICK_HANDLE only), hovers it (drawn brighter) and
 !> arms a grab: a left button press then grabs the handle instead of moving
-!> the camera, the moves drag it (DragHandle%drag, with the cursor's ray) and
-!> the release lets it go. The handler is told (`handle_drag`: DRAG_START,
+!> the camera, the moves drag it ([[DragHandle:drag]], with the cursor's ray) and
+!> the release lets it go. The handler is told ([[WindowEventHandler:handle_drag]]: DRAG_START,
 !> DRAG_MOVE, DRAG_END), not given those presses, moves and releases
-!> (`button_press`, `mouse_motion`, `button_release`). A handle is dragged
+!> ([[WindowEventHandler:button_press]], [[WindowEventHandler:mouse_motion]],
+!> [[WindowEventHandler:button_release]]). A handle is dragged
 !> from the frame after the event's, as other events are handled. The
 !> middle and right buttons move the camera over handles too.
 module vkf_window
@@ -129,11 +132,11 @@ module vkf_window
 
     private
 
-    !> mouse event kinds for WindowProxy%mouse
-    integer, parameter, public :: MOUSE_MOVE = 1, MOUSE_PRESS = 2, MOUSE_RELEASE = 3  !! WindowProxy%mouse kind
-    !> mouse buttons (WindowEventHandler, WindowProxy%mouse)
+    !> mouse event kinds for [[WindowProxy:mouse]]
+    integer, parameter, public :: MOUSE_MOVE = 1, MOUSE_PRESS = 2, MOUSE_RELEASE = 3  !! [[WindowProxy:mouse]] kind
+    !> mouse buttons (WindowEventHandler, [[WindowProxy:mouse]])
     integer, parameter, public :: MOUSE_LEFT = 1, MOUSE_MIDDLE = 2, MOUSE_RIGHT = 3  !! button numbers
-    !> a handle's drag (WindowEventHandler%handle_drag): grabbed, moved, released
+    !> a handle's drag ([[WindowEventHandler:handle_drag]]): grabbed, moved, released
     integer, parameter, public :: DRAG_START = 1, DRAG_MOVE = 2, DRAG_END = 3
     !> keys (WindowEventHandler): printable keys are their characters,
     !> iachar('a'), iachar('A') with shift; the others (VSG's key symbols):
@@ -160,7 +163,7 @@ module vkf_window
         procedure :: update => fm_update, num_updates => fm_num_updates
     end type FrameManager
 
-    !> The FrameManager constructor: `FrameManager(...)` makes one (see `new_frame_manager` for its
+    !> The FrameManager constructor: `FrameManager(...)` makes one (see [[new_frame_manager]] for its
     !> arguments).
     interface FrameManager
         module procedure new_frame_manager
@@ -234,7 +237,7 @@ module vkf_window
         class(DragHandle), pointer :: hovered_handle => null()   !! the handle under the cursor (not owned)
         class(DragHandle), pointer :: dragged_handle => null()   !! the handle grabbed (not owned)
         logical :: default_keys_ = .true.                   !! the built-in keys on
-        logical :: hosted = .false.                         !! in a host's window (its size from `resize`)
+        logical :: hosted = .false.                         !! in a host's window (its size from [[resize]])
         ! camera transitions
         real(wp) :: transition_ = 0.0_wp                    !! s, for view changes and resets
         real(wp) :: switch_duration = -1.0_wp               !! s, for the next view change (< 0: transition_)
@@ -340,7 +343,7 @@ contains
         seen = self%updates
     end subroutine fm_update
 
-    !> Number of scene updates so far (`update`).
+    !> Number of scene updates so far ([[FrameManager:update]]).
     pure integer function fm_num_updates(self) result(n)
         class(FrameManager), intent(in) :: self
         n = self%updates
@@ -402,7 +405,7 @@ contains
 
     !> Close the window (waiting for the GPU). The scene is kept, and can be
     !> shown again in another window. So are the window's settings (views,
-    !> HUD texts, sky, handler, time): `open` again (e.g. on a host's new
+    !> HUD texts, sky, handler, time): [[open]] again (e.g. on a host's new
     !> native window, after Qt destroyed the old one) shows them as before.
     subroutine close(self)
         class(WindowProxy), intent(inout) :: self
@@ -422,7 +425,7 @@ contains
     end subroutine close
 
     !> Framebuffer pixels per window unit of a host's window (as given to
-    !> `open` or `resize`; 1 for a window of its own).
+    !> [[open]] or [[resize]]; 1 for a window of its own).
     pure real(wp) function pixel_ratio(self)
         class(WindowProxy), intent(in) :: self
         pixel_ratio = self%pixel_ratio_
@@ -788,7 +791,7 @@ contains
     !> The ambient, diffuse and specular colors ([r, g, b], 0 to 1) of the
     !> window's light (OpenFrames' defaults: 0.2 gray, white, none). The
     !> window's light is used while no frame of the scene has a light source
-    !> (ReferenceFrame%set_light_source_enabled).
+    !> ([[ReferenceFrame:set_light_source_enabled]]).
     subroutine set_light_ambient(self, rgb)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)                      !! [r, g, b], 0 to 1 (default 0.2 gray)
@@ -796,7 +799,7 @@ contains
         call apply_window_light(self)
     end subroutine set_light_ambient
 
-    !> The diffuse color of the window's light (see `set_light_ambient`).
+    !> The diffuse color of the window's light (see [[set_light_ambient]]).
     subroutine set_light_diffuse(self, rgb)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)                      !! [r, g, b], 0 to 1 (default white)
@@ -804,7 +807,7 @@ contains
         call apply_window_light(self)
     end subroutine set_light_diffuse
 
-    !> The specular color of the window's light (see `set_light_ambient`).
+    !> The specular color of the window's light (see [[set_light_ambient]]).
     subroutine set_light_specular(self, rgb)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)                      !! [r, g, b], 0 to 1 (default black: none)
@@ -845,7 +848,7 @@ contains
         rgb = self%light_specular_
     end function light_specular
 
-    !> The position of the window's light (see `set_light_position`).
+    !> The position of the window's light (see [[set_light_position]]).
     pure function light_position(self) result(p)
         class(WindowProxy), intent(in) :: self
         real(wp) :: p(4)
@@ -1052,7 +1055,7 @@ contains
     end subroutine remove_all_views
 
     !> Show view i (1 to num_views), flying there over `duration` s (default:
-    !> the view transition, `set_view_transition`; 0: a cut).
+    !> the view transition, [[set_view_transition]]; 0: a cut).
     subroutine select_view(self, i, duration)
         class(WindowProxy), intent(inout) :: self
         integer, intent(in) :: i                            !! 1 to num_views
@@ -1089,7 +1092,7 @@ contains
     !> found is skipped, e.g. to pick on every mouse move). Frames and
     !> artists can be left out (`set_pickable(.false.)`).
     !>
-    !> What was clicked, from a WindowEventHandler extension's `button_press`
+    !> What was clicked, from a WindowEventHandler extension's [[WindowEventHandler:button_press]]
     !> (registered with `window%set_event_handler(handler)`):
     !>
     !> ```fortran
@@ -1252,7 +1255,7 @@ contains
 
     !> How fast the mouse zooms (default 1, VSG's: 10% per wheel step, and a
     !> right drag's rate): e.g. 0.3 for a gentler zoom. Scales scroll steps
-    !> however they come (a mouse wheel, a trackpad, a host's `scroll`).
+    !> however they come (a mouse wheel, a trackpad, a host's [[scroll]]).
     subroutine set_zoom_speed(self, speed)
         class(WindowProxy), intent(inout) :: self
         real(wp), intent(in) :: speed                       !! (> 0; 1: the default)
@@ -1318,7 +1321,7 @@ contains
     !> frame's coordinates (OpenFrames' trackball setTransformation), or in its
     !> root frame's if `in_root` (as the frames are now). With `duration` (s),
     !> fly there from the camera shown. Before the view is shown, it is its
-    !> camera when it is (View%set_camera).
+    !> camera when it is ([[View:set_camera]]).
     !>
     !> Common views of a planet of radius `re`, shown by a View of its frame (so in
     !> its coordinates: z is the north pole). `up` must not point along the view.
@@ -1386,7 +1389,7 @@ contains
         self%transition_ = max(0.0_wp, seconds)
     end subroutine set_view_transition
 
-    !> The time (s) a change of view or a reset flies (`set_view_transition`).
+    !> The time (s) a change of view or a reset flies ([[set_view_transition]]).
     pure real(wp) function view_transition(self)
         class(WindowProxy), intent(in) :: self
         view_transition = self%transition_
@@ -1598,7 +1601,7 @@ contains
         call self%clock_%set_time_range(t_min, t_max)
     end subroutine set_time_range
 
-    !> The simulation time range (`set_time_range`).
+    !> The simulation time range ([[set_time_range]]).
     subroutine time_range(self, t_min, t_max)
         class(WindowProxy), intent(in) :: self
         real(wp), intent(out) :: t_min, t_max               !! simulation times
@@ -1723,7 +1726,7 @@ contains
         self%default_keys_ = on
     end subroutine set_default_keys
 
-    !> Whether the built-in keys are on (`set_default_keys`).
+    !> Whether the built-in keys are on ([[set_default_keys]]).
     pure logical function default_keys(self)
         class(WindowProxy), intent(in) :: self
         default_keys = self%default_keys_
@@ -1739,7 +1742,7 @@ contains
         logical, intent(inout) :: handled                   !! (true: skip the built-in key)
     end subroutine handler_key_press
 
-    !> A key was released (see `key_press`).
+    !> A key was released (see [[WindowEventHandler:key_press]]).
     subroutine handler_key_release(self, window, key, modifiers)
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window         !! the window of the event
@@ -1757,7 +1760,7 @@ contains
     end subroutine handler_mouse_motion
 
     !> A mouse button (MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT) was pressed at
-    !> (x, y) (see `mouse_motion`).
+    !> (x, y) (see [[WindowEventHandler:mouse_motion]]).
     subroutine handler_button_press(self, window, x, y, button)
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window         !! the window of the event
@@ -1765,7 +1768,7 @@ contains
         integer, intent(in) :: button                       !! MOUSE_LEFT, MOUSE_MIDDLE or MOUSE_RIGHT
     end subroutine handler_button_press
 
-    !> A mouse button was released at (x, y) (see `button_press`).
+    !> A mouse button was released at (x, y) (see [[WindowEventHandler:button_press]]).
     subroutine handler_button_release(self, window, x, y, button)
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window         !! the window of the event
@@ -1962,7 +1965,7 @@ contains
         end if
     end subroutine default_key
 
-    !> The width / height of the window drawn: a host's (from `resize`), or of
+    !> The width / height of the window drawn: a host's (from [[resize]]), or of
     !> the window's own, as it is now.
     real(wp) function aspect_ratio(self)
         class(WindowProxy), intent(in) :: self

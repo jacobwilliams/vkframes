@@ -14,8 +14,8 @@
 !> inner ones for the penumbra, asin((Rs + R) / d).) A body larger than its
 !> light has no apex: its umbra widens (or is a cylinder), with no antumbra.
 !>
-!> A ShadowCones is a frame of its own, made a child of the body (`add_child`)
-!> for one body's shadow, and shown or hidden with `show_contents`: a scene
+!> A ShadowCones is a frame of its own, made a child of the body ([[add_child]])
+!> for one body's shadow, and shown or hidden with [[show_contents]]: a scene
 !> without one does no shadow work at all. It refers to the body and the light
 !> frames (they must stay alive while set); each scene update, after the whole
 !> tree has moved (late_update), it moves itself to the body's center and
@@ -25,14 +25,14 @@
 !> when the shape changed (not as the body only turns). Hidden, it does
 !> nothing (and is placed again when shown).
 !>
-!> The radii: given (`set_body_radius`, `set_light_radius`), or the frames'
+!> The radii: given ([[set_body_radius]], [[set_light_radius]]), or the frames'
 !> own: a Sphere's equatorial radius, a TerrainBody's (a light that is a plain
 !> ReferenceFrame needs its radius given: none, no shadow). The shadow is drawn to
-!> `set_length` behind the body's center (default: twice the umbra's length;
+!> [[set_length]] behind the body's center (default: twice the umbra's length;
 !> a hundred body radii without an apex); the umbra stops there if shorter.
 !> Each region has a color ([r, g, b, a]; the surfaces are unlit,
 !> transparent, seen from both sides, as the cones of vkf_shapes) and can be
-!> drawn or not (`set_regions`).
+!> drawn or not ([[set_regions]]).
 !>
 !> Bodies in a shadow are not darkened (that needs shadows in the lighting).
 module vkf_shadow
@@ -95,7 +95,7 @@ module vkf_shadow
         procedure :: late_update => shadow_late_update
     end type ShadowCones
 
-    !> The ShadowCones constructor: `ShadowCones(...)` makes one (see `new_shadow_cones` for its
+    !> The ShadowCones constructor: `ShadowCones(...)` makes one (see [[new_shadow_cones]] for its
     !> arguments).
     interface ShadowCones
         module procedure new_shadow_cones

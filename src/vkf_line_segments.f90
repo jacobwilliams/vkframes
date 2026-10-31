@@ -1,7 +1,7 @@
 !> Custom line segments, as OpenFrames' CustomLineSegments: a frame drawing
 !> line segments whose endpoints and colors (one per endpoint, blended along
-!> the segment) are set by the program (`set_segments`), or computed each
-!> frame by a callback (`set_callback`): e.g. lines of sight between
+!> the segment) are set by the program ([[set_segments]]), or computed each
+!> frame by a callback ([[set_callback]]): e.g. lines of sight between
 !> spacecraft, or links between ground stations and satellites.
 !>
 !> The endpoints are in the frame's own coordinates (the frame can move like
@@ -9,14 +9,14 @@
 !> callback, an extension of the abstract LineSegmentsCallback (OpenFrames'
 !> CustomLineSegments::Callback), is called once per scene update with the
 !> simulation time, after the whole tree has been updated
-!> (ReferenceFrame%late_update), so the positions of other frames are those
+!> ([[ReferenceFrame:late_update]]), so the positions of other frames are those
 !> for that time whatever their place in the tree; it sets the segments with
-!> `set_segments`. Setting the same segments again uploads nothing.
+!> [[set_segments]]. Setting the same segments again uploads nothing.
 !>
 !> The segments are drawn by a LineChain of separate segments (vkf_line_chain:
 !> thick lines in window units, square caps, dash patterns, points kept to
 !> double precision), with a color per point (vkf_line_create_colored).
-!> Without colors, the segments take the frame's color (`set_color`).
+!> Without colors, the segments take the frame's color ([[CustomLineSegments:set_color]]).
 !> (OpenFrames' custom line shader, setLineShader, isn't available: it would
 !> need GLSL compiled at run time.)
 module vkf_line_segments
@@ -31,7 +31,7 @@ module vkf_line_segments
     private
 
     !> Computes a CustomLineSegments' segments each frame: extend it with a
-    !> `compute` procedure, which calls `segments%set_segments` (OpenFrames'
+    !> [[LineSegmentsCallback:compute]] procedure, which calls `segments%set_segments` (OpenFrames'
     !> CustomLineSegments::Callback). The program owns the callback object (it
     !> must stay alive while set).
     type, abstract, public :: LineSegmentsCallback
@@ -75,7 +75,7 @@ module vkf_line_segments
         end subroutine segments_compute
     end interface
 
-    !> The CustomLineSegments constructor: `CustomLineSegments(...)` makes one (see `new_custom_line_segments` for its
+    !> The CustomLineSegments constructor: `CustomLineSegments(...)` makes one (see [[new_custom_line_segments]] for its
     !> arguments).
     interface CustomLineSegments
         module procedure new_custom_line_segments
@@ -247,7 +247,7 @@ contains
     end function line_width
 
     !> Dash pattern: OpenGL's line stipple (16 bits, bit 0 first, each `factor`
-    !> window units; 65535: solid), as CurveArtist%set_pattern.
+    !> window units; 65535: solid), as [[CurveArtist:set_pattern]].
     subroutine set_pattern(self, factor, pattern)
         class(CustomLineSegments), intent(inout) :: self
         integer, intent(in) :: factor       !! window units per bit (>= 1)
@@ -257,7 +257,7 @@ contains
         call apply_style(self)
     end subroutine set_pattern
 
-    !> The dash pattern (see `set_pattern`).
+    !> The dash pattern (see [[set_pattern]]).
     pure subroutine pattern(self, factor, bits)
         class(CustomLineSegments), intent(in) :: self
         integer, intent(out) :: factor      !! window units per bit

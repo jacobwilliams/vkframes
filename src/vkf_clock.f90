@@ -4,7 +4,7 @@
 !> While running, time = offset + (wall - wall_ref) * scale, limited to the
 !> time range. Setting the time, pausing and changing the scale restart the
 !> count from the current time (offset = time, wall_ref = now). A clock can be
-!> synchronized to another one (`synchronize`), whose time it then reports and
+!> synchronized to another one ([[synchronize]]), whose time it then reports and
 !> whose settings it changes.
 !>
 !> Wall time is in seconds from `system_clock`, unless given explicitly with the
@@ -75,7 +75,7 @@ contains
         t = self%time_
     end function update
 
-    !> The simulation time at the last `update` (or as last set).
+    !> The simulation time at the last [[update]] (or as last set).
     recursive real(wp) function time(self)
         class(SimulationClock), intent(in) :: self
         if (associated(self%sync)) then

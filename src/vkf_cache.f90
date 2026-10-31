@@ -10,8 +10,8 @@
 !> directory (macOS: ~/Library/Caches/vkframes; Linux: $XDG_CACHE_HOME or
 !> ~/.cache, then vkframes; Windows: %LOCALAPPDATA%/vkframes/cache), created
 !> (with its parents) if it doesn't exist; without one, nothing is cached
-!> (all is made at each launch). `cache_directory`
-!> says which; `clear_cache` deletes the cache's files, made again when next
+!> (all is made at each launch). [[cache_directory]]
+!> says which; [[clear_cache]] deletes the cache's files, made again when next
 !> needed.
 module vkf_cache
 

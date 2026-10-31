@@ -162,7 +162,7 @@ contains
         self%compile_new = compile
     end subroutine set_compile
 
-    !> True if the chain has a group to draw under (between `init` and `release`).
+    !> True if the chain has a group to draw under (between [[init]] and [[release]]).
     pure logical function is_built(self)
         class(LineChain), intent(in) :: self
         is_built = c_associated(self%group)
@@ -251,7 +251,7 @@ contains
         end associate
     end subroutine slice
 
-    !> As `slice`, for the colors of a colored chain: c(rgba, point) of points
+    !> As [[slice]], for the colors of a colored chain: c(rgba, point) of points
     !> lo .. hi of chunk j (null if not colored or nothing there).
     subroutine color_slice(self, j, i1, i2, lo, hi, c)
         class(LineChain), intent(in) :: self
@@ -317,11 +317,11 @@ contains
     !> The distances along the strip of points lo .. hi of chunk j: from the
     !> previous point (in this chunk; the first point of a chunk after the
     !> first is the previous chunk's last, measured before), or 0 at point 1.
-    !> From `x` (as in `written`) if given, else from the floats written.
+    !> From `x` (as in [[written]]) if given, else from the floats written.
     subroutine measure(self, j, lo, hi, x)
         type(LineChain), intent(in) :: self
         integer, intent(in) :: j, lo, hi        !! the chunk, and its points lo .. hi (chain indices)
-        real(wp), intent(in), optional :: x(:,:) !! (3, chain points): the points, as in `written`
+        real(wp), intent(in), optional :: x(:,:) !! (3, chain points): the points, as in [[written]]
         real(c_float), dimension(:,:,:), pointer :: p, prev
         real(wp), allocatable :: xf(:,:), s(:)
         integer :: k0, k1, k, g
@@ -357,11 +357,11 @@ contains
 
     !> Points lo .. hi of chunk j (a strip's) were written, the last being hi:
     !> update the bounding box and the error bounds of the segments they change
-    !> at each stride, and give them to the renderer. `x` as in `written`.
+    !> at each stride, and give them to the renderer. `x` as in [[written]].
     subroutine update_lod(self, j, lo, hi, x)
         type(LineChain), intent(inout) :: self
         integer, intent(in) :: j, lo, hi        !! the chunk, and its points lo .. hi (chain indices)
-        real(wp), intent(in), optional :: x(:,:) !! (3, chain points): the points, as in `written`
+        real(wp), intent(in), optional :: x(:,:) !! (3, chain points): the points, as in [[written]]
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp) :: b0, b1, q(3)
         integer :: n, q0, k, s, m, seg, a, e, mid, i

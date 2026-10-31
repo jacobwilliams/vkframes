@@ -7,7 +7,7 @@
 !> Positions are interpolated linearly, attitudes by slerp.
 !>
 !> The time is either the global simulation time plus an offset
-!> (`set_offset_time`, the default with offset 0) or a fixed time (`set_time`).
+!> ([[set_offset_time]], the default with offset 0) or a fixed time ([[set_time]]).
 !> The trajectories are not owned: they must stay alive while followed.
 module vkf_follower
 
@@ -159,7 +159,7 @@ contains
         valid = self%data_valid()
     end function set_x_data
 
-    !> Where the y of the followed position comes from (see `set_x_data`).
+    !> Where the y of the followed position comes from (see [[set_x_data]]).
     logical function set_y_data(self, src) result(valid)
         class(TrajectoryFollower), intent(inout) :: self
         type(DataSource), intent(in) :: src                 !! where the y comes from
@@ -168,7 +168,7 @@ contains
         valid = self%data_valid()
     end function set_y_data
 
-    !> Where the z of the followed position comes from (see `set_x_data`).
+    !> Where the z of the followed position comes from (see [[set_x_data]]).
     logical function set_z_data(self, src) result(valid)
         class(TrajectoryFollower), intent(inout) :: self
         type(DataSource), intent(in) :: src                 !! where the z comes from
@@ -195,7 +195,7 @@ contains
         self%default_data = .true.
     end subroutine set_default_data
 
-    !> True if the followed position is the trajectories' positions (`set_default_data`).
+    !> True if the followed position is the trajectories' positions ([[set_default_data]]).
     pure logical function using_default_data(self)
         class(TrajectoryFollower), intent(in) :: self
         using_default_data = self%default_data

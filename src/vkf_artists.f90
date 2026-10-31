@@ -9,9 +9,9 @@
 !> appended points are written into the GPU buffers in place, and only the
 !> buffers written to are uploaded (see vkf_line_chain); a cleared trajectory
 !> is redrawn into the same buffers. The last point drawn is always rewritten,
-!> since `set_optional` changes it.
+!> since [[set_optional]] changes it.
 !>
-!> Trace mode (`set_trace_mode`) draws only the part of the trajectory up to
+!> Trace mode ([[set_trace_mode]]) draws only the part of the trajectory up to
 !> the current time: the points whose times are at most the current time,
 !> whatever order they were added in (a change of the draw ranges, no
 !> upload): for increasing times its first points, for decreasing ones (a
@@ -24,7 +24,7 @@
 !> points were added: the propagation's direction.)
 !>
 !> Point colors (not in OpenFrames): a CurveArtist draws a trajectory with
-!> colors (Trajectory%add_color, or add's `color`) in them, each segment
+!> colors ([[Trajectory:add_color]], or add's `color`) in them, each segment
 !> blended from its first point's color to its second's (one color: that
 !> color); without colors, or with `set_point_colors(.false.)`, in its own
 !> color. Its line buffers hold colors only then.
@@ -40,7 +40,7 @@
 !> the range of points drawn changed. It replaces trace mode while set.
 !>
 !> Highlight (not in OpenFrames; e.g. a trajectory selected by the program or
-!> by picking): `set_highlight` on a curve or segment artist, or on a
+!> by picking): [[set_highlight]] on a curve or segment artist, or on a
 !> DrawableTrajectory for all of them. HIGHLIGHT_PULSE: the line widens and
 !> brightens towards the highlight color, and back, over and over;
 !> HIGHLIGHT_ARROWS: a translucent band of the highlight color around it, with
@@ -53,7 +53,7 @@
 !> Artists and their trajectories are not owned: they must stay alive while
 !> drawn.
 !>
-!> Picking (WindowProxy%pick): a DrawableTrajectory picks what its artists
+!> Picking ([[WindowProxy:pick]]): a DrawableTrajectory picks what its artists
 !> draw, as drawn (in trace mode, up to the current time): a curve's segments
 !> (its chunks skipped by their bounds when far from the cursor), with the
 !> point and the time there (interpolated); a segment artist's segments; a
@@ -87,7 +87,7 @@ module vkf_artists
         private
         type(Trajectory), pointer :: traj => null()  !! the trajectory drawn (not owned; null if none)
         logical :: trace = .false.                  !! trace mode: drawn up to the current time
-        logical :: pickable_ = .true.               !! picked (WindowProxy%pick)
+        logical :: pickable_ = .true.               !! picked ([[WindowProxy:pick]])
         ! what was drawn
         integer :: seen_generation = -1, seen_revision = -1  !! trajectory generation and revision drawn (-1: none)
     contains
@@ -280,13 +280,13 @@ module vkf_artists
         procedure :: draw_tail => update_tail
     end type CurveArtist
 
-    !> The CurveArtist constructor: `CurveArtist(...)` makes one (see `new_curve_artist` for its
+    !> The CurveArtist constructor: `CurveArtist(...)` makes one (see [[new_curve_artist]] for its
     !> arguments).
     interface CurveArtist
         module procedure new_curve_artist
     end interface CurveArtist
 
-    !> Draws a line segment at every `stride`-th point of a trajectory
+    !> Draws a line segment at every [[stride]]-th point of a trajectory
     !> (OpenFrames' SegmentArtist), from the point given by the start data
     !> sources to the one given by the end data sources: e.g. radius vectors
     !> (the origin to the positions), or from the positions to points stored as
@@ -294,10 +294,10 @@ module vkf_artists
     !> nothing until the sources are set): from the frame's origin to the
     !> trajectory's positions.
     !>
-    !> Relative ends (`set_end_relative`, not in OpenFrames): the end sources
+    !> Relative ends ([[set_end_relative]], not in OpenFrames): the end sources
     !> give an offset from the start, so a vector stored per point (a thrust,
     !> a velocity) is drawn from each position, at a length set by the end
-    !> sources' scale (`set_end_scale`), which can be changed without touching
+    !> sources' scale ([[set_end_scale]]), which can be changed without touching
     !> the trajectory (only this artist's segments are written again). Where
     !> the vector is zero (no thrust) nothing is drawn.
     type, extends(TrajectoryArtist), public :: SegmentArtist
@@ -337,7 +337,7 @@ module vkf_artists
         procedure :: drawn_segment
     end type SegmentArtist
 
-    !> The SegmentArtist constructor: `SegmentArtist(...)` makes one (see `new_segment_artist` for its
+    !> The SegmentArtist constructor: `SegmentArtist(...)` makes one (see [[new_segment_artist]] for its
     !> arguments).
     interface SegmentArtist
         module procedure new_segment_artist
@@ -384,7 +384,7 @@ module vkf_artists
         procedure :: draw_tail => update_ribbon_tail
     end type RibbonArtist
 
-    !> The RibbonArtist constructor: `RibbonArtist(...)` makes one (see `new_ribbon_artist` for its
+    !> The RibbonArtist constructor: `RibbonArtist(...)` makes one (see [[new_ribbon_artist]] for its
     !> arguments).
     interface RibbonArtist
         module procedure new_ribbon_artist
@@ -467,7 +467,7 @@ module vkf_artists
         procedure :: num_intermediate, drawn_marker
     end type MarkerArtist
 
-    !> The MarkerArtist constructor: `MarkerArtist(...)` makes one (see `new_marker_artist` for its
+    !> The MarkerArtist constructor: `MarkerArtist(...)` makes one (see [[new_marker_artist]] for its
     !> arguments).
     interface MarkerArtist
         module procedure new_marker_artist
@@ -497,7 +497,7 @@ module vkf_artists
         procedure :: pick => drawable_pick
     end type DrawableTrajectory
 
-    !> The DrawableTrajectory constructor: `DrawableTrajectory(...)` makes one (see `new_drawable_trajectory` for its
+    !> The DrawableTrajectory constructor: `DrawableTrajectory(...)` makes one (see [[new_drawable_trajectory]] for its
     !> arguments).
     interface DrawableTrajectory
         module procedure new_drawable_trajectory
@@ -523,7 +523,7 @@ contains
         traj => self%traj
     end function get_trajectory
 
-    !> Whether `pick` tests what this artist draws (default true; e.g. false for
+    !> Whether [[DrawableTrajectory:pick]] tests what this artist draws (default true; e.g. false for
     !> a spacecraft's marker beside its orbit's curve).
     subroutine artist_set_pickable(self, pickable)
         class(TrajectoryArtist), intent(inout) :: self
@@ -531,7 +531,7 @@ contains
         self%pickable_ = pickable
     end subroutine artist_set_pickable
 
-    !> Whether `pick` tests what this artist draws.
+    !> Whether [[DrawableTrajectory:pick]] tests what this artist draws.
     pure logical function artist_pickable(self)
         class(TrajectoryArtist), intent(in) :: self
         artist_pickable = self%pickable_
@@ -1410,7 +1410,7 @@ contains
         if (c_associated(self%tail)) call self%chain%style_node(self%tail)
     end subroutine curve_style
 
-    !> Change the settings given (see CurveArtist%set_highlight).
+    !> Change the settings given (see [[CurveArtist:set_highlight]]).
     subroutine update_highlight(h, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
         type(HighlightStyle), intent(inout) :: h            !! the highlight changed
         integer, intent(in) :: mode                         !! HIGHLIGHT_* (added)
@@ -1624,7 +1624,7 @@ contains
         segment_width = self%width_
     end function segment_width
 
-    !> A dash pattern (see CurveArtist%set_pattern), starting again at the
+    !> A dash pattern (see [[CurveArtist:set_pattern]]), starting again at the
     !> start of each segment.
     subroutine segment_set_pattern(self, factor, pattern)
         class(SegmentArtist), intent(inout) :: self
@@ -1634,7 +1634,7 @@ contains
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
     end subroutine segment_set_pattern
 
-    !> The dash pattern's layout (see CurveArtist%set_dash_mode): screen-locked
+    !> The dash pattern's layout (see [[CurveArtist:set_dash_mode]]): screen-locked
     !> dashes start again at each segment's start, as GL_LINES; DASH_FIXED
     !> (strips only) is taken as DASH_SCENE.
     subroutine segment_set_dash_mode(self, mode)
@@ -1649,7 +1649,7 @@ contains
         mode = self%chain%dash_mode_of()
     end function segment_dash_mode
 
-    !> Highlight the segments (see CurveArtist%set_highlight): the arrows run
+    !> Highlight the segments (see [[CurveArtist:set_highlight]]): the arrows run
     !> along each segment from its start to its end.
     subroutine segment_set_highlight(self, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
         class(SegmentArtist), intent(inout) :: self
@@ -2914,7 +2914,7 @@ contains
     end function artist
 
     !> Highlight all the frame's curve and segment artists (see
-    !> CurveArtist%set_highlight; HIGHLIGHT_NONE: none of them).
+    !> [[CurveArtist:set_highlight]]; HIGHLIGHT_NONE: none of them).
     subroutine drawable_set_highlight(self, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
         class(DrawableTrajectory), intent(inout) :: self
         integer, intent(in) :: mode                         !! HIGHLIGHT_* (added)

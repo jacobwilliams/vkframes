@@ -8,9 +8,9 @@
 !> clock; up to 256 characters, or twice the text's length when first shown
 !> if more: longer ones are cut), color, position, size and alignment in
 !> place, and the font (the text is made again). Moved each frame to an
-!> object's place on the screen (WindowProxy%screen_position), it is a
+!> object's place on the screen ([[WindowProxy:screen_position]]), it is a
 !> callout that follows the object. A HUDText can be shown in several
-!> windows (`WindowProxy%add_hud_text`); it is not owned by them and must
+!> windows ([[WindowProxy:add_hud_text]]); it is not owned by them and must
 !> stay alive while shown.
 module vkf_hud
 
@@ -43,7 +43,7 @@ module vkf_hud
         procedure :: revision
     end type HUDText
 
-    !> The HUDText constructor: `HUDText(...)` makes one (see `new_hud_text` for its
+    !> The HUDText constructor: `HUDText(...)` makes one (see [[new_hud_text]] for its
     !> arguments).
     interface HUDText
         module procedure new_hud_text

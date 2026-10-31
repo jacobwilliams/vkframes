@@ -1,7 +1,7 @@
 !> The sky behind a scene (OpenFrames' SkySphere): a texture map and/or stars
 !> from a star catalog, at infinity (they turn with the view, never move with
 !> it), in the root frame's axes turned by the sky's attitude. A window shows
-!> a sky with WindowProxy%set_sky; one sky can be shown in several windows.
+!> a sky with [[WindowProxy:set_sky]]; one sky can be shown in several windows.
 !>
 !> * Texture: an equirectangular image of the sky (right ascension across,
 !>   declination down; as a Sphere's texture map), e.g. OpenFrames'
@@ -293,7 +293,7 @@ contains
     end function num_star_names_drawn
 
     !> Named star i (1 to num_star_names): its name, apparent magnitude and
-    !> star (1 to num_stars: see `star`).
+    !> star (1 to num_stars: see [[star]]).
     subroutine star_name(self, i, name, mag, which)
         class(SkySphere), intent(in) :: self
         integer, intent(in) :: i                            !! 1 to num_star_names
@@ -422,7 +422,7 @@ contains
         q = self%attitude_
     end function attitude
 
-    !> The sky's node, made on first use, for a window (WindowProxy%set_sky).
+    !> The sky's node, made on first use, for a window ([[WindowProxy:set_sky]]).
     !> For a window's `viewer` (null: headless), nodes made later (a new texture
     !> or catalog) are compiled for the windows running.
     function node(self, viewer) result(n)

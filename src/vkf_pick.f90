@@ -1,20 +1,20 @@
-!> Picking geometry: what is under a point of a window (WindowProxy%pick).
+!> Picking geometry: what is under a point of a window ([[WindowProxy:pick]]).
 !>
 !> A PickCamera is the camera and the cursor of a pick, in the scene's root
 !> frame: the eye and its axes (right, up, forward), the projection, the
 !> viewport's size and the cursor's position (-1 to 1, y up, as the window's
-!> events). Frames test their contents against it (ReferenceFrame%pick and
+!> events). Frames test their contents against it ([[ReferenceFrame:pick]] and
 !> its extensions):
 !> * points and line segments on the screen, within a tolerance in pixels
-!>   (`point_pick`, `segment_pick`: the closest point of a segment, its
+!>   ([[point_pick]], [[segment_pick]]: the closest point of a segment, its
 !>   fraction along the segment in the scene, perspective-correct, and its
 !>   depth), for trajectories, markers and frames' origins;
-!> * a ray from the eye through the cursor against an ellipsoid (`ray`,
-!>   `ray_ellipsoid`), for bodies;
-!> * the ray against a plane, a sphere and a line (`ray_plane`,
-!>   `ray_sphere`, `ray_line`), for dragging (WindowProxy%cursor_ray, and
+!> * a ray from the eye through the cursor against an ellipsoid ([[ray]],
+!>   [[ray_ellipsoid]]), for bodies;
+!> * the ray against a plane, a sphere and a line ([[ray_plane]],
+!>   [[ray_sphere]], [[ray_line]]), for dragging ([[WindowProxy:cursor_ray]], and
 !>   vkf_handles' constraints);
-!> * bounding spheres on the screen (`sphere_near`), to skip whole chunks of
+!> * bounding spheres on the screen ([[sphere_near]]), to skip whole chunks of
 !>   a long trajectory.
 !> Depths are distances along the view direction (perspective) or from the
 !> eye's plane (orthographic); points closer than `near` are behind the eye.

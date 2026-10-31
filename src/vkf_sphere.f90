@@ -1,27 +1,27 @@
 !> Spheres and ellipsoids: a textured celestial body, as OpenFrames' Sphere.
 !>
-!> The body is centered on its frame's origin (or at `set_sphere_position`,
-!> turned by `set_sphere_attitude`, e.g. to orient a texture). Its shape is a
-!> sphere of `radius`, or an ellipsoid with semi-axes radius * `sphere_scale`;
+!> The body is centered on its frame's origin (or at [[set_sphere_position]],
+!> turned by [[set_sphere_attitude]], e.g. to orient a texture). Its shape is a
+!> sphere of [[radius]], or an ellipsoid with semi-axes radius * [[sphere_scale]];
 !> the ellipsoid is built directly (exact normals, geodetic texture mapping; see
 !> vkf_geometry), where OpenFrames scales a sphere. The texture is an
 !> equirectangular image (longitude -180 to 180, north at the top). The color is
 !> used when there is no texture.
 !>
 !> Lighting: the body is lit by the scene's lights (a frame's light source,
-!> e.g. the Sun, or the window's light), with a material (`set_material`;
+!> e.g. the Sun, or the window's light), with a material ([[set_material]];
 !> OpenFrames' default: no specular reflection). The night texture shows where
 !> the surface is lit weakly (the night side: city lights), as OpenFrames'
 !> setNightTextureMap: weighted by 1 - the lit color (the material's ambient
 !> and diffuse colors in the lights' colors and intensities, and its
 !> emission), per channel and per pixel, so a brighter light narrows the
 !> band where the day fades into the night, and ambient light dims the night
-!> texture. The twilight (`set_twilight`; not in OpenFrames; default none:
+!> texture. The twilight ([[set_twilight]]; not in OpenFrames; default none:
 !> the light ends at the terminator) extends the diffuse light past the
 !> terminator, to where the light is a given angle below the horizon, fading
 !> out: e.g. sunlight scattered by an atmosphere.
 !>
-!> Translucency (not in OpenFrames): `set_opacity` (default 1, opaque) below
+!> Translucency (not in OpenFrames): [[set_opacity]] (default 1, opaque) below
 !> 1 draws the body translucent: lit as usual, blended over what is behind
 !> it, drawn after the opaque scene (farthest first: VSG's depth-sorted bin)
 !> without writing depth, front faces only. Whether it is translucent is
@@ -37,13 +37,13 @@
 !> through the material (the shaders multiply the vertex color, white here, by
 !> the diffuse color).
 !>
-!> Level of detail (`set_auto_lod`, on by default; OpenFrames' setAutoLOD): the
+!> Level of detail ([[set_auto_lod]], on by default; OpenFrames' setAutoLOD): the
 !> body has meshes of 32, 64, ... 1024 segments around (half as many from pole
 !> to pole), and each view draws the coarsest whose facets stay within half a
 !> pixel of the true outline (src/vsg/vkf_layer.cpp: SphereLod), so that the
 !> body isn't faceted however close the view. Meshes are built when a view
 !> first wants them (the 128-segment one at once), in the sphere's update.
-!> Off: one mesh of `set_resolution`'s segments (default 128 x 64).
+!> Off: one mesh of [[set_resolution]]'s segments (default 128 x 64).
 module vkf_sphere
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float
@@ -115,7 +115,7 @@ module vkf_sphere
         procedure :: num_lod_meshes
     end type Sphere
 
-    !> The Sphere constructor: `Sphere(...)` makes one (see `new_sphere` for its
+    !> The Sphere constructor: `Sphere(...)` makes one (see [[new_sphere]] for its
     !> arguments).
     interface Sphere
         module procedure new_sphere
@@ -343,7 +343,7 @@ contains
 
     !> Level of detail (default on; see the module documentation): meshes of
     !> several resolutions, the one drawn chosen per view. Off: one mesh of
-    !> `set_resolution`'s segments. Set it before a window shows the sphere.
+    !> [[set_resolution]]'s segments. Set it before a window shows the sphere.
     subroutine set_auto_lod(self, lod)
         class(Sphere), intent(inout) :: self
         logical, intent(in) :: lod                          !! true: level of detail; false: one mesh

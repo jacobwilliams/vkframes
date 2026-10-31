@@ -3,16 +3,16 @@
 !>
 !> A window's Gui (`WindowProxy%gui()`, made on first use) is described
 !> immediate-mode, each frame (e.g. in the event handler's `before_draw`, or
-!> in the frame loop before `frame()`): panels (`begin_panel` ... `end_panel`)
+!> in the frame loop before `frame()`): panels ([[begin_panel]] ... [[end_panel]])
 !> holding text, buttons, checkboxes, sliders, combo boxes (drop-down
 !> menus), separators. A widget's call gives what the user did with it at the
-!> frame before: `button` is true once after a click; `checkbox`, `slider`
-!> and `combo` change the value given (and are true then). What isn't described in a frame isn't shown in it.
+!> frame before: [[button]] is true once after a click; [[checkbox]], [[slider]]
+!> and [[combo]] change the value given (and are true then). What isn't described in a frame isn't shown in it.
 !>
 !> A panel is placed where ImGui puts it (and can be moved), or at a position
 !> (0 to 1 across the window, y up, as HUD text), at first or every frame
 !> (`follow`): e.g. next to a picked object, kept at its screen position
-!> (WindowProxy%screen_position). A title starting with '##' gives no title
+!> ([[WindowProxy:screen_position]]). A title starting with '##' gives no title
 !> bar (a callout). Clicks, drags and keys over a panel go to it: the camera,
 !> the event handler and picking don't get them. The GUI is scaled by the
 !> window's pixel ratio. A Gui is a handle (copies are the same GUI), valid
@@ -46,7 +46,7 @@ contains
     end function is_valid
 
     !> A panel titled `title` ('##name': no title bar), with the widgets up to
-    !> `end_panel`. `position` ([x, y], 0 to 1 across the window, y up; default:
+    !> [[end_panel]]. `position` ([x, y], 0 to 1 across the window, y up; default:
     !> where ImGui puts it) is where its point `pivot` is ([0, 0], the default:
     !> its top left; [0.5, 1]: the middle of its bottom); with `follow`, every
     !> frame (and it can't be moved), else at first.
@@ -68,7 +68,7 @@ contains
                            real(q(1), c_double), real(q(2), c_double), f)
     end subroutine begin_panel
 
-    !> End the panel started by `begin_panel`.
+    !> End the panel started by [[begin_panel]].
     subroutine end_panel(self)
         class(Gui), intent(inout) :: self
         call vkf_gui_end(self%handle)

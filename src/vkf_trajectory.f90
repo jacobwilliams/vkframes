@@ -1,7 +1,7 @@
 !> Trajectory data: times with positions, attitudes and optional data vectors, as
 !> in OpenFrames' Trajectory.
 !>
-!> Data are appended: each time may get one position (with `num_optionals`
+!> Data are appended: each time may get one position (with [[num_optionals]]
 !> optional vectors), one attitude and one color, so there may be fewer
 !> positions, attitudes or colors than times (data can arrive separately).
 !> Colors are optional (not in OpenFrames): a CurveArtist draws a trajectory
@@ -12,11 +12,11 @@
 !> Differences from OpenFrames:
 !> * Storage grows by doubling, positions, attitudes and colors separately, so
 !>   a trajectory without attitudes (colors) holds no attitude (color) memory.
-!>   `reserve` sets it for a known size; `compact` frees what's unused once a
-!>   trajectory is complete (one copy of each array; `storage_bytes` says
+!>   [[reserve]] sets it for a known size; [[compact]] frees what's unused once a
+!>   trajectory is complete (one copy of each array; [[storage_bytes]] says
 !>   what is held).
 !> * Instead of subscriber callbacks, a trajectory counts its changes
-!>   (`revision`) and clears (`generation`): a reader such as an artist compares
+!>   ([[revision]]) and clears ([[generation]]): a reader such as an artist compares
 !>   them with what it last saw and updates only what changed (e.g. uploads only
 !>   the points appended since).
 !> * No locking: vkframes updates and renders on one thread.
@@ -92,13 +92,13 @@ module vkf_trajectory
         procedure :: revision, generation
     end type Trajectory
 
-    !> The Trajectory constructor: `Trajectory(...)` makes one (see `new_trajectory` for its
+    !> The Trajectory constructor: `Trajectory(...)` makes one (see [[new_trajectory]] for its
     !> arguments).
     interface Trajectory
         module procedure new_trajectory
     end interface Trajectory
 
-    !> The DataSource constructor: `DataSource(...)` makes one (see `new_data_source` for its
+    !> The DataSource constructor: `DataSource(...)` makes one (see [[new_data_source]] for its
     !> arguments).
     interface DataSource
         module procedure new_data_source
@@ -121,7 +121,7 @@ contains
         if (present(nopt)) traj%nopt_ = max(0, nopt)
     end function new_trajectory
 
-    !> A data source (see `DataSource`); `element` defaults to 1, `opt` to 0,
+    !> A data source (see [[DataSource]]); `element` defaults to 1, `opt` to 0,
     !> `scale` to 1.
     pure function new_data_source(src, element, opt, scale) result(s)
         integer, intent(in) :: src                      !! a SOURCE_* constant
@@ -148,7 +148,7 @@ contains
 
     !> The sources of optional `opt`'s x, y, (z) (zero beyond `dof`, default
     !> 3), each times `scale` (default 1): e.g. a thrust vector stored per
-    !> point, for SegmentArtist%set_end_data with relative ends.
+    !> point, for [[SegmentArtist:set_end_data]] with relative ends.
     pure function optional_sources(opt, dof, scale) result(s)
         integer, intent(in) :: opt      !! the optional (1 to num_optionals)
         integer, intent(in), optional :: dof !! degrees of freedom (default 3)
@@ -166,7 +166,7 @@ contains
     !> unless `positions` is false, and attitudes and colors only if
     !> `attitudes` / `colors` is true. Optional: storage grows as needed, but
     !> reserving avoids reallocations for a known size. It never shrinks the
-    !> storage (see `compact`).
+    !> storage (see [[compact]]).
     subroutine reserve(self, n, positions, attitudes, colors)
         class(Trajectory), intent(inout) :: self
         integer, intent(in) :: n                            !! number of points
@@ -190,7 +190,7 @@ contains
     !> holds (one copy, an array at a time), and arrays holding none are
     !> deallocated. For a trajectory that is complete: growing doubles the
     !> storage, so up to about half of it can be unused. The data and what is
-    !> drawn of them don't change; pointers from `times`, `positions`, ...
+    !> drawn of them don't change; pointers from [[times]], [[positions]], ...
     !> must be fetched again. Points can still be added (storage grows again).
     subroutine compact(self)
         class(Trajectory), intent(inout) :: self
@@ -231,7 +231,7 @@ contains
     end subroutine compact
 
     !> The memory the trajectory's data take (bytes), used or not: its
-    !> storage's capacity (see `reserve`, `compact`).
+    !> storage's capacity (see [[reserve]], [[compact]]).
     pure integer(int64) function storage_bytes(self) result(b)
         class(Trajectory), intent(in) :: self
         b = 0_int64
@@ -317,8 +317,8 @@ contains
         revision = self%revision_
     end function revision
 
-    !> Number of times the data were cleared (by `clear`, `set_dof` or
-    !> `set_num_optionals`): while it is unchanged, data were only appended.
+    !> Number of times the data were cleared (by [[clear]], [[set_dof]] or
+    !> [[set_num_optionals]]): while it is unchanged, data were only appended.
     pure integer function generation(self)
         class(Trajectory), intent(in) :: self
         generation = self%generation_
@@ -337,11 +337,11 @@ contains
         self%revision_ = self%revision_ + 1
     end subroutine add_time
 
-    !> Add a position (the first `dof` elements of `pos` are used) for the next
+    !> Add a position (the first [[dof]] elements of `pos` are used) for the next
     !> time that has none. `ok` is false if every time already has a position.
     subroutine add_position(self, pos, ok)
         class(Trajectory), intent(inout) :: self
-        real(wp), intent(in) :: pos(:)          !! position (first `dof` elements used)
+        real(wp), intent(in) :: pos(:)          !! position (first [[dof]] elements used)
         logical, intent(out), optional :: ok    !! false if not added
         integer :: d
         if (present(ok)) ok = .false.
@@ -400,7 +400,7 @@ contains
     subroutine set_optional(self, index, v, ok)
         class(Trajectory), intent(inout) :: self
         integer, intent(in) :: index            !! the optional (1 to num_optionals)
-        real(wp), intent(in) :: v(:)            !! the vector (its first `dof` elements are used)
+        real(wp), intent(in) :: v(:)            !! the vector (its first [[dof]] elements are used)
         logical, intent(out), optional :: ok    !! false if not set
         integer :: d
         if (present(ok)) ok = .false.
@@ -427,7 +427,7 @@ contains
     subroutine add_point(self, t, pos, att, color)
         class(Trajectory), intent(inout) :: self
         real(wp), intent(in) :: t                       !! time
-        real(wp), intent(in), optional :: pos(:)        !! position (first `dof` elements used)
+        real(wp), intent(in), optional :: pos(:)        !! position (first [[dof]] elements used)
         real(wp), intent(in), optional :: att(4)        !! attitude quaternion [x, y, z, w]
         real(wp), intent(in), optional :: color(:)      !! [r, g, b] or [r, g, b, a] (0 to 1)
         call self%add_time(t)
@@ -711,7 +711,7 @@ contains
     end function point_at
 
     !> Point i with components from `sources` (OpenFrames' getPoint). No checks:
-    !> use `verify_data` and `num_points` first.
+    !> use [[verify_data]] and [[num_points]] first.
     pure function point(self, i, sources) result(v)
         class(Trajectory), intent(in) :: self
         integer, intent(in) :: i                            !! the point (1 to num_points(sources))
@@ -733,8 +733,8 @@ contains
     end function point
 
     !> Points i1, i1 + stride, ... (up to i2) with components from `sources`, into
-    !> v(3, :) (as many columns as points; `point` for a range, a whole array
-    !> slice per component). No checks: use `verify_data` and `num_points` first.
+    !> v(3, :) (as many columns as points; [[point]] for a range, a whole array
+    !> slice per component). No checks: use [[verify_data]] and [[num_points]] first.
     pure subroutine points(self, i1, i2, sources, v, stride)
         class(Trajectory), intent(in) :: self
         integer, intent(in) :: i1, i2                   !! first and last points (1 to num_points(sources))
@@ -814,7 +814,7 @@ contains
         end if
     end function new_capacity
 
-    !> Grow the times' storage to hold at least `n` (see `new_capacity`).
+    !> Grow the times' storage to hold at least `n` (see [[new_capacity]]).
     subroutine grow_times(self, n, exact)
         type(Trajectory), intent(inout) :: self
         integer, intent(in) :: n                            !! times to hold

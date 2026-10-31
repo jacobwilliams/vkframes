@@ -3,33 +3,33 @@
 !>
 !> A frame has a position and attitude relative to its parent, a color for its
 !> decorations (axes, labels), and children. It can follow trajectories
-!> (`follow`), which then set its position and/or attitude at each `update`.
+!> ([[follow]]), which then set its position and/or attitude at each [[update]].
 !> Scene objects (spheres, models, trajectories' artists, ...) extend this type.
 !>
-!> Frames are owned by the program, not by the tree: `add_child` stores
+!> Frames are owned by the program, not by the tree: [[add_child]] stores
 !> pointers, so a frame (declared `target`, or allocated) must stay alive while
-!> it is in a tree, or be removed first (`detach`). A frame may have several
+!> it is in a tree, or be removed first ([[detach]]). A frame may have several
 !> parents; adding a child that is an ancestor of the parent is refused.
 !>
-!> Rendering: when a window first shows a tree (`realize`), each frame gets a
-!> transform node, with its contents (`build_contents`, which extensions
-!> override) under a switch for `show_contents`; children's nodes go under the
+!> Rendering: when a window first shows a tree ([[realize]]), each frame gets a
+!> transform node, with its contents ([[build_contents]], which extensions
+!> override) under a switch for [[show_contents]]; children's nodes go under the
 !> parent's transform, so a frame with several parents is drawn under each.
-!> Each frame, `update` moves followed frames to the time, then `late_update`
+!> Each frame, [[update]] moves followed frames to the time, then [[late_update]]
 !> lets contents depend on other frames' positions at that time (e.g.
-!> CustomLineSegments between spacecraft), and `sync` copies positions and
+!> CustomLineSegments between spacecraft), and [[sync]] copies positions and
 !> attitudes to the transforms. A shown
 !> tree can change: children added to a shown frame are realized and compiled
 !> (for the windows running) and drawn from the next frame;
 !> removed ones stop being drawn; moved axes (move_x_axis, ...) are made again.
 !>
 !> Labels: the name label (at the origin, facing the screen) and the axes'
-!> labels can change while shown: the name (`set_name`, e.g. a readout that
+!> labels can change while shown: the name ([[set_name]], e.g. a readout that
 !> follows the frame), color, label size, alignment and font, and the axes'
 !> label texts.
 !>
-!> Picking (WindowProxy%pick): each frame tests what it draws against a
-!> PickCamera (vkf_pick) in its `pick` procedure, given its transform to the
+!> Picking ([[WindowProxy:pick]]): each frame tests what it draws against a
+!> PickCamera (vkf_pick) in its [[pick]] procedure, given its transform to the
 !> root frame, and adds a PickHit for each thing within reach (the window
 !> sorts them nearest first). A plain frame is picked at its origin if it
 !> shows axes or its name label (PICK_FRAME); extensions pick their contents
@@ -78,7 +78,7 @@ module vkf_frames
     integer, parameter, public :: PICK_MARKER = 5       !! a trajectory's marker (MarkerArtist)
     integer, parameter, public :: PICK_HANDLE = 6       !! a handle the mouse drags (vkf_handles: VectorHandle)
 
-    !> What a pick found (WindowProxy%pick): the frame it belongs to and, for
+    !> What a pick found ([[WindowProxy:pick]]): the frame it belongs to and, for
     !> trajectories, the artist (select type to use it) and the trajectory.
     type, public :: PickHit
         integer :: kind = 0                                 !! PICK_*
@@ -111,7 +111,7 @@ module vkf_frames
         type(FramePointer), allocatable :: children(:), parents(:)  !! not owned (first n_children, n_parents used)
         integer :: n_children = 0, n_parents = 0            !! number of children and parents
         type(TrajectoryFollower) :: follower_               !! sets position and attitude from followed trajectories
-        logical :: following = .false.                      !! following trajectories (`follow`, until `unfollow`)
+        logical :: following = .false.                      !! following trajectories ([[follow]], until [[unfollow]])
         ! decorations (drawn by the renderer)
         integer :: axes = ALL_AXES                          !! OpenFrames' defaults: all shown
         integer :: axes_labels = ALL_AXES                   !! axes labels shown (as axes)
@@ -126,7 +126,7 @@ module vkf_frames
         real(wp) :: light_ambient_(3) = 0.05_wp, light_diffuse_(3) = 0.8_wp, light_specular_(3) = 0.05_wp  !! [r, g, b]
         type(c_ptr) :: light_node = c_null_ptr, light_switch = c_null_ptr  !! light and switch (made when enabled)
         logical :: contents = .true.                        !! what the frame draws shown (show_contents)
-        logical :: pickable_ = .true.                       !! picked (WindowProxy%pick); its children aside
+        logical :: pickable_ = .true.                       !! picked ([[WindowProxy:pick]]); its children aside
         ! rendering
         type(c_ptr) :: node_ = c_null_ptr                   !! the frame's transform node
         type(c_ptr) :: contents_node = c_null_ptr           !! switch holding the contents
@@ -177,7 +177,7 @@ module vkf_frames
         procedure :: move_x_axis, move_y_axis, move_z_axis, reposition_axes
     end type ReferenceFrame
 
-    !> The ReferenceFrame constructor: `ReferenceFrame(...)` makes one (see `new_reference_frame` for its
+    !> The ReferenceFrame constructor: `ReferenceFrame(...)` makes one (see [[new_reference_frame]] for its
     !> arguments).
     interface ReferenceFrame
         module procedure new_reference_frame
@@ -312,7 +312,7 @@ contains
         axes_shown = self%axes
     end function axes_shown
 
-    !> Which axes labels to show (as `show_axes`).
+    !> Which axes labels to show (as [[show_axes]]).
     subroutine show_axes_labels(self, labels)
         class(ReferenceFrame), intent(inout) :: self
         integer, intent(in) :: labels                       !! NO_AXES, or X_AXIS, Y_AXIS, Z_AXIS combined with ior
@@ -320,7 +320,7 @@ contains
         call update_switches(self)
     end subroutine show_axes_labels
 
-    !> Which axes labels are shown (as `axes_shown`).
+    !> Which axes labels are shown (as [[axes_shown]]).
     pure integer function axes_labels_shown(self)
         class(ReferenceFrame), intent(in) :: self
         axes_labels_shown = self%axes_labels
@@ -356,7 +356,7 @@ contains
             call check_status(vkf_label_set_on_top(self%name_text, merge(1_c_int, 0_c_int, on_top)))
     end subroutine set_name_label_on_top
 
-    !> Whether the name label is drawn on top of the scene (`set_name_label_on_top`).
+    !> Whether the name label is drawn on top of the scene ([[set_name_label_on_top]]).
     pure logical function name_label_on_top(self)
         class(ReferenceFrame), intent(in) :: self
         name_label_on_top = self%name_on_top
@@ -503,7 +503,7 @@ contains
         call apply_light(self)
     end subroutine set_light_ambient
 
-    !> The light source's diffuse color (see `set_light_ambient`).
+    !> The light source's diffuse color (see [[set_light_ambient]]).
     subroutine set_light_diffuse(self, rgb)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)                      !! diffuse color [r, g, b] (0 to 1; default 0.8 gray)
@@ -511,7 +511,7 @@ contains
         call apply_light(self)
     end subroutine set_light_diffuse
 
-    !> The light source's specular color (see `set_light_ambient`).
+    !> The light source's specular color (see [[set_light_ambient]]).
     subroutine set_light_specular(self, rgb)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: rgb(3)                      !! specular color [r, g, b] (0 to 1; default 0.05 gray)
@@ -568,22 +568,22 @@ contains
         if (c_associated(self%contents_node)) call check_status(vkf_switch_set(self%contents_node, merge(1_c_int, 0_c_int, show)))
     end subroutine show_contents
 
-    !> Whether what the frame draws is shown (`show_contents`).
+    !> Whether what the frame draws is shown ([[show_contents]]).
     pure logical function contents_shown(self)
         class(ReferenceFrame), intent(in) :: self
         contents_shown = self%contents
     end function contents_shown
 
-    !> Whether `pick` tests what this frame draws (default true; e.g. false
+    !> Whether [[pick]] tests what this frame draws (default true; e.g. false
     !> for an overlay such as a selection marker). Its children are picked or
     !> not by their own setting.
     subroutine set_pickable(self, pickable)
         class(ReferenceFrame), intent(inout) :: self
-        logical, intent(in) :: pickable                     !! (true: tested by `pick`)
+        logical, intent(in) :: pickable                     !! (true: tested by [[pick]])
         self%pickable_ = pickable
     end subroutine set_pickable
 
-    !> Whether `pick` tests what this frame draws (`set_pickable`).
+    !> Whether [[pick]] tests what this frame draws ([[set_pickable]]).
     pure logical function pickable(self)
         class(ReferenceFrame), intent(in) :: self
         pickable = self%pickable_
@@ -671,7 +671,7 @@ contains
     !> Place the x axis vector: from `base`, `length` long, with a head of
     !> `head_ratio` of the length (default 0.3) and body and head radii (default
     !> 0.05 and 0.1 of the length); its label is at the tip, 0.4 of the length
-    !> tall (at most `label_size` pixels). As OpenFrames' moveXAxis. Set before
+    !> tall (at most [[label_size]] pixels). As OpenFrames' moveXAxis. Set before
     !> the frame is first shown.
     subroutine move_x_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
@@ -680,7 +680,7 @@ contains
         call move_axis(self, 1, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_x_axis
 
-    !> Place the y axis vector (as `move_x_axis`; OpenFrames' moveYAxis).
+    !> Place the y axis vector (as [[move_x_axis]]; OpenFrames' moveYAxis).
     subroutine move_y_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: base(3), length             !! (base: frame's coordinates)
@@ -688,7 +688,7 @@ contains
         call move_axis(self, 2, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_y_axis
 
-    !> Place the z axis vector (as `move_x_axis`; OpenFrames' moveZAxis).
+    !> Place the z axis vector (as [[move_x_axis]]; OpenFrames' moveZAxis).
     subroutine move_z_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: base(3), length             !! (base: frame's coordinates)
@@ -696,7 +696,7 @@ contains
         call move_axis(self, 3, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_z_axis
 
-    !> Place axis k (as `move_x_axis`), made again if the frame is shown.
+    !> Place axis k (as [[move_x_axis]]), made again if the frame is shown.
     subroutine move_axis(self, k, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
         integer, intent(in) :: k                            !! the axis: 1 (x), 2 (y) or 3 (z)
@@ -732,7 +732,7 @@ contains
         end do
     end subroutine reposition_axes
 
-    !> What kind of frame this is (shown by `frame_string`; extensions override it).
+    !> What kind of frame this is (shown by [[frame_string]]; extensions override it).
     function frame_info(self) result(info)
         class(ReferenceFrame), intent(in) :: self
         character(len=:), allocatable :: info
@@ -914,7 +914,7 @@ contains
         f => self%follower_
     end function follower
 
-    !> Whether the frame follows trajectories (at least one, since `follow`).
+    !> Whether the frame follows trajectories (at least one, since [[follow]]).
     pure logical function is_following(self)
         class(ReferenceFrame), intent(in) :: self
         is_following = self%following .and. self%follower_%num_trajectories() > 0
@@ -979,7 +979,7 @@ contains
     !> Sphere and Model override this.
     subroutine build_contents(self, viewer, group)
         class(ReferenceFrame), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group            !! (viewer: as `realize`'s)
+        type(c_ptr), intent(in) :: viewer, group            !! (viewer: as [[realize]]'s)
     end subroutine build_contents
 
     !> Copy the positions and attitudes of this frame and its descendants to

@@ -9,10 +9,10 @@
 !> Its shape and coordinates come from Rocky's tiling profile: '' (Rocky's
 !> default) or 'global-geodetic' for the Earth (WGS84), 'moon' for the Moon
 !> (a sphere of 1737.4 km), or another of Rocky's profiles. Rocky works in
-!> meters; the body is drawn at `units_per_meter` scene units per meter
+!> meters; the body is drawn at [[units_per_meter]] scene units per meter
 !> (default 1e-3: kilometers, as vkframes' examples).
 !>
-!> Layers (`add_image_layer`, `add_elevation_layer`) are tiled sources Rocky
+!> Layers ([[add_image_layer]], [[add_elevation_layer]]) are tiled sources Rocky
 !> pages in as the view needs them: a TMS service (LAYER_TMS), a file or
 !> service GDAL reads (LAYER_GDAL; a file is found with find_data_file, e.g.
 !> data/'s moon_lola_ldem16.tif from `pixi run -e rocky moon-data`), or a
@@ -90,7 +90,7 @@ module vkf_terrain
         procedure :: update => terrain_update
     end type TerrainBody
 
-    !> The TerrainBody constructor: `TerrainBody(...)` makes one (see `new_terrain_body` for its
+    !> The TerrainBody constructor: `TerrainBody(...)` makes one (see [[new_terrain_body]] for its
     !> arguments).
     interface TerrainBody
         module procedure new_terrain_body

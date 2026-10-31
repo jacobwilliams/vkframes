@@ -86,7 +86,7 @@ module vkf_shapes
         procedure :: build_contents => axes_build_contents
     end type CoordinateAxes
 
-    !> The CoordinateAxes constructor: `CoordinateAxes(...)` makes one (see `new_coordinate_axes` for its
+    !> The CoordinateAxes constructor: `CoordinateAxes(...)` makes one (see [[new_coordinate_axes]] for its
     !> arguments).
     interface CoordinateAxes
         module procedure new_coordinate_axes
@@ -113,7 +113,7 @@ module vkf_shapes
         procedure :: build_contents => grid_build_contents
     end type LatLonGrid
 
-    !> The LatLonGrid constructor: `LatLonGrid(...)` makes one (see `new_lat_lon_grid` for its
+    !> The LatLonGrid constructor: `LatLonGrid(...)` makes one (see [[new_lat_lon_grid]] for its
     !> arguments).
     interface LatLonGrid
         module procedure new_lat_lon_grid
@@ -139,7 +139,7 @@ module vkf_shapes
         procedure :: build_contents => plane_build_contents
     end type RadialPlane
 
-    !> The RadialPlane constructor: `RadialPlane(...)` makes one (see `new_radial_plane` for its
+    !> The RadialPlane constructor: `RadialPlane(...)` makes one (see [[new_radial_plane]] for its
     !> arguments).
     interface RadialPlane
         module procedure new_radial_plane
@@ -148,8 +148,8 @@ module vkf_shapes
     !> A cone of polygonal cross-section (OpenFrames' PolyhedralCone), with its
     !> apex at the origin and boresight along -z: vertex i at clock angle
     !> clock(i) (from +x toward +y) and cone angle cone(i) (from the
-    !> boresight), `cone_length` along the boresight. Drawn as transparent sides,
-    !> edges from the apex and the base outline (`set_draw_mode`).
+    !> boresight), [[cone_length]] along the boresight. Drawn as transparent sides,
+    !> edges from the apex and the base outline ([[set_draw_mode]]).
     type, extends(ReferenceFrame), public :: PolyhedralCone
         private
         real(wp), allocatable :: clock(:)                   !! vertices' clock angles (radians, from +x toward +y)
@@ -173,7 +173,7 @@ module vkf_shapes
         procedure :: build_contents => cone_build_contents
     end type PolyhedralCone
 
-    !> The PolyhedralCone constructor: `PolyhedralCone(...)` makes one (see `new_polyhedral_cone` for its
+    !> The PolyhedralCone constructor: `PolyhedralCone(...)` makes one (see [[new_polyhedral_cone]] for its
     !> arguments).
     interface PolyhedralCone
         module procedure new_polyhedral_cone
@@ -192,7 +192,7 @@ module vkf_shapes
         procedure :: frame_info => elliptic_frame_info
     end type EllipticCone
 
-    !> The EllipticCone constructor: `EllipticCone(...)` makes one (see `new_elliptic_cone` for its
+    !> The EllipticCone constructor: `EllipticCone(...)` makes one (see [[new_elliptic_cone]] for its
     !> arguments).
     interface EllipticCone
         module procedure new_elliptic_cone
@@ -210,7 +210,7 @@ module vkf_shapes
         procedure :: frame_info => rect_frame_info
     end type RectangularCone
 
-    !> The RectangularCone constructor: `RectangularCone(...)` makes one (see `new_rectangular_cone` for its
+    !> The RectangularCone constructor: `RectangularCone(...)` makes one (see [[new_rectangular_cone]] for its
     !> arguments).
     interface RectangularCone
         module procedure new_rectangular_cone
@@ -221,7 +221,7 @@ module vkf_shapes
     !> (set_triangles) or a grid of points (set_grid: e.g. a tube of
     !> trajectories, an invariant manifold). Drawn as faces, edges (the
     !> polygons' outlines, the triangles' sides, or the grid's lines) and
-    !> vertices (`set_draw_mode`).
+    !> vertices ([[set_draw_mode]]).
     !>
     !> Faces: lit by the scene's lights (the default; flat, or smooth across
     !> the vertices with set_smooth) or unlit (as a cone's sides); in the
@@ -267,7 +267,7 @@ module vkf_shapes
         procedure :: build_contents => poly_build_contents
     end type Polyhedron
 
-    !> The Polyhedron constructor: `Polyhedron(...)` makes one (see `new_polyhedron` for its
+    !> The Polyhedron constructor: `Polyhedron(...)` makes one (see [[new_polyhedron]] for its
     !> arguments).
     interface Polyhedron
         module procedure new_polyhedron

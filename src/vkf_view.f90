@@ -6,21 +6,21 @@
 !> * RELATIVE_FRAME (the default): the viewed frame itself (a body-fixed view);
 !> * ABSOLUTE_FRAME: the root frame's axes, at the viewed frame's origin (an
 !>   inertial view that follows the frame as it moves).
-!> A view between frames (`set_view_between_frames`) looks from one frame at
+!> A view between frames ([[set_view_between_frames]]) looks from one frame at
 !> another: the view frame is turned so that its +y axis (the trackball's
 !> initial viewing direction) points at the second frame, in one direct rotation
 !> (VIEW_DIRECT) or first in azimuth, then elevation (VIEW_AZEL, the default,
 !> which keeps z up).
 !>
-!> The default camera (`reset_view`) looks along +y at the frame's bound from the
-!> distance at which it fills the field of view (or from `default_view_distance`,
-!> or from `set_default_view_parameters`). Views are not owned by windows: a
+!> The default camera ([[reset_view]]) looks along +y at the frame's bound from the
+!> distance at which it fills the field of view (or from [[default_view_distance]],
+!> or from [[set_default_view_parameters]]). Views are not owned by windows: a
 !> view, and the frames it refers to, must stay alive while used.
 !>
 !> The camera (OpenFrames' trackball get/setTransformation): a window's
-!> `get_camera` / `set_camera` for the view it shows (and smooth transitions,
-!> see vkf_window), or `View%set_camera` for a view's camera when it is next
-!> shown. `camera_between` interpolates between two cameras (each eye, center,
+!> [[get_camera]] / [[View:set_camera]] for the view it shows (and smooth transitions,
+!> see vkf_window), or [[View:set_camera]] for a view's camera when it is next
+!> shown. [[camera_between]] interpolates between two cameras (each eye, center,
 !> up): the center along a straight line, the distance geometrically, the
 !> orientation by the shortest rotation.
 module vkf_view
@@ -82,7 +82,7 @@ module vkf_view
 
     public :: camera_between, transform_camera
 
-    !> The View constructor: `View(...)` makes one (see `new_view` for its
+    !> The View constructor: `View(...)` makes one (see [[new_view]] for its
     !> arguments).
     interface View
         module procedure new_view
@@ -249,7 +249,7 @@ contains
         up = self%default_up
     end subroutine default_view_parameters
 
-    !> Forget the camera set by `set_default_view_parameters` (back to the default view distance).
+    !> Forget the camera set by [[set_default_view_parameters]] (back to the default view distance).
     subroutine clear_default_view_parameters(self)
         class(View), intent(inout) :: self
         self%default_eye = 0.0_wp
@@ -355,7 +355,7 @@ contains
     end function saved_state
 
     !> The camera (view-frame coordinates) to show the next time the view is
-    !> drawn (at once if it is shown: the window's `set_camera` can also fly
+    !> drawn (at once if it is shown: the window's [[View:set_camera]] can also fly
     !> there). It replaces a pending reset.
     subroutine view_set_camera(self, eye, center, up)
         class(View), intent(inout) :: self
@@ -367,7 +367,7 @@ contains
         self%reset_pending = .false.
     end subroutine view_set_camera
 
-    !> True (once) if a camera was set (`set_camera`), and that camera.
+    !> True (once) if a camera was set ([[View:set_camera]]), and that camera.
     logical function take_camera(self, cam)
         class(View), intent(inout) :: self
         real(wp), intent(out) :: cam(3,3)   !! (columns: eye, center, up (view-frame coordinates))
