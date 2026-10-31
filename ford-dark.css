@@ -99,3 +99,31 @@ a:has(> .card-header) { text-decoration: none; }
 
 /* the source pages' line numbers (local.css: .hl pre a::before) */
 .hl pre a::before { color: #5d6886; background: #0e1427; border-right-color: var(--bs-border-color); opacity: 1; }
+
+/* the dependency graphs: Graphviz SVGs written into the pages (and their
+   legend), drawn for a white page. Their node colors (FORD's, which the legend
+   explains) stay; the white background is taken away, and what is drawn in
+   black (edges, arrowheads, the page's own entity: unfilled) made light. CSS
+   wins over the SVG's fill and stroke attributes. */
+.depgraph svg g.graph > polygon:first-of-type,
+.modal svg g.graph > polygon:first-of-type { fill: transparent; }
+.depgraph svg .edge path[stroke="#000000"],
+.modal svg .edge path[stroke="#000000"] { stroke: #8a96b5; }
+.depgraph svg .edge polygon[fill="#000000"],
+.modal svg .edge polygon[fill="#000000"] { fill: #8a96b5; stroke: #8a96b5; }
+.depgraph svg .edge text, .modal svg .edge text { fill: #9aa6c3; }
+.depgraph svg .node polygon[fill="none"],
+.modal svg .node polygon[fill="none"] { fill: #151d3a; stroke: #a98bd0; }
+.depgraph svg .node text:not([fill]),
+.modal svg .node text:not([fill]) { fill: #e6ecf5; }
+
+/* large graphs, drawn as tables (local.css: .graph td...) */
+.graph td.node { border-color: var(--bs-body-bg); }
+.graph td.dashedText, .graph td.solidText { color: #9aa6c3; border-color: #8a96b5; }
+.graph td.dashedBottom, .graph td.dashedTop, .graph td.solidTop, .graph td.solidBottom { border-color: #8a96b5; }
+.graph td.triangle-left:after { border-right-color: #8a96b5; }
+
+/* the large graphs' zoom controls (svg-pan-zoom) */
+.depgraph svg .svg-pan-zoom-control-background { fill: #151d3a; opacity: 0.95; }
+.depgraph svg .svg-pan-zoom-control-element { fill: #c7b2e6; }
+.depgraph svg .svg-pan-zoom-control:hover .svg-pan-zoom-control-element { fill: #ffffff; }
