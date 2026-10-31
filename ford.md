@@ -17,9 +17,9 @@ display: public
          protected
          private
 source: true
-graph: false
+graph: true
 sort: alpha
-search: false
+search: true
 ---
 
 Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph.
