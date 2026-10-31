@@ -14,7 +14,7 @@ program test_trajectory
     type(DataSource) :: src(3)
     real(wp), pointer :: p(:,:)
     real(wp), allocatable :: t(:), pos(:,:)
-    real(wp) :: t0, tf
+    real(wp) :: t0, tf, v3(3)
     real(wp), allocatable :: v(:,:)
     logical :: ok
     integer :: i, index, status, failures, rev, gen
@@ -25,6 +25,8 @@ program test_trajectory
     traj = Trajectory()
     call check(traj%is_empty() .and. traj%num_times() == 0, 'empty')
     call check(traj%time_index(1.0_wp, index) == TIME_OUT_OF_RANGE, 'empty: time_index')
+    v3 = traj%point_at(1.0_wp, ok=ok)
+    call check(.not. ok .and. all(v3 == 0.0_wp), 'empty: no point_at')
     call check(traj%time_distance(1.0_wp) == huge(1.0_wp), 'empty: time_distance')
     call check(.not. traj%time_range(t0, tf), 'empty: no time range')
 
@@ -60,6 +62,21 @@ program test_trajectory
     call check(traj%time_index(-1.0_wp, index) == TIME_OUT_OF_RANGE .and. index == 0, 'time_index before')
     call check(traj%time_index(10.0_wp, index) == TIME_OUT_OF_RANGE .and. index == 11, 'time_index after')
     call check(traj%time_distance(4.0_wp) < 0.0_wp .and. traj%time_distance(12.0_wp) == 3.0_wp, 'time_distance')
+
+    ! linear in time between points: forward, backward (times running back), kept within the two, the ends
+    call check(abs(traj%time_fraction(4, 5, 3.25_wp) - 0.25_wp) < 1.0e-12_wp .and. &
+               abs(traj%time_fraction(5, 4, 3.25_wp) - 0.75_wp) < 1.0e-12_wp .and. &
+               traj%time_fraction(4, 5, 10.0_wp) == 1.0_wp, 'time_fraction: either way, kept within 0 to 1')
+    call check(all(abs(traj%point_between(4, 5, 3.25_wp, position_sources(3)) - [3.25_wp, 6.5_wp, 9.75_wp]) &
+                   < 1.0e-12_wp) .and. &
+               all(abs(traj%point_between(5, 4, 3.25_wp, position_sources(3)) - [3.25_wp, 6.5_wp, 9.75_wp]) &
+                   < 1.0e-12_wp), 'point_between: the point at the time, either way')
+    call check(all(traj%point_between(10, 11, 9.5_wp, position_sources(3)) == traj%position(10)), &
+               'point_between: past the last point, the point itself')
+    v3 = traj%point_at(3.25_wp, ok=ok)
+    call check(ok .and. all(abs(v3 - [3.25_wp, 6.5_wp, 9.75_wp]) < 1.0e-12_wp), 'point_at: inside')
+    call check(all(traj%point_at(-1.0_wp) == traj%position(1)) .and. all(traj%point_at(20.0_wp) == traj%position(10)), &
+               'point_at: the first and last points outside the times')
 
     ! time search, decreasing: 9, 8, ..., 0
     down = Trajectory()

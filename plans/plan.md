@@ -1462,9 +1462,38 @@ Interaction:
             prograde, normal and radial directions to set its delta-v; the
             arc after it propagated again as it moves, with the osculating
             orbit and the total delta-v shown.
-      - [ ] Dragging a marker along a trajectory to change the time (the
-            3D counterpart of a time slider): a handle held to the
-            trajectory's curve (the closest point to the cursor's ray).
+      - [x] A marker dragged along a path to change its time (2026-10-30):
+            `TimeHandle` (vkf_handles), e.g. a trajectory's start or end
+            dragged to make it longer or shorter in time.
+            - The path is a `TimePath` (a position for any time, in the
+              handle's parent's coordinates): the program's propagator, so
+              the marker goes past the points computed so far; or a
+              `TrajectoryPath` along a Trajectory's points.
+            - The frame is placed at the path's point (its name label goes
+              with it: e.g. the time); the marker is MarkerArtist's size, on
+              the screen.
+            - A drag: the path sampled over the time range at the grab; each
+              local minimum of the samples' miss (the ray's angle from the
+              point, from the eye) refined (golden section); of those nearly
+              as near as the nearest, the one nearest in time to the handle's
+              (orbits pass the same place each revolution: without it, the
+              marker jumped to another one).
+            - Handles on the same spot (a trajectory's start marker on its
+              state's arrow tip): the nearest on the screen, then a
+              priority (`set_priority`: markers 1 before arrows 0), then
+              depth.
+            - The interpolation of trajectories was in three private copies
+              (the follower, trace mode's tails, intermediate markers):
+              now `Trajectory%point_at`, `point_between` and
+              `time_fraction`, used by them and by `TrajectoryPath`.
+            - Tested: `test/test_handles.f90` (along a line, kept within its
+              range; along a circle of three revolutions under a moved
+              parent, staying on its revolution; the pick), `test_trajectory`
+              (the interpolation). Shown in `demos/design` (the start,
+              propagated backward, and the end; `--drag-test` drags the end).
+      - [ ] Also the 3D counterpart of a time slider: the current time set by
+            dragging a spacecraft along its trajectory (a TimeHandle on a
+            TrajectoryPath, its time given to the window's clock).
       - [ ] Waypoints: click points on a plane (the cursor's ray) to add
             them, Lambert arcs between them, and drag a waypoint to see its
             arcs and their delta-v change.

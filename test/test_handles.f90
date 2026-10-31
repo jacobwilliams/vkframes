@@ -1,4 +1,5 @@
-!> A window's handler that records the handles' drags and the mouse buttons.
+!> A window's handler that records the handles' drags and the mouse buttons,
+!> and paths for time handles: a line and a circle.
 module test_handles_recorder
 
     use vkframes
@@ -17,7 +18,35 @@ module test_handles_recorder
         procedure :: button_release => recorder_button_release
     end type DragRecorder
 
+    !> The line x = t (y, z = 0).
+    type, extends(TimePath), public :: LinePath
+    contains
+        procedure :: position => line_position
+    end type LinePath
+
+    !> The unit circle about z, at angle t (radians): a revolution every 2 pi.
+    type, extends(TimePath), public :: CirclePath
+    contains
+        procedure :: position => circle_position
+    end type CirclePath
+
 contains
+
+    !> The line's point at time t.
+    function line_position(self, t) result(p)
+        class(LinePath), intent(in) :: self
+        real(wp), intent(in) :: t                           !! the time
+        real(wp) :: p(3)
+        p = [t, 0.0_wp, 0.0_wp]
+    end function line_position
+
+    !> The circle's point at time t.
+    function circle_position(self, t) result(p)
+        class(CirclePath), intent(in) :: self
+        real(wp), intent(in) :: t                           !! the time (the angle, radians)
+        real(wp) :: p(3)
+        p = [cos(t), sin(t), 0.0_wp]
+    end function circle_position
 
     !> A drag: its stage counted, the handle kept.
     subroutine recorder_handle_drag(self, window, handle, stage)
@@ -66,7 +95,7 @@ program test_handles
     use vkframes
     use vkf_pick, only: PickCamera, pick_camera
     use vkf_layer, only: vkf_viewer_size
-    use test_handles_recorder, only: DragRecorder
+    use test_handles_recorder, only: DragRecorder, LinePath, CirclePath
 
     implicit none
 
@@ -91,13 +120,15 @@ program test_handles
     call check(near3(arrow%tip(), [2.0_wp, 0.0_wp, 0.0_wp]), 'the tip: the display scale times the vector')
     call check_constraints()
     call check_pick()
+    call check_time_handles()
     call check_window()
 
     if (failures > 0) then
         write(*, '(a,i0,a)') 'FAIL: ', failures, ' check(s)'
         error stop 1
     end if
-    write(*, '(a)') 'PASS: handles (the cursor''s ray, VectorHandle''s constraints and pick, dragged with the mouse)'
+    write(*, '(a)') 'PASS: handles (the cursor''s ray, VectorHandle''s constraints and pick, TimeHandle''s drags ' // &
+                    'and pick, TrajectoryPath, dragged with the mouse)'
 
 contains
 
@@ -186,6 +217,71 @@ contains
         call arrow%pick(cam, arrow%world_matrix(), found, n)
         call check(n == 0, 'not picked at its tail')
     end subroutine check_pick
+
+    !> TimeHandles: along a line (dragged to a time, kept within its range),
+    !> along a circle of three revolutions under a moved parent (the drag
+    !> stays on the handle's revolution), picked at its marker; and
+    !> TrajectoryPath's interpolation.
+    subroutine check_time_handles()
+        type(LinePath), target :: line
+        type(CirclePath), target :: circle
+        type(ReferenceFrame), target :: base, raised
+        type(TimeHandle), target :: on_line, on_circle
+        type(Trajectory), target :: traj
+        type(TrajectoryPath) :: along
+        type(PickCamera) :: cam
+        type(PickHit), allocatable :: found(:)
+        real(wp), parameter :: y(3) = [0.0_wp, 1.0_wp, 0.0_wp], down(3) = [0.0_wp, 0.0_wp, -1.0_wp]
+        real(wp), parameter :: two_pi = 2.0_wp * pi
+        real(wp) :: t0, t1
+        integer :: n
+
+        base = ReferenceFrame('Base')
+        on_line = TimeHandle('On a line', line, time=3.0_wp, t_min=0.0_wp, t_max=10.0_wp)
+        if (.not. base%add_child(on_line)) error stop 'add_child failed'
+        call check(near3(on_line%position(), [3.0_wp, 0.0_wp, 0.0_wp]), 'TimeHandle: placed at its time''s point')
+        call check(on_line%grab([3.0_wp, -5.0_wp, 0.0_wp], y), 'TimeHandle: grabbed')
+        call check(on_line%drag([7.5_wp, -5.0_wp, 0.0_wp], y), 'TimeHandle: dragged')
+        call check(abs(on_line%time() - 7.5_wp) < 1.0e-6_wp .and. near3(on_line%position(), &
+                   [on_line%time(), 0.0_wp, 0.0_wp]), 'TimeHandle: the time under the cursor, the frame there')
+        call check(on_line%drag([15.0_wp, -5.0_wp, 0.0_wp], y) .and. abs(on_line%time() - 10.0_wp) < 1.0e-6_wp, &
+                   'TimeHandle: kept within its time range')
+        call on_line%release()
+        call on_line%set_time_range(0.0_wp, 4.0_wp)
+        call on_line%time_range(t0, t1)
+        call check(t0 == 0.0_wp .and. t1 == 4.0_wp .and. on_line%time() == 4.0_wp, 'TimeHandle: a new range clamps it')
+
+        ! a circle of three revolutions, its frame 1 above the root
+        raised = ReferenceFrame('Raised')
+        call raised%set_position([0.0_wp, 0.0_wp, 1.0_wp])
+        on_circle = TimeHandle('On a circle', circle, time=two_pi + 0.5_wp, t_min=0.0_wp, t_max=3.0_wp * two_pi)
+        if (.not. (base%add_child(raised) .and. raised%add_child(on_circle))) error stop 'add_child failed'
+        call check(on_circle%grab([cos(0.5_wp), sin(0.5_wp), 5.0_wp], down), 'TimeHandle on a circle: grabbed')
+        call check(on_circle%drag([cos(0.8_wp), sin(0.8_wp), 5.0_wp], down), 'TimeHandle on a circle: dragged')
+        call check(abs(on_circle%time() - (two_pi + 0.8_wp)) < 1.0e-5_wp, &
+                   'TimeHandle on a circle: the same revolution (not another one at the same point)')
+        call on_circle%release()
+
+        ! picked at its marker: a camera above the circle's point
+        cam = pick_camera([cos(0.8_wp), sin(0.8_wp), 11.0_wp], [cos(0.8_wp), sin(0.8_wp), 1.0_wp], y, .true., &
+                          30.0_wp, 1.0_wp, [-1.0_wp, 1.0_wp, -1.0_wp, 1.0_wp], 400, 400, 0.0_wp, 0.0_wp, 4.0_wp)
+        allocate(found(4))
+        n = 0
+        call on_circle%pick(cam, on_circle%world_matrix(), found, n)
+        call check(n == 1, 'TimeHandle: picked at its marker')
+        if (n == 1) call check(found(1)%kind == PICK_HANDLE .and. abs(found(1)%time - on_circle%time()) < 1.0e-12_wp, &
+                               'TimeHandle: a PICK_HANDLE hit, with its time')
+
+        ! TrajectoryPath: linear between the points, the ends outside
+        traj = Trajectory()
+        call traj%add(0.0_wp, pos=[0.0_wp, 0.0_wp, 0.0_wp])
+        call traj%add(1.0_wp, pos=[1.0_wp, 0.0_wp, 0.0_wp])
+        call traj%add(2.0_wp, pos=[1.0_wp, 1.0_wp, 0.0_wp])
+        along = TrajectoryPath(traj)
+        call check(near3(along%position(1.5_wp), [1.0_wp, 0.5_wp, 0.0_wp]) .and. &
+                   near3(along%position(5.0_wp), [1.0_wp, 1.0_wp, 0.0_wp]) .and. &
+                   near3(along%position(-1.0_wp), [0.0_wp, 0.0_wp, 0.0_wp]), 'TrajectoryPath: interpolated, ends kept')
+    end subroutine check_time_handles
 
     !> In a window: the cursor's ray, and the arrow hovered, grabbed, dragged and
     !> released with forwarded mouse events; the camera unchanged; a press

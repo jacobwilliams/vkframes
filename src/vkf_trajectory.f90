@@ -20,6 +20,12 @@
 !>   them with what it last saw and updates only what changed (e.g. uploads only
 !>   the points appended since).
 !> * No locking: vkframes updates and renders on one thread.
+!>
+!> Between points, a trajectory is linear in time: `point_at(t)` is the point
+!> at any time (the first or last point outside its times), and
+!> `point_between(k, k2, t)` and `time_fraction(k, k2, t)` the same between
+!> two points already found (followers, trace mode's tail, intermediate
+!> markers and time handles use them).
 module vkf_trajectory
 
     use, intrinsic :: iso_c_binding, only: c_float
@@ -82,6 +88,7 @@ module vkf_trajectory
         procedure :: times, positions, attitudes, colors
         procedure :: time_range, time_distance, time_index
         procedure :: point, points, verify_data, num_points
+        procedure :: time_fraction, point_between, point_at
         procedure :: revision, generation
     end type Trajectory
 
@@ -624,6 +631,63 @@ contains
         index = low
         status = TIME_NOT_FOUND
     end function time_index
+
+    !> The fraction of the way in time from point k to point k2 (any two
+    !> points: e.g. k + 1, or k - 1 with times running backward) at time t,
+    !> kept within 0 to 1 (0 if their times are the same). No checks: k and k2
+    !> must be times.
+    pure real(wp) function time_fraction(self, k, k2, t) result(frac)
+        class(Trajectory), intent(in) :: self
+        integer, intent(in) :: k, k2                        !! the points (1 to num_times)
+        real(wp), intent(in) :: t                           !! the time
+        frac = 0.0_wp
+        if (self%t(k2) /= self%t(k)) frac = max(0.0_wp, min(1.0_wp, (t - self%t(k)) / (self%t(k2) - self%t(k))))
+    end function time_fraction
+
+    !> The point at time t between points k and k2 (components from
+    !> `sources`): linear in time, within the two (time_fraction). Point k if
+    !> k2 isn't a point (beyond the ends, or more times than data).
+    pure function point_between(self, k, k2, t, sources) result(v)
+        class(Trajectory), intent(in) :: self
+        integer, intent(in) :: k                            !! a point (1 to num_points(sources))
+        integer, intent(in) :: k2                           !! the other point (e.g. k + 1)
+        real(wp), intent(in) :: t                           !! the time
+        type(DataSource), intent(in) :: sources(3)          !! where the components come from
+        real(wp) :: v(3)
+        v = self%point(k, sources)
+        if (k2 < 1 .or. k2 > self%num_points(sources)) return
+        v = v + self%time_fraction(k, k2, t) * (self%point(k2, sources) - v)
+    end function point_between
+
+    !> The point at time t (components from `sources`; default: the
+    !> position's), linear in time between the points about it; outside the
+    !> times, the first or last point. `ok` (optional) false, and v 0, if there
+    !> is no point (or the search for the time failed).
+    function point_at(self, t, sources, ok) result(v)
+        class(Trajectory), intent(in) :: self
+        real(wp), intent(in) :: t                           !! the time
+        type(DataSource), intent(in), optional :: sources(3)  !! where the components come from (default: the position)
+        logical, intent(out), optional :: ok                !! a point was found
+        real(wp) :: v(3)
+        type(DataSource) :: src(3)
+        integer :: n, i, status
+        v = 0.0_wp
+        if (present(ok)) ok = .false.
+        src = position_sources(self%dof_)
+        if (present(sources)) src = sources
+        n = min(self%n_times, self%num_points(src))
+        if (n == 0) return
+        status = self%time_index(t, i)
+        if (status == TIME_NOT_FOUND) return
+        if (i < 1) then
+            v = self%point(1, src)
+        else if (i >= n) then
+            v = self%point(n, src)
+        else
+            v = self%point_between(i, i + 1, t, src)
+        end if
+        if (present(ok)) ok = .true.
+    end function point_at
 
     !> Point i with components from `sources` (OpenFrames' getPoint). No checks:
     !> use `verify_data` and `num_points` first.

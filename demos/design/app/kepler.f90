@@ -7,8 +7,9 @@
 !> ellipse, the eccentric anomaly times sqrt(a)), not in time: the points are
 !> spread evenly along the orbit, however eccentric (uniform times bunch them
 !> at apoapsis and leave periapsis jagged). The time at each point follows
-!> from Kepler's equation in universal form; the end (`duration`) is found by
-!> Newton's method on it, safeguarded by bisection (the time grows with chi).
+!> from Kepler's equation in universal form; the ends (times before and after
+!> the state) are found by Newton's method on it, safeguarded by bisection
+!> (the time grows with chi).
 module kepler
 
     use vkframes, only: wp, pi
@@ -35,7 +36,7 @@ module kepler
         real(wp) :: h(3) = 0.0_wp                           !! specific angular momentum (km^2/s)
     end type Elements
 
-    public :: propagate, elements_of, state_at
+    public :: propagate, elements_of, state_at, position_at
 
 contains
 
@@ -85,66 +86,112 @@ contains
         v = fdot * r0 + gdot * v0
     end subroutine state_at
 
-    !> The universal anomaly at time `duration` (s) after (r0, v0).
-    function chi_at(r0, v0, duration) result(chi)
-        real(wp), intent(in) :: r0(3)                       !! the initial position (km)
-        real(wp), intent(in) :: v0(3)                       !! the initial velocity (km/s)
-        real(wp), intent(in) :: duration                    !! the time after it (s; >= 0)
+    !> The universal anomaly at time `t` (s) from (r0, v0): after it (t > 0)
+    !> or before it (t < 0).
+    function chi_at(r0, v0, t) result(chi)
+        real(wp), intent(in) :: r0(3)                       !! the state's position (km)
+        real(wp), intent(in) :: v0(3)                       !! its velocity (km/s)
+        real(wp), intent(in) :: t                           !! the time from it (s)
         real(wp) :: chi
-        real(wp) :: lo, hi, t, r(3), v(3), alpha, step
+        real(wp) :: lo, hi, edge, tt, r(3), v(3), alpha, step
         integer :: k
+        chi = 0.0_wp
+        if (t == 0.0_wp) return
         alpha = 2.0_wp / norm2(r0) - dot_product(v0, v0) / mu
-        ! a bracket: chi from 0 up until the time passes the duration
-        lo = 0.0_wp
-        hi = sqrt(mu) * abs(alpha) * duration
-        if (hi <= 0.0_wp) hi = sqrt(mu) * duration / norm2(r0)
-        hi = max(hi, 1.0e-3_wp)
+        ! a bracket: chi from 0 outwards (the time grows with chi) until the time passes t
+        edge = sqrt(mu) * abs(alpha) * abs(t)
+        if (edge <= 0.0_wp) edge = sqrt(mu) * abs(t) / norm2(r0)
+        edge = sign(max(edge, 1.0e-3_wp), t)
+        lo = min(0.0_wp, edge)
+        hi = max(0.0_wp, edge)
         do k = 1, 200
-            call state_at(r0, v0, hi, r, v, t)
-            if (t >= duration) exit
-            lo = hi
-            hi = 2.0_wp * hi
+            call state_at(r0, v0, edge, r, v, tt)
+            if ((t > 0.0_wp .and. tt >= t) .or. (t < 0.0_wp .and. tt <= t)) exit
+            if (t > 0.0_wp) then
+                lo = edge
+            else
+                hi = edge
+            end if
+            edge = 2.0_wp * edge
+            if (t > 0.0_wp) then
+                hi = edge
+            else
+                lo = edge
+            end if
         end do
         ! Newton (dt/dchi = |r| / sqrt(mu)), kept within the bracket
         chi = 0.5_wp * (lo + hi)
         do k = 1, 100
-            call state_at(r0, v0, chi, r, v, t)
-            if (abs(t - duration) <= 1.0e-9_wp * max(1.0_wp, duration)) return
-            if (t < duration) then
+            call state_at(r0, v0, chi, r, v, tt)
+            if (abs(tt - t) <= 1.0e-9_wp * max(1.0_wp, abs(t))) return
+            if (tt < t) then
                 lo = chi
             else
                 hi = chi
             end if
-            step = (duration - t) * sqrt(mu) / norm2(r)
+            step = (t - tt) * sqrt(mu) / norm2(r)
             chi = chi + step
             if (chi <= lo .or. chi >= hi) chi = 0.5_wp * (lo + hi)
         end do
     end function chi_at
 
-    !> The trajectory from (r0, v0) for `duration` s: `n` points (times t,
-    !> positions r) evenly along it (see the module documentation), cut where
-    !> it first goes below the Earth's surface (`n` then fewer, `impact` true).
-    subroutine propagate(r0, v0, duration, n, t, r, impact)
-        real(wp), intent(in) :: r0(3)                       !! the initial position (km)
-        real(wp), intent(in) :: v0(3)                       !! the initial velocity (km/s)
-        real(wp), intent(in) :: duration                    !! how long (s)
+    !> The position at time `t` (s) from (r0, v0), after or before it.
+    function position_at(r0, v0, t) result(r)
+        real(wp), intent(in) :: r0(3)                       !! the state's position (km)
+        real(wp), intent(in) :: v0(3)                       !! its velocity (km/s)
+        real(wp), intent(in) :: t                           !! the time from it (s)
+        real(wp) :: r(3)
+        real(wp) :: v(3), tt
+        call state_at(r0, v0, chi_at(r0, v0, t), r, v, tt)
+    end function position_at
+
+    !> The trajectory through (r0, v0) from time `t0` (<= 0: before it) to
+    !> `t1` (>= 0: after it): `n` points (times t, positions r) evenly along it
+    !> (see the module documentation), cut where it first goes below the
+    !> Earth's surface going out from the state either way (`n` then fewer;
+    !> `cut0`, `cut1`: at the start or the end).
+    subroutine propagate(r0, v0, t0, t1, n, t, r, cut0, cut1)
+        real(wp), intent(in) :: r0(3)                       !! the state's position (km)
+        real(wp), intent(in) :: v0(3)                       !! its velocity (km/s)
+        real(wp), intent(in) :: t0                          !! the start (s from the state; <= 0)
+        real(wp), intent(in) :: t1                          !! the end (s from the state; >= 0)
         integer, intent(inout) :: n                         !! points wanted; points given
-        real(wp), intent(out) :: t(:)                       !! the times (s from the start; n of them used)
+        real(wp), intent(out) :: t(:)                       !! the times (s from the state; n of them used)
         real(wp), intent(out) :: r(:,:)                     !! the positions (3, n; km)
-        logical, intent(out) :: impact                      !! it goes below the surface (cut there)
-        real(wp) :: chi_end, v(3)
-        integer :: k
-        impact = .false.
+        logical, intent(out) :: cut0                        !! cut at the start: below the surface before it
+        logical, intent(out) :: cut1                        !! cut at the end: below the surface after it
+        real(wp) :: chi0, chi1, v(3)
+        integer :: k, k0, first, last
+        cut0 = .false.
+        cut1 = .false.
         n = min(n, size(t), size(r, 2))
-        chi_end = chi_at(r0, v0, duration)
+        chi0 = chi_at(r0, v0, min(0.0_wp, t0))
+        chi1 = chi_at(r0, v0, max(0.0_wp, t1))
         do k = 1, n
-            call state_at(r0, v0, chi_end * (k - 1) / (n - 1), r(:, k), v, t(k))
-            if (k > 1 .and. norm2(r(:, k)) < earth_radius) then
-                impact = .true.
-                n = k
-                return
+            call state_at(r0, v0, chi0 + (chi1 - chi0) * (k - 1) / (n - 1), r(:, k), v, t(k))
+        end do
+        ! out from the state (the point nearest chi = 0) each way, to the first below the surface
+        k0 = 1
+        if (chi1 > chi0) k0 = max(1, min(n, nint(-chi0 / (chi1 - chi0) * (n - 1)) + 1))
+        last = n
+        do k = k0 + 1, n
+            if (norm2(r(:, k)) < earth_radius) then
+                last = k
+                cut1 = .true.
+                exit
             end if
         end do
+        first = 1
+        do k = k0 - 1, 1, -1
+            if (norm2(r(:, k)) < earth_radius) then
+                first = k
+                cut0 = .true.
+                exit
+            end if
+        end do
+        n = last - first + 1
+        t(1:n) = t(first:last)
+        r(:, 1:n) = r(:, first:last)
     end subroutine propagate
 
     !> The orbital elements of a state (position, km; velocity, km/s).

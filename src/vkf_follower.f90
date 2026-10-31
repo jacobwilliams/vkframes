@@ -343,7 +343,6 @@ contains
         real(wp), intent(inout) :: position(3)
         logical, intent(out) :: ok                  !! false if there is no position (position unchanged)
         integer :: n, i
-        real(wp) :: frac
         ok = .false.
         n = traj%num_points(sources)
         if (n == 0) return
@@ -355,18 +354,11 @@ contains
         i = index
         if (status == TIME_NOT_FOUND) return
         if (status == TIME_OUT_OF_RANGE) then
-            i = merge(1, n, i < 1)
-            position = traj%point(i, sources)
-        else if (i > n) then
-            position = traj%point(n, sources)            ! fewer points than times: last available
+            position = traj%point(merge(1, n, i < 1), sources)
+        else if (i >= n) then
+            position = traj%point(n, sources)            ! (the last; or fewer points than times: the last available)
         else
-            position = traj%point(i, sources)
-            if (i + 1 <= n) then
-                if (traj%time(i + 1) /= traj%time(i)) then
-                    frac = (t - traj%time(i)) / (traj%time(i + 1) - traj%time(i))
-                    position = position + (traj%point(i + 1, sources) - position) * frac
-                end if
-            end if
+            position = traj%point_between(i, i + 1, t, sources)
         end if
         ok = .true.
     end subroutine interpolate_position

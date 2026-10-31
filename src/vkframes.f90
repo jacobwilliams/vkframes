@@ -30,7 +30,8 @@ module vkframes
                           KEY_SPACE, KEY_BACKSPACE, KEY_TAB, KEY_RETURN, KEY_ESCAPE, KEY_DELETE, KEY_HOME, &
                           KEY_LEFT, KEY_UP, KEY_RIGHT, KEY_DOWN, KEY_PAGE_UP, KEY_PAGE_DOWN, KEY_END, KEY_INSERT, &
                           KEY_F1, MOD_SHIFT, MOD_CAPS_LOCK, MOD_CONTROL, MOD_ALT, MOD_NUM_LOCK, MOD_META
-    use vkf_handles, only: DragHandle, VectorHandle, HANDLE_FREE, HANDLE_PLANE, HANDLE_LINE, HANDLE_RADIAL, HANDLE_SPHERE
+    use vkf_handles, only: DragHandle, VectorHandle, TimeHandle, TimePath, TrajectoryPath, &
+                           HANDLE_FREE, HANDLE_PLANE, HANDLE_LINE, HANDLE_RADIAL, HANDLE_SPHERE
     use vkf_pick, only: ray_plane, ray_sphere, ray_line
     use vkf_hud, only: HUDText
     use vkf_gui, only: Gui

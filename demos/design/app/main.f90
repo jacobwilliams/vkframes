@@ -1,30 +1,37 @@
 !> Trajectory design with the mouse, in a qt-fortran GUI: a spacecraft's
-!> initial position and velocity drawn as arrows about the Earth
-!> (VectorHandle), dragged with the mouse, and its orbit (two-body,
-!> app/kepler.f90) computed again from the new state at each move, as it is
-!> dragged.
+!> state (position and velocity at t = 0) drawn as arrows about the Earth
+!> (VectorHandle), and the trajectory's start and end as markers on it
+!> (TimeHandle), dragged with the mouse; the trajectory (two-body,
+!> app/kepler.f90) is computed again at each move, as they are dragged.
 !>
 !> The scene (Earth-centered inertial axes, km): the Earth, the position
 !> vector (yellow, from the Earth's center), the velocity vector (orange, at
-!> the position; drawn 1500 s long by default: 1 km/s is 1500 km), the orbit
-!> from that state (cyan) with its periapsis and apoapsis (white dots), and
-!> while an arrow is dragged, the orbit before the drag (dashed). An orbit
-!> that hits the Earth ends there (a red cross). Hovering an arrow's tip
-!> lights it and shows its value next to it; a left drag on it moves it.
+!> the position; drawn 1500 s long by default: 1 km/s is 1500 km), the
+!> trajectory through that state (cyan) from its start (a blue marker, at
+!> or before t = 0: propagated backward) to its end (a green marker),
+!> labeled with their times, with the orbit's periapsis and apoapsis (white
+!> dots), and while something is dragged, the trajectory before the drag
+!> (dashed). A trajectory that hits the Earth ends there (a red cross).
+!> Hovering an arrow's tip or a marker lights it (an arrow's value is shown
+!> next to it); a left drag moves it: an arrow changes the state, a marker
+!> its time along the trajectory (also beyond its ends, propagated as it
+!> goes: the TimeHandles' path is the two-body motion through the state,
+!> DesignPath), to make the trajectory longer or shorter in time.
 !>
 !> How each arrow moves (the dock): freely (in the plane facing the camera),
 !> in the orbit's plane, along itself (the altitude or the speed only), or
 !> about its base (the direction only: the radius or the speed kept). The
 !> dock also has the state as numbers (typed in, or updated by the drags),
-!> the orbit's elements, how long it is drawn (one orbit, or hours), the
-!> velocity arrow's scale, the view, and a reset.
+!> the orbit's elements, the times drawn (one orbit, or from and to, in
+!> hours: also set by the markers), the velocity arrow's scale, the view,
+!> and a reset.
 !>
 !> Run with `pixi run -e qt design-demo` (from the vkframes root).
 !> Options: `--view n` (1 oblique, 2 top), `--capture file` saves frame
 !> `--capture-frame n` (default 120), `--quit-after seconds`, and, for
 !> tests, `--drag-test`: the velocity arrow's tip is dragged with forwarded
-!> mouse events (its speed changed along itself), and the orbit's new
-!> elements printed.
+!> mouse events (its speed changed along itself), then the end marker
+!> (back along the trajectory), and the results printed.
 module design_demo
 
     use qt
@@ -47,6 +54,17 @@ module design_demo
     real(wp), parameter :: start_v(3) = [0.0_wp, 6.7_wp, 1.2_wp]           !! km/s
     real(wp), parameter :: r_color(3) = [1.0_wp, 0.85_wp, 0.25_wp], v_color(3) = [1.0_wp, 0.5_wp, 0.2_wp]
     real(wp), parameter :: orbit_color(3) = [0.3_wp, 0.85_wp, 1.0_wp]
+    real(wp), parameter :: start_color(3) = [0.55_wp, 0.7_wp, 1.0_wp], end_color(3) = [0.45_wp, 1.0_wp, 0.55_wp]
+    real(wp), parameter :: max_time = 240.0_wp * 3600.0_wp  !! the times drawn: at most 10 days either way (s)
+
+    !> The trajectory's path for the time handles: the two-body motion through
+    !> the state (r, v) at t = 0, at any time (km, s).
+    type, extends(TimePath) :: DesignPath
+        real(wp) :: r(3) = start_r                          !! the state's position (km)
+        real(wp) :: v(3) = start_v                          !! its velocity (km/s)
+    contains
+        procedure :: position => design_path_position
+    end type DesignPath
 
     !> The arrows' drags: the orbit computed again as they move.
     type, extends(WindowEventHandler) :: DesignHandler
@@ -66,7 +84,7 @@ module design_demo
         type(View) :: views(n_views)
         integer :: frame = 0
         ! controls
-        type(QDoubleSpinBox) :: r_box(3), v_box(3), hours, v_scale
+        type(QDoubleSpinBox) :: r_box(3), v_box(3), t_from, t_to, v_scale
         type(QCheckBox) :: one_orbit, show_before
         type(QComboBox) :: r_move, v_move, view_choice
         type(QLabel) :: elements_label
@@ -76,6 +94,8 @@ module design_demo
         type(ReferenceFrame) :: root                        !! Earth-centered inertial (km)
         type(Sphere) :: earth
         type(VectorHandle) :: r_handle, v_handle
+        type(TimeHandle) :: start_handle, end_handle        !! the trajectory's ends, dragged along it
+        type(DesignPath) :: path                            !! their path (the state's two-body motion)
         type(Trajectory) :: orbit, before, apsides, impact
         type(CurveArtist) :: orbit_curve, before_curve
         type(MarkerArtist) :: apsis_dots, impact_mark
@@ -85,7 +105,8 @@ module design_demo
         ! the state
         real(wp) :: r(3) = start_r, v(3) = start_v
         type(Elements) :: el
-        logical :: hits_earth = .false.
+        real(wp) :: t0 = 0.0_wp, t1 = 0.0_wp                !! the times drawn (s from the state: t0 <= 0 <= t1)
+        logical :: cut_start = .false., cut_end = .false.   !! the trajectory below the surface before its start, after its end
         ! options
         integer :: start_view = 1
         character(len=:), allocatable :: capture
@@ -119,6 +140,17 @@ contains
         call app%v_handle%set_head_size(900.0_wp)
         call app%v_handle%set_position(app%r)
 
+        ! the trajectory's ends: markers dragged along it, labeled with their times
+        app%start_handle = TimeHandle('Start', app%path, time=0.0_wp, t_min=-max_time, t_max=0.0_wp, color=start_color)
+        app%end_handle = TimeHandle('End', app%path, time=0.0_wp, t_min=0.0_wp, t_max=max_time, color=end_color)
+        call app%start_handle%show_name_label(.true.)
+        call app%end_handle%show_name_label(.true.)
+        call app%start_handle%set_label_size(15)
+        call app%end_handle%set_label_size(15)
+        call app%start_handle%set_label_alignment(ALIGN_LEFT_CENTER)
+        call app%end_handle%set_label_alignment(ALIGN_LEFT_CENTER)
+        call app%end_handle%set_priority(2)                     ! (one orbit: the end on the start, the end first)
+
         ! the orbit, the one before a drag (dashed), the apsides, an impact
         app%orbit = Trajectory()
         call app%orbit%reserve(n_points)
@@ -132,7 +164,8 @@ contains
         app%apsis_dots = MarkerArtist(app%apsides, markers=ior(MARKER_START, MARKER_END), size=9.0_wp, &
                                       color=[1.0_wp, 1.0_wp, 1.0_wp])
         app%impact = Trajectory()
-        app%impact_mark = MarkerArtist(app%impact, markers=MARKER_START, size=16.0_wp, color=[1.0_wp, 0.2_wp, 0.2_wp])
+        app%impact_mark = MarkerArtist(app%impact, markers=ior(MARKER_START, MARKER_END), size=16.0_wp, &
+                                       color=[1.0_wp, 0.2_wp, 0.2_wp])
         call app%impact_mark%set_marker_shape(MARKER_X)
         app%orbit_frame = DrawableTrajectory('Orbit')
         call app%orbit_frame%show_decorations(.false.)
@@ -146,7 +179,8 @@ contains
 
         if (.not. (app%root%add_child(app%earth) .and. app%root%add_child(app%orbit_frame) .and. &
                    app%root%add_child(app%before_frame) .and. app%root%add_child(app%r_handle) .and. &
-                   app%root%add_child(app%v_handle))) &
+                   app%root%add_child(app%v_handle) .and. app%root%add_child(app%start_handle) .and. &
+                   app%root%add_child(app%end_handle))) &
             error stop 'design demo: could not build the scene'
         app%scene = FrameManager(app%root)
 
@@ -155,22 +189,38 @@ contains
             write(*, '(a)') 'design demo: no star catalog'
     end subroutine build_model
 
-    !> How long the orbit is drawn (s): one period (bound, and the box
-    !> checked: at most 10 days), else the hours given.
-    real(wp) function duration()
-        duration = app%hours%value() * 3600.0_wp
-        if (app%one_orbit%isChecked() .and. app%el%period < huge(1.0_wp)) duration = min(app%el%period, 864000.0_wp)
-    end function duration
+    !> The path's position at time `t` (s from the state).
+    function design_path_position(self, t) result(p)
+        class(DesignPath), intent(in) :: self
+        real(wp), intent(in) :: t                           !! the time (s from the state)
+        real(wp) :: p(3)
+        p = position_at(self%r, self%v, t)
+    end function design_path_position
 
-    !> The orbit computed again from the state (r, v), and everything showing it.
+    !> The trajectory computed again from the state (r, v) and the times drawn
+    !> (one orbit from the state, if checked and bound), and everything
+    !> showing it.
     subroutine recompute()
         real(wp) :: t(n_points), r(3, n_points), rp(3), ra(3), e_dir(3)
         integer :: n
         app%el = elements_of(app%r, app%v)
+        app%path%r = app%r
+        app%path%v = app%v
+        if (app%one_orbit%isChecked() .and. app%el%period < huge(1.0_wp)) then
+            app%t0 = 0.0_wp
+            app%t1 = min(app%el%period, max_time)
+        end if
         n = n_points
-        call propagate(app%r, app%v, duration(), n, t, r, app%hits_earth)
+        call propagate(app%r, app%v, app%t0, app%t1, n, t, r, app%cut_start, app%cut_end)
         call app%orbit%clear()
         call app%orbit%add(t(1:n), pos=r(:, 1:n))
+        ! the ends' markers there (not draggable below the surface), labeled with their times
+        call app%start_handle%set_time_range(merge(t(1), -max_time, app%cut_start), 0.0_wp)
+        call app%start_handle%set_time(t(1))
+        call app%start_handle%set_name('   start '//num(t(1) / 3600.0_wp, 2)//' h')    ! (spaces: clear of the marker)
+        call app%end_handle%set_time_range(0.0_wp, merge(t(n), max_time, app%cut_end))
+        call app%end_handle%set_time(t(n))
+        call app%end_handle%set_name('   end '//num(t(n) / 3600.0_wp, 2)//' h')
         ! the apsides: along the eccentricity vector
         call app%apsides%clear()
         if (app%el%e > 1.0e-6_wp) then
@@ -184,7 +234,8 @@ contains
             end if
         end if
         call app%impact%clear()
-        if (app%hits_earth) call app%impact%add(t(n), pos=r(:, n))
+        if (app%cut_start) call app%impact%add(t(1), pos=r(:, 1))
+        if (app%cut_end) call app%impact%add(t(n), pos=r(:, n))
         call update_readouts()
         call apply_constraints()
     end subroutine recompute
@@ -212,6 +263,8 @@ contains
             call app%r_box(k)%setValue(real(app%r(k), c_double))
             call app%v_box(k)%setValue(real(app%v(k), c_double))
         end do
+        call app%t_from%setValue(real(app%t0 / 3600.0_wp, c_double))
+        call app%t_to%setValue(real(app%t1 / 3600.0_wp, c_double))
         app%updating = .false.
     end subroutine update_readouts
 
@@ -236,7 +289,8 @@ contains
                        ' km'//sep//'excess speed '//num(sqrt(max(0.0_wp, 2.0_wp * el%energy)), 3)//' km/s'
             end if
         end associate
-        if (app%hits_earth) text = text//sep//'hits the Earth'
+        if (app%cut_end) text = text//sep//'hits the Earth'
+        if (app%cut_start) text = text//sep//'from the Earth'
     end function elements_text
 
     !> x with `decimals` decimals (a leading zero kept: 0.5, -0.5).
@@ -276,6 +330,12 @@ contains
                 call app%v_handle%set_position(app%r)
             else if (associated(h, app%v_handle)) then
                 app%v = app%v_handle%vector()
+            else if (associated(h, app%start_handle) .or. associated(h, app%end_handle)) then
+                app%t0 = app%start_handle%time()                   ! (the times drawn from now on, not one orbit)
+                app%t1 = app%end_handle%time()
+                app%updating = .true.
+                call app%one_orbit%setChecked(.false.)
+                app%updating = .false.
             end if
             call recompute()
         case (DRAG_END)
@@ -396,10 +456,13 @@ contains
     end subroutine on_update
 
     !> --drag-test: the velocity arrow's tip hovered (frame 10), grabbed (12),
-    !> dragged along itself (14 to 30: its speed only) and released (32), with
-    !> mouse events forwarded as from the window; then the result printed.
+    !> dragged along itself (14 to 30: its speed only) and released (32); then
+    !> the end marker hovered (40), grabbed (42), dragged toward the point a
+    !> quarter of the way back along the trajectory (44 to 51) and released
+    !> (53): with mouse events forwarded as from the window, the results
+    !> printed (34, 55).
     subroutine drag_test_step()
-        real(wp), save :: at(2), speed0
+        real(wp), save :: at(2), speed0, end0
         integer, save :: px, py, dx, dy
         real(wp) :: tip(3), ahead(2)
         integer :: width, height
@@ -428,7 +491,31 @@ contains
             call app%proxy%mouse(MOUSE_RELEASE, px, py, 0, MOUSE_LEFT)
         case (34)
             write(*, '(a)') 'drag test: speed '//num(speed0, 3)//' -> '//num(norm2(app%v), 3)//' km/s'
-            write(*, '(a)') 'drag test: '//elements_text(.true.)
+            write(*, '(a)') 'drag test: '//elements_text(.false.)
+        case (40)
+            end0 = app%end_handle%time()
+            if (.not. (app%proxy%screen_position(app%end_handle%position(), at) .and. &
+                       app%proxy%screen_position(app%path%position(0.75_wp * end0), ahead))) &
+                error stop 'design demo: the end marker is off the screen'
+            px = nint(at(1) * width)
+            py = nint((1.0_wp - at(2)) * height)
+            dx = nint((ahead(1) - at(1)) * width / 8)
+            dy = -nint((ahead(2) - at(2)) * height / 8)
+            call app%proxy%mouse(MOUSE_MOVE, px, py, 0, 0)
+        case (42)
+            write(*, '(a,l1)') 'drag test: end marker hovered ', app%end_handle%hovered()
+            call app%proxy%mouse(MOUSE_PRESS, px, py, 256, MOUSE_LEFT)
+        case (44:51)
+            px = px + dx
+            py = py + dy
+            call app%proxy%mouse(MOUSE_MOVE, px, py, 256, 0)
+        case (53)
+            call app%proxy%mouse(MOUSE_RELEASE, px, py, 0, MOUSE_LEFT)
+        case (55)
+            write(*, '(a)') 'drag test: end '//num(end0 / 3600.0_wp, 3)//' -> '// &
+                            num(app%end_handle%time() / 3600.0_wp, 3)//' h (aimed at '// &
+                            num(0.75_wp * end0 / 3600.0_wp, 3)//' h), the trajectory to '// &
+                            num(app%t1 / 3600.0_wp, 3)//' h'
         end select
     end subroutine drag_test_step
 
@@ -513,18 +600,24 @@ contains
         call recompute()
     end subroutine show_state
 
-    !> The hours changed: the orbit drawn again.
-    subroutine on_duration(value, data)
-        real(c_double), intent(in) :: value                 !! hours (read by duration)
+    !> A time drawn typed in (from or to): the trajectory between them (not one orbit).
+    subroutine on_times(value, data)
+        real(c_double), intent(in) :: value                 !! hours (both boxes are read)
         class(*), intent(inout), optional :: data           !! the connection's data (unused)
         if (app%updating) return
+        app%t0 = app%t_from%value() * 3600.0_wp
+        app%t1 = app%t_to%value() * 3600.0_wp
+        app%updating = .true.
+        call app%one_orbit%setChecked(.false.)
+        app%updating = .false.
         call recompute()
-    end subroutine on_duration
+    end subroutine on_times
 
     !> "One orbit" checked or not: the orbit drawn again.
     subroutine on_one_orbit(checked, data)
-        logical, intent(in) :: checked                      !! true: one period (read by duration)
+        logical, intent(in) :: checked                      !! true: one period from the state (read by recompute)
         class(*), intent(inout), optional :: data           !! the connection's data (unused)
+        if (app%updating) return
         call recompute()
     end subroutine on_one_orbit
 
@@ -646,20 +739,29 @@ contains
         call app%v_scale%valueChanged%connect(on_v_scale)
         call form%addRow('Velocity arrow scale', app%v_scale)
 
-        ! how long the orbit is drawn
+        ! the times drawn (also set by dragging the markers)
         app%one_orbit = QCheckBox('One orbit')
-        call app%one_orbit%setChecked(.true.)
+        call app%one_orbit%setChecked(.false.)
         call app%one_orbit%toggled%connect(on_one_orbit)
-        app%hours = QDoubleSpinBox()
-        call app%hours%setRange(0.1_c_double, 240.0_c_double)
-        call app%hours%setValue(12.0_c_double)
-        call app%hours%setSuffix(' h')
-        call app%hours%valueChanged%connect(on_duration)
+        app%t_from = QDoubleSpinBox()
+        call app%t_from%setRange(real(-max_time / 3600.0_wp, c_double), 0.0_c_double)
+        call app%t_from%setDecimals(3)
+        call app%t_from%setPrefix('from ')
+        call app%t_from%setSuffix(' h')
+        call app%t_from%valueChanged%connect(on_times)
+        app%t_to = QDoubleSpinBox()
+        call app%t_to%setRange(0.0_c_double, real(max_time / 3600.0_wp, c_double))
+        call app%t_to%setDecimals(3)
+        call app%t_to%setPrefix('to ')
+        call app%t_to%setSuffix(' h')
+        call app%t_to%valueChanged%connect(on_times)
         length_row = QHBoxLayout()
         call length_row%addWidget(app%one_orbit)
-        call length_row%addWidget(app%hours)
-        call form%addRow('Drawn for', length_row)
-        call form%addRow(QLabel('<small>(hours: if not one orbit, or not bound)</small>'))
+        call length_row%addWidget(app%t_from)
+        call length_row%addWidget(app%t_to)
+        call form%addRow('Drawn', length_row)
+        call form%addRow(QLabel('<small>(hours from the state; or drag the start and end markers along ' // &
+                                'the trajectory)</small>'))
         app%show_before = QCheckBox('The orbit before the drag (dashed)')
         call app%show_before%setChecked(.true.)
         call form%addRow('While dragging', app%show_before)
@@ -681,8 +783,9 @@ contains
         call view_row%addWidget(reset_view)
         call form%addRow('View', view_row)
 
-        call form%addRow(QLabel('<small>Drag an arrow''s tip (left button) to change the state: the orbit ' // &
-                                'follows. Elsewhere: left drag rotates, right drag zooms, middle drag pans; ' // &
+        call form%addRow(QLabel('<small>Drag an arrow''s tip (left button) to change the state, or a marker ' // &
+                                'to change the start or end time: the trajectory follows. Elsewhere: left drag ' // &
+                                'rotates, right drag zooms, middle drag pans; ' // &
                                 'space resets the view.</small>'))
         call panel%setMaximumWidth(460)
         dock = QDockWidget('Design', app%main)
@@ -733,6 +836,8 @@ program vkframes_design_demo
 
     call build_model()
     call build_ui()
+    app%el = elements_of(app%r, app%v)
+    app%t1 = 0.75_wp * app%el%period                        ! (three quarters of an orbit: the end clear of the state)
     call show_state()
     if (app%quit_after > 0) call QTimer_singleShot(int(1000 * app%quit_after), on_quit)
     call app%main%resize(1400, 860)

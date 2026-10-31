@@ -1673,21 +1673,32 @@ contains
     ! handles (see the module documentation)
 
     !> The handle under (x, y), if any, hovered (the one before not), and the
-    !> grab armed for it.
+    !> grab armed for it. Of handles on the same spot: the nearest on the
+    !> screen; within `same_spot` pixels of it, the highest priority, then the
+    !> nearest to the eye (vkf_handles).
     subroutine hover_handle(self, x, y)
         class(WindowProxy), intent(inout), target :: self
         real(wp), intent(in) :: x, y                        !! the cursor: -1 to 1 across the window, y up
+        real(wp), parameter :: same_spot = 3.0_wp           !! framebuffer pixels
         type(PickHit), allocatable :: hits(:)
         class(DragHandle), pointer :: found
+        real(wp) :: least
+        integer :: k
         found => null()
         if (handles_shown()) then
-            call self%pick(x, y, hits, kinds=[PICK_HANDLE], nearest=.true.)
-            if (size(hits) > 0) then
-                select type (f => hits(1)%frame)
+            call self%pick(x, y, hits, kinds=[PICK_HANDLE])
+            if (size(hits) > 0) least = minval(hits%pixels)
+            do k = 1, size(hits)                            ! (nearest to the eye first)
+                if (hits(k)%pixels > least + same_spot) cycle
+                select type (f => hits(k)%frame)
                 class is (DragHandle)
-                    if (f%draggable()) found => f
+                    if (.not. f%draggable()) cycle
+                    if (associated(found)) then
+                        if (f%priority() <= found%priority()) cycle
+                    end if
+                    found => f
                 end select
-            end if
+            end do
         end if
         if (associated(found, self%hovered_handle)) return
         if (associated(self%hovered_handle)) call self%hovered_handle%set_hovered(.false.)

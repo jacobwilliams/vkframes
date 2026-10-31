@@ -1207,19 +1207,16 @@ contains
         real(wp), intent(in) :: t
         integer, intent(in) :: k, k2
         real(c_float), dimension(:,:,:), pointer :: p
-        real(wp) :: t0, t1, frac, xyz(3, 2), along
+        real(wp) :: frac, xyz(3, 2), along
         self%tail_shown = .false.
         if (.not. c_associated(self%tail)) return
         if (min(k, k2) < 1 .or. max(k, k2) > self%n_written) then
             call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             return
         end if
-        t0 = self%traj%time(k)
-        t1 = self%traj%time(k2)
-        frac = 0.0_wp
-        if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
+        frac = self%traj%time_fraction(k, k2, t)
         xyz(:, 1) = self%traj%point(k, self%sources_)
-        xyz(:, 2) = xyz(:, 1) + frac * (self%traj%point(k2, self%sources_) - xyz(:, 1))
+        xyz(:, 2) = self%traj%point_between(k, k2, t, self%sources_)
         call line_buffer(self%tail, p)
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:2))
@@ -2006,7 +2003,7 @@ contains
         integer, intent(in) :: k, k2
         real(c_float), dimension(:,:,:), pointer :: p
         real(c_float), dimension(:,:), pointer :: c
-        real(wp) :: t0, t1, frac, xyz(3, 4), c0(4), c1(4)
+        real(wp) :: frac, xyz(3, 4), c0(4), c1(4)
         integer(c_int) :: capacity
         type(c_ptr) :: data
         self%tail_shown = .false.
@@ -2015,14 +2012,11 @@ contains
             call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
             return
         end if
-        t0 = self%traj%time(k)
-        t1 = self%traj%time(k2)
-        frac = 0.0_wp
-        if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
+        frac = self%traj%time_fraction(k, k2, t)
         xyz(:, 1) = self%traj%point(k, self%start_)
         xyz(:, 2) = self%traj%point(k, self%end_)
-        xyz(:, 3) = xyz(:, 1) + frac * (self%traj%point(k2, self%start_) - xyz(:, 1))
-        xyz(:, 4) = xyz(:, 2) + frac * (self%traj%point(k2, self%end_) - xyz(:, 2))
+        xyz(:, 3) = self%traj%point_between(k, k2, t, self%start_)
+        xyz(:, 4) = self%traj%point_between(k, k2, t, self%end_)
         call line_buffer(self%tail, p)
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:4))
@@ -2576,22 +2570,6 @@ contains
         if (.not. zero) v = self%traj%point(i, self%sources_)
     end function marker_point
 
-    !> The point at time t, interpolated between points k and k + 1.
-    function point_at_time(traj, sources, t, k) result(v)
-        type(Trajectory), intent(in) :: traj
-        type(DataSource), intent(in) :: sources(3)
-        real(wp), intent(in) :: t
-        integer, intent(in) :: k
-        real(wp) :: v(3), t0, t1, frac
-        v = traj%point(k, sources)
-        if (k >= traj%num_times()) return
-        t0 = traj%time(k)
-        t1 = traj%time(k + 1)
-        frac = 0.0_wp
-        if (t1 /= t0) frac = max(0.0_wp, min(1.0_wp, (t - t0) / (t1 - t0)))
-        v = v + frac * (traj%point(k + 1, sources) - v)
-    end function point_at_time
-
     !> A single marker's point (in a chain of one marker), and its color (a
     !> colored chain), uploaded.
     subroutine write_marker(chain, v, rgba)
@@ -2702,7 +2680,7 @@ contains
             tm = self%next_time
             status = self%traj%time_index(tm, index)
             index = max(1, min(n - 1, index))
-            call push_intermediate(self, point_at_time(self%traj, self%sources_, tm, index), tm)
+            call push_intermediate(self, self%traj%point_between(index, index + 1, tm, self%sources_), tm)
             self%next_time = self%next_time + step
         end do
     end subroutine intermediates_by_time

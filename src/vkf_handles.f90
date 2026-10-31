@@ -30,6 +30,12 @@
 !> plane or a line doesn't move the point. Positions go through the frames'
 !> first parents to the root (ReferenceFrame%world_matrix).
 !>
+!> Handles on the same spot of the screen (e.g. a trajectory's end marker on
+!> its state's arrow): the window hovers the one nearest the cursor on the
+!> screen; within a few pixels of each other, the one of the highest
+!> priority (`set_priority`; markers, TimeHandle, 1 by default, before
+!> arrows, 0), then the nearest to the eye.
+!>
 !> A VectorHandle is an arrow from its frame's origin to its tip, the tip
 !> being the handle: a vector (`set_vector`, in the frame's coordinates)
 !> times a display scale (`set_display_scale`: e.g. 1000 s to draw a velocity
@@ -39,15 +45,34 @@
 !> half of it). It is built once, as a unit shaft and head scaled and turned
 !> by two transforms: a new vector only sets them (cheap enough for every
 !> frame of a drag).
+!>
+!> A TimeHandle is a marker at a time along a path (a TimePath: a position
+!> for any time, in the coordinates of the handle's parent frame, e.g. a
+!> propagator's), dragged along the path to change the time: e.g. a
+!> trajectory's end, dragged to make it longer or shorter in time. The path
+!> needn't be drawn where the handle goes (beyond a trajectory's last point,
+!> the program propagates further). The frame is placed at the path's
+!> position for the time (`set_time`), so its name label (e.g. the time,
+!> `set_name`) goes with it; the marker is the size of MarkerArtist's
+!> markers (window units, not shrinking with distance). A drag takes the time
+!> within `set_time_range` whose point is nearest the cursor's ray (as seen
+!> from the eye): among the path's points sampled at the grab, then refined
+!> between them; where the path passes near itself (orbits), the match
+!> nearest in time to the handle's time is taken, so it doesn't jump to
+!> another revolution. A TrajectoryPath follows a Trajectory's points
+!> (interpolated linearly), within its times.
 module vkf_handles
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_int32_t, c_float, c_double
-    use vkf_math, only: wp, cross
+    use vkf_math, only: wp, cross, rigid_inverse
     use vkf_frames, only: ReferenceFrame, PickHit, add_pick_hit, PICK_HANDLE
     use vkf_pick, only: PickCamera, point_pick, segment_pick, wants, ray_plane, ray_sphere, ray_line
     use vkf_geometry, only: arrow_size, arrow
+    use vkf_trajectory, only: Trajectory
+    use vkf_artists, only: MARKER_DISK, MARKER_IMAGE
     use vkf_layer, only: check_status, vkf_mesh_create, mesh_arrays, mesh_set_material, vkf_transform_create, &
-                         vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, vkf_node_add_child
+                         vkf_transform_set_matrix, vkf_switch_create, vkf_switch_set, vkf_node_add_child, &
+                         vkf_marker_create, marker_set_style, line_set_points
 
     implicit none
 
@@ -67,6 +92,7 @@ module vkf_handles
         logical :: draggable_ = .true.                      !! the mouse may grab it
         logical :: hovered_ = .false.                       !! under the cursor
         logical :: dragged_ = .false.                       !! grabbed, until released
+        integer :: priority_ = 0                            !! over other handles on the same spot (higher first)
         integer :: constraint_ = HANDLE_FREE                !! HANDLE_*
         real(wp) :: axis_(3) = [0.0_wp, 0.0_wp, 1.0_wp]     !! the plane's normal or the line's direction (frame coordinates)
         ! the drag, from the grab (frame coordinates)
@@ -79,6 +105,7 @@ module vkf_handles
         procedure :: set_draggable, draggable
         procedure :: set_constraint, constraint, constraint_axis
         procedure :: set_hovered, hovered, dragged
+        procedure :: set_priority, priority
         procedure :: grab, drag, release
         procedure(handle_point_interface), deferred :: handle_point
         procedure(move_handle_point_interface), deferred :: move_handle_point
@@ -139,6 +166,71 @@ module vkf_handles
         module procedure new_vector_handle
     end interface VectorHandle
 
+    !> A path for a TimeHandle (see the module documentation): a position for
+    !> any time.
+    type, abstract, public :: TimePath
+    contains
+        procedure(path_position_interface), deferred :: position
+    end type TimePath
+
+    abstract interface
+
+        !> The position at time `t` (the handle's parent's coordinates).
+        function path_position_interface(self, t) result(p)
+            import :: TimePath, wp
+            implicit none
+            class(TimePath), intent(in) :: self
+            real(wp), intent(in) :: t                       !! the time
+            real(wp) :: p(3)
+        end function path_position_interface
+
+    end interface
+
+    !> A TimePath along a Trajectory's points, interpolated linearly (before
+    !> its first time: its first point; after its last: its last).
+    type, extends(TimePath), public :: TrajectoryPath
+        type(Trajectory), pointer :: trajectory => null()   !! the trajectory followed (not owned)
+    contains
+        procedure :: position => trajectory_path_position
+    end type TrajectoryPath
+
+    interface TrajectoryPath
+        module procedure new_trajectory_path
+    end interface TrajectoryPath
+
+    !> A marker dragged along a path to change its time (see the module
+    !> documentation).
+    type, extends(DragHandle), public :: TimeHandle
+        private
+        class(TimePath), pointer :: path_ => null()         !! the path (not owned)
+        real(wp) :: time_ = 0.0_wp                          !! the time (its point: the frame's position)
+        real(wp) :: t_min = 0.0_wp, t_max = 1.0_wp          !! the times a drag may reach
+        real(wp) :: size_ = 14.0_wp                         !! the marker's size (window units)
+        integer :: shape_ = MARKER_DISK                     !! a MARKER_* shape
+        type(c_ptr) :: marker = c_null_ptr                  !! the marker node (at the frame's origin)
+        ! the drag: the path sampled at the grab (times; positions, the parent's coordinates)
+        real(wp), allocatable :: sample_t(:), sample_p(:,:)
+    contains
+        procedure :: set_path, set_time, time, set_time_range, time_range
+        procedure :: set_marker_size, marker_size, set_marker_shape, marker_shape
+        procedure :: set_color => time_set_color
+        procedure :: grab => time_grab
+        procedure :: drag => time_drag
+        procedure :: handle_point => time_handle_point
+        procedure :: move_handle_point => time_move_handle_point
+        procedure :: show_state => time_show_state
+        procedure :: frame_info => time_frame_info
+        procedure :: bound => time_bound
+        procedure :: pick => time_pick
+        procedure :: build_contents => time_build_contents
+    end type TimeHandle
+
+    interface TimeHandle
+        module procedure new_time_handle
+    end interface TimeHandle
+
+    integer, parameter :: path_samples = 600                !! a TimeHandle's path sampled at a grab
+
     public :: handles_shown
 
     integer, save :: n_shown = 0                            !! handles shown in a window (so far)
@@ -189,6 +281,20 @@ contains
         real(wp) :: axis(3)
         axis = self%axis_
     end function constraint_axis
+
+    !> The handle's priority over others on the same spot of the screen (higher
+    !> first; default 0, a TimeHandle's 1; see the module documentation).
+    subroutine set_priority(self, priority)
+        class(DragHandle), intent(inout) :: self
+        integer, intent(in) :: priority                     !! higher: hovered first
+        self%priority_ = priority
+    end subroutine set_priority
+
+    !> The handle's priority over others on the same spot.
+    pure integer function priority(self)
+        class(DragHandle), intent(in) :: self
+        priority = self%priority_
+    end function priority
 
     !> The handle is under the cursor (set by the window), or not.
     subroutine set_hovered(self, hovered)
@@ -551,6 +657,347 @@ contains
         m(1:3, 4) = (len - head_len) * u
         call check_status(vkf_transform_set_matrix(self%head, m))
     end subroutine update_arrow
+
+    ! ==================================================================
+    ! TrajectoryPath
+
+    !> A path along `traj` (which must stay alive while used).
+    function new_trajectory_path(traj) result(path)
+        type(Trajectory), intent(in), target :: traj        !! the trajectory followed
+        type(TrajectoryPath) :: path
+        path%trajectory => traj
+    end function new_trajectory_path
+
+    !> The trajectory's position at time `t` (Trajectory%point_at: linear
+    !> between its points, its first or last point outside its times; 0 if
+    !> it has none).
+    function trajectory_path_position(self, t) result(p)
+        class(TrajectoryPath), intent(in) :: self
+        real(wp), intent(in) :: t                           !! the time
+        real(wp) :: p(3)
+        p = 0.0_wp
+        if (associated(self%trajectory)) p = self%trajectory%point_at(t)
+    end function trajectory_path_position
+
+    ! ==================================================================
+    ! TimeHandle
+
+    !> A time handle (see the module documentation) on `path` (which must stay
+    !> alive while used), at time `time` (default 0) within `t_min` to `t_max`
+    !> (default: the time), in `color` ([r, g, b] or [r, g, b, a]). Its axes
+    !> and labels are hidden (its name label can be shown: e.g. the time).
+    function new_time_handle(name, path, time, t_min, t_max, color) result(h)
+        character(len=*), intent(in) :: name                !! the frame's name
+        class(TimePath), intent(in), target :: path         !! the path it moves along
+        real(wp), intent(in), optional :: time              !! its time
+        real(wp), intent(in), optional :: t_min, t_max      !! the times a drag may reach
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
+        type(TimeHandle) :: h
+        h%ReferenceFrame = ReferenceFrame(name, color)
+        call h%show_decorations(.false.)
+        h%priority_ = 1                                     ! (a marker over an arrow on the same spot)
+        h%path_ => path
+        if (present(time)) h%time_ = time
+        h%t_min = h%time_
+        h%t_max = h%time_
+        if (present(t_min)) h%t_min = t_min
+        if (present(t_max)) h%t_max = t_max
+        call h%set_time(h%time_)
+    end function new_time_handle
+
+    !> The path the handle moves along (which must stay alive while used); its
+    !> time kept (the frame placed on the new path).
+    subroutine set_path(self, path)
+        class(TimeHandle), intent(inout) :: self
+        class(TimePath), intent(in), target :: path         !! the path
+        self%path_ => path
+        call self%set_time(self%time_)
+    end subroutine set_path
+
+    !> The handle's time (kept within its time range): the frame placed at the
+    !> path's point for it.
+    subroutine set_time(self, time)
+        class(TimeHandle), intent(inout) :: self
+        real(wp), intent(in) :: time                        !! the time
+        self%time_ = max(self%t_min, min(self%t_max, time))
+        if (associated(self%path_)) call self%set_position(self%path_%position(self%time_))
+    end subroutine set_time
+
+    !> The handle's time.
+    pure real(wp) function time(self)
+        class(TimeHandle), intent(in) :: self
+        time = self%time_
+    end function time
+
+    !> The times a drag may reach (t_min <= t_max; else swapped); the handle's
+    !> time brought within them. Taken at the next grab.
+    subroutine set_time_range(self, t_min, t_max)
+        class(TimeHandle), intent(inout) :: self
+        real(wp), intent(in) :: t_min, t_max                !! the earliest and latest times
+        self%t_min = min(t_min, t_max)
+        self%t_max = max(t_min, t_max)
+        call self%set_time(self%time_)
+    end subroutine set_time_range
+
+    !> The times a drag may reach.
+    pure subroutine time_range(self, t_min, t_max)
+        class(TimeHandle), intent(in) :: self
+        real(wp), intent(out) :: t_min, t_max               !! the earliest and latest times
+        t_min = self%t_min
+        t_max = self%t_max
+    end subroutine time_range
+
+    !> The marker's size (window units, > 0; default 14).
+    subroutine set_marker_size(self, size)
+        class(TimeHandle), intent(inout) :: self
+        real(wp), intent(in) :: size                        !! window units
+        if (size <= 0.0_wp) return
+        self%size_ = size
+        call self%show_state()
+    end subroutine set_marker_size
+
+    !> The marker's size (window units).
+    pure real(wp) function marker_size(self)
+        class(TimeHandle), intent(in) :: self
+        marker_size = self%size_
+    end function marker_size
+
+    !> The marker's shape (a MARKER_* shape of vkf_artists but MARKER_IMAGE;
+    !> default MARKER_DISK).
+    subroutine set_marker_shape(self, shape)
+        class(TimeHandle), intent(inout) :: self
+        integer, intent(in) :: shape                        !! a MARKER_* shape
+        self%shape_ = max(MARKER_DISK, min(MARKER_IMAGE - 1, shape))
+        call self%show_state()
+    end subroutine set_marker_shape
+
+    !> The marker's shape (MARKER_*).
+    pure integer function marker_shape(self)
+        class(TimeHandle), intent(in) :: self
+        marker_shape = self%shape_
+    end function marker_shape
+
+    !> The marker's color; [r, g, b] or [r, g, b, a].
+    subroutine time_set_color(self, color)
+        class(TimeHandle), intent(inout) :: self
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
+        call self%ReferenceFrame%set_color(color)
+        call self%show_state()
+    end subroutine time_set_color
+
+    !> Grab the handle with the cursor's ray (origin, unit dir; root frame):
+    !> the path sampled over the time range. False if it isn't draggable or
+    !> has no path.
+    logical function time_grab(self, origin, dir) result(ok)
+        class(TimeHandle), intent(inout) :: self
+        real(wp), intent(in) :: origin(3), dir(3)           !! the cursor's ray (root frame)
+        integer :: k
+        ok = .false.
+        if (.not. (self%draggable() .and. associated(self%path_))) return
+        if (allocated(self%sample_t)) deallocate(self%sample_t, self%sample_p)
+        allocate(self%sample_t(path_samples), self%sample_p(3, path_samples))
+        do k = 1, path_samples
+            self%sample_t(k) = self%t_min + (self%t_max - self%t_min) * (k - 1) / (path_samples - 1)
+            self%sample_p(:, k) = self%path_%position(self%sample_t(k))
+        end do
+        self%dragged_ = .true.
+        call self%show_state()
+        ok = .true.
+    end function time_grab
+
+    !> Drag the grabbed handle to the cursor's ray (origin, unit dir; root
+    !> frame): its time where the path is nearest the ray (see the module
+    !> documentation). False (not moved) if it isn't grabbed or the path is
+    !> all behind the eye.
+    logical function time_drag(self, origin, dir) result(moved)
+        class(TimeHandle), intent(inout) :: self
+        real(wp), intent(in) :: origin(3), dir(3)           !! the cursor's ray (root frame)
+        real(wp) :: parent(4,4), miss(path_samples), best, t_best
+        real(wp) :: t_min(path_samples), m_min(path_samples)  !! the local minima refined: their times and misses
+        integer :: k, n_min
+        logical :: found
+        moved = .false.
+        if (.not. (self%dragged_ .and. allocated(self%sample_t) .and. associated(self%path_))) return
+        parent = matmul(self%world_matrix(), rigid_inverse(self%local_matrix()))   ! (the path's coordinates to the root)
+        do k = 1, path_samples
+            miss(k) = ray_miss(self%sample_p(:, k))
+        end do
+        if (minval(miss) >= huge(1.0_wp)) return
+        ! each local minimum of the samples refined; of those nearly as near as
+        ! the nearest (a path passing the same place again: orbits), the one
+        ! nearest in time to the handle's
+        n_min = 0
+        do k = 1, path_samples
+            if (.not. is_minimum(k)) cycle
+            n_min = n_min + 1
+            call refine(k, t_min(n_min), m_min(n_min))
+        end do
+        if (n_min == 0) return
+        best = minval(m_min(1:n_min))
+        found = .false.
+        t_best = self%time_
+        do k = 1, n_min
+            if (m_min(k) > 1.5_wp * best + 1.0e-4_wp) cycle
+            if (found .and. abs(t_min(k) - self%time_) >= abs(t_best - self%time_)) cycle
+            t_best = t_min(k)
+            found = .true.
+        end do
+        if (.not. found) return
+        call self%set_time(t_best)
+        moved = .true.
+
+    contains
+
+        !> How far point p (the path's coordinates) is from the ray, as seen
+        !> from its origin (the tangent of the angle; huge() behind it).
+        real(wp) function ray_miss(p)
+            real(wp), intent(in) :: p(3)                    !! the point (the path's coordinates)
+            real(wp) :: v(3), along
+            v = matmul(parent(1:3, 1:3), p) + parent(1:3, 4) - origin
+            along = dot_product(v, dir)
+            ray_miss = huge(1.0_wp)
+            if (along > 0.0_wp) ray_miss = norm2(v - along * dir) / along
+        end function ray_miss
+
+        !> Sample k is a local minimum of the samples' misses (in front of the eye).
+        logical function is_minimum(j)
+            integer, intent(in) :: j                        !! the sample
+            is_minimum = miss(j) < huge(1.0_wp)
+            if (j > 1) is_minimum = is_minimum .and. miss(j - 1) >= miss(j)
+            if (j < path_samples) is_minimum = is_minimum .and. miss(j + 1) > miss(j)
+        end function is_minimum
+
+        !> The time of the least miss between sample j's neighbours (golden-section
+        !> search), and that miss.
+        subroutine refine(j, t, m)
+            integer, intent(in) :: j                        !! the sample
+            real(wp), intent(out) :: t                      !! the time found
+            real(wp), intent(out) :: m                      !! its miss
+            real(wp), parameter :: golden = 0.5_wp * (sqrt(5.0_wp) - 1.0_wp)
+            real(wp) :: a, b, c, d, fc, fd
+            integer :: it
+            a = self%sample_t(max(1, j - 1))
+            b = self%sample_t(min(path_samples, j + 1))
+            c = b - golden * (b - a)
+            d = a + golden * (b - a)
+            fc = ray_miss(self%path_%position(c))
+            fd = ray_miss(self%path_%position(d))
+            do it = 1, 40
+                if (fc < fd) then
+                    b = d
+                    d = c
+                    fd = fc
+                    c = b - golden * (b - a)
+                    fc = ray_miss(self%path_%position(c))
+                else
+                    a = c
+                    c = d
+                    fc = fd
+                    d = a + golden * (b - a)
+                    fd = ray_miss(self%path_%position(d))
+                end if
+            end do
+            t = 0.5_wp * (a + b)
+            m = min(fc, fd)
+        end subroutine refine
+
+    end function time_drag
+
+    !> The point the mouse grabs: the marker, at the frame's origin.
+    pure function time_handle_point(self) result(p)
+        class(TimeHandle), intent(in) :: self
+        real(wp) :: p(3)
+        p = 0.0_wp
+    end function time_handle_point
+
+    !> The handle moved to the sampled point of the path nearest `p` (frame
+    !> coordinates; after a grab: the path's points are sampled then).
+    subroutine time_move_handle_point(self, p)
+        class(TimeHandle), intent(inout) :: self
+        real(wp), intent(in) :: p(3)                        !! the point (frame coordinates)
+        real(wp) :: q(3)
+        integer :: k
+        if (.not. allocated(self%sample_t)) return
+        q = p + self%position()                             ! (the parent's coordinates)
+        k = minloc(norm2(self%sample_p - spread(q, 2, size(self%sample_t)), dim=1), dim=1)
+        call self%set_time(self%sample_t(k))
+    end subroutine time_move_handle_point
+
+    !> The marker's color and size: brighter and larger when hovered, more
+    !> when dragged.
+    subroutine time_show_state(self)
+        class(TimeHandle), intent(inout) :: self
+        real(wp) :: rgba(4), size, light
+        if (.not. c_associated(self%marker)) return
+        rgba = self%color()
+        size = self%size_
+        light = 0.0_wp
+        if (self%dragged()) then
+            light = 0.6_wp
+            size = 1.4_wp * size
+        else if (self%hovered()) then
+            light = 0.35_wp
+            size = 1.2_wp * size
+        end if
+        rgba(1:3) = rgba(1:3) + light * (1.0_wp - rgba(1:3))
+        call check_status(marker_set_style(self%marker, real(rgba, c_float), real(size, c_float), self%shape_, &
+                                           0.0_c_float))
+    end subroutine time_show_state
+
+    !> What kind of frame this is: 'TimeHandle'.
+    function time_frame_info(self) result(info)
+        class(TimeHandle), intent(in) :: self
+        character(len=:), allocatable :: info
+        info = 'TimeHandle'
+    end function time_frame_info
+
+    !> The marker's bounding sphere: the frame's origin.
+    subroutine time_bound(self, center, radius)
+        class(TimeHandle), intent(in) :: self
+        real(wp), intent(out) :: center(3)                  !! the bound's center (frame coordinates)
+        real(wp), intent(out) :: radius                     !! its radius (scene units: 0, the marker sized on the screen)
+        center = 0.0_wp
+        radius = 0.0_wp
+    end subroutine time_bound
+
+    !> Picked at its marker (within the tolerance plus half its size), as
+    !> PICK_HANDLE; else the frame's origin.
+    subroutine time_pick(self, cam, to_root, hits, n)
+        class(TimeHandle), intent(in), target :: self
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
+        real(wp), intent(in) :: to_root(4,4)                !! the frame's transform to the root frame
+        type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits so far, in hits(1:n); added to
+        integer, intent(inout) :: n                         !! number of hits
+        type(PickHit) :: h
+        real(wp) :: pixels, depth
+        call self%ReferenceFrame%pick(cam, to_root, hits, n)
+        if (.not. (self%draggable() .and. self%contents_shown() .and. wants(cam, PICK_HANDLE))) return
+        if (.not. point_pick(cam, to_root(1:3, 4), pixels, depth, extra=0.5_wp * self%size_ * cam%pixel_ratio)) return
+        h%kind = PICK_HANDLE
+        h%frame => self
+        h%position = to_root(1:3, 4)
+        h%local = 0.0_wp
+        h%time = self%time_
+        h%distance = depth
+        h%pixels = pixels
+        call add_pick_hit(hits, n, h)
+    end subroutine time_pick
+
+    !> The marker: one point at the frame's origin.
+    subroutine time_build_contents(self, viewer, group)
+        class(TimeHandle), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer (null: headless)
+        type(c_ptr), intent(in) :: group                    !! the frame's contents group
+        self%marker = vkf_marker_create(1_c_int, c_null_ptr, 0_c_int)
+        if (.not. c_associated(self%marker)) then
+            write(*, '(a)') 'vkframes: TimeHandle '//self%name()//': could not build its marker'
+            return
+        end if
+        call check_status(line_set_points(self%marker, reshape([0.0_c_double, 0.0_c_double, 0.0_c_double], [3, 1])))
+        call self%show_state()
+        call check_status(vkf_node_add_child(group, self%marker))
+        if (c_associated(viewer)) n_shown = n_shown + 1
+    end subroutine time_build_contents
 
     !> Whether any handle has been shown in a window (so windows look for
     !> handles under the cursor).

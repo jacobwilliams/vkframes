@@ -204,7 +204,12 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     camera, in a given plane, along a line, along itself (its length only)
     or about its base (its direction only). The window's event handler is
     told as it is grabbed, dragged and released (`handle_drag`), e.g. to
-    compute a trajectory again from the new state while it moves.
+    compute a trajectory again from the new state while it moves. A
+    `TimeHandle` is a marker dragged along a path to change its time, e.g. a
+    trajectory's end, to make it longer or shorter in time. The path is a
+    position for any time (`TimePath`: the program's propagator, so the
+    marker can go past the points computed so far; or a `TrajectoryPath`
+    along a trajectory's points).
     `cursor_ray(x, y, origin, direction)` gives the ray under the cursor,
     with `ray_plane`, `ray_sphere` and `ray_line` to find where it points.
   - Keyboard and mouse: a program's `WindowEventHandler` (OpenFrames' window
@@ -595,9 +600,13 @@ pixi run -e qt shooting-demo
 <img src="media/screenshots/design_demo.jpg" alt="The velocity arrow dragged: its speed next to its tip, the orbit from the new state, and the orbit before the drag dashed" width="300" align="right">
 
 [demos/design](demos/design): designing a trajectory with the mouse. A
-spacecraft's initial position and velocity are arrows about the Earth
-(`VectorHandle`): drag either one's tip and its orbit (two-body, exact, any
-conic) is computed again from the new state at each move of the mouse.
+spacecraft's state (its position and velocity at t = 0) is two arrows about
+the Earth (`VectorHandle`), and the trajectory's start and end are markers
+on it (`TimeHandle`). Drag an arrow's tip and the trajectory (two-body,
+exact, any conic) is computed again from the new state at each move of the
+mouse; drag a marker along the trajectory to start or end it earlier or
+later (propagated backward from the state for the start, beyond the end as
+the marker goes).
 
 - The position from the Earth's center (yellow) and the velocity at the
   position (orange, 1500 km per km/s by default), the orbit from them
@@ -607,8 +616,8 @@ conic) is computed again from the new state at each move of the mouse.
 - How each arrow moves: freely, in the orbit's plane, along itself (the
   altitude or the speed only) or about its base (the direction only).
 - The state as numbers (typed in, or following the drags), the orbit's
-  elements, how long it is drawn (one orbit, or hours), the velocity
-  arrow's scale, the view.
+  elements, the times drawn (one orbit, or from and to in hours, which
+  follow the markers), the velocity arrow's scale, the view.
 
 ```sh
 pixi run -e qt design-demo
