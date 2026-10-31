@@ -90,7 +90,7 @@ contains
 
     !> Hits of `kind` (vkf_frames' PICK_*) are wanted.
     pure logical function wants(cam, kind)
-        type(PickCamera), intent(in) :: cam
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
         integer, intent(in) :: kind                         !! a PICK_* constant of vkf_frames
         wants = btest(cam%kinds, kind)
     end function wants
@@ -98,8 +98,8 @@ contains
     !> The screen offset (framebuffer pixels) of point p (root frame) from the
     !> cursor, and its depth; false if it is behind the eye.
     logical function project(cam, p, sx, sy, depth) result(visible)
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: p(3)
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
+        real(wp), intent(in) :: p(3)                        !! the point (root frame)
         real(wp), intent(out) :: sx, sy                     !! offset from the cursor (framebuffer pixels, y up)
         real(wp), intent(out) :: depth                      !! (scene units)
         real(wp) :: v(3), nx, ny
@@ -125,8 +125,8 @@ contains
     !> half a marker's size) of the cursor: its distance from it (pixels) and
     !> its depth.
     logical function point_pick(cam, p, pixels, depth, extra) result(hit)
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: p(3)
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
+        real(wp), intent(in) :: p(3)                        !! the point (root frame)
         real(wp), intent(out) :: pixels                     !! distance from the cursor (framebuffer pixels)
         real(wp), intent(out) :: depth                      !! (scene units)
         real(wp), intent(in), optional :: extra             !! added to the tolerance (framebuffer pixels)
@@ -146,8 +146,8 @@ contains
     !> of that point in the scene (perspective-correct), and its depth. The
     !> part behind the eye is cut off.
     logical function segment_pick(cam, a, b, pixels, s, depth, extra) result(hit)
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: a(3), b(3)
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
+        real(wp), intent(in) :: a(3), b(3)                  !! the segment's ends (root frame)
         real(wp), intent(out) :: pixels                     !! distance from the cursor (framebuffer pixels)
         real(wp), intent(out) :: s                          !! fraction of the way from a to b (0 to 1)
         real(wp), intent(out) :: depth                      !! (scene units)
@@ -192,8 +192,8 @@ contains
     !> (plus `extra` pixels) of the cursor on the screen (false only if it
     !> surely isn't: to skip what it bounds).
     logical function sphere_near(cam, c, r, extra) result(near)
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(in) :: c(3), r
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
+        real(wp), intent(in) :: c(3), r                     !! the sphere's center (root frame) and radius (scene units)
         real(wp), intent(in), optional :: extra             !! added to the tolerance (framebuffer pixels)
         real(wp) :: sx, sy, depth, scale, reach
         near = .true.
@@ -220,8 +220,8 @@ contains
 
     !> The ray from the eye through the cursor (root frame; `dir` a unit vector).
     pure subroutine ray(cam, origin, dir)
-        type(PickCamera), intent(in) :: cam
-        real(wp), intent(out) :: origin(3), dir(3)
+        type(PickCamera), intent(in) :: cam                 !! the camera and cursor of the pick
+        real(wp), intent(out) :: origin(3), dir(3)          !! the ray (root frame; dir: a unit vector)
         if (cam%perspective) then
             origin = cam%eye
             dir = cam%forward + cam%x * cam%tan_y * cam%aspect * cam%right + cam%y * cam%tan_y * cam%up

@@ -127,7 +127,7 @@ contains
     !> Pause (true) or resume (false) the simulation time.
     recursive subroutine pause(self, paused, wall)
         class(SimulationClock), intent(inout) :: self
-        logical, intent(in) :: paused
+        logical, intent(in) :: paused               !! true: pause; false: resume
         real(wp), intent(in), optional :: wall      !! wall time (s; default: wall_time())
         if (associated(self%sync)) then
             call self%sync%pause(paused, wall)
@@ -216,8 +216,8 @@ contains
 
     !> True if `a` points to the clock `b`.
     logical function same_clock(a, b)
-        type(SimulationClock), pointer, intent(in) :: a
-        class(SimulationClock), intent(in), target :: b
+        type(SimulationClock), pointer, intent(in) :: a !! the clock pointer (may be null)
+        class(SimulationClock), intent(in), target :: b !! the clock
         select type (b)
         type is (SimulationClock)
             same_clock = associated(a, b)

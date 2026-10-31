@@ -53,8 +53,8 @@ contains
     !> A model frame named `name` (decorations of color `color`), with the
     !> model file `file` if given (see `set_model`).
     function new_model(name, file, color) result(m)
-        character(len=*), intent(in) :: name
-        character(len=*), intent(in), optional :: file
+        character(len=*), intent(in) :: name            !! the frame's name
+        character(len=*), intent(in), optional :: file  !! model file (3ds, obj, glTF, ...)
         real(wp), intent(in), optional :: color(:)      !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(Model) :: m
         logical :: ok
@@ -66,7 +66,7 @@ contains
     !> could not be read. Set it before a window first shows the model.
     logical function set_model(self, file) result(ok)
         class(Model), intent(inout) :: self
-        character(len=*), intent(in) :: file
+        character(len=*), intent(in) :: file                !! model file (3ds, obj, glTF, ...)
         type(c_ptr) :: node
         node = vkf_model_read(file, len(file, kind=c_int))
         ok = c_associated(node)
@@ -82,7 +82,7 @@ contains
     !> Use the model already read by `other` (no second copy in memory).
     logical function share_model(self, other) result(ok)
         class(Model), intent(inout) :: self
-        class(Model), intent(in) :: other
+        class(Model), intent(in) :: other                   !! a model with its model read
         ok = c_associated(other%model_)
         if (.not. ok) return
         self%model_ = other%model_
@@ -108,7 +108,7 @@ contains
     !> The model's bounding sphere, in the model's own coordinates (before its transform).
     subroutine model_bound(self, center, radius)
         class(Model), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, model coordinates
         center = self%bound_center
         radius = self%bound_radius
     end subroutine model_bound
@@ -116,7 +116,7 @@ contains
     !> Where the model's pivot is placed in its frame (frame coordinates).
     subroutine set_model_position(self, position)
         class(Model), intent(inout) :: self
-        real(wp), intent(in) :: position(3)
+        real(wp), intent(in) :: position(3)                 !! frame coordinates
         self%model_position_ = position
         call update_model_transform(self)
     end subroutine set_model_position
@@ -131,7 +131,7 @@ contains
     !> Attitude of the model in its frame (quaternion [x, y, z, w]).
     subroutine set_model_attitude(self, q)
         class(Model), intent(inout) :: self
-        real(wp), intent(in) :: q(4)
+        real(wp), intent(in) :: q(4)                        !! quaternion [x, y, z, w] (normalized here)
         self%model_attitude_ = quat_normalize(q)
         call update_model_transform(self)
     end subroutine set_model_attitude
@@ -146,7 +146,7 @@ contains
     !> Scale along the model's x, y and z axes.
     subroutine set_model_scale(self, scale)
         class(Model), intent(inout) :: self
-        real(wp), intent(in) :: scale(3)
+        real(wp), intent(in) :: scale(3)                    !! along the model's x, y and z
         self%scale_ = scale
         call update_model_transform(self)
     end subroutine set_model_scale
@@ -177,7 +177,7 @@ contains
     !> The model's bounding sphere in the frame (through the model transform).
     subroutine model_frame_bound(self, center, radius)
         class(Model), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         real(wp) :: m(4,4)
         m = frame_matrix(self%model_position_, self%model_attitude_, self%scale_, self%pivot_)
         center = matmul(m(1:3, 1:3), self%bound_center) + m(1:3, 4)

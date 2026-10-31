@@ -126,7 +126,7 @@ contains
     !> A sphere named `name`, of radius `radius` (default 1) and color `color`
     !> ([r, g, b] or [r, g, b, a]; default white, 90% opaque).
     function new_sphere(name, radius, color) result(s)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name                !! the frame's name
         real(wp), intent(in), optional :: radius            !! scene units (default 1)
         real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(Sphere) :: s
@@ -346,7 +346,7 @@ contains
     !> `set_resolution`'s segments. Set it before a window shows the sphere.
     subroutine set_auto_lod(self, lod)
         class(Sphere), intent(inout) :: self
-        logical, intent(in) :: lod
+        logical, intent(in) :: lod                          !! true: level of detail; false: one mesh
         self%auto_lod_ = lod
     end subroutine set_auto_lod
 
@@ -436,7 +436,7 @@ contains
     subroutine build_lod_mesh(self, k, compile)
         type(Sphere), intent(inout) :: self
         integer, intent(in) :: k                            !! index into lod_segments
-        logical, intent(in) :: compile
+        logical, intent(in) :: compile                      !! true: compile it now (the sphere is shown)
         type(c_ptr) :: mesh
         mesh = ellipsoid_create(self%built_radii, [1.0_c_float, 1.0_c_float, 1.0_c_float, 1.0_c_float], self%image, &
                                 lod_segments(k), lod_segments(k) / 2, self%night, translucent=self%translucent)

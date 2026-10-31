@@ -26,7 +26,7 @@ contains
 
     !> The rotation by `angle` (radians) about `axis` (need not be unit length).
     pure function quat_from_axis_angle(axis, angle) result(q)
-        real(wp), intent(in) :: axis(3)
+        real(wp), intent(in) :: axis(3)     !! rotation axis (any length; zero: the identity)
         real(wp), intent(in) :: angle       !! (radians)
         real(wp) :: q(4)
         real(wp) :: n
@@ -41,7 +41,7 @@ contains
 
     !> The product a*b: rotating by b, then by a.
     pure function quat_multiply(a, b) result(q)
-        real(wp), intent(in) :: a(4), b(4)
+        real(wp), intent(in) :: a(4), b(4)              !! quaternions [x, y, z, w]
         real(wp) :: q(4)
         q(1) = a(4) * b(1) + a(1) * b(4) + a(2) * b(3) - a(3) * b(2)
         q(2) = a(4) * b(2) - a(1) * b(3) + a(2) * b(4) + a(3) * b(1)
@@ -51,14 +51,14 @@ contains
 
     !> The conjugate of q: the inverse rotation, for a unit quaternion.
     pure function quat_conjugate(q) result(c)
-        real(wp), intent(in) :: q(4)
+        real(wp), intent(in) :: q(4)                    !! quaternion [x, y, z, w]
         real(wp) :: c(4)
         c = [-q(1:3), q(4)]
     end function quat_conjugate
 
     !> q / |q| (the identity for a zero quaternion).
     pure function quat_normalize(q) result(u)
-        real(wp), intent(in) :: q(4)
+        real(wp), intent(in) :: q(4)                    !! quaternion [x, y, z, w] (any length)
         real(wp) :: u(4)
         real(wp) :: n
         n = norm2(q)
@@ -71,7 +71,7 @@ contains
 
     !> The vector v rotated by the unit quaternion q.
     pure function quat_rotate(q, v) result(r)
-        real(wp), intent(in) :: q(4), v(3)
+        real(wp), intent(in) :: q(4), v(3)              !! unit quaternion [x, y, z, w], and the vector
         real(wp) :: r(3)
         real(wp) :: t(3)
         ! r = v + 2 w (u x v) + 2 u x (u x v), with u = q(1:3), w = q(4)
@@ -81,7 +81,7 @@ contains
 
     !> The 3x3 rotation matrix of the unit quaternion q (columns: the rotated axes).
     pure function quat_to_matrix(q) result(m)
-        real(wp), intent(in) :: q(4)
+        real(wp), intent(in) :: q(4)                    !! unit quaternion [x, y, z, w]
         real(wp) :: m(3,3)
         real(wp) :: x, y, z, w
         x = q(1); y = q(2); z = q(3); w = q(4)
@@ -100,7 +100,7 @@ contains
     !> axes; the inverse of quat_to_matrix), by Shepperd's method (from the
     !> largest of w and the vector components, for accuracy).
     pure function quat_from_matrix(m) result(q)
-        real(wp), intent(in) :: m(3,3)
+        real(wp), intent(in) :: m(3,3)                  !! rotation matrix (columns: the rotated axes)
         real(wp) :: q(4)
         real(wp) :: t, s
         t = m(1,1) + m(2,2) + m(3,3)
@@ -125,7 +125,7 @@ contains
     !> osg::Quat::slerp, which OpenFrames' TrajectoryFollower uses.
     pure function quat_slerp(t, a, b) result(q)
         real(wp), intent(in) :: t           !! the fraction of the way (0 to 1)
-        real(wp), intent(in) :: a(4), b(4)
+        real(wp), intent(in) :: a(4), b(4)  !! unit quaternions [x, y, z, w] at t = 0 and t = 1
         real(wp) :: q(4)
         real(wp), parameter :: epsilon = 0.00001_wp
         real(wp) :: cos_omega, omega, sin_omega, scale_a, scale_b, to(4)
@@ -151,7 +151,7 @@ contains
     !> (OpenSceneGraph's osg::Quat::makeRotate(from, to)); a half turn about a
     !> perpendicular axis if they are opposite, the identity if either is zero.
     pure function quat_from_vectors(from, to) result(q)
-        real(wp), intent(in) :: from(3), to(3)
+        real(wp), intent(in) :: from(3), to(3)          !! directions (any length)
         real(wp) :: q(4)
         real(wp), parameter :: eps = 1.0e-12_wp
         real(wp) :: u(3), v(3), d, axis(3)
@@ -172,7 +172,7 @@ contains
 
     !> The inverse of a rigid transform (rotation and translation): [R' -R't].
     pure function rigid_inverse(m) result(inv)
-        real(wp), intent(in) :: m(4,4)
+        real(wp), intent(in) :: m(4,4)                  !! rigid transform (rotation and translation)
         real(wp) :: inv(4,4)
         inv = 0.0_wp
         inv(1:3, 1:3) = transpose(m(1:3, 1:3))
@@ -192,7 +192,7 @@ contains
 
     !> The 4x4 transform translating by `t`.
     pure function translation_matrix(t) result(m)
-        real(wp), intent(in) :: t(3)
+        real(wp), intent(in) :: t(3)                    !! translation
         real(wp) :: m(4,4)
         m = identity_matrix()
         m(1:3, 4) = t
@@ -223,7 +223,7 @@ contains
 
     !> The cross product a x b.
     pure function cross(a, b) result(c)
-        real(wp), intent(in) :: a(3), b(3)
+        real(wp), intent(in) :: a(3), b(3)              !! the vectors
         real(wp) :: c(3)
         c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
     end function cross

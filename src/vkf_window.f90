@@ -328,7 +328,7 @@ contains
     subroutine fm_update(self, t, seen)
         class(FrameManager), intent(inout) :: self
         real(wp), intent(in) :: t                           !! simulation time
-        integer, intent(inout) :: seen
+        integer, intent(inout) :: seen                      !! the window's own: updates at its last frame (updated)
         if (.not. associated(self%root)) return
         if (.not. (self%updates > 0 .and. t == self%updated_time .and. seen /= self%updates)) then
             call self%root%update(t)
@@ -371,7 +371,7 @@ contains
         character(len=*), intent(in), optional :: title     !! default 'vkframes'
         integer(c_long_long), intent(in), optional :: native_window  !! host window's handle (0: own window)
         real(wp), intent(in), optional :: pixel_ratio       !! framebuffer pixels per window unit (default 1)
-        logical, intent(in), optional :: vsync
+        logical, intent(in), optional :: vsync              !! default true: at the display's refresh; false: when ready
         character(len=:), allocatable :: t
         integer(c_long_long) :: handle
         real(c_double) :: ratio
@@ -438,7 +438,7 @@ contains
     !> it before the window's first frame.
     subroutine set_scene(self, fm)
         class(WindowProxy), intent(inout) :: self
-        type(FrameManager), intent(in), target :: fm
+        type(FrameManager), intent(in), target :: fm        !! the scene (not owned; must stay alive while shown)
         call forget_handles(self)
         self%scene => fm
         self%scene_seen = -1
@@ -584,7 +584,7 @@ contains
     !> Render frames until the window is closed (or for `max_frames` frames).
     subroutine run(self, max_frames)
         class(WindowProxy), intent(inout) :: self
-        integer, intent(in), optional :: max_frames
+        integer, intent(in), optional :: max_frames         !! default: until the window is closed
         integer :: n
         n = 0
         do while (self%frame())
@@ -700,8 +700,8 @@ contains
 
     !> ffmpeg's encoder options for `codec` and `quality` (see start_recording).
     function encoder_options(codec, quality) result(args)
-        character(len=*), intent(in), optional :: codec
-        integer, intent(in), optional :: quality
+        character(len=*), intent(in), optional :: codec     !! an ffmpeg encoder (default libx264)
+        integer, intent(in), optional :: quality            !! the CRF (default 18; limited to 0 to 63)
         character(len=:), allocatable :: args, c
         character(len=32) :: q
         c = 'libx264'
@@ -767,7 +767,7 @@ contains
     !> The background color [r, g, b] (0 to 1; default black).
     subroutine set_background_color(self, rgb)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: rgb(3)
+        real(wp), intent(in) :: rgb(3)                      !! [r, g, b], 0 to 1
         self%background = rgb
         if (c_associated(self%viewer_)) then
             if (vkf_viewer_set_background(self%viewer_, real([rgb, 1.0_wp], c_float)) /= 0) &
@@ -791,7 +791,7 @@ contains
     !> (ReferenceFrame%set_light_source_enabled).
     subroutine set_light_ambient(self, rgb)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: rgb(3)
+        real(wp), intent(in) :: rgb(3)                      !! [r, g, b], 0 to 1 (default 0.2 gray)
         self%light_ambient_ = rgb
         call apply_window_light(self)
     end subroutine set_light_ambient
@@ -799,7 +799,7 @@ contains
     !> The diffuse color of the window's light (see `set_light_ambient`).
     subroutine set_light_diffuse(self, rgb)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: rgb(3)
+        real(wp), intent(in) :: rgb(3)                      !! [r, g, b], 0 to 1 (default white)
         self%light_diffuse_ = rgb
         call apply_window_light(self)
     end subroutine set_light_diffuse
@@ -807,7 +807,7 @@ contains
     !> The specular color of the window's light (see `set_light_ambient`).
     subroutine set_light_specular(self, rgb)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: rgb(3)
+        real(wp), intent(in) :: rgb(3)                      !! [r, g, b], 0 to 1 (default black: none)
         self%light_specular_ = rgb
         call apply_window_light(self)
     end subroutine set_light_specular
@@ -885,7 +885,7 @@ contains
     !> time (its texture and stars can change too).
     subroutine set_sky(self, sky)
         class(WindowProxy), intent(inout) :: self
-        type(SkySphere), intent(inout), target :: sky
+        type(SkySphere), intent(inout), target :: sky       !! the sky (not owned; can be shown in several windows)
         integer(c_int) :: status
         if (self%scene_added) then                      ! shown: swap the sky's node
             if (associated(self%sky_)) status = vkf_viewer_remove_node(self%viewer_, self%sky_%node(self%viewer_))
@@ -909,7 +909,7 @@ contains
     !> shown), from the next frame.
     subroutine add_hud_text(self, h)
         class(WindowProxy), intent(inout) :: self
-        type(HUDText), intent(in), target :: h
+        type(HUDText), intent(in), target :: h              !! the text (not owned)
         type(HUDEntry), allocatable :: tmp(:)
         if (.not. allocated(self%huds)) allocate(self%huds(4))
         if (self%n_huds == size(self%huds)) then
@@ -927,7 +927,7 @@ contains
     !> Stop showing `h` in the window.
     subroutine remove_hud_text(self, h)
         class(WindowProxy), intent(inout) :: self
-        type(HUDText), intent(in), target :: h
+        type(HUDText), intent(in), target :: h              !! the text to stop showing
         integer(c_int) :: status
         integer :: k
         do k = 1, self%n_huds
@@ -1011,7 +1011,7 @@ contains
     !> ```
     subroutine add_view(self, v)
         class(WindowProxy), intent(inout) :: self
-        type(View), intent(in), target :: v
+        type(View), intent(in), target :: v                 !! the view (not owned)
         type(ViewPointer), allocatable :: tmp(:)
         if (.not. allocated(self%views)) allocate(self%views(4))
         if (self%n_views == size(self%views)) then
@@ -1027,7 +1027,7 @@ contains
     !> Remove all instances of `v` from the window's views.
     subroutine remove_view(self, v)
         class(WindowProxy), intent(inout) :: self
-        type(View), intent(in), target :: v
+        type(View), intent(in), target :: v                 !! the view to remove
         integer :: k
         k = 1
         do while (k <= self%n_views)
@@ -1055,8 +1055,8 @@ contains
     !> the view transition, `set_view_transition`; 0: a cut).
     subroutine select_view(self, i, duration)
         class(WindowProxy), intent(inout) :: self
-        integer, intent(in) :: i
-        real(wp), intent(in), optional :: duration
+        integer, intent(in) :: i                            !! 1 to num_views
+        real(wp), intent(in), optional :: duration          !! s (default: the view transition; 0: a cut)
         if (i < 1 .or. i > self%n_views .or. i == self%current) return
         self%current = i
         if (present(duration)) self%switch_duration = max(0.0_wp, duration)
@@ -1065,14 +1065,14 @@ contains
     !> Show the next view (wrapping around); `duration` as select_view's.
     subroutine next_view(self, duration)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in), optional :: duration
+        real(wp), intent(in), optional :: duration          !! s, as select_view's
         if (self%n_views > 0) call self%select_view(modulo(self%current, self%n_views) + 1, duration)
     end subroutine next_view
 
     !> Show the previous view (wrapping around); `duration` as select_view's.
     subroutine previous_view(self, duration)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in), optional :: duration
+        real(wp), intent(in), optional :: duration          !! s, as select_view's
         if (self%n_views > 0) call self%select_view(modulo(self%current - 2, self%n_views) + 1, duration)
     end subroutine previous_view
 
@@ -1158,8 +1158,8 @@ contains
         !> Frame f (at transform m to the root) and its children, under each of
         !> their parents.
         recursive subroutine pick_frame(f, m)
-            class(ReferenceFrame), intent(in), target :: f
-            real(wp), intent(in) :: m(4,4)
+            class(ReferenceFrame), intent(in), target :: f  !! the frame (with its children)
+            real(wp), intent(in) :: m(4,4)                  !! f's transform to the root frame
             class(ReferenceFrame), pointer :: c
             integer :: k, best
             if (f%pickable()) call f%pick(cam, m, hits, n)
@@ -1272,7 +1272,7 @@ contains
     !> false: it stops where it is released.
     subroutine set_camera_throw(self, enabled)
         class(WindowProxy), intent(inout) :: self
-        logical, intent(in) :: enabled
+        logical, intent(in) :: enabled                      !! true: keeps moving; false: stops where released
         self%camera_throw_ = enabled
         call apply_camera_controls(self)
     end subroutine set_camera_throw
@@ -1299,7 +1299,7 @@ contains
     subroutine get_camera(self, eye, center, up, in_root)
         class(WindowProxy), intent(in) :: self
         real(wp), intent(out) :: eye(3), center(3), up(3)   !! view frame's coordinates (or root's)
-        logical, intent(in), optional :: in_root
+        logical, intent(in), optional :: in_root            !! true: in the root frame's coordinates (default: the view frame's)
         real(wp) :: cam(3,3)
         eye = 0.0_wp
         center = 0.0_wp
@@ -1355,7 +1355,7 @@ contains
         class(WindowProxy), intent(inout), target :: self
         real(wp), intent(in) :: eye(3), center(3), up(3)    !! view frame's coordinates (or root's)
         real(wp), intent(in), optional :: duration          !! s (default: at once)
-        logical, intent(in), optional :: in_root
+        logical, intent(in), optional :: in_root            !! true: eye, center and up are in the root frame's coordinates
         type(View), pointer :: v
         real(wp) :: cam(3,3), now(3,3)
         logical :: root
@@ -1418,7 +1418,7 @@ contains
     !> View i (1 to num_views).
     function window_view(self, i) result(v)
         class(WindowProxy), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! 1 to num_views
         type(View), pointer :: v
         v => self%views(i)%p
     end function window_view
@@ -1513,7 +1513,7 @@ contains
     !> `to`'s) over `duration` s, from now.
     subroutine start_flight(self, from, start, to, finish, duration)
         type(WindowProxy), intent(inout) :: self
-        type(View), intent(in), target :: from, to
+        type(View), intent(in), target :: from, to          !! the views whose frames start and finish are in
         real(wp), intent(in) :: start(3,3), finish(3,3), duration  !! (columns: eye, center, up; duration: s)
         self%flight%from => from
         self%flight%to => to
@@ -1529,7 +1529,7 @@ contains
     !> between by the eased fraction of the time passed, back in `v`'s frame.
     subroutine fly(self, v)
         type(WindowProxy), intent(inout) :: self
-        type(View), intent(in), target :: v
+        type(View), intent(in), target :: v                 !! the view flown to
         real(wp) :: s, from(3,3), to(3,3), m(4,4)
         if (.not. self%flight%active) return
         if (.not. associated(self%flight%to, v)) then             ! (another view since)
@@ -1568,7 +1568,7 @@ contains
     !> Pause (true) or resume (false) the simulation time.
     subroutine pause_time(self, paused)
         class(WindowProxy), intent(inout) :: self
-        logical, intent(in) :: paused
+        logical, intent(in) :: paused                       !! true: pause; false: resume
         call self%clock_%pause(paused, window_wall(self))
     end subroutine pause_time
 
@@ -1581,7 +1581,7 @@ contains
     !> Simulation seconds per wall-clock second (may be 0 or negative).
     subroutine set_time_scale(self, scale)
         class(WindowProxy), intent(inout) :: self
-        real(wp), intent(in) :: scale
+        real(wp), intent(in) :: scale                       !! simulation s per wall-clock s (may be 0 or negative)
         call self%clock_%set_time_scale(scale, window_wall(self))
     end subroutine set_time_scale
 
@@ -1601,7 +1601,7 @@ contains
     !> The simulation time range (`set_time_range`).
     subroutine time_range(self, t_min, t_max)
         class(WindowProxy), intent(in) :: self
-        real(wp), intent(out) :: t_min, t_max
+        real(wp), intent(out) :: t_min, t_max               !! simulation times
         call self%clock_%time_range(t_min, t_max)
     end subroutine time_range
 
@@ -1650,7 +1650,7 @@ contains
     !> (ASCII for printable keys; vsg/ui/KeyEvent.h).
     subroutine key(self, pressed, symbol, modified_symbol, modifier)
         class(WindowProxy), intent(inout) :: self
-        logical, intent(in) :: pressed
+        logical, intent(in) :: pressed                      !! true: pressed; false: released
         integer, intent(in) :: symbol                       !! the key without modifiers (VSG's keyBase)
         integer, intent(in) :: modified_symbol              !! the key with the modifiers (VSG's keyModified, e.g. 'A')
         integer, intent(in) :: modifier                     !! the modifier keys held (MOD_* bits)
@@ -1719,7 +1719,7 @@ contains
     !> one, the space bar resets the view.
     subroutine set_default_keys(self, on)
         class(WindowProxy), intent(inout) :: self
-        logical, intent(in) :: on
+        logical, intent(in) :: on                           !! true: the built-in keys on
         self%default_keys_ = on
     end subroutine set_default_keys
 
@@ -1742,7 +1742,7 @@ contains
     !> A key was released (see `key_press`).
     subroutine handler_key_release(self, window, key, modifiers)
         class(WindowEventHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
+        class(WindowProxy), intent(inout) :: window         !! the window of the event
         integer, intent(in) :: key, modifiers               !! as key_press's
     end subroutine handler_key_release
 
@@ -1751,7 +1751,7 @@ contains
     !> motion) or dragging.
     subroutine handler_mouse_motion(self, window, x, y, buttons)
         class(WindowEventHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
+        class(WindowProxy), intent(inout) :: window         !! the window of the event
         real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
         logical, intent(in) :: buttons(3)                   !! (held: left, middle, right)
     end subroutine handler_mouse_motion
@@ -1760,16 +1760,16 @@ contains
     !> (x, y) (see `mouse_motion`).
     subroutine handler_button_press(self, window, x, y, button)
         class(WindowEventHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: x, y
+        class(WindowProxy), intent(inout) :: window         !! the window of the event
+        real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
         integer, intent(in) :: button                       !! MOUSE_LEFT, MOUSE_MIDDLE or MOUSE_RIGHT
     end subroutine handler_button_press
 
     !> A mouse button was released at (x, y) (see `button_press`).
     subroutine handler_button_release(self, window, x, y, button)
         class(WindowEventHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: x, y
+        class(WindowProxy), intent(inout) :: window         !! the window of the event
+        real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
         integer, intent(in) :: button                       !! as button_press's
     end subroutine handler_button_release
 
@@ -1778,7 +1778,7 @@ contains
     !> next to a moving object.
     subroutine handler_before_draw(self, window, t)
         class(WindowEventHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
+        class(WindowProxy), intent(inout) :: window         !! the window about to draw
         real(wp), intent(in) :: t                           !! simulation time
     end subroutine handler_before_draw
 

@@ -106,7 +106,7 @@ module vkf_artists
             import :: TrajectoryArtist, c_ptr
             implicit none
             class(TrajectoryArtist), intent(inout) :: self
-            type(c_ptr), intent(in) :: viewer, group
+            type(c_ptr), intent(in) :: viewer, group        !! compiles nodes made later (may be null); the parent group
         end subroutine artist_build
 
         !> Bring the drawing up to date with the trajectory at simulation time `t`.
@@ -114,7 +114,7 @@ module vkf_artists
             import :: TrajectoryArtist, wp
             implicit none
             class(TrajectoryArtist), intent(inout) :: self
-            real(wp), intent(in) :: t
+            real(wp), intent(in) :: t                       !! the current time
         end subroutine artist_update
     end interface
 
@@ -511,7 +511,7 @@ contains
     !> Draw `traj` (it must stay alive while drawn).
     subroutine set_trajectory(self, traj)
         class(TrajectoryArtist), intent(inout) :: self
-        type(Trajectory), intent(in), target :: traj
+        type(Trajectory), intent(in), target :: traj        !! the trajectory to draw (not owned)
         self%traj => traj
         self%seen_generation = -1                     ! redraw
     end subroutine set_trajectory
@@ -527,7 +527,7 @@ contains
     !> a spacecraft's marker beside its orbit's curve).
     subroutine artist_set_pickable(self, pickable)
         class(TrajectoryArtist), intent(inout) :: self
-        logical, intent(in) :: pickable
+        logical, intent(in) :: pickable                     !! true: picked (default)
         self%pickable_ = pickable
     end subroutine artist_set_pickable
 
@@ -540,7 +540,7 @@ contains
     !> Draw only the part up to the current time (see the module documentation).
     subroutine set_trace_mode(self, enabled)
         class(TrajectoryArtist), intent(inout) :: self
-        logical, intent(in) :: enabled
+        logical, intent(in) :: enabled                      !! true: draw only up to the current time
         self%trace = enabled
     end subroutine set_trace_mode
 
@@ -561,7 +561,7 @@ contains
     !> must be drawn again (cleared, or a new trajectory or data sources).
     logical function data_changed(self, redraw) result(changed)
         class(TrajectoryArtist), intent(inout) :: self
-        logical, intent(out) :: redraw
+        logical, intent(out) :: redraw                      !! true: everything must be drawn again
         redraw = .false.
         changed = .false.
         if (.not. associated(self%traj)) return
@@ -578,10 +578,10 @@ contains
     !> (none: i2 < i1), the first points for increasing times, the last for
     !> decreasing ones (by bisection).
     subroutine trace_range(traj, t, n, i1, i2)
-        type(Trajectory), intent(in) :: traj
-        real(wp), intent(in) :: t
-        integer, intent(in) :: n
-        integer, intent(out) :: i1, i2
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        real(wp), intent(in) :: t                           !! the current time
+        integer, intent(in) :: n                            !! the points considered (1 .. n)
+        integer, intent(out) :: i1, i2                      !! the points passed (none: i2 < i1)
         integer :: low, high, mid
         i1 = 1
         i2 = 0
@@ -614,8 +614,8 @@ contains
 
     !> Whether points 1 .. n have decreasing times (a trajectory propagated backwards).
     logical function decreasing_times(traj, n)
-        type(Trajectory), intent(in) :: traj
-        integer, intent(in) :: n
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        integer, intent(in) :: n                            !! the points considered (1 .. n)
         decreasing_times = .false.
         if (n > 1) decreasing_times = traj%time(n) < traj%time(1)
     end function decreasing_times
@@ -643,8 +643,8 @@ contains
     !> Number of points the data sources give: 0 for invalid sources or no
     !> trajectory, huge() if all are zero.
     integer function source_points(traj, sources) result(n)
-        type(Trajectory), pointer, intent(in) :: traj
-        type(DataSource), intent(in) :: sources(3)
+        type(Trajectory), pointer, intent(in) :: traj       !! the trajectory (null: none)
+        type(DataSource), intent(in) :: sources(3)          !! x, y, z data sources
         n = 0
         if (.not. associated(traj)) return
         if (.not. traj%verify_data(sources)) return
@@ -653,7 +653,7 @@ contains
 
     !> The sources are x, y, z of the position, unscaled.
     pure logical function is_position_xyz(s)
-        type(DataSource), intent(in) :: s(3)
+        type(DataSource), intent(in) :: s(3)                !! x, y, z data sources
         integer :: k
         is_position_xyz = .true.
         do k = 1, 3
@@ -838,8 +838,8 @@ contains
     !> A curve artist for `traj` (optional), drawn in color `color` ([r, g, b]
     !> or [r, g, b, a]; default white) and `width` (window units; default 1).
     function new_curve_artist(traj, color, width) result(a)
-        type(Trajectory), intent(in), target, optional :: traj
-        real(wp), intent(in), optional :: color(:), width
+        type(Trajectory), intent(in), target, optional :: traj !! the trajectory to draw (not owned)
+        real(wp), intent(in), optional :: color(:), width   !! [r, g, b] or [r, g, b, a] (0 to 1); width (window units, default 1)
         type(CurveArtist) :: a
         a%sources_ = position_sources(3)
         if (present(traj)) call a%set_trajectory(traj)
@@ -850,7 +850,7 @@ contains
     !> Draw `traj`; with the default data sources, its positions (per its DOF).
     subroutine curve_set_trajectory(self, traj)
         class(CurveArtist), intent(inout) :: self
-        type(Trajectory), intent(in), target :: traj
+        type(Trajectory), intent(in), target :: traj        !! the trajectory to draw (not owned)
         self%traj => traj
         if (self%default_data) self%sources_ = position_sources(traj%dof())
         self%seen_generation = -1
@@ -860,29 +860,29 @@ contains
     !> trajectory has those data.
     logical function set_x_data(self, src) result(valid)
         class(CurveArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the x data source
         valid = set_curve_source(self, 1, src)
     end function set_x_data
 
     !> Where the y of the points come from (see set_x_data).
     logical function set_y_data(self, src) result(valid)
         class(CurveArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the y data source
         valid = set_curve_source(self, 2, src)
     end function set_y_data
 
     !> Where the z of the points come from (see set_x_data).
     logical function set_z_data(self, src) result(valid)
         class(CurveArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the z data source
         valid = set_curve_source(self, 3, src)
     end function set_z_data
 
     !> Set data source k (1: x, 2: y, 3: z); returns whether the trajectory has the data.
     logical function set_curve_source(self, k, src) result(valid)
         class(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: k
-        type(DataSource), intent(in) :: src
+        integer, intent(in) :: k                            !! the component (1: x, 2: y, 3: z)
+        type(DataSource), intent(in) :: src                 !! its data source
         self%sources_(k) = src
         self%default_data = .false.
         self%seen_generation = -1
@@ -901,7 +901,7 @@ contains
     !> (with the trajectory's point colors drawn: for points without one).
     subroutine curve_set_color(self, color)
         class(CurveArtist), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call set_rgba(self%color_, color)
         call curve_style(self)
         if (self%chain%is_colored()) self%seen_generation = -1    ! (points without colors redrawn)
@@ -917,7 +917,7 @@ contains
     !> The line's width in window units (logical pixels).
     subroutine curve_set_width(self, width)
         class(CurveArtist), intent(inout) :: self
-        real(wp), intent(in) :: width
+        real(wp), intent(in) :: width                       !! window units
         self%width_ = width
         call curve_style(self)
     end subroutine curve_set_width
@@ -935,7 +935,7 @@ contains
     !> 0.7 to 1.4 times the pattern's (see shaders/line.vert).
     subroutine curve_set_pattern(self, factor, pattern)
         class(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: factor, pattern
+        integer, intent(in) :: factor, pattern              !! window units per bit (>= 1), 16 bits (z'FFFF': solid)
         self%pattern_factor = max(1, factor)
         self%pattern_ = iand(pattern, int(z'FFFF'))
         call curve_style(self)
@@ -1055,7 +1055,7 @@ contains
     !> view and per chunk of points. Off: every point is drawn.
     subroutine set_level_of_detail(self, enabled)
         class(CurveArtist), intent(inout) :: self
-        logical, intent(in) :: enabled
+        logical, intent(in) :: enabled                      !! true: level of detail on (default)
         self%lod_ = enabled
         call self%chain%set_lod(enabled)
     end subroutine set_level_of_detail
@@ -1071,7 +1071,7 @@ contains
     !> 2, ... (scene units).
     function lod_error(self, j) result(error)
         class(CurveArtist), intent(in) :: self
-        integer, intent(in) :: j
+        integer, intent(in) :: j                            !! the chunk (1 to num_chunks)
         real(wp), allocatable :: error(:)
         error = real(self%chain%lod_error(j), wp)
     end function lod_error
@@ -1080,7 +1080,7 @@ contains
     !> buffers.
     function drawn_color(self, i) result(rgba)
         class(CurveArtist), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the point (1 to num_drawn)
         real(wp) :: rgba(4)
         if (self%chain%is_colored()) then
             rgba = self%chain%point_color(i)
@@ -1092,7 +1092,7 @@ contains
     !> The dash pattern: its `factor` and 16 pattern `bits`.
     pure subroutine curve_pattern(self, factor, bits)
         class(CurveArtist), intent(in) :: self
-        integer, intent(out) :: factor, bits
+        integer, intent(out) :: factor, bits                !! window units per bit, 16 bits
         factor = self%pattern_factor
         bits = self%pattern_
     end subroutine curve_pattern
@@ -1101,7 +1101,7 @@ contains
     !> drawn) as written: read back from the line buffers.
     function drawn_point(self, i) result(v)
         class(CurveArtist), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the trajectory point
         real(wp) :: v(3)
         v = self%chain%point(i)
     end function drawn_point
@@ -1110,7 +1110,7 @@ contains
     !> the dash pattern): read back from the line buffers.
     function drawn_distance(self, i) result(s)
         class(CurveArtist), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the point (1 to num_drawn)
         real(wp) :: s
         s = self%chain%distance(i)
     end function drawn_distance
@@ -1175,7 +1175,7 @@ contains
     !> Write points i1 .. i2 into the chain (and upload the chunks written to).
     subroutine write_curve(self, i1, i2)
         class(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: i1, i2
+        integer, intent(in) :: i1, i2                       !! the trajectory points
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp), dimension(:,:), pointer :: pos
         real(wp), allocatable :: v(:,:)
@@ -1206,7 +1206,7 @@ contains
     !> artist's color for points without one yet.
     subroutine write_colors(self, i1, i2)
         type(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: i1, i2
+        integer, intent(in) :: i1, i2                       !! the trajectory points
         real(c_float), dimension(:,:), pointer :: c, col
         integer :: j, lo, hi, m
         call self%traj%colors(col)
@@ -1224,7 +1224,7 @@ contains
     !> artist's if it has none yet.
     function point_rgba(self, i) result(rgba)
         type(CurveArtist), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the trajectory point
         real(wp) :: rgba(4)
         if (i <= self%traj%num_colors()) then
             rgba = self%traj%color(i)
@@ -1241,7 +1241,7 @@ contains
     !> its end segments.
     subroutine draw_trail(self, t)
         type(CurveArtist), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the current time
         real(wp), parameter :: unlimited = 0.5_wp * huge(1.0_wp)
         real(c_float), parameter :: far = 1.0e30_c_float
         real(c_float) :: values(20), hi
@@ -1305,7 +1305,7 @@ contains
 
         !> Point i's key: its time, increasing with the index.
         real(wp) function key(i)
-            integer, intent(in) :: i
+            integer, intent(in) :: i                        !! the point
             key = sgn * self%traj%time(i)
         end function key
 
@@ -1331,7 +1331,7 @@ contains
         !> The distance along the curve at time tt: interpolated between the
         !> points about it (extrapolated beyond the ends).
         real(wp) function s_at(tt)
-            real(wp), intent(in) :: tt
+            real(wp), intent(in) :: tt                      !! the time
             integer :: j
             real(wp) :: t0, t1
             j = max(1, min(n - 1, keys_up_to(sgn * tt, .true.)))
@@ -1349,8 +1349,8 @@ contains
     !> everything passed).
     subroutine update_tail(self, t, k, k2)
         class(CurveArtist), intent(inout) :: self
-        real(wp), intent(in) :: t
-        integer, intent(in) :: k, k2
+        real(wp), intent(in) :: t                           !! the current time
+        integer, intent(in) :: k, k2                        !! the tail's ends (0: none)
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp) :: frac, xyz(3, 2), along
         self%tail_shown = .false.
@@ -1378,8 +1378,8 @@ contains
     !> k2's (white, showing the style's color, if the chain has none).
     subroutine tail_colors(self, k, k2, frac)
         type(CurveArtist), intent(inout) :: self
-        integer, intent(in) :: k, k2
-        real(wp), intent(in) :: frac
+        integer, intent(in) :: k, k2                        !! the tail's ends
+        real(wp), intent(in) :: frac                        !! of the way from k's time to k2's (0 to 1)
         real(c_float), dimension(:,:), pointer :: c
         real(wp) :: c0(4), c1(4)
         integer(c_int) :: capacity
@@ -1412,9 +1412,9 @@ contains
 
     !> Change the settings given (see CurveArtist%set_highlight).
     subroutine update_highlight(h, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
-        type(HighlightStyle), intent(inout) :: h
-        integer, intent(in) :: mode
-        real(wp), intent(in), optional :: color(:), arrow_spacing, arrow_speed, band_width, pulse_period
+        type(HighlightStyle), intent(inout) :: h            !! the highlight changed
+        integer, intent(in) :: mode                         !! HIGHLIGHT_* (added)
+        real(wp), intent(in), optional :: color(:), arrow_spacing, arrow_speed, band_width, pulse_period !! as set_highlight
         h%mode = iand(mode, HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS)
         if (present(color)) call set_rgba(h%color, color)
         if (present(arrow_spacing)) h%arrow_spacing = max(arrow_spacing, 1.0_wp)
@@ -1425,8 +1425,8 @@ contains
 
     !> Give the highlight `h` to the line buffers `chain`.
     subroutine apply_highlight(h, chain)
-        type(HighlightStyle), intent(in) :: h
-        type(LineChain), intent(inout) :: chain
+        type(HighlightStyle), intent(in) :: h               !! the highlight
+        type(LineChain), intent(inout) :: chain             !! the line buffers given it
         call chain%set_highlight(h%mode, h%color, h%arrow_spacing, h%arrow_speed, h%band_width, h%pulse_period)
     end subroutine apply_highlight
 
@@ -1437,9 +1437,9 @@ contains
     !> b] or [r, g, b, a]; default white) and `width` (window units; default
     !> 1), at every `stride`-th point (default 1).
     function new_segment_artist(traj, color, width, stride) result(a)
-        type(Trajectory), intent(in), target, optional :: traj
-        real(wp), intent(in), optional :: color(:), width
-        integer, intent(in), optional :: stride
+        type(Trajectory), intent(in), target, optional :: traj !! the trajectory to draw (not owned)
+        real(wp), intent(in), optional :: color(:), width   !! [r, g, b] or [r, g, b, a] (0 to 1); width (window units, default 1)
+        integer, intent(in), optional :: stride             !! a segment at every stride-th point (default 1)
         type(SegmentArtist) :: a
         a%end_ = position_sources(3)
         if (present(traj)) call a%set_trajectory(traj)
@@ -1452,7 +1452,7 @@ contains
     !> positions (per its DOF).
     subroutine segment_set_trajectory(self, traj)
         class(SegmentArtist), intent(inout) :: self
-        type(Trajectory), intent(in), target :: traj
+        type(Trajectory), intent(in), target :: traj        !! the trajectory to draw (not owned)
         self%traj => traj
         if (self%default_data) self%end_ = position_sources(traj%dof())
         self%seen_generation = -1
@@ -1462,50 +1462,50 @@ contains
     !> Returns whether the trajectory has the data of all sources.
     logical function set_start_x_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the start points' x data source
         valid = set_segment_source(self, 1, 1, src)
     end function set_start_x_data
 
     !> Where the y of the segments' start points come from (see set_start_x_data).
     logical function set_start_y_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the start points' y data source
         valid = set_segment_source(self, 1, 2, src)
     end function set_start_y_data
 
     !> Where the z of the segments' start points come from (see set_start_x_data).
     logical function set_start_z_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the start points' z data source
         valid = set_segment_source(self, 1, 3, src)
     end function set_start_z_data
 
     !> Where the x of the segments' end points come from (see set_start_x_data).
     logical function set_end_x_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the end points' x data source
         valid = set_segment_source(self, 2, 1, src)
     end function set_end_x_data
 
     !> Where the y of the segments' end points come from (see set_start_x_data).
     logical function set_end_y_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the end points' y data source
         valid = set_segment_source(self, 2, 2, src)
     end function set_end_y_data
 
     !> Where the z of the segments' end points come from (see set_start_x_data).
     logical function set_end_z_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the end points' z data source
         valid = set_segment_source(self, 2, 3, src)
     end function set_end_z_data
 
     !> Set component k of the start (side 1) or end (side 2) sources.
     logical function set_segment_source(self, side, k, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        integer, intent(in) :: side, k
-        type(DataSource), intent(in) :: src
+        integer, intent(in) :: side, k                      !! 1: start, 2: end; the component (1: x, 2: y, 3: z)
+        type(DataSource), intent(in) :: src                 !! its data source
         if (side == 1) then
             self%start_(k) = src
         else
@@ -1535,7 +1535,7 @@ contains
     !> optional_sources(1). Returns whether the trajectory has their data.
     logical function set_start_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src(3)
+        type(DataSource), intent(in) :: src(3)              !! the start points' x, y, z data sources
         integer :: k
         do k = 1, 3
             valid = set_segment_source(self, 1, k, src(k))
@@ -1545,7 +1545,7 @@ contains
     !> All three end sources at once (see set_start_data).
     logical function set_end_data(self, src) result(valid)
         class(SegmentArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src(3)
+        type(DataSource), intent(in) :: src(3)              !! the end points' x, y, z data sources
         integer :: k
         do k = 1, 3
             valid = set_segment_source(self, 2, k, src(k))
@@ -1556,7 +1556,7 @@ contains
     !> end sources' values (a vector drawn from each point), not at them.
     subroutine set_end_relative(self, relative)
         class(SegmentArtist), intent(inout) :: self
-        logical, intent(in) :: relative
+        logical, intent(in) :: relative                     !! true: the ends are offsets from the starts
         if (relative .eqv. self%end_relative_) return
         self%end_relative_ = relative
         self%seen_generation = -1                   ! (all segments written again)
@@ -1573,7 +1573,7 @@ contains
     !> artist's segments are written again.
     subroutine set_end_scale(self, scale)
         class(SegmentArtist), intent(inout) :: self
-        real(wp), intent(in) :: scale
+        real(wp), intent(in) :: scale                       !! the end sources' scale (e.g. km per newton)
         if (all(self%end_%scale == scale)) return
         self%end_%scale = scale
         self%default_data = .false.
@@ -1583,7 +1583,7 @@ contains
     !> Draw a segment at points 1, 1 + stride, 1 + 2 stride, ... (stride >= 1).
     subroutine set_stride(self, stride)
         class(SegmentArtist), intent(inout) :: self
-        integer, intent(in) :: stride
+        integer, intent(in) :: stride                       !! a segment at every stride-th point (>= 1)
         if (max(1, stride) == self%stride_) return
         self%stride_ = max(1, stride)
         self%seen_generation = -1
@@ -1598,7 +1598,7 @@ contains
     !> The segments' color: [r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1.
     subroutine segment_set_color(self, color)
         class(SegmentArtist), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call set_rgba(self%color_, color)
         call self%chain%set_style(self%color_, self%width_)
     end subroutine segment_set_color
@@ -1613,7 +1613,7 @@ contains
     !> The segments' width in window units (logical pixels).
     subroutine segment_set_width(self, width)
         class(SegmentArtist), intent(inout) :: self
-        real(wp), intent(in) :: width
+        real(wp), intent(in) :: width                       !! window units
         self%width_ = width
         call self%chain%set_style(self%color_, self%width_)
     end subroutine segment_set_width
@@ -1628,7 +1628,7 @@ contains
     !> start of each segment.
     subroutine segment_set_pattern(self, factor, pattern)
         class(SegmentArtist), intent(inout) :: self
-        integer, intent(in) :: factor, pattern
+        integer, intent(in) :: factor, pattern              !! window units per bit (>= 1), 16 bits (z'FFFF': solid)
         self%pattern_factor = max(1, factor)
         self%pattern_ = iand(pattern, int(z'FFFF'))
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
@@ -1672,7 +1672,7 @@ contains
     !> The dash pattern: its `factor` and 16 pattern `bits`.
     pure subroutine segment_pattern(self, factor, bits)
         class(SegmentArtist), intent(in) :: self
-        integer, intent(out) :: factor, bits
+        integer, intent(out) :: factor, bits                !! window units per bit, 16 bits
         factor = self%pattern_factor
         bits = self%pattern_
     end subroutine segment_pattern
@@ -1701,7 +1701,7 @@ contains
     !> num_drawn - 1 drawn) as written: read back from the line buffers.
     subroutine drawn_segment(self, s, a, b)
         class(SegmentArtist), intent(in) :: self
-        integer, intent(in) :: s
+        integer, intent(in) :: s                    !! the segment (first_drawn to first_drawn + num_drawn - 1)
         real(wp), intent(out) :: a(3)               !! the segment's start (frame coordinates)
         real(wp), intent(out) :: b(3)               !! its end
         a = self%chain%point(2 * s - 1)
@@ -1711,7 +1711,7 @@ contains
     !> Create the chain of line buffers (sized for the segments now) under `group`.
     subroutine segment_build(self, viewer, group)
         class(SegmentArtist), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer, group            !! compiles nodes made later (may be null); the parent group
         call self%chain%init(group, CHAIN_SEGMENTS)
         call self%chain%set_style(self%color_, self%width_)
         call self%chain%set_pattern(self%pattern_factor, self%pattern_)
@@ -1733,7 +1733,7 @@ contains
     !> in trace mode, those at the points passed at time t.
     subroutine segment_update(self, t)
         class(SegmentArtist), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the current time
         integer :: m, s1, s2, i1, i2
         logical :: changed, redraw
         if (.not. self%chain%is_built()) return
@@ -1774,7 +1774,7 @@ contains
     !> Write segments s1 .. s2 into the chain (and upload the chunks written to).
     subroutine write_segments(self, s1, s2)
         type(SegmentArtist), intent(inout) :: self
-        integer, intent(in) :: s1, s2
+        integer, intent(in) :: s1, s2                       !! the segments
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp), allocatable :: v(:,:), w(:,:)
         integer :: j, lo, hi, sa, sb, ia, ib
@@ -1804,8 +1804,8 @@ contains
     !> unchanged, or [r, g, b, a]; default white, alpha 0.25), from the frame's
     !> origin to the positions (see set_start_x_data, ... for others).
     function new_ribbon_artist(traj, color) result(a)
-        type(Trajectory), intent(in), target, optional :: traj
-        real(wp), intent(in), optional :: color(:)
+        type(Trajectory), intent(in), target, optional :: traj !! the trajectory to draw (not owned)
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1; default white, alpha 0.25)
         type(RibbonArtist) :: a
         a%end_ = position_sources(3)
         if (present(traj)) call a%set_trajectory(traj)
@@ -1816,7 +1816,7 @@ contains
     !> positions (per its DOF).
     subroutine ribbon_set_trajectory(self, traj)
         class(RibbonArtist), intent(inout) :: self
-        type(Trajectory), intent(in), target :: traj
+        type(Trajectory), intent(in), target :: traj        !! the trajectory to draw (not owned)
         self%traj => traj
         if (self%default_data) self%end_ = position_sources(traj%dof())
         self%seen_generation = -1
@@ -1826,50 +1826,50 @@ contains
     !> Returns whether the trajectory has the data of all sources.
     logical function ribbon_set_start_x_data(self, src) result(valid)
         class(RibbonArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the start points' x data source
         valid = set_ribbon_source(self, 1, 1, src)
     end function ribbon_set_start_x_data
 
     !> Where the y of the surface's start points come from (see set_start_x_data).
     logical function ribbon_set_start_y_data(self, src) result(valid)
         class(RibbonArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the start points' y data source
         valid = set_ribbon_source(self, 1, 2, src)
     end function ribbon_set_start_y_data
 
     !> Where the z of the surface's start points come from (see set_start_x_data).
     logical function ribbon_set_start_z_data(self, src) result(valid)
         class(RibbonArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the start points' z data source
         valid = set_ribbon_source(self, 1, 3, src)
     end function ribbon_set_start_z_data
 
     !> Where the x of the surface's end points come from (see set_start_x_data).
     logical function ribbon_set_end_x_data(self, src) result(valid)
         class(RibbonArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the end points' x data source
         valid = set_ribbon_source(self, 2, 1, src)
     end function ribbon_set_end_x_data
 
     !> Where the y of the surface's end points come from (see set_start_x_data).
     logical function ribbon_set_end_y_data(self, src) result(valid)
         class(RibbonArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the end points' y data source
         valid = set_ribbon_source(self, 2, 2, src)
     end function ribbon_set_end_y_data
 
     !> Where the z of the surface's end points come from (see set_start_x_data).
     logical function ribbon_set_end_z_data(self, src) result(valid)
         class(RibbonArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the end points' z data source
         valid = set_ribbon_source(self, 2, 3, src)
     end function ribbon_set_end_z_data
 
     !> Set component k of the start (side 1) or end (side 2) sources.
     logical function set_ribbon_source(self, side, k, src) result(valid)
         class(RibbonArtist), intent(inout) :: self
-        integer, intent(in) :: side, k
-        type(DataSource), intent(in) :: src
+        integer, intent(in) :: side, k                      !! 1: start, 2: end; the component (1: x, 2: y, 3: z)
+        type(DataSource), intent(in) :: src                 !! its data source
         if (side == 1) then
             self%start_(k) = src
         else
@@ -1899,7 +1899,7 @@ contains
     !> alpha is the surface's opacity (also with the trajectory's colors).
     subroutine ribbon_set_color(self, color)
         class(RibbonArtist), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         call set_rgba(self%color_, color)
         call ribbon_style(self)
         if (self%chain%is_colored()) self%seen_generation = -1    ! (points without colors redrawn)
@@ -1916,8 +1916,8 @@ contains
     !> and end b: read back from the buffers.
     subroutine drawn_pair(self, i, a, b)
         class(RibbonArtist), intent(in) :: self
-        integer, intent(in) :: i
-        real(wp), intent(out) :: a(3), b(3)
+        integer, intent(in) :: i                    !! the trajectory point (1 to num_drawn)
+        real(wp), intent(out) :: a(3), b(3)         !! the pair's start and end (frame coordinates)
         a = self%chain%point(2 * i - 1)
         b = self%chain%point(2 * i)
     end subroutine drawn_pair
@@ -1926,7 +1926,7 @@ contains
     !> trajectory's color times the artist's alpha, or the artist's color).
     function ribbon_drawn_color(self, i) result(rgba)
         class(RibbonArtist), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the trajectory point
         real(wp) :: rgba(4)
         rgba = self%color_
         if (.not. self%chain%is_colored()) return
@@ -1977,7 +1977,7 @@ contains
     !> colors (and upload the chunks written to).
     subroutine write_ribbon(self, i1, i2)
         class(RibbonArtist), intent(inout) :: self
-        integer, intent(in) :: i1, i2
+        integer, intent(in) :: i1, i2                       !! the trajectory points
         real(c_float), dimension(:,:,:), pointer :: p
         real(c_float), dimension(:,:), pointer :: c, col
         real(c_float) :: own(4)
@@ -2021,8 +2021,8 @@ contains
     !> point written).
     subroutine update_ribbon_tail(self, t, k, k2)
         class(RibbonArtist), intent(inout) :: self
-        real(wp), intent(in) :: t
-        integer, intent(in) :: k, k2
+        real(wp), intent(in) :: t                           !! the current time
+        integer, intent(in) :: k, k2                        !! the tail's ends (0: none)
         real(c_float), dimension(:,:,:), pointer :: p
         real(c_float), dimension(:,:), pointer :: c
         real(wp) :: frac, xyz(3, 4), c0(4), c1(4)
@@ -2062,7 +2062,7 @@ contains
     !> (opaque: the style has the alpha) if it has none yet.
     function ribbon_point_rgba(self, i) result(rgba)
         type(RibbonArtist), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the trajectory point
         real(wp) :: rgba(4)
         if (i <= self%traj%num_colors()) then
             rgba = self%traj%color(i)
@@ -2094,9 +2094,9 @@ contains
     !> of `size` window units (default 10) in `color` (all markers; default red
     !> start and end, white intermediate).
     function new_marker_artist(traj, markers, size, color) result(a)
-        type(Trajectory), intent(in), target, optional :: traj
-        integer, intent(in), optional :: markers
-        real(wp), intent(in), optional :: size, color(:)
+        type(Trajectory), intent(in), target, optional :: traj !! the trajectory to draw (not owned)
+        integer, intent(in), optional :: markers            !! an ior of MARKER_* flags (default start and end)
+        real(wp), intent(in), optional :: size, color(:)    !! window units (default 10); [r, g, b] or [r, g, b, a]
         type(MarkerArtist) :: a
         a%sources_ = position_sources(3)
         a%image_file = ''
@@ -2109,7 +2109,7 @@ contains
     !> Draw `traj`; with the default data sources, its positions (per its DOF).
     subroutine marker_set_trajectory(self, traj)
         class(MarkerArtist), intent(inout) :: self
-        type(Trajectory), intent(in), target :: traj
+        type(Trajectory), intent(in), target :: traj        !! the trajectory to draw (not owned)
         self%traj => traj
         if (self%default_data) self%sources_ = position_sources(traj%dof())
         self%seen_generation = -1
@@ -2119,21 +2119,21 @@ contains
     !> trajectory has those data.
     logical function marker_set_x_data(self, src) result(valid)
         class(MarkerArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the x data source
         valid = set_marker_source(self, 1, src)
     end function marker_set_x_data
 
     !> Where the y of the markers come from (see set_x_data).
     logical function marker_set_y_data(self, src) result(valid)
         class(MarkerArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the y data source
         valid = set_marker_source(self, 2, src)
     end function marker_set_y_data
 
     !> Where the z of the markers come from (see set_x_data).
     logical function marker_set_z_data(self, src) result(valid)
         class(MarkerArtist), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! the z data source
         valid = set_marker_source(self, 3, src)
     end function marker_set_z_data
 
@@ -2141,8 +2141,8 @@ contains
     !> the trajectory has the data.
     logical function set_marker_source(self, k, src) result(valid)
         class(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: k
-        type(DataSource), intent(in) :: src
+        integer, intent(in) :: k                            !! the component (1: x, 2: y, 3: z)
+        type(DataSource), intent(in) :: src                 !! its data source
         self%sources_(k) = src
         self%default_data = .false.
         call redraw_markers(self)
@@ -2161,7 +2161,7 @@ contains
     !> MARKER_END (0 for none).
     subroutine set_markers(self, markers)
         class(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: markers
+        integer, intent(in) :: markers                      !! an ior of MARKER_* flags (0: none)
         if (markers == self%markers_) return
         self%markers_ = markers
         call redraw_markers(self)
@@ -2177,8 +2177,8 @@ contains
     !> b] (alpha unchanged) or [r, g, b, a].
     subroutine set_marker_color(self, which, color)
         class(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: which
-        real(wp), intent(in) :: color(:)
+        integer, intent(in) :: which                        !! the markers (an ior of MARKER_* flags)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] or [r, g, b, a] (0 to 1)
         if (iand(which, MARKER_START) /= 0) call set_rgba(self%start_color, color)
         if (iand(which, MARKER_END) /= 0) call set_rgba(self%end_color, color)
         if (iand(which, MARKER_INTERMEDIATE) /= 0) call set_rgba(self%intermediate_color, color)
@@ -2188,7 +2188,7 @@ contains
     !> The color of the start, intermediate or end markers (`which`: one MARKER_* flag).
     pure function marker_color(self, which) result(c)
         class(MarkerArtist), intent(in) :: self
-        integer, intent(in) :: which
+        integer, intent(in) :: which                        !! MARKER_START, MARKER_INTERMEDIATE or MARKER_END
         real(wp) :: c(4)
         select case (which)
         case (MARKER_START)
@@ -2203,7 +2203,7 @@ contains
     !> Marker size in window units (logical pixels; > 0).
     subroutine set_marker_size(self, size)
         class(MarkerArtist), intent(inout) :: self
-        real(wp), intent(in) :: size
+        real(wp), intent(in) :: size                        !! window units (> 0; else ignored)
         if (size <= 0.0_wp) return
         self%size_ = size
         call marker_style(self)
@@ -2220,7 +2220,7 @@ contains
     !> marker shaders (Demos/Shaders/Marker_*.frag), built in.
     subroutine set_marker_shape(self, shape)
         class(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: shape
+        integer, intent(in) :: shape                        !! a MARKER_* shape constant
         self%shape_ = max(MARKER_DISK, min(MARKER_IMAGE, shape))
         call marker_style(self)
     end subroutine set_marker_shape
@@ -2236,7 +2236,7 @@ contains
     !> if the image cannot be read (the markers are then unchanged).
     logical function set_marker_image(self, file) result(ok)
         class(MarkerArtist), intent(inout) :: self
-        character(len=*), intent(in) :: file
+        character(len=*), intent(in) :: file                !! the image file ('': a disk again)
         type(c_ptr) :: image
         ok = .true.
         if (len_trim(file) == 0) then
@@ -2266,7 +2266,7 @@ contains
     !> (OpenFrames': off).
     subroutine set_auto_attenuate(self, attenuate)
         class(MarkerArtist), intent(inout) :: self
-        logical, intent(in) :: attenuate
+        logical, intent(in) :: attenuate                    !! true: auto-attenuation on (default)
         self%attenuate = attenuate
         call marker_style(self)
     end subroutine set_auto_attenuate
@@ -2285,7 +2285,7 @@ contains
     !> (set_marker_color). Off, or without colors: the markers' own colors.
     subroutine marker_set_point_colors(self, enabled)
         class(MarkerArtist), intent(inout) :: self
-        logical, intent(in) :: enabled
+        logical, intent(in) :: enabled                      !! true: the trajectory's colors (default false)
         if (enabled .eqv. self%point_colors_) return
         self%point_colors_ = enabled
         call rebuild_markers(self)
@@ -2302,8 +2302,8 @@ contains
     !> colors, else the marker's own color.
     function marker_drawn_color(self, which, k) result(rgba)
         class(MarkerArtist), intent(in) :: self
-        integer, intent(in) :: which
-        integer, intent(in), optional :: k
+        integer, intent(in) :: which                        !! MARKER_START, MARKER_INTERMEDIATE or MARKER_END
+        integer, intent(in), optional :: k                  !! the intermediate marker's number (default 1)
         real(wp) :: rgba(4)
         integer :: i
         i = 1
@@ -2332,7 +2332,7 @@ contains
     !> `own` for points without one.
     function color_at(self, t, own) result(rgba)
         type(MarkerArtist), intent(in) :: self
-        real(wp), intent(in) :: t, own(4)
+        real(wp), intent(in) :: t, own(4)                   !! the time; the color for points without one
         real(wp) :: rgba(4), c1(4), t0, t1
         integer :: status, i, n
         n = self%traj%num_times()
@@ -2349,9 +2349,9 @@ contains
 
     !> Color of point i: the trajectory's, or `own` if it has none yet.
     pure function point_rgba_or(traj, i, own) result(rgba)
-        type(Trajectory), intent(in) :: traj
-        integer, intent(in) :: i
-        real(wp), intent(in) :: own(4)
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        integer, intent(in) :: i                            !! the point
+        real(wp), intent(in) :: own(4)                      !! the color if it has none
         real(wp) :: rgba(4)
         rgba = own
         if (i >= 1 .and. i <= traj%num_colors()) rgba = traj%color(i)
@@ -2359,7 +2359,7 @@ contains
 
     subroutine set_intermediate_type(self, type)
         class(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: type
+        integer, intent(in) :: type                         !! INTERMEDIATE_TIME, _DISTANCE or _DATA
         if (type == self%intermediate_type_) return
         self%intermediate_type_ = type
         call redraw_markers(self)
@@ -2375,7 +2375,7 @@ contains
     !> number of data points (rounded down, at least 1).
     subroutine set_intermediate_spacing(self, spacing)
         class(MarkerArtist), intent(inout) :: self
-        real(wp), intent(in) :: spacing
+        real(wp), intent(in) :: spacing                     !! time units, arc length or data points (> 0)
         if (spacing <= 0.0_wp .or. spacing == self%spacing_) return
         self%spacing_ = spacing
         call redraw_markers(self)
@@ -2391,7 +2391,7 @@ contains
     !> from the end (MARKER_END; recomputed whenever points are added).
     subroutine set_intermediate_direction(self, direction)
         class(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: direction
+        integer, intent(in) :: direction                    !! MARKER_START or MARKER_END
         if (direction == self%direction_) return
         self%direction_ = merge(MARKER_END, MARKER_START, direction == MARKER_END)
         call redraw_markers(self)
@@ -2413,7 +2413,7 @@ contains
     !> number i) is drawn, read back from its buffer; false if not drawn.
     logical function drawn_marker(self, which, v, i) result(shown)
         class(MarkerArtist), intent(in) :: self
-        integer, intent(in) :: which
+        integer, intent(in) :: which                !! MARKER_START, MARKER_END or MARKER_INTERMEDIATE
         real(wp), intent(out) :: v(3)               !! where it is drawn (frame coordinates)
         integer, intent(in), optional :: i          !! the intermediate marker's number (1 to num_intermediate)
         v = 0.0_wp
@@ -2435,7 +2435,7 @@ contains
     !> Create the marker nodes under `group` (see artist_build).
     subroutine marker_build(self, viewer, group)
         class(MarkerArtist), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer, group            !! compiles nodes made later (may be null); the parent group
         self%group = group
         self%shown = c_associated(viewer)
         call build_marker_nodes(self, compile=.false.)
@@ -2445,7 +2445,7 @@ contains
     !> (compiled now if it is already shown).
     subroutine build_marker_nodes(self, compile)
         type(MarkerArtist), intent(inout) :: self
-        logical, intent(in) :: compile
+        logical, intent(in) :: compile                      !! true: compiled now (if shown)
         logical :: colored
         colored = marker_uses_colors(self)
         call self%start_node%init(self%group, CHAIN_MARKERS, self%image, colored=colored)
@@ -2508,8 +2508,8 @@ contains
     contains
         !> The style's color: the marker's, or white if each marker has its own (the shader multiplies them).
         function style_color(chain, own) result(c)
-            type(LineChain), intent(in) :: chain
-            real(wp), intent(in) :: own(4)
+            type(LineChain), intent(in) :: chain            !! the marker's buffers
+            real(wp), intent(in) :: own(4)                  !! the marker's own color
             real(wp) :: c(4)
             c = own
             if (chain%is_colored()) c = 1.0_wp
@@ -2520,7 +2520,7 @@ contains
     !> and draw them all or, in trace mode, those passed at time t.
     subroutine marker_update(self, t)
         class(MarkerArtist), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the current time
         logical :: changed, redraw, zero, passed_start, passed_end
         integer :: n
         if (.not. c_associated(self%group)) return
@@ -2575,8 +2575,8 @@ contains
     !> own if none), with point colors.
     function end_rgba(self, i, own) result(rgba)
         type(MarkerArtist), intent(in) :: self
-        integer, intent(in) :: i
-        real(wp), intent(in) :: own(4)
+        integer, intent(in) :: i                            !! the trajectory point
+        real(wp), intent(in) :: own(4)                      !! the marker's own color
         real(wp) :: rgba(4)
         rgba = own
         if (self%inter%is_colored()) rgba = point_rgba_or(self%traj, i, own)
@@ -2585,7 +2585,7 @@ contains
     !> Point i from the data sources (the origin if `zero`).
     function marker_point(self, i, zero) result(v)
         type(MarkerArtist), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                    !! the trajectory point
         logical, intent(in) :: zero                 !! all sources zero, or no trajectory: the origin
         real(wp) :: v(3)
         v = 0.0_wp
@@ -2595,8 +2595,8 @@ contains
     !> A single marker's point (in a chain of one marker), and its color (a
     !> colored chain), uploaded.
     subroutine write_marker(chain, v, rgba)
-        type(LineChain), intent(inout) :: chain
-        real(wp), intent(in) :: v(3), rgba(4)
+        type(LineChain), intent(inout) :: chain             !! the marker's buffers (one marker)
+        real(wp), intent(in) :: v(3), rgba(4)               !! the marker's point; its color
         real(c_float), dimension(:,:,:), pointer :: p
         real(c_float), dimension(:,:), pointer :: c
         integer :: lo, hi
@@ -2622,7 +2622,7 @@ contains
     !> the artist's bounding sphere).
     subroutine update_bounds(self, n, zero)
         type(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: n
+        integer, intent(in) :: n                    !! the points
         logical, intent(in) :: zero                 !! all sources zero, or no trajectory: a marker at the origin
         real(wp), allocatable :: v(:,:)
         real(wp) :: r
@@ -2652,7 +2652,7 @@ contains
     !> counted from the end), and write them.
     subroutine add_intermediates(self, n)
         type(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: n
+        integer, intent(in) :: n                            !! the points
         integer :: first
         if (self%direction_ == MARKER_END) then          ! everything changes when points are added
             self%n_inter = 0
@@ -2680,7 +2680,7 @@ contains
     !> Index of the j-th point counted in the intermediate markers' direction.
     pure integer function counted(self, j, n)
         type(MarkerArtist), intent(in) :: self
-        integer, intent(in) :: j, n
+        integer, intent(in) :: j, n                         !! position in the counting order (1 to n); number of points
         counted = merge(n + 1 - j, j, self%direction_ == MARKER_END)
     end function counted
 
@@ -2688,7 +2688,7 @@ contains
     !> (counted from the start or the end).
     subroutine intermediates_by_time(self, n)
         type(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: n
+        integer, intent(in) :: n                            !! the points
         real(wp) :: t_first, t_last, step, tm
         integer :: status, index
         t_first = self%traj%time(counted(self, 1, n))
@@ -2710,7 +2710,7 @@ contains
     !> Every int(spacing)-th point after the first, before the last.
     subroutine intermediates_by_data(self, n)
         type(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: n
+        integer, intent(in) :: n                            !! the points
         integer :: step, i
         step = max(1, int(self%spacing_))
         if (self%next_index == 0) self%next_index = 1 + step
@@ -2724,7 +2724,7 @@ contains
     !> Every `spacing` of arc length (the points joined by straight lines).
     subroutine intermediates_by_distance(self, n)
         type(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: n
+        integer, intent(in) :: n                            !! the points
         real(wp) :: p(3), frac, t0, t1
         integer :: j
         if (self%next_index == 0) then
@@ -2753,7 +2753,7 @@ contains
     !> Append an intermediate marker at `v`, time `t` (the arrays grown as needed).
     subroutine push_intermediate(self, v, t)
         type(MarkerArtist), intent(inout) :: self
-        real(wp), intent(in) :: v(3), t
+        real(wp), intent(in) :: v(3), t                     !! the marker's point; its time
         real(wp), allocatable :: xyz(:,:), times(:), rgba(:,:)
         integer :: m
         if (.not. allocated(self%inter_xyz)) allocate(self%inter_xyz(3, 64), self%inter_t(64), self%inter_rgba(4, 64))
@@ -2777,7 +2777,7 @@ contains
     !> (with point colors), and upload the chunks written to.
     subroutine write_intermediates(self, i1, i2)
         type(MarkerArtist), intent(inout) :: self
-        integer, intent(in) :: i1, i2
+        integer, intent(in) :: i1, i2                       !! the intermediate markers
         real(c_float), dimension(:,:,:), pointer :: p
         real(c_float), dimension(:,:), pointer :: c
         integer :: j, lo, hi
@@ -2797,8 +2797,8 @@ contains
     !> for decreasing), by bisection.
     subroutine markers_passed(self, t, first, count)
         type(MarkerArtist), intent(in) :: self
-        real(wp), intent(in) :: t
-        integer, intent(out) :: first, count
+        real(wp), intent(in) :: t                           !! the current time
+        integer, intent(out) :: first, count                !! the markers passed: the first, how many
         integer :: low, high, mid, m
         m = self%n_inter_written
         low = 0
@@ -2833,8 +2833,8 @@ contains
 
     !> A drawable trajectory frame named `name` (decorations of color `color`).
     function new_drawable_trajectory(name, color) result(d)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(DrawableTrajectory) :: d
         d%ReferenceFrame = ReferenceFrame(name, color)
     end function new_drawable_trajectory
@@ -2854,7 +2854,7 @@ contains
     !> ```
     subroutine add_artist(self, a)
         class(DrawableTrajectory), intent(inout) :: self
-        class(TrajectoryArtist), intent(in), target :: a
+        class(TrajectoryArtist), intent(in), target :: a    !! the artist to add (not owned)
         type(ArtistPointer), allocatable :: tmp(:)
         integer :: k
         do k = 1, self%n_artists
@@ -2875,7 +2875,7 @@ contains
     !> another frame).
     subroutine remove_artist(self, a)
         class(DrawableTrajectory), intent(inout) :: self
-        class(TrajectoryArtist), intent(in), target :: a
+        class(TrajectoryArtist), intent(in), target :: a    !! the artist to remove
         integer :: k
         do k = 1, self%n_artists
             if (associated(self%artists(k)%p, a)) then
@@ -2908,7 +2908,7 @@ contains
     !> Artist i (1 to num_artists).
     function artist(self, i) result(a)
         class(DrawableTrajectory), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the artist (1 to num_artists)
         class(TrajectoryArtist), pointer :: a
         a => self%artists(i)%p
     end function artist
@@ -2938,7 +2938,7 @@ contains
     !> the frame's origin (if it shows axes or its name label).
     subroutine drawable_pick(self, cam, to_root, hits, n)
         class(DrawableTrajectory), intent(in), target :: self
-        type(PickCamera), intent(in) :: cam
+        type(PickCamera), intent(in) :: cam         !! the pick camera
         real(wp), intent(in) :: to_root(4,4)        !! the frame's transform to the root frame
         type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits are added to hits(1:n)
         integer, intent(inout) :: n                 !! number of hits
@@ -2970,9 +2970,9 @@ contains
 
     !> A curve's best hit: on the segments drawn (and the trace tail).
     subroutine curve_pick(a, frame, cam, m, hits, n)
-        class(CurveArtist), intent(in), target :: a
+        class(CurveArtist), intent(in), target :: a !! the artist
         class(ReferenceFrame), intent(in), target :: frame  !! the frame drawing it (for the hit)
-        type(PickCamera), intent(in) :: cam
+        type(PickCamera), intent(in) :: cam         !! the pick camera
         real(wp), intent(in) :: m(4,4)              !! the frame's transform to the root frame
         type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits are added to hits(1:n)
         integer, intent(inout) :: n                 !! number of hits
@@ -3063,7 +3063,7 @@ contains
 
         !> Point i in the frame's coordinates (straight from the positions if they are the sources).
         function local_point(i) result(v)
-            integer, intent(in) :: i
+            integer, intent(in) :: i                        !! the trajectory point
             real(wp) :: v(3)
             if (xyz) then
                 v = pos(:, i)
@@ -3074,7 +3074,7 @@ contains
 
         !> Point i in the root frame.
         function root_point(i) result(v)
-            integer, intent(in) :: i
+            integer, intent(in) :: i                        !! the trajectory point
             real(wp) :: v(3)
             v = matmul(m(1:3, 1:3), local_point(i)) + m(1:3, 4)
         end function root_point
@@ -3084,9 +3084,9 @@ contains
     !> A segment artist's best hit: on the segments drawn (as drawn: relative
     !> ends included; a segment of no length isn't drawn).
     subroutine segment_artist_pick(a, frame, cam, m, hits, n)
-        class(SegmentArtist), intent(in), target :: a
+        class(SegmentArtist), intent(in), target :: a !! the artist
         class(ReferenceFrame), intent(in), target :: frame  !! the frame drawing it (for the hit)
-        type(PickCamera), intent(in) :: cam
+        type(PickCamera), intent(in) :: cam         !! the pick camera
         real(wp), intent(in) :: m(4,4)              !! the frame's transform to the root frame
         type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits are added to hits(1:n)
         integer, intent(inout) :: n                 !! number of hits
@@ -3129,9 +3129,9 @@ contains
 
     !> A marker artist's best hit: its start, end and intermediate markers drawn.
     subroutine marker_pick(a, frame, cam, m, hits, n)
-        class(MarkerArtist), intent(in), target :: a
+        class(MarkerArtist), intent(in), target :: a !! the artist
         class(ReferenceFrame), intent(in), target :: frame  !! the frame drawing it (for the hit)
-        type(PickCamera), intent(in) :: cam
+        type(PickCamera), intent(in) :: cam         !! the pick camera
         real(wp), intent(in) :: m(4,4)              !! the frame's transform to the root frame
         type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits are added to hits(1:n)
         integer, intent(inout) :: n                 !! number of hits
@@ -3187,7 +3187,7 @@ contains
 
         !> Take the marker at `v` (`kind`, intermediate number k) as the best hit if picked and better.
         subroutine consider(kind, k)
-            integer, intent(in) :: kind, k
+            integer, intent(in) :: kind, k                  !! MARKER_START, _END or _INTERMEDIATE; its number
             if (.not. point_pick(cam, matmul(m(1:3, 1:3), v) + m(1:3, 4), px, depth, extra)) return
             if (.not. better(px, depth, best_px, best_depth)) return
             best_px = px
@@ -3210,7 +3210,7 @@ contains
     !> later are compiled if not null).
     subroutine drawable_build_contents(self, viewer, group)
         class(DrawableTrajectory), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
+        type(c_ptr), intent(in) :: viewer, group            !! compiles nodes made later (may be null); the parent group
         integer :: k
         self%shown = c_associated(viewer)
         self%contents_group = group
@@ -3222,7 +3222,7 @@ contains
     !> Update the frame (and its descendants), then its artists.
     recursive subroutine drawable_update(self, t)
         class(DrawableTrajectory), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the current time
         integer :: k
         call self%ReferenceFrame%update(t)
         do k = 1, self%n_artists
@@ -3235,8 +3235,8 @@ contains
     !> Create artist k's node (compiled now if the frame is already shown).
     subroutine build_artist(self, k, compile)
         type(DrawableTrajectory), intent(inout) :: self
-        integer, intent(in) :: k
-        logical, intent(in) :: compile
+        integer, intent(in) :: k                            !! the artist (1 to n_artists)
+        logical, intent(in) :: compile                      !! true: compiled now (if the frame is shown)
         type(c_ptr) :: group
         group = vkf_switch_create()
         if (.not. c_associated(group)) return

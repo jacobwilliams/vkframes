@@ -96,7 +96,7 @@ contains
     !> looks at the root frame's origin. The frames must stay alive while the
     !> view is used.
     function new_view(root, frame, lookat, frame_type, rotation_type) result(v)
-        class(ReferenceFrame), intent(in), target, optional :: root, frame, lookat
+        class(ReferenceFrame), intent(in), target, optional :: root, frame, lookat !! the tree's root, viewed and looked-at frames
         integer, intent(in), optional :: frame_type         !! ABSOLUTE_FRAME or RELATIVE_FRAME
         integer, intent(in), optional :: rotation_type      !! VIEW_DIRECT or VIEW_AZEL
         type(View) :: v
@@ -115,7 +115,7 @@ contains
     !> View `frame` (in the tree of `root`) with base `frame_type` (default RELATIVE_FRAME).
     subroutine set_view_frame(self, root, frame, frame_type)
         class(View), intent(inout) :: self
-        class(ReferenceFrame), intent(in), target :: root, frame
+        class(ReferenceFrame), intent(in), target :: root, frame !! the tree's root; the viewed frame (not owned)
         integer, intent(in), optional :: frame_type         !! ABSOLUTE_FRAME or RELATIVE_FRAME
         self%root => root
         self%frame => frame
@@ -127,7 +127,7 @@ contains
     !> Look from `frame` at `lookat` (both in the tree of `root`).
     subroutine set_view_between_frames(self, root, frame, lookat, frame_type, rotation_type)
         class(View), intent(inout) :: self
-        class(ReferenceFrame), intent(in), target :: root, frame, lookat
+        class(ReferenceFrame), intent(in), target :: root, frame, lookat !! the tree's root, viewed and looked-at frames
         integer, intent(in), optional :: frame_type         !! ABSOLUTE_FRAME or RELATIVE_FRAME (default)
         integer, intent(in), optional :: rotation_type      !! VIEW_DIRECT or VIEW_AZEL (default)
         self%root => root
@@ -198,7 +198,7 @@ contains
     !> An orthographic projection with the given bounds (in view units).
     subroutine set_orthographic(self, left, right, bottom, top)
         class(View), intent(inout) :: self
-        real(wp), intent(in) :: left, right, bottom, top
+        real(wp), intent(in) :: left, right, bottom, top    !! bounds (view units)
         self%projection = ORTHOGRAPHIC
         self%ortho = [left, right, bottom, top]
     end subroutine set_orthographic
@@ -234,7 +234,7 @@ contains
     !> default view distance).
     subroutine set_default_view_parameters(self, eye, center, up)
         class(View), intent(inout) :: self
-        real(wp), intent(in) :: eye(3), center(3), up(3)
+        real(wp), intent(in) :: eye(3), center(3), up(3)    !! the camera (view-frame coordinates)
         self%default_eye = eye
         self%default_center = center
         self%default_up = up
@@ -243,7 +243,7 @@ contains
     !> The camera after a reset (view-frame coordinates; all zero if none is set).
     pure subroutine default_view_parameters(self, eye, center, up)
         class(View), intent(in) :: self
-        real(wp), intent(out) :: eye(3), center(3), up(3)
+        real(wp), intent(out) :: eye(3), center(3), up(3)   !! the camera (view-frame coordinates; zero if not set)
         eye = self%default_eye
         center = self%default_center
         up = self%default_up
@@ -303,7 +303,7 @@ contains
     subroutine home(self, aspect, eye, center, up)
         class(View), intent(in) :: self
         real(wp), intent(in) :: aspect      !! viewport width / height
-        real(wp), intent(out) :: eye(3), center(3), up(3)
+        real(wp), intent(out) :: eye(3), center(3), up(3) !! the default camera (view-frame coordinates)
         real(wp) :: c(3), r, dist, half_fovy, half_fovx, m(4,4)
         if (norm2(self%default_up) /= 0.0_wp) then
             eye = self%default_eye
@@ -337,7 +337,7 @@ contains
     !> Keep the trackball state while another view is shown.
     subroutine save_state(self, eye, center, up)
         class(View), intent(inout) :: self
-        real(wp), intent(in) :: eye(3), center(3), up(3)
+        real(wp), intent(in) :: eye(3), center(3), up(3)    !! the trackball state (view-frame coordinates)
         self%eye = eye
         self%center = center
         self%up = up
@@ -347,7 +347,7 @@ contains
     !> The kept trackball state; false if there is none.
     logical function saved_state(self, eye, center, up)
         class(View), intent(in) :: self
-        real(wp), intent(out) :: eye(3), center(3), up(3)
+        real(wp), intent(out) :: eye(3), center(3), up(3)   !! the kept trackball state (view-frame coordinates)
         saved_state = self%has_state
         eye = self%eye
         center = self%center
@@ -359,7 +359,7 @@ contains
     !> there). It replaces a pending reset.
     subroutine view_set_camera(self, eye, center, up)
         class(View), intent(inout) :: self
-        real(wp), intent(in) :: eye(3), center(3), up(3)
+        real(wp), intent(in) :: eye(3), center(3), up(3)    !! the camera (view-frame coordinates)
         self%pending(:, 1) = eye
         self%pending(:, 2) = center
         self%pending(:, 3) = up
@@ -447,7 +447,7 @@ contains
     !> The transform from `f` to the view's root frame (the tree root if none).
     function frame_to_root(self, f) result(m)
         type(View), intent(in) :: self
-        class(ReferenceFrame), intent(in) :: f
+        class(ReferenceFrame), intent(in) :: f              !! a frame of the view's tree
         real(wp) :: m(4,4)
         m = f%world_matrix()
         if (associated(self%root)) m = matmul(rigid_inverse(self%root%world_matrix()), m)
@@ -455,7 +455,7 @@ contains
 
     !> rotate(r) * m, for a rotation r (3x3).
     pure function rotated(r, m) result(rm)
-        real(wp), intent(in) :: r(3,3), m(4,4)
+        real(wp), intent(in) :: r(3,3), m(4,4)              !! rotation (3x3); transform (4x4)
         real(wp) :: rm(4,4)
         rm = m
         rm(1:3, :) = matmul(r, m(1:3, :))

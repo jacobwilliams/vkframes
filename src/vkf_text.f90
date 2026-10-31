@@ -42,7 +42,7 @@ contains
 
     !> The path of font `name` (a file name or a path), or '' if not found.
     function find_font(name) result(path)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name        !! a file name or a path
         character(len=:), allocatable :: path
         character(len=4096) :: env
         character(len=:), allocatable :: dirs
@@ -73,7 +73,7 @@ contains
     !> The font handle for `name` (found with `find_font`, read on first use);
     !> the default font if `name` is ''; null if it cannot be found or read.
     function get_font(name) result(font)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name        !! as find_font's ('': the default font)
         type(c_ptr) :: font
         type(font_entry), allocatable :: tmp(:)
         character(len=:), allocatable :: key, path
@@ -110,7 +110,7 @@ contains
     !> scene units tall, but at most `max_size` window units on screen. Null if
     !> the font is missing.
     function label_create(text, position, rgba, size, max_size, alignment, font_name) result(node)
-        character(len=*), intent(in) :: text
+        character(len=*), intent(in) :: text        !! the label's text
         real(wp), intent(in) :: position(3)         !! (the coordinates of the node it is put under)
         real(wp), intent(in) :: rgba(4)             !! color [r, g, b, a] (0 to 1)
         real(wp), intent(in) :: size                !! > 0: height in window units; < 0: -height in scene units
@@ -132,7 +132,7 @@ contains
     !> label_create's), in place. False on failure.
     logical function label_set_layout(node, position, size, max_size, alignment) result(ok)
         type(c_ptr), intent(in) :: node             !! a label_create node
-        real(wp), intent(in) :: position(3), size, max_size
+        real(wp), intent(in) :: position(3), size, max_size !! as label_create's
         integer, intent(in) :: alignment            !! an ALIGN_* constant of vkf_frames
         integer :: h, v
         call vsg_alignment(alignment, h, v)

@@ -108,7 +108,7 @@ contains
     !> meter (default 1e-3), in color `color` where it has no imagery ([r, g, b]
     !> or [r, g, b, a]; default the frame's).
     function new_terrain_body(name, profile, units_per_meter, color) result(b)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name                       !! the frame's name
         character(len=*), intent(in), optional :: profile          !! Rocky's tiling profile (default '')
         real(wp), intent(in), optional :: units_per_meter          !! scene units per meter (default 1e-3)
         real(wp), intent(in), optional :: color(:)                 !! [r, g, b] or [r, g, b, a] (0 to 1)
@@ -124,7 +124,7 @@ contains
     !> kind (LAYER_*; default LAYER_TMS). Layers added later are drawn on top.
     subroutine add_image_layer(self, uri, source)
         class(TerrainBody), intent(inout) :: self
-        character(len=*), intent(in) :: uri
+        character(len=*), intent(in) :: uri             !! a URL, URL template or file
         integer, intent(in), optional :: source         !! a LAYER_* constant (default LAYER_TMS)
         type(MapLayer) :: layer
         layer%uri = uri
@@ -137,7 +137,7 @@ contains
     !> ELEVATION_HEIGHTS).
     subroutine add_elevation_layer(self, uri, source, encoding)
         class(TerrainBody), intent(inout) :: self
-        character(len=*), intent(in) :: uri
+        character(len=*), intent(in) :: uri             !! a URL, URL template or file
         integer, intent(in), optional :: source         !! a LAYER_* constant (default LAYER_TMS)
         integer, intent(in), optional :: encoding       !! an ELEVATION_* constant (default ELEVATION_HEIGHTS)
         type(MapLayer) :: layer
@@ -151,7 +151,7 @@ contains
     !> Keep `layer`, and add it to the map if it is made.
     subroutine add_layer(self, layer)
         type(TerrainBody), intent(inout) :: self
-        type(MapLayer), intent(in) :: layer
+        type(MapLayer), intent(in) :: layer                 !! the layer as given
         type(MapLayer), allocatable :: tmp(:)
         if (.not. allocated(self%layers)) allocate(self%layers(4))
         if (self%n_layers == size(self%layers)) then
@@ -173,7 +173,7 @@ contains
     !> Light the body with the scene's lights (default), or show its imagery as it is.
     subroutine set_lighting(self, lit)
         class(TerrainBody), intent(inout) :: self
-        logical, intent(in) :: lit
+        logical, intent(in) :: lit                          !! true: lit by the scene's lights; false: imagery as it is
         self%lighting_ = lit
         call apply_settings(self)
     end subroutine set_lighting
@@ -239,7 +239,7 @@ contains
     !> The body's bounding sphere (frame coordinates): its equatorial radius, at the origin.
     subroutine terrain_bound(self, center, radius)
         class(TerrainBody), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         center = 0.0_wp
         radius = self%body_radius()
     end subroutine terrain_bound
@@ -269,7 +269,7 @@ contains
     !> The map (in the contents group) for `viewer`, with the settings and layers.
     subroutine make_map(self, viewer)
         type(TerrainBody), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer
+        type(c_ptr), intent(in) :: viewer                   !! a window's viewer handle
         integer :: k
         self%map = vkf_rocky_map_create(viewer, self%profile_, len(self%profile_, kind=c_int), &
                                         real(self%units_per_meter_, c_double))
@@ -321,7 +321,7 @@ contains
     !> Add `layer` to the map (a file found on VKFRAMES_DATA_PATH).
     subroutine apply_layer(self, layer)
         type(TerrainBody), intent(inout) :: self
-        type(MapLayer), intent(in) :: layer
+        type(MapLayer), intent(in) :: layer                 !! the layer to add
         character(len=:), allocatable :: uri
         integer(c_int) :: status
         uri = layer%uri

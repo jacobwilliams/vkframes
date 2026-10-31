@@ -308,7 +308,7 @@ contains
     !> A line node through points xyz(3, n): a strip, or separate segments
     !> (points 1-2, 3-4, ...).
     function line_node(xyz, rgba, width, segments) result(node)
-        real(wp), intent(in) :: xyz(:,:)
+        real(wp), intent(in) :: xyz(:,:)                    !! (3, n) points
         real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
         real(wp), intent(in) :: width                       !! line width (window units)
         logical, intent(in) :: segments                     !! separate segments (else a strip)
@@ -325,7 +325,7 @@ contains
     !> A marker node at points xyz(3, n), `px` window units (MarkerArtist's
     !> shapes and attenuation).
     function marker_node(xyz, rgba, px, shape, radius, image) result(node)
-        real(wp), intent(in) :: xyz(:,:)
+        real(wp), intent(in) :: xyz(:,:)                    !! (3, n) points
         real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
         real(wp), intent(in) :: px                          !! marker size (window units)
         real(wp), intent(in) :: radius                      !! markers shrink beyond this camera distance (scene units)
@@ -348,8 +348,8 @@ contains
     !> `two_sided`: both faces drawn and lit. `colors`: a color per vertex
     !> (4, n), times rgba.
     function surface_node(xyz, idx, rgba, normals, colors, two_sided, sphere) result(node)
-        real(wp), intent(in) :: xyz(:,:)
-        integer, intent(in) :: idx(:,:)
+        real(wp), intent(in) :: xyz(:,:)                    !! (3, n) vertices
+        integer, intent(in) :: idx(:,:)                     !! (3, m) triangles, vertex numbers (1-based)
         real(wp), intent(in) :: rgba(4)                     !! color [r, g, b, a] (0 to 1)
         real(wp), intent(in), optional :: normals(:,:)      !! (3, n): lit
         real(wp), intent(in), optional :: colors(:,:)       !! (4, n)
@@ -402,7 +402,7 @@ contains
 
     !> Points along a closed curve, as separate segments: pairs (p(i), p(i+1)).
     pure function closed_segments(p) result(s)
-        real(wp), intent(in) :: p(:,:)
+        real(wp), intent(in) :: p(:,:)                      !! (3, n) points of the curve
         real(wp) :: s(3, 2 * size(p, 2))
         integer :: i, n
         n = size(p, 2)
@@ -414,7 +414,7 @@ contains
 
     !> Points along an open curve, as separate segments.
     pure function open_segments(p) result(s)
-        real(wp), intent(in) :: p(:,:)
+        real(wp), intent(in) :: p(:,:)                      !! (3, n) points of the curve
         real(wp) :: s(3, 2 * (size(p, 2) - 1))
         integer :: i
         do i = 1, size(p, 2) - 1
@@ -425,8 +425,8 @@ contains
 
     !> Append points b to a (allocatable, (3, n)).
     pure subroutine append(a, b)
-        real(wp), allocatable, intent(inout) :: a(:,:)
-        real(wp), intent(in) :: b(:,:)
+        real(wp), allocatable, intent(inout) :: a(:,:)      !! (3, n) points (unallocated: none)
+        real(wp), intent(in) :: b(:,:)                      !! (3, m) points to append
         real(wp), allocatable :: tmp(:,:)
         if (.not. allocated(a)) allocate(a(3, 0))
         allocate(tmp(3, size(a, 2) + size(b, 2)))
@@ -442,8 +442,8 @@ contains
     !> a]), 1 long, with major ticks every 0.5 and minor every 0.25 (OpenFrames'
     !> defaults).
     function new_coordinate_axes(name, color) result(a)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(CoordinateAxes) :: a
         a%ReferenceFrame = ReferenceFrame(name, color)
         a%image_file = ''
@@ -479,7 +479,7 @@ contains
     !> Which axes to draw: an ior of X_AXIS, Y_AXIS, Z_AXIS.
     subroutine set_draw_axes(self, axes)
         class(CoordinateAxes), intent(inout) :: self
-        integer, intent(in) :: axes
+        integer, intent(in) :: axes                         !! an ior of X_AXIS, Y_AXIS, Z_AXIS
         self%drawn = axes
         call make_axes(self)
     end subroutine set_draw_axes
@@ -661,8 +661,8 @@ contains
     !> A latitude/longitude grid named `name`, of color `color`, on a unit
     !> sphere, every 30 degrees (OpenFrames' defaults).
     function new_lat_lon_grid(name, color) result(g)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(LatLonGrid) :: g
         g%ReferenceFrame = ReferenceFrame(name, color)
         call place_grid_axes(g)
@@ -825,8 +825,8 @@ contains
     !> circles every 0.5, radial lines every 30 degrees, light gray and
     !> transparent (OpenFrames' defaults).
     function new_radial_plane(name, color) result(p)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(RadialPlane) :: p
         p%ReferenceFrame = ReferenceFrame(name, color)
         call place_axes(p, p%radius_)
@@ -969,8 +969,8 @@ contains
     !> 3 vertices at clock angles 0, 120 and 240 degrees, cone angles 45
     !> degrees, 1 long (OpenFrames' defaults).
     function new_polyhedral_cone(name, color) result(c)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(PolyhedralCone) :: c
         c%ReferenceFrame = ReferenceFrame(name, color)
         c%cone_color_ = c%color()
@@ -1053,7 +1053,7 @@ contains
     !> What to draw: an ior of CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE.
     subroutine set_draw_mode(self, mode)
         class(PolyhedralCone), intent(inout) :: self
-        integer, intent(in) :: mode
+        integer, intent(in) :: mode                         !! an ior of CONE_SIDES, CONE_EDGES, CONE_BASE_OUTLINE
         self%mode = mode
         call make_cone(self)
     end subroutine set_draw_mode
@@ -1127,7 +1127,7 @@ contains
     !> Which side of the line from a to b q is on: > 0 left, < 0 right, 0 on it
     !> (twice the signed area of the triangle a, b, q).
     pure real(wp) function side(a, b, q)
-        real(wp), intent(in) :: a(2), b(2), q(2)
+        real(wp), intent(in) :: a(2), b(2), q(2)            !! the line's two points, and the point tested
         side = (b(1) - a(1)) * (q(2) - a(2)) - (q(1) - a(1)) * (b(2) - a(2))
     end function side
 
@@ -1190,8 +1190,8 @@ contains
 
     !> An elliptic cone named `name`, of color `color` (sides and base outline drawn).
     function new_elliptic_cone(name, color) result(c)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(EllipticCone) :: c
         c%PolyhedralCone = PolyhedralCone(name, color)
         c%mode = ior(CONE_SIDES, CONE_BASE_OUTLINE)
@@ -1255,8 +1255,8 @@ contains
 
     !> A rectangular cone named `name`, of color `color`.
     function new_rectangular_cone(name, color) result(c)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(RectangularCone) :: c
         c%PolyhedralCone = PolyhedralCone(name, color)
         call rect_vertices(c)
@@ -1305,7 +1305,7 @@ contains
     !> A polyhedron named `name`, of color `color` (its faces, edges and
     !> vertices), with no faces yet (set_faces, set_triangles or set_grid).
     function new_polyhedron(name, color) result(p)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name                !! the frame's name
         real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1)
         type(Polyhedron) :: p
         p%ReferenceFrame = ReferenceFrame(name, color)
@@ -1374,8 +1374,8 @@ contains
     subroutine set_grid(self, points, closed_u, closed_v, lines)
         class(Polyhedron), intent(inout) :: self
         real(wp), intent(in) :: points(:,:,:)               !! (3, nu, nv), frame coordinates
-        logical, intent(in), optional :: closed_u, closed_v
-        integer, intent(in), optional :: lines(2)
+        logical, intent(in), optional :: closed_u, closed_v !! joined around in i, in j (default false)
+        integer, intent(in), optional :: lines(2)           !! edges every lines(1) in i, lines(2) in j (default 1; 0: none)
         integer :: nu, nv, mu, mv, i, j, i2, j2, nt, ne, every(2)
         logical :: cu, cv
         nu = size(points, 2)
@@ -1429,14 +1429,14 @@ contains
     contains
 
         pure integer function at(i_, j_)
-            integer, intent(in) :: i_, j_
+            integer, intent(in) :: i_, j_                       !! grid indices
             at = i_ + (j_ - 1) * nu
         end function at
 
         !> Line k of n drawn, every `step` (and the last, if the grid is open).
         pure logical function shown_line(k, n, step, closed)
-            integer, intent(in) :: k, n, step
-            logical, intent(in) :: closed
+            integer, intent(in) :: k, n, step                   !! the line, number of lines, and spacing
+            logical, intent(in) :: closed                       !! the grid is joined around (else the last line drawn too)
             shown_line = modulo(k - 1, step) == 0 .or. (k == n .and. .not. closed)
         end function shown_line
 
@@ -1446,7 +1446,7 @@ contains
     !> set_faces, set_triangles or set_grid).
     subroutine set_edges(self, edges)
         class(Polyhedron), intent(inout) :: self
-        integer, intent(in) :: edges(:,:)
+        integer, intent(in) :: edges(:,:)                   !! (2, k) vertex numbers (1-based)
         self%edge = edges
         call make_polyhedron(self)
     end subroutine set_edges
@@ -1455,7 +1455,7 @@ contains
     !> before; e.g. a surface changing in time).
     subroutine set_vertices(self, vertices)
         class(Polyhedron), intent(inout) :: self
-        real(wp), intent(in) :: vertices(:,:)
+        real(wp), intent(in) :: vertices(:,:)               !! (3, n), frame coordinates (as many as before)
         if (size(vertices, 2) /= size(self%v, 2)) then
             write(*, '(a)') 'vkframes: Polyhedron '//self%name()//': set_vertices needs as many vertices as before'
             return
@@ -1487,7 +1487,7 @@ contains
     !> still applies). Dropped when the faces are set again.
     subroutine set_vertex_colors(self, colors)
         class(Polyhedron), intent(inout) :: self
-        real(wp), intent(in) :: colors(:,:)
+        real(wp), intent(in) :: colors(:,:)                 !! (4, n) or (3, n): [r, g, b(, a)] (0 to 1)
         integer :: i
         if (size(colors, 2) /= size(self%v, 2) .or. size(colors, 1) < 3) then
             write(*, '(a)') 'vkframes: Polyhedron '//self%name()//': set_vertex_colors needs a color per vertex'
@@ -1562,7 +1562,7 @@ contains
     !> The faces' opacity (0 to 1; default 1, opaque): below 1 translucent.
     subroutine poly_set_opacity(self, opacity)
         class(Polyhedron), intent(inout) :: self
-        real(wp), intent(in) :: opacity
+        real(wp), intent(in) :: opacity                     !! 0 to 1 (1: opaque)
         self%opacity_ = max(0.0_wp, min(1.0_wp, opacity))
         call make_polyhedron(self)
     end subroutine poly_set_opacity
@@ -1576,7 +1576,7 @@ contains
     !> The edges' width (window units; default 1).
     subroutine poly_set_line_width(self, width)
         class(Polyhedron), intent(inout) :: self
-        real(wp), intent(in) :: width
+        real(wp), intent(in) :: width                       !! window units
         self%width_ = max(0.0_wp, width)
         call make_polyhedron(self)
     end subroutine poly_set_line_width
@@ -1590,7 +1590,7 @@ contains
     !> The vertices' size (window units; default 6).
     subroutine set_point_size(self, size_)
         class(Polyhedron), intent(inout) :: self
-        real(wp), intent(in) :: size_
+        real(wp), intent(in) :: size_                       !! window units
         self%point_size_ = max(0.0_wp, size_)
         call make_polyhedron(self)
     end subroutine set_point_size
@@ -1605,7 +1605,7 @@ contains
     !> faces and edges).
     subroutine poly_set_draw_mode(self, mode)
         class(Polyhedron), intent(inout) :: self
-        integer, intent(in) :: mode
+        integer, intent(in) :: mode                         !! an ior of POLY_FACES, POLY_EDGES, POLY_VERTICES
         self%mode = mode
         call make_polyhedron(self)
     end subroutine poly_set_draw_mode
@@ -1620,7 +1620,7 @@ contains
     !> as is, transparent as a cone's sides: writing no depth).
     subroutine set_lit(self, lit)
         class(Polyhedron), intent(inout) :: self
-        logical, intent(in) :: lit
+        logical, intent(in) :: lit                          !! true: lit; false: unlit and transparent
         self%lit_ = lit
         call make_polyhedron(self)
     end subroutine set_lit
@@ -1636,7 +1636,7 @@ contains
     !> default: a polyhedron's).
     subroutine set_smooth(self, smooth)
         class(Polyhedron), intent(inout) :: self
-        logical, intent(in) :: smooth
+        logical, intent(in) :: smooth                       !! true: smooth shading; false: flat faces
         self%smooth_ = smooth
         call make_polyhedron(self)
     end subroutine set_smooth
@@ -1652,7 +1652,7 @@ contains
     !> from outside: translucent, its far side isn't drawn through it).
     subroutine set_two_sided(self, two_sided)
         class(Polyhedron), intent(inout) :: self
-        logical, intent(in) :: two_sided
+        logical, intent(in) :: two_sided                    !! true: both sides; false: fronts only
         self%two_sided_ = two_sided
         call make_polyhedron(self)
     end subroutine set_two_sided
@@ -1763,7 +1763,7 @@ contains
     !> Edges (2, k) of vertex numbers (1 to n), each once whichever its
     !> direction (sorted by their smaller vertex, then the larger).
     function unique_edges(pairs, n) result(edges)
-        integer, intent(in) :: pairs(:,:)
+        integer, intent(in) :: pairs(:,:)                   !! (2, k) vertex numbers, in either order
         integer, intent(in) :: n                            !! the number of vertices
         integer, allocatable :: edges(:,:)
         integer(int64), allocatable :: keys(:)
@@ -1785,7 +1785,7 @@ contains
 
     !> Sort keys, increasing (a bottom-up merge sort).
     pure subroutine sort_keys(a)
-        integer(int64), intent(inout) :: a(:)
+        integer(int64), intent(inout) :: a(:)               !! the keys
         integer(int64), allocatable :: b(:)
         integer :: n, width, lo, mid, hi, i, j, k
         n = size(a)
@@ -1814,8 +1814,8 @@ contains
 
     !> Normals per vertex: the faces' around it, weighted by their areas.
     pure function vertex_normals(v, tri) result(normals)
-        real(wp), intent(in) :: v(:,:)
-        integer, intent(in) :: tri(:,:)
+        real(wp), intent(in) :: v(:,:)                      !! (3, n) vertices
+        integer, intent(in) :: tri(:,:)                     !! (3, m) triangles, vertex numbers (1-based)
         real(wp) :: normals(3, size(v, 2)), f(3), len_
         integer :: k, i
         normals = 0.0_wp
@@ -1838,7 +1838,7 @@ contains
     !> A triangle's unit normal (counterclockwise: its front), or +z if it has
     !> no area.
     pure function unit_normal(a, b, c) result(n)
-        real(wp), intent(in) :: a(3), b(3), c(3)
+        real(wp), intent(in) :: a(3), b(3), c(3)            !! the triangle's vertices
         real(wp) :: n(3), len_
         n = cross(b - a, c - a)
         len_ = norm2(n)
@@ -1852,8 +1852,8 @@ contains
     !> A sphere around points v (3, n): their box's center, out to the
     !> farthest (zero for none).
     pure subroutine vertices_sphere(v, center, radius)
-        real(wp), intent(in) :: v(:,:)
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(in) :: v(:,:)                      !! (3, n) points
+        real(wp), intent(out) :: center(3), radius          !! the sphere's center and radius
         integer :: i
         center = 0.0_wp
         radius = 0.0_wp

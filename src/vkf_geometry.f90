@@ -136,7 +136,7 @@ contains
 
     !> A sphere mesh node: `ellipsoid_create` with equal semi-axes.
     function sphere_create(radius, rgba, texture, n_lon, n_lat) result(mesh)
-        real(c_double), intent(in) :: radius
+        real(c_double), intent(in) :: radius                !! the sphere's radius
         real(c_float), dimension(4), intent(in) :: rgba     !! color [r, g, b, a] (0 to 1)
         type(c_ptr), intent(in), optional :: texture        !! image handle of the texture
         integer, intent(in), optional :: n_lon              !! segments in longitude (default 128)
@@ -162,10 +162,10 @@ contains
     !> indices are 0-based; uv is zero. Sizes are given by `arrow_size`.
     subroutine arrow(base, direction, body_length, head_length, body_radius, head_radius, n_segments, &
                           xyz, normals, uv, indices)
-        real(c_double), intent(in) :: base(3)
+        real(c_double), intent(in) :: base(3)           !! the arrow's base (start of the body)
         real(c_double), intent(in) :: direction(3)      !! the arrow's axis (need not be unit length)
-        real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius
-        integer, intent(in) :: n_segments
+        real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius !! lengths along the axis, and radii
+        integer, intent(in) :: n_segments               !! segments around
         real(c_float), dimension(:,:), intent(out) :: xyz       !! (3, n_vertices)
         real(c_float), dimension(:,:), intent(out) :: normals   !! (3, n_vertices)
         real(c_float), dimension(:,:), intent(out) :: uv        !! (2, n_vertices): zero
@@ -233,7 +233,7 @@ contains
 
         !> The unit vector at angle 2 pi k / n around the arrow's axis.
         pure function radial(k) result(rad)
-            integer, intent(in) :: k
+            integer, intent(in) :: k                            !! index of the angle 2 pi k / n (0 to n)
             real(c_double) :: rad(3), ang
             ang = 2.0_c_double * pi * real(k, c_double) / real(n, c_double)
             rad = cos(ang) * u + sin(ang) * v
@@ -241,7 +241,7 @@ contains
 
         !> Append a vertex at `p` with normal `nrm`.
         subroutine put(p, nrm)
-            real(c_double), intent(in) :: p(3), nrm(3)
+            real(c_double), intent(in) :: p(3), nrm(3)          !! the vertex, and its unit normal
             nv = nv + 1
             xyz(:, nv) = real(p, c_float)
             normals(:, nv) = real(nrm, c_float)
@@ -249,7 +249,7 @@ contains
 
         !> Append a triangle of (0-based) vertex indices i1, i2, i3.
         subroutine tri(i1, i2, i3)
-            integer, intent(in) :: i1, i2, i3
+            integer, intent(in) :: i1, i2, i3                   !! vertex indices (0-based), counterclockwise from outside
             indices(ni+1:ni+3) = int([i1, i2, i3], c_int32_t)
             ni = ni + 3
         end subroutine tri
@@ -260,8 +260,8 @@ contains
     !> default. Null on failure.
     function arrow_create(base, direction, body_length, head_length, body_radius, head_radius, rgba, n_segments) &
             result(mesh)
-        real(c_double), intent(in) :: base(3), direction(3)
-        real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius
+        real(c_double), intent(in) :: base(3), direction(3) !! the arrow's base, and its axis (need not be unit length)
+        real(c_double), intent(in) :: body_length, head_length, body_radius, head_radius !! lengths along the axis, and radii
         real(c_float), dimension(4), intent(in) :: rgba     !! color [r, g, b, a] (0 to 1)
         integer, intent(in), optional :: n_segments         !! segments around (default 24, at least 3)
         type(c_ptr) :: mesh

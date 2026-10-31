@@ -52,7 +52,7 @@ contains
     !> frame (and it can't be moved), else at first.
     subroutine begin_panel(self, title, position, pivot, follow)
         class(Gui), intent(inout) :: self
-        character(len=*), intent(in) :: title
+        character(len=*), intent(in) :: title           !! '##name': no title bar
         real(wp), intent(in), optional :: position(2)   !! [x, y] (0 to 1 across the window, y up)
         real(wp), intent(in), optional :: pivot(2)      !! the panel's point at `position` (0 to 1, from its top left)
         logical, intent(in), optional :: follow         !! place it every frame (default false: at first)
@@ -77,14 +77,14 @@ contains
     !> A line of text.
     subroutine text(self, line)
         class(Gui), intent(inout) :: self
-        character(len=*), intent(in) :: line
+        character(len=*), intent(in) :: line            !! the text
         call vkf_gui_text(self%handle, line, len(line, kind=c_int))
     end subroutine text
 
     !> A button: true once after it was clicked.
     logical function button(self, label)
         class(Gui), intent(inout) :: self
-        character(len=*), intent(in) :: label
+        character(len=*), intent(in) :: label           !! the button's text
         button = vkf_gui_button(self%handle, label, len(label, kind=c_int)) /= 0
     end function button
 
@@ -92,8 +92,8 @@ contains
     !> changed it.
     logical function checkbox(self, label, value) result(changed)
         class(Gui), intent(inout) :: self
-        character(len=*), intent(in) :: label
-        logical, intent(inout) :: value
+        character(len=*), intent(in) :: label           !! the text next to it
+        logical, intent(inout) :: value                 !! checked or not (changed by the user)
         integer(c_int) :: v
         v = merge(1_c_int, 0_c_int, value)
         changed = vkf_gui_checkbox(self%handle, label, len(label, kind=c_int), v) /= 0
@@ -105,10 +105,10 @@ contains
     !> (printf's, e.g. '%.0f km'; default '%.4g').
     logical function slider(self, label, value, low, high, format) result(changed)
         class(Gui), intent(inout) :: self
-        character(len=*), intent(in) :: label
-        real(wp), intent(inout) :: value
-        real(wp), intent(in) :: low, high
-        character(len=*), intent(in), optional :: format
+        character(len=*), intent(in) :: label           !! the text next to it
+        real(wp), intent(inout) :: value                !! shown, and changed by the user
+        real(wp), intent(in) :: low, high               !! the slider's range
+        character(len=*), intent(in), optional :: format !! printf's (default '%.4g')
         real(c_double) :: v
         v = value
         if (present(format)) then
@@ -126,9 +126,9 @@ contains
     !> user chose another.
     logical function combo(self, label, index, items) result(changed)
         class(Gui), intent(inout) :: self
-        character(len=*), intent(in) :: label
-        integer, intent(inout) :: index
-        character(len=*), intent(in) :: items(:)
+        character(len=*), intent(in) :: label           !! the text next to it
+        integer, intent(inout) :: index                 !! the item shown (1-based; changed by the user)
+        character(len=*), intent(in) :: items(:)        !! the menu's items (trailing blanks trimmed)
         character(len=:), allocatable :: all
         integer(c_int) :: i
         integer :: k

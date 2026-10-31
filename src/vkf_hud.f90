@@ -56,7 +56,7 @@ contains
     !> (window units; default 20), `color` ([r, g, b] or [r, g, b, a]; default
     !> white) and `font` (default: the default font).
     function new_hud_text(text, position, alignment, size, color, font) result(h)
-        character(len=*), intent(in) :: text
+        character(len=*), intent(in) :: text            !! the text
         real(wp), intent(in), optional :: position(2)   !! [x, y] (0 to 1 across the window, y up)
         real(wp), intent(in), optional :: size          !! character height (window units)
         real(wp), intent(in), optional :: color(:)      !! [r, g, b] or [r, g, b, a] (0 to 1)
@@ -74,7 +74,7 @@ contains
     !> Set the text (up to 256 characters, or twice the first text's length; see the module documentation).
     subroutine set_text(self, text)
         class(HUDText), intent(inout) :: self
-        character(len=*), intent(in) :: text
+        character(len=*), intent(in) :: text    !! the text
         self%text_ = text
         self%revision_ = self%revision_ + 1
     end subroutine set_text
@@ -133,7 +133,7 @@ contains
     !> [r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1.
     subroutine set_color(self, color)
         class(HUDText), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)        !! [r, g, b] or [r, g, b, a] (0 to 1)
         integer :: n
         n = min(4, ubound(color, 1))
         self%color_(1:n) = color(1:n)
@@ -166,7 +166,7 @@ contains
     !> Show (true) or hide the text (OpenFrames' enable HUD text).
     subroutine show(self, shown)
         class(HUDText), intent(inout) :: self
-        logical, intent(in) :: shown
+        logical, intent(in) :: shown            !! true: show; false: hide
         self%shown = shown
         self%revision_ = self%revision_ + 1
     end subroutine show

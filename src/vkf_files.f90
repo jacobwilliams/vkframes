@@ -41,7 +41,7 @@ contains
     !> file in the current directory), else the first match in the directories
     !> of the VKFRAMES_DATA_PATH environment variable; '' if not found.
     function find_data_file(name) result(path)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name        !! a path, or a file name
         character(len=:), allocatable :: path
         character(len=4096) :: env
         integer :: status

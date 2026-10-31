@@ -108,8 +108,8 @@ contains
     !> their radii if given (else the frames': see the module documentation).
     !> Its axes and name label are hidden.
     function new_shadow_cones(name, body, light, body_radius, light_radius) result(s)
-        character(len=*), intent(in) :: name
-        class(ReferenceFrame), intent(in), target, optional :: body, light
+        character(len=*), intent(in) :: name                !! the frame's name
+        class(ReferenceFrame), intent(in), target, optional :: body, light !! the body casting the shadow, the light (not owned)
         real(wp), intent(in), optional :: body_radius, light_radius  !! scene units (default: the frames' own)
         type(ShadowCones) :: s
         s%ReferenceFrame = ReferenceFrame(name)
@@ -129,7 +129,7 @@ contains
     !> radius (optional: see set_body_radius).
     subroutine set_body(self, body, radius)
         class(ShadowCones), intent(inout) :: self
-        class(ReferenceFrame), intent(in), target :: body
+        class(ReferenceFrame), intent(in), target :: body   !! the body casting the shadow (not owned)
         real(wp), intent(in), optional :: radius            !! scene units (see set_body_radius)
         self%body_ => body
         if (present(radius)) call self%set_body_radius(radius)
@@ -146,7 +146,7 @@ contains
     !> (optional: see set_light_radius).
     subroutine set_light(self, light, radius)
         class(ShadowCones), intent(inout) :: self
-        class(ReferenceFrame), intent(in), target :: light
+        class(ReferenceFrame), intent(in), target :: light  !! the light, e.g. the Sun (not owned)
         real(wp), intent(in), optional :: radius            !! scene units (see set_light_radius)
         self%light_ => light
         if (present(radius)) call self%set_light_radius(radius)
@@ -192,7 +192,7 @@ contains
 
     !> A body's own radius: a Sphere's equatorial one, a TerrainBody's; else 0.
     real(wp) function frame_radius(frame) result(r)
-        class(ReferenceFrame), intent(in) :: frame
+        class(ReferenceFrame), intent(in) :: frame          !! the body or the light
         real(wp) :: radii(3)
         r = 0.0_wp
         select type (frame)
@@ -389,7 +389,7 @@ contains
     !> A region's color, through its mesh's material (the unlit shader
     !> multiplies the vertex color, white, by the diffuse color).
     subroutine apply_color(g)
-        type(ShadowRegion), intent(in) :: g
+        type(ShadowRegion), intent(in) :: g                 !! the region (umbra, penumbra or antumbra)
         real(c_float) :: c(4)
         if (.not. c_associated(g%mesh)) return
         c = real(g%color, c_float)
@@ -489,7 +489,7 @@ contains
 
     !> A region's frustum into its mesh (uploaded), and shown or hidden.
     subroutine write_region(g)
-        type(ShadowRegion), intent(in) :: g
+        type(ShadowRegion), intent(in) :: g                 !! the region (umbra, penumbra or antumbra)
         real(c_float), dimension(:,:), pointer :: v, normals, uv
         integer(c_int32_t), dimension(:), pointer :: indices
         real(wp) :: a

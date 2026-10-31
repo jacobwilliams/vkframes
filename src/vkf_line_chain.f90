@@ -101,7 +101,7 @@ module vkf_line_chain
                                           1.5_c_float, 0.0_c_float, 0.0_c_float, 0.0_c_float]
                                                         !! (lines: highlight, see vkf_line_set_highlight)
         real(c_float) :: trail(20) = 0.0_c_float        !! (strips: the trail, see vkf_line_set_trail; z = 0: none)
-        integer :: dash_mode = 0                        !! (lines: 0 anchored, 1 screen-locked, 2 fixed length: vkf_line_set_dash_mode)
+        integer :: dash_mode = 0                        !! (lines: 0 anchored, 1 screen-locked, 2 fixed length)
         real(wp) :: dash_length = 0.0_wp                !! (2: the pattern's length, scene units; 0 from the first view)
     contains
         procedure :: init, set_compile, is_built, is_colored, release, detach
@@ -118,7 +118,7 @@ contains
     !> compiled once set_compile says so.
     subroutine init(self, group, kind, image, colored)
         class(LineChain), intent(inout) :: self
-        type(c_ptr), intent(in) :: group
+        type(c_ptr), intent(in) :: group                !! the group node to draw under
         integer, intent(in) :: kind                     !! a CHAIN_* constant
         type(c_ptr), intent(in), optional :: image      !! (markers: a vkf_image_read handle)
         logical, intent(in), optional :: colored       !! (lines, markers: a color per point (color_slice))
@@ -158,7 +158,7 @@ contains
     !> group is shown (not while building, when they are compiled with it).
     subroutine set_compile(self, compile)
         class(LineChain), intent(inout) :: self
-        logical, intent(in) :: compile
+        logical, intent(in) :: compile          !! true: compile new chunks (once the group is shown)
         self%compile_new = compile
     end subroutine set_compile
 
@@ -184,7 +184,7 @@ contains
     !> ribbons: chunks hold whole pairs (n should be even).
     subroutine reserve(self, n)
         class(LineChain), intent(inout) :: self
-        integer, intent(in) :: n
+        integer, intent(in) :: n                !! number of points to hold
         type(LineChunk), allocatable :: tmp(:)
         type(LineChunk) :: c
         integer :: covered
@@ -237,7 +237,7 @@ contains
     !> p(xyz and distance, high/low, lo:hi) (null if none).
     subroutine slice(self, j, i1, i2, lo, hi, p)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: j, i1, i2
+        integer, intent(in) :: j, i1, i2                            !! the chunk, and points i1 .. i2 (chain indices)
         integer, intent(out) :: lo, hi                              !! chain indices (lo > hi: none)
         real(c_float), dimension(:,:,:), pointer, intent(out) :: p  !! (4, 2, hi-lo+1)
         real(c_float), dimension(:,:,:), pointer :: all
@@ -255,7 +255,7 @@ contains
     !> lo .. hi of chunk j (null if not colored or nothing there).
     subroutine color_slice(self, j, i1, i2, lo, hi, c)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: j, i1, i2
+        integer, intent(in) :: j, i1, i2                            !! the chunk, and points i1 .. i2 (chain indices)
         integer, intent(out) :: lo, hi                              !! chain indices (lo > hi: none)
         real(c_float), dimension(:,:), pointer, intent(out) :: c    !! (4, hi-lo+1): [r, g, b, a]
         real(c_float), dimension(:,:), pointer :: all
@@ -275,7 +275,7 @@ contains
 
     !> Chunks moved to a new array (their level-of-detail bounds moved, not copied).
     subroutine move_chunks(from, to)
-        type(LineChunk), intent(inout) :: from(:), to(:)
+        type(LineChunk), intent(inout) :: from(:), to(:) !! the chunks, and their new array (same size)
         integer :: i, k
         do i = 1, size(from)
             to(i)%line = from(i)%line
@@ -297,7 +297,7 @@ contains
     !> the floats written. (i2 is the last point written in the chain.)
     subroutine written(self, i1, i2, x)
         class(LineChain), intent(inout) :: self
-        integer, intent(in) :: i1, i2
+        integer, intent(in) :: i1, i2                   !! points written (chain indices)
         real(wp), intent(in), optional :: x(:,:)        !! (3, at least i1-1 .. i2): the points
         integer :: j, lo, hi
         do j = 1, self%n_chunks
@@ -320,8 +320,8 @@ contains
     !> From `x` (as in `written`) if given, else from the floats written.
     subroutine measure(self, j, lo, hi, x)
         type(LineChain), intent(in) :: self
-        integer, intent(in) :: j, lo, hi
-        real(wp), intent(in), optional :: x(:,:)
+        integer, intent(in) :: j, lo, hi        !! the chunk, and its points lo .. hi (chain indices)
+        real(wp), intent(in), optional :: x(:,:) !! (3, chain points): the points, as in `written`
         real(c_float), dimension(:,:,:), pointer :: p, prev
         real(wp), allocatable :: xf(:,:), s(:)
         integer :: k0, k1, k, g
@@ -360,8 +360,8 @@ contains
     !> at each stride, and give them to the renderer. `x` as in `written`.
     subroutine update_lod(self, j, lo, hi, x)
         type(LineChain), intent(inout) :: self
-        integer, intent(in) :: j, lo, hi
-        real(wp), intent(in), optional :: x(:,:)
+        integer, intent(in) :: j, lo, hi        !! the chunk, and its points lo .. hi (chain indices)
+        real(wp), intent(in), optional :: x(:,:) !! (3, chain points): the points, as in `written`
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp) :: b0, b1, q(3)
         integer :: n, q0, k, s, m, seg, a, e, mid, i
@@ -409,7 +409,7 @@ contains
 
         !> Local point i of the chunk, in double precision.
         function pt(i) result(v)
-            integer, intent(in) :: i
+            integer, intent(in) :: i                !! the chunk's point (0-based local index)
             real(wp) :: v(3)
             if (present(x)) then
                 v = x(:, self%chunks(j)%first + i)
@@ -423,7 +423,7 @@ contains
     !> Give chunk j's level of detail to the renderer (none if switched off).
     subroutine send_lod(self, j)
         type(LineChain), intent(in) :: self
-        integer, intent(in) :: j
+        integer, intent(in) :: j                !! the chunk
         associate (c => self%chunks(j))
             call check_status(vkf_line_set_lod(c%line, 0.5_wp * (c%box_lo + c%box_hi), 0.5_wp * norm2(c%box_hi - c%box_lo), &
                                         self%lod_error(j), merge(int(lod_levels, c_int), 0_c_int, self%lod)), 'trajectory artists')
@@ -435,7 +435,7 @@ contains
     !> point drawn).
     subroutine set_lod(self, enabled)
         class(LineChain), intent(inout) :: self
-        logical, intent(in) :: enabled
+        logical, intent(in) :: enabled          !! level of detail on (false: every point drawn)
         integer :: j
         self%lod = enabled
         if (self%kind /= CHAIN_STRIP) return
@@ -448,7 +448,7 @@ contains
     !> segments drawn at stride 2^k (k = 1 .. lod_levels; 0 where not known).
     function lod_error(self, j) result(error)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: j
+        integer, intent(in) :: j                !! the chunk (outside 1 to the chunks: zeros)
         real(c_float) :: error(lod_levels)
         integer :: k, n, m
         error = 0.0_c_float
@@ -465,7 +465,7 @@ contains
 
     !> Distance from point v to the segment from a to b.
     pure real(wp) function segment_distance(v, a, b) result(d)
-        real(wp), intent(in) :: v(3), a(3), b(3)
+        real(wp), intent(in) :: v(3), a(3), b(3) !! the point, and the segment's ends
         real(wp) :: ab(3), t, len2
         ab = b - a
         len2 = dot_product(ab, ab)
@@ -477,7 +477,7 @@ contains
     !> Draw points 1 .. k (no upload).
     subroutine draw(self, k)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: k
+        integer, intent(in) :: k                !! last point drawn (chain index)
         call self%draw_range(1, k)
     end subroutine draw
 
@@ -485,7 +485,7 @@ contains
     !> of decreasing times, its last points.
     subroutine draw_range(self, i1, i2)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: i1, i2
+        integer, intent(in) :: i1, i2           !! first and last points drawn (chain indices)
         integer :: j, lo, hi
         do j = 1, self%n_chunks
             associate (c => self%chunks(j))
@@ -552,7 +552,7 @@ contains
     !> floats per chunk uploaded).
     subroutine set_trail(self, values)
         class(LineChain), intent(inout) :: self
-        real(c_float), intent(in) :: values(20)
+        real(c_float), intent(in) :: values(20) !! the trail (see vkf_line_set_trail)
         integer :: j
         self%trail = values
         if (self%kind /= CHAIN_STRIP) return
@@ -567,8 +567,8 @@ contains
     !> units for the pattern, or if 0 its length on screen when first drawn.
     subroutine set_dash_mode(self, mode, length)
         class(LineChain), intent(inout) :: self
-        integer, intent(in) :: mode
-        real(wp), intent(in) :: length
+        integer, intent(in) :: mode             !! 0 anchored, 1 screen-locked, 2 fixed length
+        real(wp), intent(in) :: length          !! (2) the pattern's length (scene units; 0: from the first view)
         integer :: j
         self%dash_mode = mode
         self%dash_length = length
@@ -587,7 +587,7 @@ contains
     !> curve's trace-mode tail, drawn as part of it).
     subroutine style_node(self, line)
         class(LineChain), intent(in) :: self
-        type(c_ptr), intent(in) :: line
+        type(c_ptr), intent(in) :: line         !! node to style (not in the chain)
         call apply_style(self, line)
     end subroutine style_node
 
@@ -612,7 +612,7 @@ contains
     !> Give the chain's style (color, width or size, pattern, highlight, marker shape) to the node `line`.
     subroutine apply_style(self, line)
         type(LineChain), intent(in) :: self
-        type(c_ptr), intent(in) :: line
+        type(c_ptr), intent(in) :: line         !! line or marker node
         if (self%kind == CHAIN_MARKERS) then
             call check_status(marker_set_style(line, self%color, self%width, self%shape, self%radius), 'trajectory artists')
         else
@@ -632,8 +632,8 @@ contains
     !> chunk when picking.
     subroutine chunk_bounds(self, j, first, n, lo, hi)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: j
-        integer, intent(out) :: first, n
+        integer, intent(in) :: j                !! the chunk
+        integer, intent(out) :: first, n        !! its first point (chain index), and points written (0: none)
         real(wp), intent(out) :: lo(3), hi(3)   !! the bounding box's corners
         first = self%chunks(j)%first
         n = self%chunks(j)%n_written
@@ -644,7 +644,7 @@ contains
     !> Point i as written: read back from the buffers (zero if not held).
     function point(self, i) result(v)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                !! chain index
         real(wp) :: v(3)
         real(c_float), dimension(:,:,:), pointer :: p
         integer :: j
@@ -662,7 +662,7 @@ contains
     !> The color of point i of a colored chain, as stored (rgba; white if not colored).
     function point_color(self, i) result(rgba)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                !! chain index
         real(wp) :: rgba(4)
         real(c_float), dimension(:,:), pointer :: c
         integer :: j, lo, hi
@@ -679,7 +679,7 @@ contains
     !> A strip's distance along it at point i, as written.
     function distance(self, i) result(s)
         class(LineChain), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                !! chain index
         real(wp) :: s
         real(c_float), dimension(:,:,:), pointer :: p
         integer :: j
@@ -714,7 +714,7 @@ contains
     !> The point buffer of a line or marker node: (xyz and distance, high/low,
     !> point).
     subroutine line_buffer(line, p)
-        type(c_ptr), intent(in) :: line
+        type(c_ptr), intent(in) :: line                             !! line or marker node
         real(c_float), dimension(:,:,:), pointer, intent(out) :: p  !! (4, 2, capacity); null if none
         integer(c_int) :: capacity
         type(c_ptr) :: data

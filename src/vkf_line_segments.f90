@@ -70,7 +70,7 @@ module vkf_line_segments
             import :: LineSegmentsCallback, CustomLineSegments, wp
             implicit none
             class(LineSegmentsCallback), intent(inout) :: self
-            class(CustomLineSegments), intent(inout) :: segments
+            class(CustomLineSegments), intent(inout) :: segments !! the line segments the callback is set on
             real(wp), intent(in) :: t           !! simulation time (s)
         end subroutine segments_compute
     end interface
@@ -86,7 +86,7 @@ contains
     !> Line segments named `name`, of `color` (for segments set without
     !> colors; default white) and `width` (window units; default 1).
     function new_custom_line_segments(name, color, width) result(s)
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name            !! the frame's name
         real(wp), intent(in), optional :: color(:)      !! [r, g, b] or [r, g, b, a] (0 to 1)
         real(wp), intent(in), optional :: width         !! line width (window units)
         type(CustomLineSegments) :: s
@@ -141,7 +141,7 @@ contains
 
         !> True if x(1:3, :) and y have the same points.
         pure logical function same(x, y)
-            real(wp), intent(in) :: x(:,:), y(:,:)
+            real(wp), intent(in) :: x(:,:), y(:,:)          !! points by column (x: 3 or more rows, y: 3)
             same = size(x, 2) == size(y, 2)
             if (same) same = all(x(1:3, :) == y)
         end function same
@@ -168,7 +168,7 @@ contains
     !> Segment i: its endpoints, and their colors (rgba).
     subroutine segment(self, i, a, b, color_a, color_b)
         class(CustomLineSegments), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! 1 to num_segments
         real(wp), intent(out) :: a(3), b(3)                 !! endpoints (frame coordinates)
         real(wp), intent(out), optional :: color_a(4)       !! color at a: [r, g, b, a]
         real(wp), intent(out), optional :: color_b(4)       !! color at b: [r, g, b, a]
@@ -182,7 +182,7 @@ contains
     function segment_color(self, c, i) result(rgba4)
         type(CustomLineSegments), intent(in) :: self
         real(c_float), allocatable, intent(in) :: c(:,:)    !! (4, n): [r, g, b, a]
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! 1 to num_segments
         real(wp) :: rgba4(4)
         if (allocated(c)) then
             rgba4 = real(c(:, i), wp)
@@ -195,7 +195,7 @@ contains
     !> endpoints and colors.
     subroutine drawn_segment(self, i, a, b, color_a, color_b)
         class(CustomLineSegments), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! 1 to num_drawn
         real(wp), intent(out) :: a(3), b(3)                 !! endpoints (frame coordinates)
         real(wp), intent(out), optional :: color_a(4)       !! color at a: [r, g, b, a]
         real(wp), intent(out), optional :: color_b(4)       !! color at b: [r, g, b, a]
@@ -222,7 +222,7 @@ contains
     !> documentation; it must stay alive while set).
     subroutine set_callback(self, callback)
         class(CustomLineSegments), intent(inout) :: self
-        class(LineSegmentsCallback), intent(in), target :: callback
+        class(LineSegmentsCallback), intent(in), target :: callback !! the callback (not owned)
         self%callback => callback
     end subroutine set_callback
 
@@ -284,7 +284,7 @@ contains
     !> The segments' bounding sphere (frame coordinates).
     subroutine segments_bound(self, center, radius)
         class(CustomLineSegments), intent(in) :: self
-        real(wp), intent(out) :: center(3), radius
+        real(wp), intent(out) :: center(3), radius          !! the bounding sphere, frame coordinates (scene units)
         real(wp) :: lo(3), hi(3)
         center = 0.0_wp
         radius = 0.0_wp

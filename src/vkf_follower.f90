@@ -64,7 +64,7 @@ contains
     !> Follow only `traj` (none if it is not associated).
     subroutine set_trajectory(self, traj)
         class(TrajectoryFollower), intent(inout) :: self
-        type(Trajectory), pointer, intent(in) :: traj
+        type(Trajectory), pointer, intent(in) :: traj       !! the trajectory to follow (not owned; null: none)
         call self%remove_all()
         if (associated(traj)) call self%add_trajectory(traj)
     end subroutine set_trajectory
@@ -72,7 +72,7 @@ contains
     !> Also follow `traj` (no effect if it is already followed).
     subroutine add_trajectory(self, traj)
         class(TrajectoryFollower), intent(inout) :: self
-        type(Trajectory), pointer, intent(in) :: traj
+        type(Trajectory), pointer, intent(in) :: traj       !! the trajectory to add (not owned; null: none)
         type(TrajectoryPointer), allocatable :: tmp(:)
         integer :: k
         if (.not. associated(traj)) return
@@ -93,7 +93,7 @@ contains
     !> Stop following `traj`.
     subroutine remove_trajectory(self, traj)
         class(TrajectoryFollower), intent(inout) :: self
-        type(Trajectory), pointer, intent(in) :: traj
+        type(Trajectory), pointer, intent(in) :: traj       !! the trajectory to stop following
         integer :: k
         do k = 1, self%n
             if (associated(self%trajs(k)%p, traj)) then
@@ -153,7 +153,7 @@ contains
     !> those data.
     logical function set_x_data(self, src) result(valid)
         class(TrajectoryFollower), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! where the x comes from
         self%sources_(1) = src
         self%default_data = .false.
         valid = self%data_valid()
@@ -162,7 +162,7 @@ contains
     !> Where the y of the followed position comes from (see `set_x_data`).
     logical function set_y_data(self, src) result(valid)
         class(TrajectoryFollower), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! where the y comes from
         self%sources_(2) = src
         self%default_data = .false.
         valid = self%data_valid()
@@ -171,7 +171,7 @@ contains
     !> Where the z of the followed position comes from (see `set_x_data`).
     logical function set_z_data(self, src) result(valid)
         class(TrajectoryFollower), intent(inout) :: self
-        type(DataSource), intent(in) :: src
+        type(DataSource), intent(in) :: src                 !! where the z comes from
         self%sources_(3) = src
         self%default_data = .false.
         valid = self%data_valid()
@@ -258,7 +258,7 @@ contains
         real(wp), intent(in) :: sim_time            !! simulation time (s)
         real(wp), intent(inout) :: position(3)      !! the followed position (in the trajectories' frame)
         real(wp), intent(inout) :: attitude(4)      !! the followed attitude (quaternion [x, y, z, w])
-        logical, intent(out) :: has_position, has_attitude
+        logical, intent(out) :: has_position, has_attitude !! (true: position / attitude set)
         type(Trajectory), pointer :: traj
         real(wp) :: t
         integer :: status, i
@@ -284,7 +284,7 @@ contains
     !> For FOLLOW_LOOP, t wrapped into the combined time range of the trajectories.
     real(wp) function wrapped_time(self, t) result(tw)
         type(TrajectoryFollower), intent(in) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the time (s)
         real(wp) :: t0, tf, a, b
         integer :: k
         tw = t
@@ -308,7 +308,7 @@ contains
     !> else the first that does, else the closest.
     integer function chosen_trajectory(self, t) result(k)
         type(TrajectoryFollower), intent(in) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the time (s)
         real(wp) :: dist, min_dist
         integer :: j
         k = 1
@@ -336,11 +336,11 @@ contains
     !> first/last point outside the time range. `status` and `index`: the
     !> trajectory's time_index for t.
     subroutine interpolate_position(traj, sources, t, status, index, position, ok)
-        type(Trajectory), intent(in) :: traj
-        type(DataSource), intent(in) :: sources(3)
-        real(wp), intent(in) :: t
-        integer, intent(in) :: status, index
-        real(wp), intent(inout) :: position(3)
+        type(Trajectory), intent(in) :: traj        !! the trajectory
+        type(DataSource), intent(in) :: sources(3)  !! where the position's x, y, z come from
+        real(wp), intent(in) :: t                   !! the time (s)
+        integer, intent(in) :: status, index        !! traj%time_index's result and index for t
+        real(wp), intent(inout) :: position(3)      !! the interpolated position
         logical, intent(out) :: ok                  !! false if there is no position (position unchanged)
         integer :: n, i
         ok = .false.
@@ -366,9 +366,9 @@ contains
     !> Slerp of the attitude at time t; the first/last attitude outside the time
     !> range. `status` and `index`: the trajectory's time_index for t.
     subroutine interpolate_attitude(traj, t, status, index, attitude, ok)
-        type(Trajectory), intent(in) :: traj
-        real(wp), intent(in) :: t
-        integer, intent(in) :: status, index
+        type(Trajectory), intent(in) :: traj        !! the trajectory
+        real(wp), intent(in) :: t                   !! the time (s)
+        integer, intent(in) :: status, index        !! traj%time_index's result and index for t
         real(wp), intent(inout) :: attitude(4)      !! quaternion [x, y, z, w]
         logical, intent(out) :: ok                  !! false if there is no attitude (attitude unchanged)
         integer :: n, i

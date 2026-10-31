@@ -190,8 +190,8 @@ contains
     !> A frame named `name`, with decorations of color `color` ([r, g, b] or
     !> [r, g, b, a], 0 to 1; default white, 90% opaque).
     function new_reference_frame(name, color) result(frame)
-        character(len=*), intent(in) :: name
-        real(wp), intent(in), optional :: color(:)
+        character(len=*), intent(in) :: name                !! the frame's name (shown by its name label)
+        real(wp), intent(in), optional :: color(:)          !! [r, g, b] or [r, g, b, a] (0 to 1; default white, 90% opaque)
         type(ReferenceFrame) :: frame
         frame%name_ = name
         if (present(color)) call frame%set_color(color)
@@ -204,7 +204,7 @@ contains
     !> readout that follows the frame).
     subroutine set_name(self, name)
         class(ReferenceFrame), intent(inout) :: self
-        character(len=*), intent(in) :: name
+        character(len=*), intent(in) :: name                !! the name (shown by the name label)
         self%name_ = name
         if (c_associated(self%name_text)) call check_status(vkf_label_set_text(self%name_text, name, len(name, kind=c_int)))
     end subroutine set_name
@@ -223,7 +223,7 @@ contains
     !> The color of the frame's decorations: [r, g, b] (alpha unchanged) or [r, g, b, a].
     subroutine set_color(self, color)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: color(:)
+        real(wp), intent(in) :: color(:)                    !! [r, g, b] (alpha unchanged) or [r, g, b, a] (0 to 1)
         integer :: n
         n = min(4, size(color))
         self%color_(1:n) = color(1:n)
@@ -257,7 +257,7 @@ contains
     !> (normalized here; overridden by a followed trajectory).
     subroutine set_attitude(self, q)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: q(4)
+        real(wp), intent(in) :: q(4)                        !! attitude quaternion [x, y, z, w] (normalized here)
         self%attitude_ = quat_normalize(q)
     end subroutine set_attitude
 
@@ -288,7 +288,7 @@ contains
     !> coordinates, from both frames' transforms to the root (through their
     !> first parents).
     function position_of(self, other) result(p)
-        class(ReferenceFrame), intent(in) :: self, other
+        class(ReferenceFrame), intent(in) :: self, other    !! (other: a frame of the same tree)
         real(wp) :: p(3)
         real(wp) :: m(4,4)
         m = matmul(rigid_inverse(self%world_matrix()), other%world_matrix())
@@ -301,7 +301,7 @@ contains
     !> Which axes vectors to show: NO_AXES, or X_AXIS, Y_AXIS, Z_AXIS combined with ior.
     subroutine show_axes(self, axes)
         class(ReferenceFrame), intent(inout) :: self
-        integer, intent(in) :: axes
+        integer, intent(in) :: axes                         !! NO_AXES, or X_AXIS, Y_AXIS, Z_AXIS combined with ior
         self%axes = iand(axes, ALL_AXES)
         call update_switches(self)
     end subroutine show_axes
@@ -315,7 +315,7 @@ contains
     !> Which axes labels to show (as `show_axes`).
     subroutine show_axes_labels(self, labels)
         class(ReferenceFrame), intent(inout) :: self
-        integer, intent(in) :: labels
+        integer, intent(in) :: labels                       !! NO_AXES, or X_AXIS, Y_AXIS, Z_AXIS combined with ior
         self%axes_labels = iand(labels, ALL_AXES)
         call update_switches(self)
     end subroutine show_axes_labels
@@ -350,7 +350,7 @@ contains
     !> default, as OpenFrames').
     subroutine set_name_label_on_top(self, on_top)
         class(ReferenceFrame), intent(inout) :: self
-        logical, intent(in) :: on_top
+        logical, intent(in) :: on_top                       !! (true: drawn on top of the scene; false: depth-tested)
         self%name_on_top = on_top
         if (c_associated(self%name_text)) &
             call check_status(vkf_label_set_on_top(self%name_text, merge(1_c_int, 0_c_int, on_top)))
@@ -371,7 +371,7 @@ contains
     !> The text of the x-axis label (default 'X').
     subroutine set_x_label(self, text)
         class(ReferenceFrame), intent(inout) :: self
-        character(len=*), intent(in) :: text
+        character(len=*), intent(in) :: text                !! the x-axis label (default 'X')
         self%x_label_ = text
         if (self%realized) call make_axis(self, 1)
     end subroutine set_x_label
@@ -379,7 +379,7 @@ contains
     !> The text of the y-axis label (default 'Y').
     subroutine set_y_label(self, text)
         class(ReferenceFrame), intent(inout) :: self
-        character(len=*), intent(in) :: text
+        character(len=*), intent(in) :: text                !! the y-axis label (default 'Y')
         self%y_label_ = text
         if (self%realized) call make_axis(self, 2)
     end subroutine set_y_label
@@ -387,7 +387,7 @@ contains
     !> The text of the z-axis label (default 'Z').
     subroutine set_z_label(self, text)
         class(ReferenceFrame), intent(inout) :: self
-        character(len=*), intent(in) :: text
+        character(len=*), intent(in) :: text                !! the z-axis label (default 'Z')
         self%z_label_ = text
         if (self%realized) call make_axis(self, 3)
     end subroutine set_z_label
@@ -395,7 +395,7 @@ contains
     !> The label text of axis X_AXIS, Y_AXIS or Z_AXIS.
     function axis_label(self, axis) result(text)
         class(ReferenceFrame), intent(in) :: self
-        integer, intent(in) :: axis
+        integer, intent(in) :: axis                         !! X_AXIS, Y_AXIS or Z_AXIS (else: '')
         character(len=:), allocatable :: text
         select case (axis)
         case (X_AXIS)
@@ -416,7 +416,7 @@ contains
     !> path) or a full path; default: the renderer's default font.
     subroutine set_label_font(self, font)
         class(ReferenceFrame), intent(inout) :: self
-        character(len=*), intent(in) :: font
+        character(len=*), intent(in) :: font                !! a font file name (on the data search path) or a full path
         self%label_font_ = font
         if (.not. self%realized) return
         call make_name_label(self)                              ! (another font: made again)
@@ -438,7 +438,7 @@ contains
     !> and the maximum size of the axes labels (which shrink with distance).
     subroutine set_label_size(self, size)
         class(ReferenceFrame), intent(inout) :: self
-        integer, intent(in) :: size
+        integer, intent(in) :: size                         !! pixels (default 20)
         self%label_size_ = size
         call relayout_labels(self)
     end subroutine set_label_size
@@ -453,7 +453,7 @@ contains
     !> default ALIGN_LEFT_BASE_LINE).
     subroutine set_label_alignment(self, alignment)
         class(ReferenceFrame), intent(inout) :: self
-        integer, intent(in) :: alignment
+        integer, intent(in) :: alignment                    !! ALIGN_* (default ALIGN_LEFT_BASE_LINE)
         self%label_alignment_ = alignment
         call relayout_labels(self)
     end subroutine set_label_alignment
@@ -470,7 +470,7 @@ contains
     !> window's own light (WindowProxy%set_light_*) is off.
     subroutine set_light_source_enabled(self, enable)
         class(ReferenceFrame), intent(inout) :: self
-        logical, intent(in) :: enable
+        logical, intent(in) :: enable                       !! (true: a point light at the frame's origin)
         self%light_source = enable
         if (self%realized .and. enable .and. .not. c_associated(self%light_node)) call build_light(self)
         if (c_associated(self%light_switch)) &
@@ -498,7 +498,7 @@ contains
     !> to 1; defaults 0.05, 0.8 and 0.05 gray).
     subroutine set_light_ambient(self, rgb)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: rgb(3)
+        real(wp), intent(in) :: rgb(3)                      !! ambient color [r, g, b] (0 to 1; default 0.05 gray)
         self%light_ambient_ = rgb
         call apply_light(self)
     end subroutine set_light_ambient
@@ -506,7 +506,7 @@ contains
     !> The light source's diffuse color (see `set_light_ambient`).
     subroutine set_light_diffuse(self, rgb)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: rgb(3)
+        real(wp), intent(in) :: rgb(3)                      !! diffuse color [r, g, b] (0 to 1; default 0.8 gray)
         self%light_diffuse_ = rgb
         call apply_light(self)
     end subroutine set_light_diffuse
@@ -514,7 +514,7 @@ contains
     !> The light source's specular color (see `set_light_ambient`).
     subroutine set_light_specular(self, rgb)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: rgb(3)
+        real(wp), intent(in) :: rgb(3)                      !! specular color [r, g, b] (0 to 1; default 0.05 gray)
         self%light_specular_ = rgb
         call apply_light(self)
     end subroutine set_light_specular
@@ -563,7 +563,7 @@ contains
     !> axes, labels or children.
     subroutine show_contents(self, show)
         class(ReferenceFrame), intent(inout) :: self
-        logical, intent(in) :: show
+        logical, intent(in) :: show                         !! (true: shown)
         self%contents = show
         if (c_associated(self%contents_node)) call check_status(vkf_switch_set(self%contents_node, merge(1_c_int, 0_c_int, show)))
     end subroutine show_contents
@@ -579,7 +579,7 @@ contains
     !> not by their own setting.
     subroutine set_pickable(self, pickable)
         class(ReferenceFrame), intent(inout) :: self
-        logical, intent(in) :: pickable
+        logical, intent(in) :: pickable                     !! (true: tested by `pick`)
         self%pickable_ = pickable
     end subroutine set_pickable
 
@@ -615,9 +615,9 @@ contains
     !> on the ellipsoid if `geodetic`); true if hit.
     logical function pick_ellipsoid(self, cam, to_root, center, axes, radii, geodetic, hits, n) result(hit)
         class(ReferenceFrame), intent(in), target :: self
-        type(PickCamera), intent(in) :: cam
+        type(PickCamera), intent(in) :: cam                 !! the cursor's ray and the pick's settings
         real(wp), intent(in) :: to_root(4,4), center(3), axes(3,3), radii(3)  !! center, axes: frame coordinates
-        logical, intent(in) :: geodetic
+        logical, intent(in) :: geodetic                     !! (true: also the hit's geodetic latitude and longitude)
         type(PickHit), allocatable, intent(inout) :: hits(:)  !! hits so far (grown as needed)
         integer, intent(inout) :: n                         !! number of hits in hits
         type(PickHit) :: h
@@ -646,7 +646,7 @@ contains
     subroutine add_pick_hit(hits, n, hit)
         type(PickHit), allocatable, intent(inout) :: hits(:)  !! grown as needed
         integer, intent(inout) :: n                         !! number of hits in hits
-        type(PickHit), intent(in) :: hit
+        type(PickHit), intent(in) :: hit                    !! the hit to add
         type(PickHit), allocatable :: more(:)
         if (.not. allocated(hits)) allocate(hits(8))
         if (n == size(hits)) then
@@ -676,23 +676,23 @@ contains
     subroutine move_x_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: base(3), length             !! (base: frame's coordinates)
-        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius !! defaults: 0.3; 0.05 and 0.1 of the length
         call move_axis(self, 1, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_x_axis
 
     !> Place the y axis vector (as `move_x_axis`; OpenFrames' moveYAxis).
     subroutine move_y_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: base(3), length
-        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        real(wp), intent(in) :: base(3), length             !! (base: frame's coordinates)
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius !! defaults: 0.3; 0.05 and 0.1 of the length
         call move_axis(self, 2, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_y_axis
 
     !> Place the z axis vector (as `move_x_axis`; OpenFrames' moveZAxis).
     subroutine move_z_axis(self, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
-        real(wp), intent(in) :: base(3), length
-        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        real(wp), intent(in) :: base(3), length             !! (base: frame's coordinates)
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius !! defaults: 0.3; 0.05 and 0.1 of the length
         call move_axis(self, 3, base, length, head_ratio, body_radius, head_radius)
     end subroutine move_z_axis
 
@@ -700,8 +700,8 @@ contains
     subroutine move_axis(self, k, base, length, head_ratio, body_radius, head_radius)
         class(ReferenceFrame), intent(inout) :: self
         integer, intent(in) :: k                            !! the axis: 1 (x), 2 (y) or 3 (z)
-        real(wp), intent(in) :: base(3), length
-        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius
+        real(wp), intent(in) :: base(3), length             !! (base: frame's coordinates)
+        real(wp), intent(in), optional :: head_ratio, body_radius, head_radius !! defaults: 0.3; 0.05 and 0.1 of the length
         self%axis_base(:, k) = base
         self%axis_len(k) = length
         self%axis_head_ratio(k) = 0.3_wp
@@ -758,7 +758,7 @@ contains
     !> ```
     logical function add_child(self, child) result(ok)
         class(ReferenceFrame), intent(inout), target :: self
-        class(ReferenceFrame), intent(inout), target :: child
+        class(ReferenceFrame), intent(inout), target :: child !! the frame to add (not owned)
         ok = .false.
         if (same_frame(self, child)) return
         if (self%child_index(child) > 0) then
@@ -785,7 +785,7 @@ contains
     !> Remove `child` from this frame's children. Returns false if it is not one.
     logical function remove_child(self, child) result(ok)
         class(ReferenceFrame), intent(inout), target :: self
-        class(ReferenceFrame), intent(inout), target :: child
+        class(ReferenceFrame), intent(inout), target :: child !! the child to remove
         ok = remove(self%children, self%n_children, child)
         if (ok) ok = remove(child%parents, child%n_parents, self)
         if (ok .and. self%realized .and. child%realized) call check_status(vkf_node_remove_child(self%node_, child%node_))
@@ -813,7 +813,7 @@ contains
     !> Child i (1 to num_children).
     function child(self, i) result(c)
         class(ReferenceFrame), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! 1 to num_children
         class(ReferenceFrame), pointer :: c
         c => self%children(i)%p
     end function child
@@ -821,7 +821,7 @@ contains
     !> Index of `frame` among the children, or 0.
     integer function child_index(self, frame)
         class(ReferenceFrame), intent(in) :: self
-        class(ReferenceFrame), intent(in), target :: frame
+        class(ReferenceFrame), intent(in), target :: frame  !! the frame to find
         child_index = find(self%children, self%n_children, frame)
     end function child_index
 
@@ -834,7 +834,7 @@ contains
     !> Parent i (1 to num_parents).
     function parent(self, i) result(p)
         class(ReferenceFrame), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! 1 to num_parents
         class(ReferenceFrame), pointer :: p
         p => self%parents(i)%p
     end function parent
@@ -842,7 +842,7 @@ contains
     !> Index of `frame` among the parents, or 0.
     integer function parent_index(self, frame)
         class(ReferenceFrame), intent(in) :: self
-        class(ReferenceFrame), intent(in), target :: frame
+        class(ReferenceFrame), intent(in), target :: frame  !! the frame to find
         parent_index = find(self%parents, self%n_parents, frame)
     end function parent_index
 
@@ -1088,8 +1088,8 @@ contains
     !> Put `new` in `switch` in place of `old` (a kept handle, deleted).
     subroutine replace_child(self, switch, old, new)
         class(ReferenceFrame), intent(in) :: self
-        type(c_ptr), intent(in) :: switch, new
-        type(c_ptr), intent(inout) :: old
+        type(c_ptr), intent(in) :: switch, new              !! the switch; the new node (may be null)
+        type(c_ptr), intent(inout) :: old                   !! the node replaced (deleted; set to new)
         if (c_associated(old)) then
             call check_status(vkf_node_remove_child(switch, old))
             call vkf_node_delete(old)
@@ -1121,7 +1121,7 @@ contains
 
     !> True if `a` and `b` are the same frame (object).
     logical function same_frame(a, b)
-        class(ReferenceFrame), intent(in), target :: a, b
+        class(ReferenceFrame), intent(in), target :: a, b   !! the frames compared
         class(ReferenceFrame), pointer :: pa
         pa => a
         same_frame = associated(pa, b)
@@ -1129,7 +1129,7 @@ contains
 
     !> True if `frame` is `root` or one of its descendants.
     recursive logical function is_descendant(root, frame) result(yes)
-        class(ReferenceFrame), intent(in), target :: root, frame
+        class(ReferenceFrame), intent(in), target :: root, frame !! the subtree's root; the frame looked for
         integer :: k
         yes = same_frame(root, frame)
         do k = 1, root%n_children
@@ -1141,8 +1141,8 @@ contains
     !> Index of `frame` in list(1:n), or 0.
     integer function find(list, n, frame)
         type(FramePointer), allocatable, intent(in) :: list(:)  !! first n used
-        integer, intent(in) :: n
-        class(ReferenceFrame), intent(in), target :: frame
+        integer, intent(in) :: n                            !! number of frames in list
+        class(ReferenceFrame), intent(in), target :: frame  !! the frame to find
         integer :: k
         find = 0
         do k = 1, n
@@ -1156,8 +1156,8 @@ contains
     !> Add `frame` to list(1:n) (growing the array).
     subroutine append(list, n, frame)
         type(FramePointer), allocatable, intent(inout) :: list(:)  !! first n used (grown as needed)
-        integer, intent(inout) :: n
-        class(ReferenceFrame), intent(in), target :: frame
+        integer, intent(inout) :: n                         !! number of frames in list (incremented)
+        class(ReferenceFrame), intent(in), target :: frame  !! the frame to add (not owned)
         type(FramePointer), allocatable :: tmp(:)
         if (.not. allocated(list)) allocate(list(4))
         if (n == size(list)) then
@@ -1172,8 +1172,8 @@ contains
     !> Remove `frame` from list(1:n); false if it is not in it.
     logical function remove(list, n, frame)
         type(FramePointer), allocatable, intent(inout) :: list(:)  !! first n used
-        integer, intent(inout) :: n
-        class(ReferenceFrame), intent(in), target :: frame
+        integer, intent(inout) :: n                         !! number of frames in list (decremented if removed)
+        class(ReferenceFrame), intent(in), target :: frame  !! the frame to remove
         integer :: k
         k = find(list, n, frame)
         remove = k > 0

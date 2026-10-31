@@ -173,7 +173,7 @@ contains
         real(wp), intent(in), optional :: min_mag, max_mag  !! apparent magnitudes
         real(wp), intent(in), optional :: min_size, max_size  !! window units
         real(wp), intent(in), optional :: min_dim_ratio     !! 0 to 1
-        integer, intent(in), optional :: max_stars
+        integer, intent(in), optional :: max_stars          !! the most stars drawn (default 10000; >= 1)
         real(wp) :: mags(2), sizes(2), dim
         integer :: n
         mags = [self%min_mag, self%max_mag]
@@ -791,7 +791,7 @@ contains
     !> The text of `line` after its first n fields (separated by blanks or
     !> tabs), trimmed: a star's name ('' if none: e.g. without a color index).
     pure function after_fields(line, n) result(rest)
-        character(len=*), intent(in) :: line
+        character(len=*), intent(in) :: line                !! a line of the star catalog
         integer, intent(in) :: n                            !! fields skipped
         character(len=:), allocatable :: rest
         character(len=*), parameter :: blanks = ' '//achar(9)//achar(13)
@@ -815,7 +815,7 @@ contains
 
     !> The number of columns of a (the stars' capacity).
     pure integer function size_of(a)
-        real(c_float), intent(in) :: a(:,:)
+        real(c_float), intent(in) :: a(:,:)                 !! (8, capacity): the stars array
         size_of = size(a, 2)
     end function size_of
 

@@ -127,7 +127,7 @@ contains
         integer, intent(in) :: src                      !! a SOURCE_* constant
         integer, intent(in), optional :: element        !! element (1 to dof, or 1 to 4 for an attitude; default 1)
         integer, intent(in), optional :: opt            !! (0: the position (default), k: optional k)
-        real(wp), intent(in), optional :: scale
+        real(wp), intent(in), optional :: scale         !! factor the value is multiplied by (default 1)
         type(DataSource) :: s
         s%src = src
         if (present(element)) s%element = element
@@ -151,8 +151,8 @@ contains
     !> point, for SegmentArtist%set_end_data with relative ends.
     pure function optional_sources(opt, dof, scale) result(s)
         integer, intent(in) :: opt      !! the optional (1 to num_optionals)
-        integer, intent(in), optional :: dof
-        real(wp), intent(in), optional :: scale
+        integer, intent(in), optional :: dof !! degrees of freedom (default 3)
+        real(wp), intent(in), optional :: scale !! factor (default 1)
         type(DataSource) :: s(3)
         integer :: k, d
         d = 3
@@ -255,7 +255,7 @@ contains
     !> Set the degrees of freedom (2 or 3) of positions and optionals; clears the trajectory.
     subroutine set_dof(self, dof)
         class(Trajectory), intent(inout) :: self
-        integer, intent(in) :: dof
+        integer, intent(in) :: dof                          !! degrees of freedom (2 or 3)
         self%dof_ = max(2, min(3, dof))
         call self%clear()
     end subroutine set_dof
@@ -269,7 +269,7 @@ contains
     !> Set the number of optional vectors per position; clears the trajectory.
     subroutine set_num_optionals(self, nopt)
         class(Trajectory), intent(inout) :: self
-        integer, intent(in) :: nopt
+        integer, intent(in) :: nopt                         !! optional vectors per position (>= 0)
         if (nopt /= self%nopt_ .and. allocated(self%posopt)) deallocate(self%posopt)
         self%nopt_ = max(0, nopt)
         call self%clear()
@@ -330,7 +330,7 @@ contains
     !> Add a time at the end of the time list.
     subroutine add_time(self, t)
         class(Trajectory), intent(inout) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the time
         call grow_times(self, self%n_times + 1)
         self%n_times = self%n_times + 1
         self%t(self%n_times) = t
@@ -341,7 +341,7 @@ contains
     !> time that has none. `ok` is false if every time already has a position.
     subroutine add_position(self, pos, ok)
         class(Trajectory), intent(inout) :: self
-        real(wp), intent(in) :: pos(:)
+        real(wp), intent(in) :: pos(:)          !! position (first `dof` elements used)
         logical, intent(out), optional :: ok    !! false if not added
         integer :: d
         if (present(ok)) ok = .false.
@@ -489,14 +489,14 @@ contains
     !> Time i.
     pure real(wp) function time(self, i)
         class(Trajectory), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the time (1 to num_times)
         time = self%t(i)
     end function time
 
     !> Position i (z = 0 for a 2-DOF trajectory).
     pure function position(self, i) result(p)
         class(Trajectory), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the position (1 to num_positions)
         real(wp) :: p(3)
         p = self%posopt(:, 0, i)
     end function position
@@ -504,7 +504,7 @@ contains
     !> Attitude i (quaternion [x, y, z, w]).
     pure function attitude(self, i) result(q)
         class(Trajectory), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the attitude (1 to num_attitudes)
         real(wp) :: q(4)
         q = self%att(:, i)
     end function attitude
@@ -512,7 +512,7 @@ contains
     !> Color i ([r, g, b, a]).
     pure function color(self, i) result(c)
         class(Trajectory), intent(in) :: self
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the color (1 to num_colors)
         real(wp) :: c(4)
         c = real(self%col(:, i), wp)
     end function color
@@ -520,7 +520,7 @@ contains
     !> Optional vector k (1 to num_optionals) of position i.
     pure function optional(self, i, k) result(v)
         class(Trajectory), intent(in) :: self
-        integer, intent(in) :: i, k
+        integer, intent(in) :: i, k                         !! the position (1 to num_positions); the optional (1 to num_optionals)
         real(wp) :: v(3)
         v = self%posopt(:, k, i)
     end function optional
@@ -528,7 +528,7 @@ contains
     !> Pointer to the times (num_times), without copying.
     subroutine times(self, t)
         class(Trajectory), intent(in), target :: self
-        real(wp), dimension(:), pointer, intent(out) :: t
+        real(wp), dimension(:), pointer, intent(out) :: t   !! (num_times): times (null if none)
         if (self%n_times == 0) then
             t => null()
         else
@@ -539,7 +539,7 @@ contains
     !> Pointer to the positions (3, num_positions), without copying.
     subroutine positions(self, p)
         class(Trajectory), intent(in), target :: self
-        real(wp), dimension(:,:), pointer, intent(out) :: p
+        real(wp), dimension(:,:), pointer, intent(out) :: p !! (3, num_positions): positions (null if none)
         if (self%n_pos == 0) then
             p => null()
         else
@@ -550,7 +550,7 @@ contains
     !> Pointer to the attitudes (4, num_attitudes), without copying.
     subroutine attitudes(self, q)
         class(Trajectory), intent(in), target :: self
-        real(wp), dimension(:,:), pointer, intent(out) :: q
+        real(wp), dimension(:,:), pointer, intent(out) :: q !! (4, num_attitudes): quaternions [x, y, z, w] (null if none)
         if (self%n_att == 0) then
             q => null()
         else
@@ -562,7 +562,7 @@ contains
     !> without copying.
     subroutine colors(self, c)
         class(Trajectory), intent(in), target :: self
-        real(c_float), dimension(:,:), pointer, intent(out) :: c
+        real(c_float), dimension(:,:), pointer, intent(out) :: c !! (4, num_colors): colors [r, g, b, a] (null if none)
         if (self%n_col == 0) then
             c => null()
         else
@@ -573,7 +573,7 @@ contains
     !> The first and last times, ordered (t0 <= tf); false if there are no times.
     logical function time_range(self, t0, tf)
         class(Trajectory), intent(in) :: self
-        real(wp), intent(out) :: t0, tf
+        real(wp), intent(out) :: t0, tf                     !! first and last times (t0 <= tf; 0 if no times)
         time_range = self%n_times > 0
         if (.not. time_range) then
             t0 = 0.0_wp
@@ -589,7 +589,7 @@ contains
     !> (OpenFrames' getTimeDistance.)
     pure real(wp) function time_distance(self, t)
         class(Trajectory), intent(in) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! the time
         real(wp) :: t0, tf
         if (self%n_times == 0) then
             time_distance = huge(1.0_wp)
@@ -613,7 +613,7 @@ contains
     !> `index` in the other cases.
     integer function time_index(self, t, index) result(status)
         class(Trajectory), intent(in) :: self
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                       !! the time
         integer, intent(out) :: index                   !! the interval's first index (see the TIME_* constants)
         integer :: low, high, mid, iter, n
         real(wp) :: dir, dist
@@ -714,8 +714,8 @@ contains
     !> use `verify_data` and `num_points` first.
     pure function point(self, i, sources) result(v)
         class(Trajectory), intent(in) :: self
-        integer, intent(in) :: i
-        type(DataSource), intent(in) :: sources(3)
+        integer, intent(in) :: i                            !! the point (1 to num_points(sources))
+        type(DataSource), intent(in) :: sources(3)          !! where the components come from
         real(wp) :: v(3)
         integer :: k
         do k = 1, 3
@@ -737,8 +737,8 @@ contains
     !> slice per component). No checks: use `verify_data` and `num_points` first.
     pure subroutine points(self, i1, i2, sources, v, stride)
         class(Trajectory), intent(in) :: self
-        integer, intent(in) :: i1, i2
-        type(DataSource), intent(in) :: sources(3)
+        integer, intent(in) :: i1, i2                   !! first and last points (1 to num_points(sources))
+        type(DataSource), intent(in) :: sources(3)      !! where the components come from
         real(wp), intent(out) :: v(:,:)                 !! (3, number of points)
         integer, intent(in), optional :: stride         !! step between points (default 1)
         integer :: k, s
@@ -764,7 +764,7 @@ contains
     !> optionals in range).
     pure logical function verify_data(self, sources)
         class(Trajectory), intent(in) :: self
-        type(DataSource), intent(in) :: sources(3)
+        type(DataSource), intent(in) :: sources(3)          !! where the components come from
         integer :: k
         verify_data = .true.
         do k = 1, 3
@@ -785,7 +785,7 @@ contains
     !> limited by the positions or attitudes they use; huge() if all are zero.
     pure integer function num_points(self, sources)
         class(Trajectory), intent(in) :: self
-        type(DataSource), intent(in) :: sources(3)
+        type(DataSource), intent(in) :: sources(3)          !! where the components come from
         integer :: k
         if (all(sources%src == SOURCE_ZERO)) then
             num_points = huge(0)
@@ -807,7 +807,7 @@ contains
     pure integer function new_capacity(current, needed, exact)
         integer, intent(in) :: current                  !! current capacity
         integer, intent(in) :: needed                   !! points needed
-        logical, intent(in), optional :: exact
+        logical, intent(in), optional :: exact          !! (true: what is needed (default false))
         new_capacity = max(needed + needed / 4, 2 * current, 16)
         if (present(exact)) then
             if (exact) new_capacity = needed
@@ -817,8 +817,8 @@ contains
     !> Grow the times' storage to hold at least `n` (see `new_capacity`).
     subroutine grow_times(self, n, exact)
         type(Trajectory), intent(inout) :: self
-        integer, intent(in) :: n
-        logical, intent(in), optional :: exact
+        integer, intent(in) :: n                            !! times to hold
+        logical, intent(in), optional :: exact              !! (true: exactly n (default false))
         real(wp), allocatable :: tmp(:)
         integer :: cap
         cap = 0
@@ -832,8 +832,8 @@ contains
     !> Grow the positions' (and optionals') storage to hold at least `n`.
     subroutine grow_positions(self, n, exact)
         type(Trajectory), intent(inout) :: self
-        integer, intent(in) :: n
-        logical, intent(in), optional :: exact
+        integer, intent(in) :: n                            !! positions to hold
+        logical, intent(in), optional :: exact              !! (true: exactly n (default false))
         real(wp), allocatable :: tmp(:,:,:)
         integer :: cap
         cap = 0
@@ -847,8 +847,8 @@ contains
     !> Grow the attitudes' storage to hold at least `n`.
     subroutine grow_attitudes(self, n, exact)
         type(Trajectory), intent(inout) :: self
-        integer, intent(in) :: n
-        logical, intent(in), optional :: exact
+        integer, intent(in) :: n                            !! attitudes to hold
+        logical, intent(in), optional :: exact              !! (true: exactly n (default false))
         real(wp), allocatable :: tmp(:,:)
         integer :: cap
         cap = 0
@@ -862,8 +862,8 @@ contains
     !> Grow the colors' storage to hold at least `n`.
     subroutine grow_colors(self, n, exact)
         type(Trajectory), intent(inout) :: self
-        integer, intent(in) :: n
-        logical, intent(in), optional :: exact
+        integer, intent(in) :: n                            !! colors to hold
+        logical, intent(in), optional :: exact              !! (true: exactly n (default false))
         real(c_float), allocatable :: tmp(:,:)
         integer :: cap
         cap = 0
