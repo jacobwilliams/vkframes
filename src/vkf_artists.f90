@@ -152,11 +152,100 @@ module vkf_artists
         real(wp) :: pulse_period = 1.5_wp           !! (s)
     end type HighlightStyle
 
+    !> The base of the artists drawing a trajectory's points through one chain
+    !> of buffers (CurveArtist: a line, a chain point per trajectory point;
+    !> RibbonArtist: a surface, a pair of chain points per trajectory point):
+    !> the chain and how much of it is written and drawn, the trace tail, the
+    !> trajectory's colors, and the update (chain_update: the points written
+    !> as they change, then drawn all or, in trace mode, those passed and the
+    !> tail to the point at the current time). Each extension says what its
+    !> chain is (chain_kind), how many points it draws (points), its tail's
+    !> node (new_tail), its style (apply_style), how its points are written
+    !> (write_points) and its tail drawn (draw_tail).
+    type, abstract, extends(TrajectoryArtist) :: ChainArtist
+        private
+        logical :: point_colors_ = .true.           !! the trajectory's colors, if any (see set_point_colors)
+        ! rendering
+        type(c_ptr) :: group = c_null_ptr           !! the chain's group (to make it again, colored or not)
+        logical :: compile = .false.                !! (chunks made later are compiled)
+        type(LineChain) :: chain                    !! the buffers
+        type(c_ptr) :: tail = c_null_ptr            !! to the point at the current time (trace mode)
+        integer :: n_written = 0                    !! trajectory points written to the chain
+        integer :: n_drawn = 0                      !! trajectory points drawn from it
+        integer :: first_drawn_ = 1                 !! the first of them (trace mode, decreasing times: later)
+        integer :: n_colored = 0                    !! points written with the trajectory's own colors
+        logical :: tail_shown = .false.             !! the tail is drawn
+        real(wp) :: tail_time = huge(1.0_wp)        !! the time the tail was drawn for
+    contains
+        procedure :: set_point_colors, point_colors
+        procedure :: num_chunks, num_drawn, first_drawn
+        procedure :: build => chain_build
+        procedure :: update => chain_update
+        procedure :: release => chain_release
+        procedure :: init_chain => chain_init
+        procedure(chain_kind_interface), deferred :: chain_kind
+        procedure(chain_points_interface), deferred :: points
+        procedure(new_tail_interface), deferred :: new_tail
+        procedure(apply_style_interface), deferred :: apply_style
+        procedure(write_points_interface), deferred :: write_points
+        procedure(draw_tail_interface), deferred :: draw_tail
+    end type ChainArtist
+
+    abstract interface
+        !> The kind of chain (LineChain's CHAIN_STRIP or CHAIN_RIBBON).
+        pure integer function chain_kind_interface(self)
+            import :: ChainArtist
+            implicit none
+            class(ChainArtist), intent(in) :: self
+        end function chain_kind_interface
+
+        !> The number of trajectory points to draw (0 if none).
+        integer function chain_points_interface(self) result(n)
+            import :: ChainArtist
+            implicit none
+            class(ChainArtist), intent(in) :: self
+        end function chain_points_interface
+
+        !> The trace tail's node (null on failure), made with the chain.
+        function new_tail_interface(self) result(node)
+            import :: ChainArtist, c_ptr
+            implicit none
+            class(ChainArtist), intent(in) :: self
+            type(c_ptr) :: node
+        end function new_tail_interface
+
+        !> The style (the artist's color, width, ...) given to the chain and the tail.
+        subroutine apply_style_interface(self)
+            import :: ChainArtist
+            implicit none
+            class(ChainArtist), intent(inout) :: self
+        end subroutine apply_style_interface
+
+        !> Write trajectory points i1 .. i2 into the chain (and upload the chunks written to).
+        subroutine write_points_interface(self, i1, i2)
+            import :: ChainArtist
+            implicit none
+            class(ChainArtist), intent(inout) :: self
+            integer, intent(in) :: i1, i2                   !! the trajectory points
+        end subroutine write_points_interface
+
+        !> The trace tail: from point k (the latest passed) to the point
+        !> interpolated at time t toward point k2 (the next in time); none if
+        !> either isn't a point written.
+        subroutine draw_tail_interface(self, t, k, k2)
+            import :: ChainArtist, wp
+            implicit none
+            class(ChainArtist), intent(inout) :: self
+            real(wp), intent(in) :: t                       !! the current time
+            integer, intent(in) :: k, k2                    !! the tail's ends (0: none)
+        end subroutine draw_tail_interface
+    end interface
+
     !> Draws a trajectory's points connected by a line (OpenFrames' CurveArtist).
     !> The x, y and z of the points come from data sources (default: the
     !> trajectory's positions). The line is in the artist's color, or in the
     !> trajectory's point colors if it has any (see the module documentation).
-    type, extends(TrajectoryArtist), public :: CurveArtist
+    type, extends(ChainArtist), public :: CurveArtist
         private
         type(DataSource) :: sources_(3)             !! x, y, z data sources (default: the positions)
         logical :: default_data = .true.            !! sources not set: the positions, per the DOF
@@ -165,21 +254,10 @@ module vkf_artists
         integer :: pattern_factor = 1               !! window units per pattern bit (>= 1)
         integer :: pattern_ = int(z'FFFF')          !! 16-bit dash pattern (z'FFFF': solid)
         logical :: lod_ = .true.                    !! level of detail (see set_level_of_detail)
-        logical :: point_colors_ = .true.           !! the trajectory's colors, if any (see set_point_colors)
         type(HighlightStyle) :: highlight_          !! (see set_highlight)
         type(TrailStyle) :: trail_                  !! (see set_trail)
-        ! rendering
-        type(c_ptr) :: group = c_null_ptr           !! the chain's group (to make it again, colored or not)
-        logical :: compile = .false.                !! (chunks made later are compiled)
-        type(LineChain) :: chain                    !! the line buffers (a strip)
-        integer :: n_colored = 0                    !! points written with the trajectory's own colors
-        type(c_ptr) :: tail = c_null_ptr            !! the line to the point at the current time (trace mode)
-        integer :: n_written = 0                    !! points written to the chain
-        integer :: n_drawn = 0                      !! points drawn from it
-        integer :: first_drawn_ = 1                 !! the first of them (trace mode, decreasing times: later)
-        logical :: tail_shown = .false.             !! the tail is drawn
+        ! rendering (the chain: a line strip; the tail: a line of two points)
         integer :: tail_from = 0, tail_to = 0       !! the tail: from point tail_from toward tail_to
-        real(wp) :: tail_time = huge(1.0_wp)        !! the time the tail was drawn for
     contains
         procedure :: set_trajectory => curve_set_trajectory
         procedure :: set_x_data, set_y_data, set_z_data, data_sources
@@ -190,13 +268,16 @@ module vkf_artists
         procedure :: set_trail, remove_trail, has_trail, set_trail_style
         procedure :: set_dash_mode => curve_set_dash_mode, dash_mode => curve_dash_mode
         procedure :: set_level_of_detail, level_of_detail, lod_error
-        procedure :: set_point_colors, point_colors, drawn_color
-        procedure :: build => curve_build
+        procedure :: drawn_color
         procedure :: update => curve_update
-        procedure :: release => curve_release
-        procedure :: num_chunks => curve_num_chunks, num_drawn => curve_num_drawn
-        procedure :: first_drawn => curve_first_drawn
         procedure :: drawn_point, drawn_distance, trace_end
+        procedure :: init_chain => curve_init_chain
+        procedure :: chain_kind => curve_chain_kind
+        procedure :: points => curve_points
+        procedure :: new_tail => curve_new_tail
+        procedure :: apply_style => curve_style
+        procedure :: write_points => write_curve
+        procedure :: draw_tail => update_tail
     end type CurveArtist
 
     interface CurveArtist
@@ -276,23 +357,12 @@ module vkf_artists
     !> opacity (its alpha times theirs); see set_point_colors. A trajectory
     !> going round several times covers the surface again each time, so it
     !> gets more opaque: trace one revolution, or lower the alpha.
-    type, extends(TrajectoryArtist), public :: RibbonArtist
+    type, extends(ChainArtist), public :: RibbonArtist
         private
         type(DataSource) :: start_(3), end_(3)      !! start and end points' x, y, z data sources
         logical :: default_data = .true.            !! sources not set: the origin to the positions, per the DOF
         real(wp) :: color_(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.25_wp]  !! surface color (default white, alpha 0.25)
-        logical :: point_colors_ = .true.           !! the trajectory's colors, if any
-        ! rendering: trajectory point i is chain points 2i-1 (start) and 2i (end)
-        type(c_ptr) :: group = c_null_ptr           !! the chain's group (to make it again, colored or not)
-        logical :: compile = .false.                !! (chunks made later are compiled)
-        type(LineChain) :: chain                    !! the surface's buffers
-        type(c_ptr) :: tail = c_null_ptr            !! the quad to the point at the current time (trace mode)
-        integer :: n_written = 0                    !! trajectory points written to the chain
-        integer :: n_drawn = 0                      !! trajectory points drawn from it
-        integer :: first_drawn_ = 1                 !! the first of them (trace mode, decreasing times: later)
-        integer :: n_colored = 0                    !! points written with the trajectory's own colors
-        logical :: tail_shown = .false.             !! the tail is drawn
-        real(wp) :: tail_time = huge(1.0_wp)        !! the time the tail was drawn for
+        ! rendering: the chain a surface, trajectory point i its points 2i-1 (start) and 2i (end); the tail a quad
     contains
         procedure :: set_trajectory => ribbon_set_trajectory
         procedure :: set_start_x_data => ribbon_set_start_x_data, set_start_y_data => ribbon_set_start_y_data
@@ -301,12 +371,13 @@ module vkf_artists
         procedure :: set_end_z_data => ribbon_set_end_z_data
         procedure :: start_data_sources => ribbon_start_data_sources, end_data_sources => ribbon_end_data_sources
         procedure :: set_color => ribbon_set_color, color => ribbon_color
-        procedure :: set_point_colors => ribbon_set_point_colors, point_colors => ribbon_point_colors
-        procedure :: build => ribbon_build
-        procedure :: update => ribbon_update
-        procedure :: release => ribbon_release
-        procedure :: num_chunks => ribbon_num_chunks, num_drawn => ribbon_num_drawn
         procedure :: drawn_pair, drawn_color => ribbon_drawn_color, trace_end => ribbon_trace_end
+        procedure :: chain_kind => ribbon_chain_kind
+        procedure :: points => ribbon_points
+        procedure :: new_tail => ribbon_new_tail
+        procedure :: apply_style => ribbon_style
+        procedure :: write_points => write_ribbon
+        procedure :: draw_tail => update_ribbon_tail
     end type RibbonArtist
 
     interface RibbonArtist
@@ -541,7 +612,7 @@ contains
     !> the latest passed (k) toward the next in time (k2: i2 + 1, or i1 - 1 for
     !> decreasing times); none (0, 0) without a trajectory.
     subroutine tail_ends(traj, n, i1, i2, k, k2)
-        type(Trajectory), pointer, intent(in) :: traj
+        type(Trajectory), pointer, intent(in) :: traj      !! the trajectory (null: none)
         integer, intent(in) :: n                            !! the points written
         integer, intent(in) :: i1, i2                       !! the points passed
         integer, intent(out) :: k, k2                       !! the tail's ends
@@ -578,6 +649,176 @@ contains
                 is_position_xyz = .false.
         end do
     end function is_position_xyz
+
+    ! ==================================================================
+    ! ChainArtist
+
+    !> Whether a trajectory with colors is drawn in them (default true); points
+    !> without a color yet (colors arriving after positions) in the artist's
+    !> color. A curve: each segment blended from its first point's color to its
+    !> second's (with level of detail, a color lasting fewer points than are
+    !> skipped may not show from far away); a surface: each point's pair in its
+    !> color, times the artist's alpha. False: all in the artist's color.
+    subroutine set_point_colors(self, enabled)
+        class(ChainArtist), intent(inout) :: self
+        logical, intent(in) :: enabled                      !! true: the trajectory's colors
+        self%point_colors_ = enabled
+    end subroutine set_point_colors
+
+    !> Whether a trajectory's colors are drawn.
+    pure logical function point_colors(self)
+        class(ChainArtist), intent(in) :: self
+        point_colors = self%point_colors_
+    end function point_colors
+
+    !> Number of buffers the artist is drawn with (0 until built).
+    pure integer function num_chunks(self)
+        class(ChainArtist), intent(in) :: self
+        num_chunks = self%chain%num_chunks()
+    end function num_chunks
+
+    !> Number of trajectory points drawn now (all of them, or in trace mode
+    !> those passed).
+    pure integer function num_drawn(self)
+        class(ChainArtist), intent(in) :: self
+        num_drawn = self%n_drawn
+    end function num_drawn
+
+    !> The first point drawn (1, or in trace mode of decreasing times the
+    !> earliest point passed): points first_drawn .. first_drawn + num_drawn - 1.
+    pure integer function first_drawn(self)
+        class(ChainArtist), intent(in) :: self
+        first_drawn = self%first_drawn_
+    end function first_drawn
+
+    !> Chain points per trajectory point: 1, or 2 for a surface (a pair each).
+    pure integer function chain_points_per_point(self) result(m)
+        class(ChainArtist), intent(in) :: self
+        m = merge(2, 1, self%chain_kind() == CHAIN_RIBBON)
+    end function chain_points_per_point
+
+    !> Create the chain of buffers (sized for the points now) and the trace
+    !> tail under `group`.
+    subroutine chain_build(self, viewer, group)
+        class(ChainArtist), intent(inout) :: self
+        type(c_ptr), intent(in) :: viewer                   !! compiles what is made later (null: nothing to)
+        type(c_ptr), intent(in) :: group                    !! the artist's group
+        self%group = group
+        self%compile = .false.
+        call self%init_chain()
+        call self%chain%reserve(chain_points_per_point(self) * self%points())   ! compiled with the group
+        self%compile = c_associated(viewer)
+        call self%chain%set_compile(self%compile)
+        self%tail = self%new_tail()                         ! (white unless the points' colors are drawn)
+        if (c_associated(self%tail)) call check_status(vkf_node_add_child(group, self%tail), 'trajectory artists')
+        call self%apply_style()
+        self%seen_generation = -1
+    end subroutine chain_build
+
+    !> The chain, colored if the trajectory's colors are drawn.
+    subroutine chain_init(self)
+        class(ChainArtist), intent(inout) :: self
+        call self%chain%init(self%group, self%chain_kind(), colored=uses_colors(self))
+        call self%chain%set_compile(self%compile)
+        self%n_colored = 0
+    end subroutine chain_init
+
+    !> Whether the trajectory's colors are drawn: wanted, and it has some.
+    logical function uses_colors(self)
+        class(ChainArtist), intent(in) :: self
+        uses_colors = self%point_colors_ .and. associated(self%traj)
+        if (uses_colors) uses_colors = self%traj%num_colors() > 0
+    end function uses_colors
+
+    !> Forget the render nodes: the chain and the tail (see artist_release).
+    subroutine chain_release(self)
+        class(ChainArtist), intent(inout) :: self
+        call self%chain%release()
+        if (c_associated(self%tail)) call vkf_node_delete(self%tail)
+        self%tail = c_null_ptr
+        self%group = c_null_ptr
+        self%n_written = 0
+        self%n_drawn = 0
+        self%n_colored = 0
+        self%tail_shown = .false.
+        call artist_release(self)
+    end subroutine chain_release
+
+    !> Write the points added (all of them on a redraw), and draw them all or,
+    !> in trace mode, those passed and the tail to the point at time t.
+    subroutine chain_update(self, t)
+        class(ChainArtist), intent(inout) :: self
+        real(wp), intent(in) :: t                           !! the current time
+        logical :: changed
+        if (.not. write_changed(self, changed)) return
+        call draw_written(self, t, changed)
+    end subroutine chain_update
+
+    !> The points written as the trajectory changed: the chain made again if
+    !> its colors are drawn now or no longer (its first colors, or the
+    !> setting), then the points new since the last written (and the last one
+    !> again: set_optional; and those whose colors came since), or all of them
+    !> on a redraw (cleared, a new trajectory or data sources). False if the
+    !> chain isn't built.
+    logical function write_changed(self, changed) result(built)
+        class(ChainArtist), intent(inout) :: self
+        logical, intent(out) :: changed                     !! points written (or the chain emptied)
+        integer :: n, i1
+        logical :: redraw
+        changed = .false.
+        built = self%chain%is_built()
+        if (.not. built) return
+        n = self%points()
+        if (uses_colors(self) .neqv. self%chain%is_colored()) then
+            call self%chain%detach()
+            call self%init_chain()
+            call self%apply_style()
+            self%seen_generation = -1
+        end if
+        changed = data_changed(self, redraw)
+        if (redraw .or. .not. associated(self%traj)) then
+            self%n_written = 0
+            self%n_colored = 0
+        end if
+        if (changed) then
+            i1 = max(1, min(self%n_written, n))          ! from the last point written (set_optional)
+            if (self%chain%is_colored()) i1 = max(1, min(i1, self%n_colored))   ! (and colors added since)
+            call self%chain%reserve(chain_points_per_point(self) * n)
+            if (n >= i1) call self%write_points(i1, n)
+            self%n_written = n
+        end if
+    end function write_changed
+
+    !> Draw the points written: all of them (the tail hidden) or, in trace
+    !> mode, those passed by time t (times up to it) and the tail from the
+    !> latest of them to the point at t (unchanged if nothing `changed` and t
+    !> is the time it was drawn for).
+    subroutine draw_written(self, t, changed)
+        class(ChainArtist), intent(inout) :: self
+        real(wp), intent(in) :: t                           !! the current time
+        logical, intent(in) :: changed                      !! points were written (write_changed)
+        integer :: m, i1, i2, k, k2
+        m = chain_points_per_point(self)
+        if (.not. self%trace) then
+            self%n_drawn = self%n_written
+            self%first_drawn_ = 1
+            call self%chain%draw(m * self%n_drawn)
+            if (c_associated(self%tail)) call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
+            self%tail_shown = .false.
+            self%tail_time = huge(1.0_wp)
+            return
+        end if
+        if (.not. changed .and. t == self%tail_time) return
+        i1 = 1
+        i2 = 0
+        if (associated(self%traj)) call trace_range(self%traj, t, self%n_written, i1, i2)
+        self%first_drawn_ = i1
+        self%n_drawn = max(0, i2 - i1 + 1)
+        call self%chain%draw_range(m * (i1 - 1) + 1, m * i2)
+        call tail_ends(self%traj, self%n_written, i1, i2, k, k2)
+        call self%draw_tail(t, k, k2)
+        self%tail_time = t
+    end subroutine draw_written
 
     ! ==================================================================
     ! CurveArtist
@@ -823,23 +1064,6 @@ contains
         error = real(self%chain%lod_error(j), wp)
     end function lod_error
 
-    !> Whether a trajectory with colors is drawn in them (default true): each
-    !> segment blended from its first point's color to its second's; points
-    !> without a color yet (colors arriving after positions) in the artist's
-    !> color. False: all in the artist's color. With level of detail, a color
-    !> lasting fewer points than are skipped may not show from far away.
-    subroutine set_point_colors(self, enabled)
-        class(CurveArtist), intent(inout) :: self
-        logical, intent(in) :: enabled
-        self%point_colors_ = enabled
-    end subroutine set_point_colors
-
-    !> Whether a trajectory's colors are drawn.
-    pure logical function point_colors(self)
-        class(CurveArtist), intent(in) :: self
-        point_colors = self%point_colors_
-    end function point_colors
-
     !> The color of point i (1 to num_drawn) as drawn: read back from the line
     !> buffers.
     function drawn_color(self, i) result(rgba)
@@ -860,25 +1084,6 @@ contains
         factor = self%pattern_factor
         bits = self%pattern_
     end subroutine curve_pattern
-
-    !> Number of line buffers the curve is drawn with (0 until built).
-    pure integer function curve_num_chunks(self)
-        class(CurveArtist), intent(in) :: self
-        curve_num_chunks = self%chain%num_chunks()
-    end function curve_num_chunks
-
-    !> Number of points drawn now (all of them, or in trace mode those passed).
-    pure integer function curve_num_drawn(self)
-        class(CurveArtist), intent(in) :: self
-        curve_num_drawn = self%n_drawn
-    end function curve_num_drawn
-
-    !> The first point drawn (1, or in trace mode of decreasing times the
-    !> earliest point passed): points first_drawn .. first_drawn + num_drawn - 1.
-    pure integer function curve_first_drawn(self)
-        class(CurveArtist), intent(in) :: self
-        curve_first_drawn = self%first_drawn_
-    end function curve_first_drawn
 
     !> Point i (of the trajectory's: first_drawn to first_drawn + num_drawn - 1
     !> drawn) as written: read back from the line buffers.
@@ -911,125 +1116,53 @@ contains
         if (associated(p)) v = real(p(1:3, 1, 2), wp) + real(p(1:3, 2, 2), wp)
     end function trace_end
 
-    !> Create the chain of line buffers (sized for the points now) and the trace
-    !> tail under `group`.
-    subroutine curve_build(self, viewer, group)
-        class(CurveArtist), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
-        self%group = group
-        self%compile = .false.
-        call init_chain(self)
-        call self%chain%reserve(curve_points(self))       ! compiled with the group
-        self%compile = c_associated(viewer)
-        call self%chain%set_compile(self%compile)
-        self%tail = vkf_line_create_colored(2_c_int)      ! (white unless the points' colors are drawn)
-        if (c_associated(self%tail)) call check_status(vkf_node_add_child(group, self%tail), 'trajectory artists')
-        call curve_style(self)
-        self%seen_generation = -1
-    end subroutine curve_build
-
-    !> The chain, colored if the trajectory's colors are drawn.
-    subroutine init_chain(self)
-        type(CurveArtist), intent(inout) :: self
-        call self%chain%init(self%group, CHAIN_STRIP, colored=uses_colors(self))
-        call self%chain%set_lod(self%lod_)
-        call self%chain%set_compile(self%compile)
-        self%n_colored = 0
-    end subroutine init_chain
-
-    !> Whether the trajectory's colors are drawn: wanted, and it has some.
-    logical function uses_colors(self)
-        type(CurveArtist), intent(in) :: self
-        uses_colors = self%point_colors_ .and. associated(self%traj)
-        if (uses_colors) uses_colors = self%traj%num_colors() > 0
-    end function uses_colors
-
-    !> Forget the render nodes: the chain and the tail (see artist_release).
-    subroutine curve_release(self)
-        class(CurveArtist), intent(inout) :: self
-        call self%chain%release()
-        if (c_associated(self%tail)) call vkf_node_delete(self%tail)
-        self%tail = c_null_ptr
-        self%n_written = 0
-        self%n_drawn = 0
-        self%n_colored = 0
-        self%group = c_null_ptr
-        self%tail_shown = .false.
-        call artist_release(self)
-    end subroutine curve_release
-
-    !> Write the points added (all of them on a redraw), and draw them all or, in
-    !> trace mode, those passed and the tail to the point at time t.
+    !> Write the points added (all of them on a redraw), and draw them all, or
+    !> in trace mode those passed and the tail to the point at time t, or with
+    !> a trail the window about time t.
     subroutine curve_update(self, t)
         class(CurveArtist), intent(inout) :: self
-        real(wp), intent(in) :: t
-        integer :: n, i1, i2, k, k2
-        logical :: changed, redraw
-        if (.not. self%chain%is_built()) return
-        n = curve_points(self)
-
-        ! the trajectory's colors drawn or not (its first colors, or the
-        ! setting, changed): the chain made again, with or without colors
-        if (uses_colors(self) .neqv. self%chain%is_colored()) then
-            call self%chain%detach()
-            call init_chain(self)
-            call curve_style(self)
-            self%seen_generation = -1
-        end if
-
-        ! new points, or a redraw (cleared, new trajectory or data sources)
-        changed = data_changed(self, redraw)
-        if (redraw .or. .not. associated(self%traj)) then
-            self%n_written = 0
-            self%n_colored = 0
-        end if
-        if (changed) then
-            i1 = max(1, min(self%n_written, n))          ! from the last point written (set_optional)
-            if (self%chain%is_colored()) i1 = max(1, min(i1, self%n_colored))   ! (and colors added since)
-            call self%chain%reserve(n)
-            if (n >= i1) call write_curve(self, i1, n)
-            self%n_written = n
-        end if
-
-        if (self%trail_%on) then                       ! a trail: the window about time t
+        real(wp), intent(in) :: t                           !! the current time
+        logical :: changed
+        if (.not. write_changed(self, changed)) return
+        if (self%trail_%on) then                           ! a trail: the window about time t
             if (.not. changed .and. t == self%tail_time) return
             call draw_trail(self, t)
             self%tail_time = t
             return
         end if
-        if (.not. self%trace) then
-            self%n_drawn = self%n_written
-            self%first_drawn_ = 1
-            call self%chain%draw(self%n_drawn)
-            if (c_associated(self%tail)) call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
-            self%tail_shown = .false.
-            self%tail_time = huge(1.0_wp)
-            return
-        end if
-        ! trace mode: the points passed (times up to t), and a tail from the
-        ! latest of them to the point at time t
-        if (.not. changed .and. t == self%tail_time) return
-        i1 = 1
-        i2 = 0
-        if (associated(self%traj)) call trace_range(self%traj, t, self%n_written, i1, i2)
-        self%first_drawn_ = i1
-        self%n_drawn = max(0, i2 - i1 + 1)
-        call self%chain%draw_range(i1, i2)
-        call tail_ends(self%traj, self%n_written, i1, i2, k, k2)
-        call update_tail(self, t, k, k2)
-        self%tail_time = t
+        call draw_written(self, t, changed)
     end subroutine curve_update
+
+    !> The chain (ChainArtist's), with the curve's level of detail.
+    subroutine curve_init_chain(self)
+        class(CurveArtist), intent(inout) :: self
+        call chain_init(self)
+        call self%chain%set_lod(self%lod_)
+    end subroutine curve_init_chain
+
+    !> The chain: a line strip.
+    pure integer function curve_chain_kind(self)
+        class(CurveArtist), intent(in) :: self
+        curve_chain_kind = CHAIN_STRIP
+    end function curve_chain_kind
+
+    !> The trace tail: a line of two points (white unless the points' colors are drawn).
+    function curve_new_tail(self) result(node)
+        class(CurveArtist), intent(in) :: self
+        type(c_ptr) :: node
+        node = vkf_line_create_colored(2_c_int)
+    end function curve_new_tail
 
     !> Number of points to draw (1 if all sources are zero: a point at the origin).
     integer function curve_points(self) result(n)
-        type(CurveArtist), intent(in) :: self
+        class(CurveArtist), intent(in) :: self
         n = source_points(self%traj, self%sources_)
         if (all(self%sources_%src == SOURCE_ZERO) .and. n > 0) n = min(1, self%traj%num_times())
     end function curve_points
 
     !> Write points i1 .. i2 into the chain (and upload the chunks written to).
     subroutine write_curve(self, i1, i2)
-        type(CurveArtist), intent(inout) :: self
+        class(CurveArtist), intent(inout) :: self
         integer, intent(in) :: i1, i2
         real(c_float), dimension(:,:,:), pointer :: p
         real(wp), dimension(:,:), pointer :: pos
@@ -1203,7 +1336,7 @@ contains
     !> times); none if either isn't a point written (before the start, or
     !> everything passed).
     subroutine update_tail(self, t, k, k2)
-        type(CurveArtist), intent(inout) :: self
+        class(CurveArtist), intent(inout) :: self
         real(wp), intent(in) :: t
         integer, intent(in) :: k, k2
         real(c_float), dimension(:,:,:), pointer :: p
@@ -1255,7 +1388,7 @@ contains
     !> The style: the artist's color, or white if the points' colors are drawn
     !> (the shader multiplies them by it).
     subroutine curve_style(self)
-        type(CurveArtist), intent(inout) :: self
+        class(CurveArtist), intent(inout) :: self
         real(wp) :: rgba(4)
         rgba = self%color_
         if (self%chain%is_colored()) rgba = 1.0_wp
@@ -1767,34 +1900,6 @@ contains
         c = self%color_
     end function ribbon_color
 
-    !> Whether a trajectory with colors colors the surface (default true):
-    !> each point's pair in its color (points without one yet in the artist's),
-    !> times the artist's alpha. False: all in the artist's color.
-    subroutine ribbon_set_point_colors(self, enabled)
-        class(RibbonArtist), intent(inout) :: self
-        logical, intent(in) :: enabled
-        self%point_colors_ = enabled
-    end subroutine ribbon_set_point_colors
-
-    !> Whether a trajectory's colors color the surface.
-    pure logical function ribbon_point_colors(self)
-        class(RibbonArtist), intent(in) :: self
-        ribbon_point_colors = self%point_colors_
-    end function ribbon_point_colors
-
-    !> Number of buffers the surface is drawn with (0 until built).
-    pure integer function ribbon_num_chunks(self)
-        class(RibbonArtist), intent(in) :: self
-        ribbon_num_chunks = self%chain%num_chunks()
-    end function ribbon_num_chunks
-
-    !> Number of trajectory points the surface is drawn through now (all, or
-    !> in trace mode those passed).
-    pure integer function ribbon_num_drawn(self)
-        class(RibbonArtist), intent(in) :: self
-        ribbon_num_drawn = self%n_drawn
-    end function ribbon_num_drawn
-
     !> The pair at trajectory point i (1 to num_drawn) as drawn, its start a
     !> and end b: read back from the buffers.
     subroutine drawn_pair(self, i, a, b)
@@ -1834,122 +1939,32 @@ contains
         b = real(p(1:3, 1, 4), wp) + real(p(1:3, 2, 4), wp)
     end function ribbon_trace_end
 
-    !> Create the chain of buffers (sized for the points now) and the trace tail's
-    !> quad under `group`.
-    subroutine ribbon_build(self, viewer, group)
-        class(RibbonArtist), intent(inout) :: self
-        type(c_ptr), intent(in) :: viewer, group
-        self%group = group
-        self%compile = .false.
-        call init_ribbon_chain(self)
-        call self%chain%reserve(2 * ribbon_points(self))  ! compiled with the group
-        self%compile = c_associated(viewer)
-        call self%chain%set_compile(self%compile)
-        self%tail = vkf_ribbon_create(4_c_int, 1_c_int)   ! (white unless the points' colors are drawn)
-        if (c_associated(self%tail)) call check_status(vkf_node_add_child(group, self%tail), 'trajectory artists')
-        call ribbon_style(self)
-        self%seen_generation = -1
-    end subroutine ribbon_build
-
-    !> The chain, colored if the trajectory's colors are drawn.
-    subroutine init_ribbon_chain(self)
-        type(RibbonArtist), intent(inout) :: self
-        logical :: colored
-        colored = self%point_colors_ .and. associated(self%traj)
-        if (colored) colored = self%traj%num_colors() > 0
-        call self%chain%init(self%group, CHAIN_RIBBON, colored=colored)
-        call self%chain%set_compile(self%compile)
-        self%n_colored = 0
-    end subroutine init_ribbon_chain
-
-    !> Whether the trajectory's colors are drawn: wanted, and it has some.
-    logical function ribbon_uses_colors(self) result(uses)
-        type(RibbonArtist), intent(in) :: self
-        uses = self%point_colors_ .and. associated(self%traj)
-        if (uses) uses = self%traj%num_colors() > 0
-    end function ribbon_uses_colors
-
-    !> Forget the render nodes: the chain and the tail (see artist_release).
-    subroutine ribbon_release(self)
-        class(RibbonArtist), intent(inout) :: self
-        call self%chain%release()
-        if (c_associated(self%tail)) call vkf_node_delete(self%tail)
-        self%tail = c_null_ptr
-        self%group = c_null_ptr
-        self%n_written = 0
-        self%n_drawn = 0
-        self%n_colored = 0
-        self%tail_shown = .false.
-        call artist_release(self)
-    end subroutine ribbon_release
-
-    !> Write the pairs added (all of them on a redraw), and draw the surface
-    !> through them all or, in trace mode, those passed and the quad to time t.
-    subroutine ribbon_update(self, t)
-        class(RibbonArtist), intent(inout) :: self
-        real(wp), intent(in) :: t
-        integer :: n, i1, i2, k, k2
-        logical :: changed, redraw
-        if (.not. self%chain%is_built()) return
-        n = ribbon_points(self)
-
-        ! the trajectory's colors drawn or not: the chain made again
-        if (ribbon_uses_colors(self) .neqv. self%chain%is_colored()) then
-            call self%chain%detach()
-            call init_ribbon_chain(self)
-            call ribbon_style(self)
-            self%seen_generation = -1
-        end if
-
-        ! new points, or a redraw (cleared, new trajectory or data sources)
-        changed = data_changed(self, redraw)
-        if (redraw .or. .not. associated(self%traj)) then
-            self%n_written = 0
-            self%n_colored = 0
-        end if
-        if (changed) then
-            i1 = max(1, min(self%n_written, n))          ! from the last point written (set_optional)
-            if (self%chain%is_colored()) i1 = max(1, min(i1, self%n_colored))   ! (and colors added since)
-            call self%chain%reserve(2 * n)
-            if (n >= i1) call write_ribbon(self, i1, n)
-            self%n_written = n
-        end if
-
-        if (.not. self%trace) then
-            self%n_drawn = self%n_written
-            self%first_drawn_ = 1
-            call self%chain%draw(2 * self%n_drawn)
-            if (c_associated(self%tail)) call check_status(vkf_line_set_range(self%tail, 1_c_int, 0_c_int), 'trajectory artists')
-            self%tail_shown = .false.
-            self%tail_time = huge(1.0_wp)
-            return
-        end if
-        ! trace mode: the quads passed, and one to the pair at time t
-        if (.not. changed .and. t == self%tail_time) return
-        i1 = 1
-        i2 = 0
-        if (associated(self%traj)) call trace_range(self%traj, t, self%n_written, i1, i2)
-        self%first_drawn_ = i1
-        self%n_drawn = max(0, i2 - i1 + 1)
-        call self%chain%draw_range(2 * i1 - 1, 2 * i2)
-        call tail_ends(self%traj, self%n_written, i1, i2, k, k2)
-        call update_ribbon_tail(self, t, k, k2)
-        self%tail_time = t
-    end subroutine ribbon_update
-
     !> Number of trajectory points to draw the surface through (none if all
     !> sources are zero).
     integer function ribbon_points(self) result(n)
-        type(RibbonArtist), intent(in) :: self
+        class(RibbonArtist), intent(in) :: self
         n = 0
         if (all(self%start_%src == SOURCE_ZERO) .and. all(self%end_%src == SOURCE_ZERO)) return
         n = min(source_points(self%traj, self%start_), source_points(self%traj, self%end_))
     end function ribbon_points
 
+    !> The chain: a surface (a pair of points per trajectory point).
+    pure integer function ribbon_chain_kind(self)
+        class(RibbonArtist), intent(in) :: self
+        ribbon_chain_kind = CHAIN_RIBBON
+    end function ribbon_chain_kind
+
+    !> The trace tail: a quad (white unless the points' colors are drawn).
+    function ribbon_new_tail(self) result(node)
+        class(RibbonArtist), intent(in) :: self
+        type(c_ptr) :: node
+        node = vkf_ribbon_create(4_c_int, 1_c_int)
+    end function ribbon_new_tail
+
     !> Write the pairs of trajectory points i1 .. i2 into the chain, with their
     !> colors (and upload the chunks written to).
     subroutine write_ribbon(self, i1, i2)
-        type(RibbonArtist), intent(inout) :: self
+        class(RibbonArtist), intent(inout) :: self
         integer, intent(in) :: i1, i2
         real(c_float), dimension(:,:,:), pointer :: p
         real(c_float), dimension(:,:), pointer :: c, col
@@ -1993,7 +2008,7 @@ contains
     !> time t toward point k2 (as the curve's tail: none if either isn't a
     !> point written).
     subroutine update_ribbon_tail(self, t, k, k2)
-        type(RibbonArtist), intent(inout) :: self
+        class(RibbonArtist), intent(inout) :: self
         real(wp), intent(in) :: t
         integer, intent(in) :: k, k2
         real(c_float), dimension(:,:,:), pointer :: p
@@ -2047,7 +2062,7 @@ contains
     !> The style: the artist's color, or white with its alpha if the points'
     !> colors are drawn (the shader multiplies them by it).
     subroutine ribbon_style(self)
-        type(RibbonArtist), intent(inout) :: self
+        class(RibbonArtist), intent(inout) :: self
         real(wp) :: rgba(4)
         rgba = self%color_
         if (self%chain%is_colored()) rgba(1:3) = 1.0_wp

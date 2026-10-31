@@ -649,11 +649,15 @@ Decided so far:
   tests' checks (`test/vkf_checks.f90`), the trajectory interpolation
   (`Trajectory%point_at`), trace mode's tail ends and `draw_trail`'s two
   searches. Left:
-  - [ ] CurveArtist and RibbonArtist repeat their update (the chain made
-        again for colors, the points written, trace mode's range and tail):
-        a common parent holding the chain and the written and drawn counts
-        would let one routine do it, the ribbon's two points per point a
-        parameter.
+  - [x] CurveArtist and RibbonArtist repeated their state and update:
+        now both extend `ChainArtist` (vkf_artists), which holds the chain,
+        the written, drawn and colored counts and the trace tail, and does
+        the building, release and update (the chain made again for colors,
+        the points written, then all drawn or trace mode's range and tail;
+        the ribbon's two chain points per point from its chain's kind). Each
+        gives its chain's kind, point count, tail node, style, writer and
+        tail drawing; the curve adds its trail between writing and drawing,
+        and its level of detail to the chain. The ribbon gains `first_drawn`.
   - [ ] The demos' common options (`--capture`, `--capture-frame`,
         `--quit-after`, `--recreate-surface`) and the capture in their
         frame callbacks: a small options type in `vkframes_qt` parsed before

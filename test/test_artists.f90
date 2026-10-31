@@ -369,6 +369,19 @@ contains
         call a%set_point_colors(.false.)
         call a%update(0.0_wp)
         call check(all(a%drawn_color(50) == a%color()) .and. a%num_drawn() == 100, "ribbon: point colors off")
+
+        ! trace mode, times decreasing (propagated backward): the points passed
+        ! are the last ones (times up to t), the tail toward the next back
+        call traj%clear()
+        do i = 1, 100
+            call traj%add(-real(i, wp), orbit(-real(i, wp)))
+        end do
+        call a%set_trace_mode(.true.)
+        call a%update(-40.5_wp)
+        expected = 0.5_wp * (orbit(-41.0_wp) + orbit(-40.0_wp))
+        call check(a%first_drawn() == 41 .and. a%num_drawn() == 60 .and. a%trace_end(s, e), &
+                   'ribbon trace (decreasing times): the last points passed, a tail')
+        call check(maxval(abs(e - expected)) < 1.0e-6_wp, 'ribbon trace (decreasing times): to the interpolated pair')
     end subroutine check_ribbon
 
     !> A trajectory's colors: drawn when it has some (the chain made again with
