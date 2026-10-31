@@ -158,6 +158,8 @@ module vkf_window
         procedure :: update => fm_update, num_updates => fm_num_updates
     end type FrameManager
 
+    !> The FrameManager constructor: `FrameManager(...)` makes one (see `new_frame_manager` for its
+    !> arguments).
     interface FrameManager
         module procedure new_frame_manager
     end interface FrameManager

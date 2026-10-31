@@ -92,10 +92,14 @@ module vkf_trajectory
         procedure :: revision, generation
     end type Trajectory
 
+    !> The Trajectory constructor: `Trajectory(...)` makes one (see `new_trajectory` for its
+    !> arguments).
     interface Trajectory
         module procedure new_trajectory
     end interface Trajectory
 
+    !> The DataSource constructor: `DataSource(...)` makes one (see `new_data_source` for its
+    !> arguments).
     interface DataSource
         module procedure new_data_source
     end interface DataSource

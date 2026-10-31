@@ -82,6 +82,8 @@ module vkf_view
 
     public :: camera_between, transform_camera
 
+    !> The View constructor: `View(...)` makes one (see `new_view` for its
+    !> arguments).
     interface View
         module procedure new_view
     end interface View

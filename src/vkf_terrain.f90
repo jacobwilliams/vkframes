@@ -90,6 +90,8 @@ module vkf_terrain
         procedure :: update => terrain_update
     end type TerrainBody
 
+    !> The TerrainBody constructor: `TerrainBody(...)` makes one (see `new_terrain_body` for its
+    !> arguments).
     interface TerrainBody
         module procedure new_terrain_body
     end interface TerrainBody

@@ -95,6 +95,8 @@ module vkf_shadow
         procedure :: late_update => shadow_late_update
     end type ShadowCones
 
+    !> The ShadowCones constructor: `ShadowCones(...)` makes one (see `new_shadow_cones` for its
+    !> arguments).
     interface ShadowCones
         module procedure new_shadow_cones
     end interface ShadowCones

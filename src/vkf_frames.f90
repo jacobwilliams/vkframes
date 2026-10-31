@@ -177,6 +177,8 @@ module vkf_frames
         procedure :: move_x_axis, move_y_axis, move_z_axis, reposition_axes
     end type ReferenceFrame
 
+    !> The ReferenceFrame constructor: `ReferenceFrame(...)` makes one (see `new_reference_frame` for its
+    !> arguments).
     interface ReferenceFrame
         module procedure new_reference_frame
     end interface ReferenceFrame

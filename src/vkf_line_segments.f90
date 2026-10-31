@@ -75,6 +75,8 @@ module vkf_line_segments
         end subroutine segments_compute
     end interface
 
+    !> The CustomLineSegments constructor: `CustomLineSegments(...)` makes one (see `new_custom_line_segments` for its
+    !> arguments).
     interface CustomLineSegments
         module procedure new_custom_line_segments
     end interface CustomLineSegments

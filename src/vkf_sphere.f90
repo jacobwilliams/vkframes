@@ -115,6 +115,8 @@ module vkf_sphere
         procedure :: num_lod_meshes
     end type Sphere
 
+    !> The Sphere constructor: `Sphere(...)` makes one (see `new_sphere` for its
+    !> arguments).
     interface Sphere
         module procedure new_sphere
     end interface Sphere

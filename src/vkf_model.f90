@@ -42,6 +42,8 @@ module vkf_model
         procedure :: build_contents => model_build_contents
     end type Model
 
+    !> The Model constructor: `Model(...)` makes one (see `new_model` for its
+    !> arguments).
     interface Model
         module procedure new_model
     end interface Model

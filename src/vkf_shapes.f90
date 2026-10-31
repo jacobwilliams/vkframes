@@ -86,6 +86,8 @@ module vkf_shapes
         procedure :: build_contents => axes_build_contents
     end type CoordinateAxes
 
+    !> The CoordinateAxes constructor: `CoordinateAxes(...)` makes one (see `new_coordinate_axes` for its
+    !> arguments).
     interface CoordinateAxes
         module procedure new_coordinate_axes
     end interface CoordinateAxes
@@ -111,6 +113,8 @@ module vkf_shapes
         procedure :: build_contents => grid_build_contents
     end type LatLonGrid
 
+    !> The LatLonGrid constructor: `LatLonGrid(...)` makes one (see `new_lat_lon_grid` for its
+    !> arguments).
     interface LatLonGrid
         module procedure new_lat_lon_grid
     end interface LatLonGrid
@@ -135,6 +139,8 @@ module vkf_shapes
         procedure :: build_contents => plane_build_contents
     end type RadialPlane
 
+    !> The RadialPlane constructor: `RadialPlane(...)` makes one (see `new_radial_plane` for its
+    !> arguments).
     interface RadialPlane
         module procedure new_radial_plane
     end interface RadialPlane
@@ -167,6 +173,8 @@ module vkf_shapes
         procedure :: build_contents => cone_build_contents
     end type PolyhedralCone
 
+    !> The PolyhedralCone constructor: `PolyhedralCone(...)` makes one (see `new_polyhedral_cone` for its
+    !> arguments).
     interface PolyhedralCone
         module procedure new_polyhedral_cone
     end interface PolyhedralCone
@@ -184,6 +192,8 @@ module vkf_shapes
         procedure :: frame_info => elliptic_frame_info
     end type EllipticCone
 
+    !> The EllipticCone constructor: `EllipticCone(...)` makes one (see `new_elliptic_cone` for its
+    !> arguments).
     interface EllipticCone
         module procedure new_elliptic_cone
     end interface EllipticCone
@@ -200,6 +210,8 @@ module vkf_shapes
         procedure :: frame_info => rect_frame_info
     end type RectangularCone
 
+    !> The RectangularCone constructor: `RectangularCone(...)` makes one (see `new_rectangular_cone` for its
+    !> arguments).
     interface RectangularCone
         module procedure new_rectangular_cone
     end interface RectangularCone
@@ -255,6 +267,8 @@ module vkf_shapes
         procedure :: build_contents => poly_build_contents
     end type Polyhedron
 
+    !> The Polyhedron constructor: `Polyhedron(...)` makes one (see `new_polyhedron` for its
+    !> arguments).
     interface Polyhedron
         module procedure new_polyhedron
     end interface Polyhedron

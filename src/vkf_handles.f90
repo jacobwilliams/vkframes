@@ -162,6 +162,8 @@ module vkf_handles
         procedure :: build_contents => vector_build_contents
     end type VectorHandle
 
+    !> The VectorHandle constructor: `VectorHandle(...)` makes one (see `new_vector_handle` for its
+    !> arguments).
     interface VectorHandle
         module procedure new_vector_handle
     end interface VectorHandle
@@ -194,6 +196,8 @@ module vkf_handles
         procedure :: position => trajectory_path_position
     end type TrajectoryPath
 
+    !> The TrajectoryPath constructor: `TrajectoryPath(...)` makes one (see `new_trajectory_path` for its
+    !> arguments).
     interface TrajectoryPath
         module procedure new_trajectory_path
     end interface TrajectoryPath
@@ -225,6 +229,8 @@ module vkf_handles
         procedure :: build_contents => time_build_contents
     end type TimeHandle
 
+    !> The TimeHandle constructor: `TimeHandle(...)` makes one (see `new_time_handle` for its
+    !> arguments).
     interface TimeHandle
         module procedure new_time_handle
     end interface TimeHandle

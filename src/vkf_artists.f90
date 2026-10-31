@@ -280,6 +280,8 @@ module vkf_artists
         procedure :: draw_tail => update_tail
     end type CurveArtist
 
+    !> The CurveArtist constructor: `CurveArtist(...)` makes one (see `new_curve_artist` for its
+    !> arguments).
     interface CurveArtist
         module procedure new_curve_artist
     end interface CurveArtist
@@ -335,6 +337,8 @@ module vkf_artists
         procedure :: drawn_segment
     end type SegmentArtist
 
+    !> The SegmentArtist constructor: `SegmentArtist(...)` makes one (see `new_segment_artist` for its
+    !> arguments).
     interface SegmentArtist
         module procedure new_segment_artist
     end interface SegmentArtist
@@ -380,6 +384,8 @@ module vkf_artists
         procedure :: draw_tail => update_ribbon_tail
     end type RibbonArtist
 
+    !> The RibbonArtist constructor: `RibbonArtist(...)` makes one (see `new_ribbon_artist` for its
+    !> arguments).
     interface RibbonArtist
         module procedure new_ribbon_artist
     end interface RibbonArtist
@@ -461,6 +467,8 @@ module vkf_artists
         procedure :: num_intermediate, drawn_marker
     end type MarkerArtist
 
+    !> The MarkerArtist constructor: `MarkerArtist(...)` makes one (see `new_marker_artist` for its
+    !> arguments).
     interface MarkerArtist
         module procedure new_marker_artist
     end interface MarkerArtist
@@ -489,6 +497,8 @@ module vkf_artists
         procedure :: pick => drawable_pick
     end type DrawableTrajectory
 
+    !> The DrawableTrajectory constructor: `DrawableTrajectory(...)` makes one (see `new_drawable_trajectory` for its
+    !> arguments).
     interface DrawableTrajectory
         module procedure new_drawable_trajectory
     end interface DrawableTrajectory

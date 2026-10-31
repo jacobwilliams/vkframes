@@ -43,6 +43,8 @@ module vkf_hud
         procedure :: revision
     end type HUDText
 
+    !> The HUDText constructor: `HUDText(...)` makes one (see `new_hud_text` for its
+    !> arguments).
     interface HUDText
         module procedure new_hud_text
     end interface HUDText
