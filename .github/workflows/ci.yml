@@ -133,3 +133,34 @@ jobs:
           name: captures-${{ matrix.os }}
           path: captures/
           if-no-files-found: ignore
+
+  # The website (web/) with the API docs (FORD, into web/api), published to the
+  # gh-pages branch from master. (GitHub Pages: Settings > Pages > Deploy from a
+  # branch, gh-pages, / (root).)
+  website:
+    name: website
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write          # to push the gh-pages branch
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: prefix-dev/setup-pixi@v0.11.2
+        with:
+          cache: true
+          environments: default
+
+      - name: Build the API docs
+        run: pixi run ford ford.md
+
+      - name: Publish web/ to gh-pages
+        uses: peaceiris/actions-gh-pages@v4.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./web
+          publish_branch: gh-pages
+          force_orphan: true     # one commit: the site as built, no history of old builds
