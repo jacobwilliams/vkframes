@@ -4,7 +4,8 @@ summary: Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph
 project_github: https://github.com/jacobwilliams/vkframes
 author: Jacob Williams
 github: https://github.com/jacobwilliams
-output_dir: ./doc
+output_dir: ./web/api
+css: ./ford-dark.css
 media_dir: ./media
 predocmark_alt: >
 predocmark: <

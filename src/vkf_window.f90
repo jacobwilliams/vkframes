@@ -162,6 +162,8 @@ module vkf_window
         module procedure new_frame_manager
     end interface FrameManager
 
+    !> One of a window's views: a pointer to it (Fortran has no arrays of
+    !> pointers).
     type :: ViewPointer
         type(View), pointer :: p => null()                  !! the view (not owned)
     end type ViewPointer

@@ -465,6 +465,8 @@ module vkf_artists
         module procedure new_marker_artist
     end interface MarkerArtist
 
+    !> One of a DrawableTrajectory's artists: a pointer to it (Fortran has no
+    !> arrays of pointers) and the node it is drawn under.
     type :: ArtistPointer
         class(TrajectoryArtist), pointer :: p => null()  !! the artist (not owned)
         type(c_ptr) :: group = c_null_ptr           !! the artist's node (null until built)

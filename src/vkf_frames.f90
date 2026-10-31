@@ -64,6 +64,8 @@ module vkf_frames
     integer, parameter, public :: ALIGN_RIGHT_TOP = 6, ALIGN_RIGHT_CENTER = 7, ALIGN_RIGHT_BOTTOM = 8
     integer, parameter, public :: ALIGN_LEFT_BASE_LINE = 9, ALIGN_CENTER_BASE_LINE = 10, ALIGN_RIGHT_BASE_LINE = 11
 
+    !> A frame in a list of frames (a frame's children and parents): a pointer
+    !> to it (Fortran has no arrays of pointers).
     type :: FramePointer
         class(ReferenceFrame), pointer :: p => null()       !! the frame (not owned)
     end type FramePointer
