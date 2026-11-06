@@ -26,15 +26,16 @@
 !> deselects it. A drag still turns the camera: only a click (the mouse not
 !> moved between press and release) selects.
 !>
-!> The dock also has the time scale, and buttons to delete the selected
+!> The dock also has the time scale, a check box for the orbits' planes (their
+!> translucent fills), and buttons to delete the selected
 !> orbit, the last one dropped, or all of them. Run with `pixi run -e qt palette-demo` (from the vkframes
 !> root). Options: `--capture file` saves frame `--capture-frame n` (default
 !> 120), `--quit-after seconds`, and, for tests, `--drop-test`: three orbit
 !> types dragged and dropped with synthetic events (a preview shown on the
 !> way), the orbits made printed; then the second orbit clicked (selected)
 !> and the Delete key pressed, with synthetic mouse and key events, the
-!> orbits left printed; then Escape (the view must go on), and the window
-!> closed.
+!> orbits left printed; then Escape (the view must go on), the planes hidden
+!> and shown again, and the window closed.
 module palette_demo
 
     use qt
@@ -108,6 +109,7 @@ module palette_demo
         type(QtfListModel) :: palette_model
         type(QIcon) :: icons(n_types)
         type(QDoubleSpinBox) :: time_scale
+        type(QCheckBox) :: show_planes                      !! the orbits' planes (their fills) shown
         type(QLabel) :: count_label
         type(HUDText) :: hud_help, hud_count
         ! the scene
@@ -269,11 +271,24 @@ contains
             call o%craft%set_name('  '//trim(types(kind)%name)//' '//trim(number))
             call o%craft%set_color(types(kind)%color)
             call o%craft%follow(o%path)
+            call show_plane(o, app%show_planes%isChecked())
             if (.not. (app%root%add_child(o%frame) .and. app%root%add_child(o%craft))) &
                 write(*, '(a)') 'palette demo: could not add the orbit'
         end associate
         call update_count()
     end subroutine drop_orbit
+
+    !> An orbit's plane (its fill) shown or not: its artist added to the
+    !> orbit's frame or removed from it (not drawn at all).
+    subroutine show_plane(o, shown)
+        type(DroppedOrbit), intent(inout), target :: o      !! the orbit
+        logical, intent(in) :: shown                        !! shown
+        if (shown) then
+            call o%frame%add_artist(o%fill)                 ! (nothing if already there)
+        else
+            call o%frame%remove_artist(o%fill)              ! (nothing if not there)
+        end if
+    end subroutine show_plane
 
     !> The number of orbits and the one selected, in the HUD and the dock.
     subroutine update_count()
@@ -615,6 +630,14 @@ contains
             call app%proxy%key(.false., KEY_ESCAPE, KEY_ESCAPE, 0)
         else if (app%frame == 56) then
             write(*, '(a,l1)') 'drop test: Escape pressed, the view still running ', app%proxy%is_open()
+            call app%show_planes%setChecked(.false.)
+        else if (app%frame == 58) then
+            write(*, '(a,i0,a)') 'drop test: planes hidden, ', app%orbits(app%order(1))%frame%num_artists(), &
+                                 ' artist(s) per orbit'
+            call app%show_planes%setChecked(.true.)
+        else if (app%frame == 60) then
+            write(*, '(a,i0,a)') 'drop test: planes shown, ', app%orbits(app%order(1))%frame%num_artists(), &
+                                 ' artist(s) per orbit'
             call app%main%close()
         end if
     end subroutine drop_test_step
@@ -644,6 +667,16 @@ contains
         class(*), intent(inout), optional :: data           !! the connection's data (unused)
         if (app%n_orbits > 0) call delete_orbit(app%order(app%n_orbits))
     end subroutine on_remove_last
+
+    !> The orbits' planes shown or hidden.
+    subroutine on_show_planes(checked, data)
+        logical, intent(in) :: checked                      !! shown
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
+        integer :: k
+        do k = 1, max_orbits
+            call show_plane(app%orbits(k), checked)
+        end do
+    end subroutine on_show_planes
 
     !> The selected orbit deleted.
     subroutine on_delete_selected(data)
@@ -714,6 +747,11 @@ contains
         call app%time_scale%setSuffix(' x')
         call app%time_scale%valueChanged%connect(on_time_scale)
         call form%addRow('Time scale', app%time_scale)
+
+        app%show_planes = QCheckBox('Orbit planes (filled in)')
+        call app%show_planes%setChecked(.true.)
+        call app%show_planes%toggled%connect(on_show_planes)
+        call form%addRow('', app%show_planes)
 
         app%count_label = QLabel('0 orbits')
         call form%addRow('Dropped', app%count_label)

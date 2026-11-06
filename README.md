@@ -706,8 +706,9 @@ scene to make that orbit.
   with a pulse and arrows moving along it. Delete (or Backspace) deletes it,
   and Escape deselects it. Dragging still turns the camera: only a click
   selects.
-- The dock: the time scale, and buttons to delete the selected orbit, the
-  last one dropped, or all of them.
+- The dock: the time scale, a check box for the orbits' planes (their
+  translucent fills), and buttons to delete the selected orbit, the last one
+  dropped, or all of them. Drag the dock's edge to make it wider or narrower.
 
 ```sh
 pixi run -e qt palette-demo
