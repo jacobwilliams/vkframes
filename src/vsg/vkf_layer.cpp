@@ -1510,6 +1510,14 @@ namespace
     // the camera moving) only for a release in the same millisecond as the
     // last pointer event, which Windows' messages are, but not macOS's (nor
     // a host's events, forwarded one by one), so a flick never threw there.
+    // Only while really moving, though: the pointer at least throw_pixels
+    // (window units) from where it was throw_span before its last move.
+    // Stopped, a hand still nudges the mouse a pixel or so just before
+    // letting go; that last move alone would throw, the camera then turning
+    // on and on by that nudge's tiny rotation, in its random direction. Not
+    // moving, a release within a millisecond of the last move (VSG throws for
+    // those: the difference truncated to whole milliseconds, 0) is moved to a
+    // millisecond after it, so that it doesn't throw.
     // A grab (vkf_viewer_set_grab: Fortran found a handle under the cursor): a
     // left button press then takes the mouse from the trackball until the
     // button is released, the press, the moves and the release recorded with
@@ -1534,12 +1542,15 @@ namespace
             {
                 lastDragMove = e.time;
                 dragging = true;
+                recent.push_back({e.time, e.x, e.y});
+                while (recent.size() > 1 && e.time - recent.front().time > keep_span) recent.pop_front();
             }
             pointer(3, e, 0);
         }
         void apply(vsg::ButtonPressEvent& e) override
         {
             dragging = false;
+            recent.clear();
             if (v->grabArmed && !e.handled && (e.mask & vsg::BUTTON_MASK_1) != 0)
             {
                 v->grabbing = true;
@@ -1558,8 +1569,15 @@ namespace
                 e.handled = true;
                 return;
             }
-            if (dragging && e.time >= lastDragMove && e.time - lastDragMove < throw_gap) e.time = lastDragMove;
+            if (dragging && e.time >= lastDragMove && e.time - lastDragMove < throw_gap)
+            {
+                if (moving())
+                    e.time = lastDragMove;                     // (released while moving: thrown)
+                else if (e.time - lastDragMove < std::chrono::milliseconds(1))
+                    e.time = lastDragMove + std::chrono::milliseconds(1);   // (stopped: not thrown)
+            }
             dragging = false;
+            recent.clear();
             pointer(5, e, e.button);
         }
         void apply(vsg::ScrollWheelEvent& e) override { e.delta *= v->zoomSpeed; }
@@ -1567,9 +1585,32 @@ namespace
     private:
         static constexpr size_t max_events = 4096;     // (kept while nothing reads them)
         static constexpr std::chrono::milliseconds throw_gap{40};  // (moves come every 8 to 16 ms while moving)
+        static constexpr std::chrono::milliseconds throw_span{60}; // how far back the motion is measured
+        static constexpr std::chrono::milliseconds keep_span{200}; // moves kept
+        static constexpr double throw_pixels = 6.0;    // window units moved over throw_span: moving
+        struct Move { vsg::time_point time; int32_t x, y; };
         Viewer* v;
         vsg::time_point lastDragMove;                  // the last move with a button held
         bool dragging = false;                         // a move with a button held since the last press
+        std::deque<Move> recent;                       // the drag's moves in the last keep_span
+
+        // Whether the drag was moving at its last move: the pointer at least
+        // throw_pixels (window units) from where it was throw_span before.
+        bool moving() const
+        {
+            if (recent.size() < 2) return false;
+            const Move& last = recent.back();
+            const Move* from = &recent.front();
+            for (const auto& m : recent)
+                if (last.time - m.time <= throw_span)
+                {
+                    from = &m;
+                    break;
+                }
+            if (from == &last) from = &recent[recent.size() - 2];   // (one move in the span: from the one before)
+            const double dx = double(last.x - from->x), dy = double(last.y - from->y);
+            return std::sqrt(dx * dx + dy * dy) >= throw_pixels * double(v->pixelRatio);
+        }
 
         void key(int32_t kind, vsg::KeyEvent& e)
         {

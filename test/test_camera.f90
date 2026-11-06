@@ -6,7 +6,9 @@
 !> zoom speed scales a scroll step's zoom (a half step as a step at half the
 !> speed); a flick (a drag released while moving) keeps the camera turning
 !> with throw (on every platform: the release's time), and not without, nor
-!> after the view is reset (the space bar).
+!> after the view is reset (the space bar), nor after a drag stopped and a
+!> last nudge of a pixel just before the release (which alone, thrown, kept
+!> the camera turning by its tiny rotation, in its random direction).
 program test_camera
 
     use vkframes
@@ -121,6 +123,8 @@ program test_camera
     call check(turned_after_flick() < 1.0e-6_wp, 'a flick without throw: the camera stops')   ! (acos near 1: ~1e-8)
     call window%set_camera_throw(.true.)
     call check(turned_after_flick(reset=.true.) < 1.0e-6_wp, 'a flick, then the view reset: the camera stops')
+    call check(turned_after_flick(stop=.true.) < 1.0e-6_wp, &
+               'a drag stopped, a pixel''s nudge, released: not thrown, the camera stops')
 
     call window%close()
     call report('camera (get, set, in the root frame), flights, view transitions')
@@ -131,17 +135,34 @@ contains
     !> the last move), then how far the eye turns over the next 10 frames
     !> without input (radians); with `reset`, after the view is reset (the
     !> space bar) once flicked.
-    real(wp) function turned_after_flick(reset) result(angle)
+    real(wp) function turned_after_flick(reset, stop) result(angle)
         logical, intent(in), optional :: reset
+        logical, intent(in), optional :: stop               !! (true: the drag stopped, then nudged a pixel, then released)
         real(wp) :: e0(3), e1(3)
-        integer :: k
+        integer :: k, x
+        integer(8) :: c0, c1, rate
         call window%mouse(MOUSE_PRESS, 100, 120, 256, 1)
         call frame()
         do k = 1, 4
             call window%mouse(MOUSE_MOVE, 100 + 8 * k, 120, 256, 0)
             call frame()
         end do
-        call window%mouse(MOUSE_RELEASE, 132, 120, 0, 1)
+        x = 132
+        if (present(stop)) then
+            if (stop) then                                  ! held still for 150 ms, then a pixel's nudge
+                call system_clock(c0, rate)
+                k = 0
+                do
+                    call frame()
+                    k = k + 1
+                    call system_clock(c1)
+                    if (k >= 10 .and. real(c1 - c0, wp) / real(rate, wp) >= 0.15_wp) exit
+                end do
+                x = 133
+                call window%mouse(MOUSE_MOVE, x, 120, 256, 0)
+            end if
+        end if
+        call window%mouse(MOUSE_RELEASE, x, 120, 0, 1)
         call frame()
         if (present(reset)) then
             if (reset) then
