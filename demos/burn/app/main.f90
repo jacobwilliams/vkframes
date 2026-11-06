@@ -5,7 +5,10 @@
 !>
 !> * The orbit (left; Earth-centered inertial axes, km): the Earth, the orbit
 !>   before the burn (dashed), the trajectory after it (cyan), each filled in
-!>   translucent (RibbonArtist: from the Earth's center to it), with its
+!>   translucent (RibbonArtist: from the Earth's center to it), where their
+!>   planes cross a white line (translucent surfaces don't cut each other:
+!>   the line is drawn: from the center through the burn point, which both
+!>   orbits pass, as far as both fills reach), with its
 !>   periapsis and apoapsis (white dots), the burn point, and the delta-v as a
 !>   red line from it (a SegmentArtist: the vector stored at the burn point,
 !>   drawn from it at the arrow's scale).
@@ -54,6 +57,7 @@ module burn_demo
     real(wp), parameter :: initial_color(4) = [0.75_wp, 0.75_wp, 0.75_wp, 0.7_wp]
     real(wp), parameter :: initial_fill(4) = [1.0_wp, 0.55_wp, 0.1_wp, 0.3_wp]       !! the orbit before the burn, filled
     real(wp), parameter :: transfer_fill(4) = [0.3_wp, 0.85_wp, 1.0_wp, 0.18_wp]    !! the trajectory after it, filled
+    real(wp), parameter :: crossing_color(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.85_wp]    !! where the fills' planes cross
 
     !> The arrow's drags: the trajectory computed again as it moves; its value next to it.
     type, extends(WindowEventHandler) :: BurnHandler
@@ -87,12 +91,14 @@ module burn_demo
         type(HUDText) :: hud_burn, hud_elements, hud_craft, callout
         ! the data, drawn in both scenes
         type(Trajectory) :: initial, transfer, apsides, burn_point
+        type(Trajectory) :: crossing                        !! where the two orbits' planes cross, within both fills
         ! the orbit view's scene
         type(ReferenceFrame) :: root
         type(Sphere) :: earth
         type(CurveArtist) :: initial_curve, transfer_curve
         type(RibbonArtist) :: initial_plane, transfer_plane !! the orbits filled in (translucent)
         type(MarkerArtist) :: apsis_dots, burn_dot
+        type(CurveArtist) :: crossing_line
         type(SegmentArtist) :: dv_line                      !! the delta-v: a red line from the burn point
         type(DrawableTrajectory) :: orbits, burn
         type(FrameManager) :: scene
@@ -101,6 +107,7 @@ module burn_demo
         type(Sphere) :: earth2
         type(CurveArtist) :: initial_curve2, transfer_curve2
         type(RibbonArtist) :: initial_plane2, transfer_plane2
+        type(CurveArtist) :: crossing_line2
         type(DrawableTrajectory) :: orbits2
         type(Sphere) :: craft                               !! the spacecraft: its axes the burn's directions
         type(VectorHandle) :: dv_handle                     !! the delta-v, in the spacecraft's frame
@@ -138,6 +145,7 @@ contains
         call app%transfer%reserve(n_points)
         app%apsides = Trajectory()
         app%burn_point = Trajectory(nopt=1)
+        app%crossing = Trajectory()
 
         ! the orbit view
         app%root = ReferenceFrame('ECI')
@@ -158,6 +166,9 @@ contains
         call app%orbits%add_artist(app%initial_curve)
         call app%orbits%add_artist(app%transfer_curve)
         call app%orbits%add_artist(app%apsis_dots)
+        app%crossing_line = CurveArtist(app%crossing, color=crossing_color, width=2.0_wp)
+        call app%crossing_line%set_pickable(.false.)
+        call app%orbits%add_artist(app%crossing_line)
         ! the burn: a dot, and the delta-v as a line from it (the stored vector, at the scale)
         app%burn_dot = MarkerArtist(app%burn_point, markers=MARKER_START, size=11.0_wp, color=dv_color)
         app%dv_line = SegmentArtist(app%burn_point, color=dv_color, width=3.0_wp)
@@ -189,6 +200,9 @@ contains
         call app%orbits2%add_artist(app%transfer_plane2)
         call app%orbits2%add_artist(app%initial_curve2)
         call app%orbits2%add_artist(app%transfer_curve2)
+        app%crossing_line2 = CurveArtist(app%crossing, color=crossing_color, width=2.0_wp)
+        call app%crossing_line2%set_pickable(.false.)
+        call app%orbits2%add_artist(app%crossing_line2)
         app%craft = Sphere('Spacecraft', radius=60.0_wp, color=[0.9_wp, 0.9_wp, 0.95_wp])
         call app%craft%show_name_label(.false.)
         call app%craft%move_x_axis([0.0_wp, 0.0_wp, 0.0_wp], 1200.0_wp, body_radius=12.0_wp, head_radius=40.0_wp)
@@ -293,8 +307,43 @@ contains
             call app%apsides%add(0.0_wp, pos=app%el%rp * e_dir)
             if (app%el%ra < huge(1.0_wp)) call app%apsides%add(1.0_wp, pos=-app%el%ra * e_dir)
         end if
+        call place_crossing(v1)
         call update_readouts()
     end subroutine recompute
+
+    !> Where the two orbits' planes cross, within both fills (each from the
+    !> Earth's center to its orbit): both orbits pass the burn point, so the
+    !> planes cross on the line from the center through it; on the burn
+    !> point's side to it, on the other to the nearer orbit there (the one
+    !> before the burn is a circle; the one after it, at the point opposite the
+    !> burn, if it reaches it). None if the planes are the same (no normal
+    !> delta-v).
+    subroutine place_crossing(v1)
+        real(wp), intent(in) :: v1(3)                       !! the velocity after the burn (km/s)
+        real(wp) :: n0(3), n1(3), u(3), e_vec(3), p, denom, far, sin_angle
+        call app%crossing%clear()
+        n0 = cross(app%r, app%v)
+        n1 = cross(app%r, v1)
+        sin_angle = norm2(cross(n0 / norm2(n0), n1 / norm2(n1)))
+        if (sin_angle < 1.0e-4_wp) return                    ! (the same plane: no line)
+        u = app%r / norm2(app%r)
+        ! the orbit after the burn at the point opposite the burn (r = p / (1 + e . direction))
+        p = dot_product(n1, n1) / mu
+        e_vec = cross(v1, n1) / mu - u
+        denom = 1.0_wp + dot_product(e_vec, -u)
+        far = 0.0_wp                                         ! (a hyperbola that doesn't go there: no fill there)
+        if (denom > 1.0e-9_wp) far = min(orbit_radius, p / denom)
+        call app%crossing%add(0.0_wp, pos=-far * u)
+        call app%crossing%add(1.0_wp, pos=app%r)
+    end subroutine place_crossing
+
+    !> a x b.
+    pure function cross(a, b) result(c)
+        real(wp), intent(in) :: a(3)                        !! the first vector
+        real(wp), intent(in) :: b(3)                        !! the second vector
+        real(wp) :: c(3)
+        c = [a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)]
+    end function cross
 
     !> The delta-v and the elements in the HUDs and the dock, and the dock's numbers.
     subroutine update_readouts()

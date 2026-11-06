@@ -644,8 +644,11 @@ delta-v is dragged.
 
 - The orbit view (left, Earth-centered): the orbit before the burn
   (dashed) and the trajectory after it (cyan), each filled in translucent
-  in a color of its own (`RibbonArtist`), the latter's apsides, the burn
-  point, and the delta-v as a red line from it (a `SegmentArtist`).
+  in a color of its own (`RibbonArtist`), a white line where their planes
+  cross (translucent surfaces don't cut each other, so it's drawn: from the
+  center through the burn point, which both orbits pass), the latter's
+  apsides, the burn point, and the delta-v as a red line from it (a
+  `SegmentArtist`).
 - The spacecraft view (right): a view of the spacecraft's frame, whose axes
   are the burn's directions (prograde, normal, radial: the VNB frame), with
   the delta-v as an arrow (a `VectorHandle` in that frame). Drag its tip and
