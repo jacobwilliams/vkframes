@@ -1,0 +1,1116 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>sphere_update &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>sphere_update
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">12 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_sphere.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_sphere.f90.html'>vkf_sphere.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_sphere.html'>vkf_sphere</a></li>
+            <li class="breadcrumb-item active" aria-current="page">sphere_update</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/sphere_update.html#src">sphere_update</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private recursive subroutine sphere_update(self, t)  
+</h2>
+    
+
+    <p>Update the frame (followed trajectories, children) and, with level of
+detail, build the mesh the views have wanted if it isn't built yet (the
+coarsest with as many segments as wanted, or the finest).</p>
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/sphere.html'>Sphere</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~841"></span>
+              class(<a href='../type/sphere.html'>Sphere</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~67"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+                <p>the scene time</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~sphere_update~~CallsGraph Pages: 1 -->
+<svg id="procsphere_updateCallsGraph" width="641pt" height="332pt"
+ viewBox="0.00 0.00 641.00 332.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~sphere_update~~CallsGraph" class="graph" transform="scale(0.476088 0.476088) rotate(0) translate(4 693.27)">
+<title>proc~~sphere_update~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-693.27 1342.39,-693.27 1342.39,4 -4,4"/>
+<!-- proc~sphere_update -->
+<g id="proc~~sphere_update~~CallsGraph_node1" class="node">
+<title>proc~sphere_update</title>
+<polygon fill="none" stroke="black" points="137.52,-480.27 0,-480.27 0,-456 137.52,-456 137.52,-480.27"/>
+<text xml:space="preserve" text-anchor="middle" x="68.76" y="-464.53" font-family="Helvetica,sans-Serif" font-size="10.50">Sphere%sphere_update</text>
+</g>
+<!-- interface~vkf_sphere_lod_requested -->
+<g id="proc~~sphere_update~~CallsGraph_node2" class="node">
+<title>interface~vkf_sphere_lod_requested</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node2"><a xlink:href="../interface/vkf_sphere_lod_requested.html" xlink:title="vkf_sphere_lod_requested">
+<polygon fill="#a7506f" stroke="#a7506f" points="322.29,-522.27 173.52,-522.27 173.52,-498 322.29,-498 322.29,-522.27"/>
+<text xml:space="preserve" text-anchor="middle" x="247.9" y="-506.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere_lod_requested</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_update&#45;&gt;interface~vkf_sphere_lod_requested -->
+<g id="proc~~sphere_update~~CallsGraph_edge1" class="edge">
+<title>proc~sphere_update&#45;&gt;interface~vkf_sphere_lod_requested</title>
+<path fill="none" stroke="#000000" d="M122.91,-480.74C141.74,-485.2 163.13,-490.27 182.77,-494.93"/>
+<polygon fill="#000000" stroke="#000000" points="181.78,-498.29 192.32,-497.19 183.4,-491.48 181.78,-498.29"/>
+</g>
+<!-- proc~build_lod_mesh -->
+<g id="proc~~sphere_update~~CallsGraph_node3" class="node">
+<title>proc~build_lod_mesh</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node3"><a xlink:href="../proc/build_lod_mesh.html" xlink:title="build_lod_mesh">
+<polygon fill="#d9534f" stroke="#d9534f" points="294.91,-480.27 200.89,-480.27 200.89,-456 294.91,-456 294.91,-480.27"/>
+<text xml:space="preserve" text-anchor="middle" x="247.9" y="-464.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">build_lod_mesh</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_update&#45;&gt;proc~build_lod_mesh -->
+<g id="proc~~sphere_update~~CallsGraph_edge2" class="edge">
+<title>proc~sphere_update&#45;&gt;proc~build_lod_mesh</title>
+<path fill="none" stroke="#000000" d="M138,-468.13C155.02,-468.13 173.11,-468.13 189.55,-468.13"/>
+<polygon fill="#000000" stroke="#000000" points="189.12,-471.64 199.12,-468.14 189.12,-464.64 189.12,-471.64"/>
+</g>
+<!-- proc~update~2 -->
+<g id="proc~~sphere_update~~CallsGraph_node4" class="node">
+<title>proc~update~2</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node4"><a xlink:href="../proc/update~2.html" xlink:title="ReferenceFrame%update">
+<polygon fill="#d9534f" stroke="#d9534f" points="321.16,-290.27 174.64,-290.27 174.64,-266 321.16,-266 321.16,-290.27"/>
+<text xml:space="preserve" text-anchor="middle" x="247.9" y="-274.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%update</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_update&#45;&gt;proc~update~2 -->
+<g id="proc~~sphere_update~~CallsGraph_edge3" class="edge">
+<title>proc~sphere_update&#45;&gt;proc~update~2</title>
+<path fill="none" stroke="#000000" d="M81.38,-455.67C111.3,-423.59 191.16,-337.93 227.91,-298.51"/>
+<polygon fill="#000000" stroke="#000000" points="230.18,-301.21 234.44,-291.51 225.06,-296.43 230.18,-301.21"/>
+</g>
+<!-- interface~vkf_compile_node -->
+<g id="proc~~sphere_update~~CallsGraph_node5" class="node">
+<title>interface~vkf_compile_node</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node5"><a xlink:href="../interface/vkf_compile_node.html" xlink:title="vkf_compile_node">
+<polygon fill="#a7506f" stroke="#a7506f" points="490.19,-501.27 382.67,-501.27 382.67,-477 490.19,-477 490.19,-501.27"/>
+<text xml:space="preserve" text-anchor="middle" x="436.43" y="-485.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_compile_node</text>
+</a>
+</g>
+</g>
+<!-- proc~build_lod_mesh&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~sphere_update~~CallsGraph_edge4" class="edge">
+<title>proc~build_lod_mesh&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M295.01,-473.33C317.93,-475.91 346.01,-479.07 371.01,-481.88"/>
+<polygon fill="#000000" stroke="#000000" points="370.43,-485.34 380.75,-482.98 371.21,-478.38 370.43,-485.34"/>
+</g>
+<!-- interface~vkf_sphere_lod_add -->
+<g id="proc~~sphere_update~~CallsGraph_node6" class="node">
+<title>interface~vkf_sphere_lod_add</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node6"><a xlink:href="../interface/vkf_sphere_lod_add.html" xlink:title="vkf_sphere_lod_add">
+<polygon fill="#a7506f" stroke="#a7506f" points="494.31,-459.27 378.54,-459.27 378.54,-435 494.31,-435 494.31,-459.27"/>
+<text xml:space="preserve" text-anchor="middle" x="436.43" y="-443.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere_lod_add</text>
+</a>
+</g>
+</g>
+<!-- proc~build_lod_mesh&#45;&gt;interface~vkf_sphere_lod_add -->
+<g id="proc~~sphere_update~~CallsGraph_edge5" class="edge">
+<title>proc~build_lod_mesh&#45;&gt;interface~vkf_sphere_lod_add</title>
+<path fill="none" stroke="#000000" d="M295.01,-462.94C316.71,-460.5 343.03,-457.54 366.99,-454.84"/>
+<polygon fill="#000000" stroke="#000000" points="367.12,-458.35 376.67,-453.75 366.34,-451.39 367.12,-458.35"/>
+</g>
+<!-- proc~apply_material_to -->
+<g id="proc~~sphere_update~~CallsGraph_node7" class="node">
+<title>proc~apply_material_to</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node7"><a xlink:href="../proc/apply_material_to.html" xlink:title="apply_material_to">
+<polygon fill="#d9534f" stroke="#d9534f" points="489.81,-584.27 383.04,-584.27 383.04,-560 489.81,-560 489.81,-584.27"/>
+<text xml:space="preserve" text-anchor="middle" x="436.43" y="-568.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_material_to</text>
+</a>
+</g>
+</g>
+<!-- proc~build_lod_mesh&#45;&gt;proc~apply_material_to -->
+<g id="proc~~sphere_update~~CallsGraph_edge6" class="edge">
+<title>proc~build_lod_mesh&#45;&gt;proc~apply_material_to</title>
+<path fill="none" stroke="#000000" d="M295.05,-475.99C304.64,-479.04 314.26,-483.27 322.29,-489.13 345.58,-506.15 335.7,-525.2 358.29,-543.13 364.16,-547.8 370.86,-551.77 377.8,-555.13"/>
+<polygon fill="#000000" stroke="#000000" points="376.13,-558.22 386.7,-559.03 378.94,-551.81 376.13,-558.22"/>
+</g>
+<!-- proc~ellipsoid_create -->
+<g id="proc~~sphere_update~~CallsGraph_node8" class="node">
+<title>proc~ellipsoid_create</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node8"><a xlink:href="../proc/ellipsoid_create.html" xlink:title="ellipsoid_create">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="483.81,-417.27 389.04,-417.27 389.04,-393 483.81,-393 483.81,-417.27"/>
+<text xml:space="preserve" text-anchor="middle" x="436.43" y="-401.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ellipsoid_create</text>
+</a>
+</g>
+</g>
+<!-- proc~build_lod_mesh&#45;&gt;proc~ellipsoid_create -->
+<g id="proc~~sphere_update~~CallsGraph_edge7" class="edge">
+<title>proc~build_lod_mesh&#45;&gt;proc~ellipsoid_create</title>
+<path fill="none" stroke="#000000" d="M279.26,-455.53C301.05,-446.72 331.22,-434.99 358.29,-426.13 364.54,-424.09 371.13,-422.08 377.7,-420.17"/>
+<polygon fill="#000000" stroke="#000000" points="378.58,-423.55 387.24,-417.46 376.67,-416.82 378.58,-423.55"/>
+</g>
+<!-- proc~name -->
+<g id="proc~~sphere_update~~CallsGraph_node10" class="node">
+<title>proc~name</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node10"><a xlink:href="../proc/name.html" xlink:title="ReferenceFrame%name">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="717.33,-542.27 577.56,-542.27 577.56,-518 717.33,-518 717.33,-542.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-526.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%name</text>
+</a>
+</g>
+</g>
+<!-- proc~build_lod_mesh&#45;&gt;proc~name -->
+<g id="proc~~sphere_update~~CallsGraph_edge8" class="edge">
+<title>proc~build_lod_mesh&#45;&gt;proc~name</title>
+<path fill="none" stroke="#000000" d="M295.32,-479.52C304.41,-482.27 313.76,-485.49 322.29,-489.13 339.33,-496.41 340.59,-504.68 358.29,-510.13 426.14,-531.02 507.06,-534.93 565.85,-534.24"/>
+<polygon fill="#000000" stroke="#000000" points="565.85,-537.74 575.79,-534.07 565.74,-530.74 565.85,-537.74"/>
+</g>
+<!-- proc~followed_pose -->
+<g id="proc~~sphere_update~~CallsGraph_node9" class="node">
+<title>proc~followed_pose</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node9"><a xlink:href="../proc/followed_pose.html" xlink:title="followed_pose">
+<polygon fill="#d9534f" stroke="#d9534f" points="480.06,-179.27 392.79,-179.27 392.79,-155 480.06,-155 480.06,-179.27"/>
+<text xml:space="preserve" text-anchor="middle" x="436.43" y="-163.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">followed_pose</text>
+</a>
+</g>
+</g>
+<!-- proc~update~2&#45;&gt;proc~followed_pose -->
+<g id="proc~~sphere_update~~CallsGraph_edge9" class="edge">
+<title>proc~update~2&#45;&gt;proc~followed_pose</title>
+<path fill="none" stroke="#000000" d="M269.94,-265.62C302.91,-246 366.92,-207.91 404.94,-185.28"/>
+<polygon fill="#000000" stroke="#000000" points="406.36,-188.5 413.17,-180.38 402.78,-182.49 406.36,-188.5"/>
+</g>
+<!-- proc~update -->
+<g id="proc~~sphere_update~~CallsGraph_node11" class="node">
+<title>proc~update</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node11"><a xlink:href="../proc/update.html" xlink:title="TrajectoryFollower%update">
+<polygon fill="#d9534f" stroke="#d9534f" points="514.56,-290.27 358.29,-290.27 358.29,-266 514.56,-266 514.56,-290.27"/>
+<text xml:space="preserve" text-anchor="middle" x="436.43" y="-274.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%update</text>
+</a>
+</g>
+</g>
+<!-- proc~update~2&#45;&gt;proc~update -->
+<g id="proc~~sphere_update~~CallsGraph_edge10" class="edge">
+<title>proc~update~2&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M321.55,-278.13C329.78,-278.13 338.23,-278.13 346.64,-278.13"/>
+<polygon fill="#000000" stroke="#000000" points="346.53,-281.64 356.53,-278.14 346.53,-274.64 346.53,-281.64"/>
+</g>
+<!-- proc~apply_material_to&#45;&gt;proc~name -->
+<g id="proc~~sphere_update~~CallsGraph_edge14" class="edge">
+<title>proc~apply_material_to&#45;&gt;proc~name</title>
+<path fill="none" stroke="#000000" d="M490.17,-561.54C515.15,-556.52 545.41,-550.44 572.62,-544.97"/>
+<polygon fill="#000000" stroke="#000000" points="573.07,-548.45 582.19,-543.05 571.69,-541.59 573.07,-548.45"/>
+</g>
+<!-- interface~vkf_mesh_set_twilight -->
+<g id="proc~~sphere_update~~CallsGraph_node14" class="node">
+<title>interface~vkf_mesh_set_twilight</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node14"><a xlink:href="../interface/vkf_mesh_set_twilight.html" xlink:title="vkf_mesh_set_twilight">
+<polygon fill="#a7506f" stroke="#a7506f" points="710.58,-626.27 584.31,-626.27 584.31,-602 710.58,-602 710.58,-626.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-610.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_set_twilight</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_material_to&#45;&gt;interface~vkf_mesh_set_twilight -->
+<g id="proc~~sphere_update~~CallsGraph_edge11" class="edge">
+<title>proc~apply_material_to&#45;&gt;interface~vkf_mesh_set_twilight</title>
+<path fill="none" stroke="#000000" d="M490.17,-582.73C515.25,-587.77 545.66,-593.88 572.96,-599.37"/>
+<polygon fill="#000000" stroke="#000000" points="572.07,-602.76 582.57,-601.3 573.45,-595.9 572.07,-602.76"/>
+</g>
+<!-- proc~color -->
+<g id="proc~~sphere_update~~CallsGraph_node15" class="node">
+<title>proc~color</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node15"><a xlink:href="../proc/color.html" xlink:title="ReferenceFrame%color">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="715.46,-584.27 579.44,-584.27 579.44,-560 715.46,-560 715.46,-584.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-568.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%color</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_material_to&#45;&gt;proc~color -->
+<g id="proc~~sphere_update~~CallsGraph_edge12" class="edge">
+<title>proc~apply_material_to&#45;&gt;proc~color</title>
+<path fill="none" stroke="#000000" d="M490.17,-572.13C513.66,-572.13 541.82,-572.13 567.73,-572.13"/>
+<polygon fill="#000000" stroke="#000000" points="567.55,-575.64 577.55,-572.14 567.55,-568.64 567.55,-575.64"/>
+</g>
+<!-- proc~mesh_set_material -->
+<g id="proc~~sphere_update~~CallsGraph_node19" class="node">
+<title>proc~mesh_set_material</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node19"><a xlink:href="../proc/mesh_set_material.html" xlink:title="mesh_set_material">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="703.46,-668.27 591.44,-668.27 591.44,-644 703.46,-644 703.46,-668.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-652.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">mesh_set_material</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_material_to&#45;&gt;proc~mesh_set_material -->
+<g id="proc~~sphere_update~~CallsGraph_edge13" class="edge">
+<title>proc~apply_material_to&#45;&gt;proc~mesh_set_material</title>
+<path fill="none" stroke="#000000" d="M455.82,-584.61C477.55,-598.81 515.24,-621.76 550.56,-635.13 559.88,-638.66 569.95,-641.68 579.93,-644.22"/>
+<polygon fill="#000000" stroke="#000000" points="579.12,-647.63 589.66,-646.55 580.75,-640.82 579.12,-647.63"/>
+</g>
+<!-- interface~vkf_mesh_create -->
+<g id="proc~~sphere_update~~CallsGraph_node12" class="node">
+<title>interface~vkf_mesh_create</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node12"><a xlink:href="../interface/vkf_mesh_create.html" xlink:title="vkf_mesh_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="697.83,-458.27 597.06,-458.27 597.06,-434 697.83,-434 697.83,-458.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-442.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_create</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_create -->
+<g id="proc~~sphere_update~~CallsGraph_edge15" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_create</title>
+<path fill="none" stroke="#000000" d="M484.07,-414.29C513.99,-420.15 553.15,-427.84 585.52,-434.18"/>
+<polygon fill="#000000" stroke="#000000" points="584.69,-437.59 595.17,-436.08 586.03,-430.72 584.69,-437.59"/>
+</g>
+<!-- interface~vkf_mesh_set_bound -->
+<g id="proc~~sphere_update~~CallsGraph_node13" class="node">
+<title>interface~vkf_mesh_set_bound</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node13"><a xlink:href="../interface/vkf_mesh_set_bound.html" xlink:title="vkf_mesh_set_bound">
+<polygon fill="#a7506f" stroke="#a7506f" points="708.33,-416.27 586.56,-416.27 586.56,-392 708.33,-392 708.33,-416.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-400.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_set_bound</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_set_bound -->
+<g id="proc~~sphere_update~~CallsGraph_edge16" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;interface~vkf_mesh_set_bound</title>
+<path fill="none" stroke="#000000" d="M484.07,-404.91C510.85,-404.78 545.03,-404.62 575.12,-404.48"/>
+<polygon fill="#000000" stroke="#000000" points="574.93,-407.98 584.91,-404.43 574.89,-400.98 574.93,-407.98"/>
+</g>
+<!-- proc~ellipsoid -->
+<g id="proc~~sphere_update~~CallsGraph_node16" class="node">
+<title>proc~ellipsoid</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node16"><a xlink:href="../proc/ellipsoid.html" xlink:title="ellipsoid">
+<polygon fill="#d9534f" stroke="#d9534f" points="675.33,-374.27 619.56,-374.27 619.56,-350 675.33,-350 675.33,-374.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-358.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ellipsoid</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;proc~ellipsoid -->
+<g id="proc~~sphere_update~~CallsGraph_edge17" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;proc~ellipsoid</title>
+<path fill="none" stroke="#000000" d="M484.07,-395.54C521.37,-387.87 573.02,-377.24 607.97,-370.05"/>
+<polygon fill="#000000" stroke="#000000" points="608.57,-373.5 617.66,-368.06 607.16,-366.64 608.57,-373.5"/>
+</g>
+<!-- proc~ellipsoid_size -->
+<g id="proc~~sphere_update~~CallsGraph_node17" class="node">
+<title>proc~ellipsoid_size</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node17"><a xlink:href="../proc/ellipsoid_size.html" xlink:title="ellipsoid_size">
+<polygon fill="#d9534f" stroke="#d9534f" points="688.08,-332.27 606.81,-332.27 606.81,-308 688.08,-308 688.08,-332.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-316.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ellipsoid_size</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;proc~ellipsoid_size -->
+<g id="proc~~sphere_update~~CallsGraph_edge18" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;proc~ellipsoid_size</title>
+<path fill="none" stroke="#000000" d="M455.4,-392.7C477.04,-378.28 514.94,-354.76 550.56,-341.13 564.77,-335.7 580.72,-331.51 595.48,-328.34"/>
+<polygon fill="#000000" stroke="#000000" points="595.89,-331.83 605,-326.42 594.5,-324.97 595.89,-331.83"/>
+</g>
+<!-- proc~mesh_arrays -->
+<g id="proc~~sphere_update~~CallsGraph_node18" class="node">
+<title>proc~mesh_arrays</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node18"><a xlink:href="../proc/mesh_arrays.html" xlink:title="mesh_arrays">
+<polygon fill="#d9534f" stroke="#d9534f" points="687.33,-500.27 607.56,-500.27 607.56,-476 687.33,-476 687.33,-500.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-484.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">mesh_arrays</text>
+</a>
+</g>
+</g>
+<!-- proc~ellipsoid_create&#45;&gt;proc~mesh_arrays -->
+<g id="proc~~sphere_update~~CallsGraph_edge19" class="edge">
+<title>proc~ellipsoid_create&#45;&gt;proc~mesh_arrays</title>
+<path fill="none" stroke="#000000" d="M484.12,-413.16C494.63,-416.21 505.38,-420.4 514.56,-426.13 535.13,-438.98 529.67,-454.81 550.56,-467.13 564.38,-475.29 581,-480.28 596.5,-483.34"/>
+<polygon fill="#000000" stroke="#000000" points="595.59,-486.74 606.03,-484.99 596.78,-479.84 595.59,-486.74"/>
+</g>
+<!-- proc~quat_from_matrix -->
+<g id="proc~~sphere_update~~CallsGraph_node20" class="node">
+<title>proc~quat_from_matrix</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node20"><a xlink:href="../proc/quat_from_matrix.html" xlink:title="quat_from_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="700.08,-108.27 594.81,-108.27 594.81,-84 700.08,-84 700.08,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-92.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_from_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_from_matrix -->
+<g id="proc~~sphere_update~~CallsGraph_edge20" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_from_matrix</title>
+<path fill="none" stroke="#000000" d="M462.02,-154.54C484.57,-143.42 519.13,-127.41 550.56,-117.13 561.13,-113.68 572.54,-110.62 583.68,-107.98"/>
+<polygon fill="#000000" stroke="#000000" points="584.23,-111.45 593.2,-105.82 582.68,-104.62 584.23,-111.45"/>
+</g>
+<!-- proc~quat_multiply -->
+<g id="proc~~sphere_update~~CallsGraph_node21" class="node">
+<title>proc~quat_multiply</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node21"><a xlink:href="../proc/quat_multiply.html" xlink:title="quat_multiply">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="689.21,-66.27 605.69,-66.27 605.69,-42 689.21,-42 689.21,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_multiply</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_multiply -->
+<g id="proc~~sphere_update~~CallsGraph_edge21" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_multiply</title>
+<path fill="none" stroke="#000000" d="M448.97,-154.52C468.08,-134.46 508.37,-95.47 550.56,-75.13 564.14,-68.59 579.78,-64.06 594.44,-60.94"/>
+<polygon fill="#000000" stroke="#000000" points="594.77,-64.44 603.92,-59.1 593.44,-57.56 594.77,-64.44"/>
+</g>
+<!-- proc~quat_normalize -->
+<g id="proc~~sphere_update~~CallsGraph_node22" class="node">
+<title>proc~quat_normalize</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node22"><a xlink:href="../proc/quat_normalize.html" xlink:title="quat_normalize">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="694.46,-24.27 600.44,-24.27 600.44,0 694.46,0 694.46,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_normalize</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_normalize -->
+<g id="proc~~sphere_update~~CallsGraph_edge22" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_normalize</title>
+<path fill="none" stroke="#000000" d="M444.04,-154.82C459.09,-128.04 498.67,-64.42 550.56,-33.13 562.19,-26.12 575.87,-21.44 589.2,-18.32"/>
+<polygon fill="#000000" stroke="#000000" points="589.68,-21.79 598.77,-16.35 588.27,-14.94 589.68,-21.79"/>
+</g>
+<!-- proc~rigid_inverse -->
+<g id="proc~~sphere_update~~CallsGraph_node23" class="node">
+<title>proc~rigid_inverse</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node23"><a xlink:href="../proc/rigid_inverse.html" xlink:title="rigid_inverse">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="687.33,-248.27 607.56,-248.27 607.56,-224 687.33,-224 687.33,-248.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-232.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">rigid_inverse</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~rigid_inverse -->
+<g id="proc~~sphere_update~~CallsGraph_edge23" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~rigid_inverse</title>
+<path fill="none" stroke="#000000" d="M467.87,-179.64C490.48,-188.7 522.18,-200.92 550.56,-210.13 565.33,-214.93 581.58,-219.57 596.43,-223.57"/>
+<polygon fill="#000000" stroke="#000000" points="595.44,-226.93 606,-226.11 597.23,-220.16 595.44,-226.93"/>
+</g>
+<!-- proc~state_at -->
+<g id="proc~~sphere_update~~CallsGraph_node24" class="node">
+<title>proc~state_at</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node24"><a xlink:href="../proc/state_at.html" xlink:title="TrajectoryFollower%state_at">
+<polygon fill="#d9534f" stroke="#d9534f" points="727.83,-290.27 567.06,-290.27 567.06,-266 727.83,-266 727.83,-290.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-274.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%state_at</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~state_at -->
+<g id="proc~~sphere_update~~CallsGraph_edge24" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~state_at</title>
+<path fill="none" stroke="#000000" d="M449.03,-179.46C468.22,-199.08 508.63,-237.2 550.56,-257.13 554.13,-258.83 557.84,-260.4 561.64,-261.83"/>
+<polygon fill="#000000" stroke="#000000" points="560.49,-265.14 571.09,-265.07 562.77,-258.52 560.49,-265.14"/>
+</g>
+<!-- proc~world_matrix_at -->
+<g id="proc~~sphere_update~~CallsGraph_node25" class="node">
+<title>proc~world_matrix_at</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node25"><a xlink:href="../proc/world_matrix_at.html" xlink:title="ReferenceFrame%world_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="744.33,-150.27 550.56,-150.27 550.56,-126 744.33,-126 744.33,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="647.45" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%world_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~sphere_update~~CallsGraph_edge25" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M480.48,-161.16C499.09,-158.58 521.72,-155.44 544.22,-152.32"/>
+<polygon fill="#000000" stroke="#000000" points="544.67,-155.79 554.09,-150.95 543.71,-148.86 544.67,-155.79"/>
+</g>
+<!-- proc~update&#45;&gt;proc~state_at -->
+<g id="proc~~sphere_update~~CallsGraph_edge26" class="edge">
+<title>proc~update&#45;&gt;proc~state_at</title>
+<path fill="none" stroke="#000000" d="M514.96,-278.13C528.12,-278.13 541.89,-278.13 555.37,-278.13"/>
+<polygon fill="#000000" stroke="#000000" points="555.08,-281.64 565.08,-278.14 555.08,-274.64 555.08,-281.64"/>
+</g>
+<!-- interface~vkf_mesh_array -->
+<g id="proc~~sphere_update~~CallsGraph_node26" class="node">
+<title>interface~vkf_mesh_array</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node26"><a xlink:href="../interface/vkf_mesh_array.html" xlink:title="vkf_mesh_array">
+<polygon fill="#a7506f" stroke="#a7506f" points="923.1,-500.27 827.58,-500.27 827.58,-476 923.1,-476 923.1,-500.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-484.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_array</text>
+</a>
+</g>
+</g>
+<!-- proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array -->
+<g id="proc~~sphere_update~~CallsGraph_edge27" class="edge">
+<title>proc~mesh_arrays&#45;&gt;interface~vkf_mesh_array</title>
+<path fill="none" stroke="#000000" d="M687.79,-488.13C723.19,-488.13 775.67,-488.13 815.95,-488.13"/>
+<polygon fill="#000000" stroke="#000000" points="815.72,-491.64 825.72,-488.14 815.72,-484.64 815.72,-491.64"/>
+</g>
+<!-- interface~vkf_mesh_material -->
+<g id="proc~~sphere_update~~CallsGraph_node27" class="node">
+<title>interface~vkf_mesh_material</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node27"><a xlink:href="../interface/vkf_mesh_material.html" xlink:title="vkf_mesh_material">
+<polygon fill="#a7506f" stroke="#a7506f" points="931.35,-689.27 819.33,-689.27 819.33,-665 931.35,-665 931.35,-689.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-673.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_material</text>
+</a>
+</g>
+</g>
+<!-- proc~mesh_set_material&#45;&gt;interface~vkf_mesh_material -->
+<g id="proc~~sphere_update~~CallsGraph_edge28" class="edge">
+<title>proc~mesh_set_material&#45;&gt;interface~vkf_mesh_material</title>
+<path fill="none" stroke="#000000" d="M703.71,-661.27C735.02,-664.18 774.42,-667.85 807.47,-670.92"/>
+<polygon fill="#000000" stroke="#000000" points="807.08,-674.4 817.36,-671.84 807.73,-667.43 807.08,-674.4"/>
+</g>
+<!-- interface~vkf_mesh_material_changed -->
+<g id="proc~~sphere_update~~CallsGraph_node28" class="node">
+<title>interface~vkf_mesh_material_changed</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node28"><a xlink:href="../interface/vkf_mesh_material_changed.html" xlink:title="vkf_mesh_material_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="957.23,-647.27 793.46,-647.27 793.46,-623 957.23,-623 957.23,-647.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-631.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_mesh_material_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~mesh_set_material&#45;&gt;interface~vkf_mesh_material_changed -->
+<g id="proc~~sphere_update~~CallsGraph_edge29" class="edge">
+<title>proc~mesh_set_material&#45;&gt;interface~vkf_mesh_material_changed</title>
+<path fill="none" stroke="#000000" d="M703.71,-651C727.25,-648.81 755.36,-646.2 781.91,-643.73"/>
+<polygon fill="#000000" stroke="#000000" points="782.04,-647.23 791.67,-642.82 781.39,-640.26 782.04,-647.23"/>
+</g>
+<!-- proc~chosen_trajectory -->
+<g id="proc~~sphere_update~~CallsGraph_node29" class="node">
+<title>proc~chosen_trajectory</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node29"><a xlink:href="../proc/chosen_trajectory.html" xlink:title="chosen_trajectory">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="928.73,-241.27 821.96,-241.27 821.96,-217 928.73,-217 928.73,-241.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-225.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">chosen_trajectory</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~chosen_trajectory -->
+<g id="proc~~sphere_update~~CallsGraph_edge30" class="edge">
+<title>proc~state_at&#45;&gt;proc~chosen_trajectory</title>
+<path fill="none" stroke="#000000" d="M706.62,-265.52C738.43,-258.62 777.88,-250.06 810.53,-242.98"/>
+<polygon fill="#000000" stroke="#000000" points="811.26,-246.4 820.29,-240.86 809.78,-239.56 811.26,-246.4"/>
+</g>
+<!-- proc~data_valid -->
+<g id="proc~~sphere_update~~CallsGraph_node30" class="node">
+<title>proc~data_valid</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node30"><a xlink:href="../proc/data_valid.html" xlink:title="TrajectoryFollower%data_valid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="962.1,-455.27 788.58,-455.27 788.58,-431 962.1,-431 962.1,-455.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-439.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%data_valid</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~data_valid -->
+<g id="proc~~sphere_update~~CallsGraph_edge31" class="edge">
+<title>proc~state_at&#45;&gt;proc~data_valid</title>
+<path fill="none" stroke="#000000" d="M728.25,-288.34C734.1,-291.2 739.57,-294.75 744.33,-299.13 784.36,-335.98 741.5,-378.03 780.33,-416.13 783.81,-419.55 787.69,-422.53 791.83,-425.15"/>
+<polygon fill="#000000" stroke="#000000" points="790.13,-428.21 800.6,-429.87 793.46,-422.05 790.13,-428.21"/>
+</g>
+<!-- proc~interpolate_attitude -->
+<g id="proc~~sphere_update~~CallsGraph_node31" class="node">
+<title>proc~interpolate_attitude</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node31"><a xlink:href="../proc/interpolate_attitude.html" xlink:title="interpolate_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="933.6,-407.27 817.08,-407.27 817.08,-383 933.6,-383 933.6,-407.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-391.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~interpolate_attitude -->
+<g id="proc~~sphere_update~~CallsGraph_edge32" class="edge">
+<title>proc~state_at&#45;&gt;proc~interpolate_attitude</title>
+<path fill="none" stroke="#000000" d="M724.72,-290.69C731.53,-293.04 738.18,-295.83 744.33,-299.13 763.98,-309.71 762.89,-320.22 780.33,-334.13 800.09,-349.9 824.01,-365.38 842.78,-376.8"/>
+<polygon fill="#000000" stroke="#000000" points="840.94,-379.78 851.32,-381.92 844.54,-373.77 840.94,-379.78"/>
+</g>
+<!-- proc~interpolate_position -->
+<g id="proc~~sphere_update~~CallsGraph_node32" class="node">
+<title>proc~interpolate_position</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node32"><a xlink:href="../proc/interpolate_position.html" xlink:title="interpolate_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="933.98,-325.27 816.71,-325.27 816.71,-301 933.98,-301 933.98,-325.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-309.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_position</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~interpolate_position -->
+<g id="proc~~sphere_update~~CallsGraph_edge33" class="edge">
+<title>proc~state_at&#45;&gt;proc~interpolate_position</title>
+<path fill="none" stroke="#000000" d="M728.09,-290.47C753.2,-294.37 780.72,-298.63 805.05,-302.4"/>
+<polygon fill="#000000" stroke="#000000" points="804.43,-305.85 814.85,-303.92 805.51,-298.93 804.43,-305.85"/>
+</g>
+<!-- proc~time_index -->
+<g id="proc~~sphere_update~~CallsGraph_node34" class="node">
+<title>proc~time_index</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node34"><a xlink:href="../proc/time_index.html" xlink:title="Trajectory%time_index">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="941.1,-199.27 809.58,-199.27 809.58,-175 941.1,-175 941.1,-199.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-183.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_index</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~time_index -->
+<g id="proc~~sphere_update~~CallsGraph_edge34" class="edge">
+<title>proc~state_at&#45;&gt;proc~time_index</title>
+<path fill="none" stroke="#000000" d="M727.78,-265.67C733.59,-263.3 739.19,-260.48 744.33,-257.13 766.99,-242.41 757.7,-222.91 780.33,-208.13 785.89,-204.5 791.99,-201.49 798.33,-199"/>
+<polygon fill="#000000" stroke="#000000" points="799.41,-202.33 807.73,-195.76 797.13,-195.71 799.41,-202.33"/>
+</g>
+<!-- proc~wrapped_time -->
+<g id="proc~~sphere_update~~CallsGraph_node35" class="node">
+<title>proc~wrapped_time</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node35"><a xlink:href="../proc/wrapped_time.html" xlink:title="wrapped_time">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="918.98,-283.27 831.71,-283.27 831.71,-259 918.98,-259 918.98,-283.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-267.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">wrapped_time</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~wrapped_time -->
+<g id="proc~~sphere_update~~CallsGraph_edge35" class="edge">
+<title>proc~state_at&#45;&gt;proc~wrapped_time</title>
+<path fill="none" stroke="#000000" d="M728.09,-275.67C758.54,-274.72 792.54,-273.67 820.09,-272.82"/>
+<polygon fill="#000000" stroke="#000000" points="820.08,-276.32 829.96,-272.51 819.86,-269.32 820.08,-276.32"/>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~sphere_update~~CallsGraph_edge37" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M612.14,-150.52C600.64,-159.41 612.41,-168.27 647.45,-168.27 666.6,-168.27 678.8,-165.62 684.05,-161.76"/>
+<polygon fill="#000000" stroke="#000000" points="687.55,-161.55 682.92,-152.02 680.59,-162.36 687.55,-161.55"/>
+</g>
+<!-- proc~local_matrix_at -->
+<g id="proc~~sphere_update~~CallsGraph_node33" class="node">
+<title>proc~local_matrix_at</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node33"><a xlink:href="../proc/local_matrix_at.html" xlink:title="ReferenceFrame%local_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="970.35,-154.27 780.33,-154.27 780.33,-130 970.35,-130 970.35,-154.27"/>
+<text xml:space="preserve" text-anchor="middle" x="875.34" y="-138.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%local_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~local_matrix_at -->
+<g id="proc~~sphere_update~~CallsGraph_edge36" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~local_matrix_at</title>
+<path fill="none" stroke="#000000" d="M744.57,-139.84C752.57,-139.98 760.68,-140.12 768.75,-140.27"/>
+<polygon fill="#000000" stroke="#000000" points="768.52,-143.76 778.58,-140.44 768.65,-136.76 768.52,-143.76"/>
+</g>
+<!-- proc~time_distance -->
+<g id="proc~~sphere_update~~CallsGraph_node43" class="node">
+<title>proc~time_distance</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node43"><a xlink:href="../proc/time_distance.html" xlink:title="Trajectory%time_distance">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1156.25,-200.27 1008.23,-200.27 1008.23,-176 1156.25,-176 1156.25,-200.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-184.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_distance</text>
+</a>
+</g>
+</g>
+<!-- proc~chosen_trajectory&#45;&gt;proc~time_distance -->
+<g id="proc~~sphere_update~~CallsGraph_edge38" class="edge">
+<title>proc~chosen_trajectory&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M929.11,-218.58C952.86,-213.82 981.32,-208.13 1007.16,-202.96"/>
+<polygon fill="#000000" stroke="#000000" points="1007.84,-206.39 1016.96,-201 1006.46,-199.53 1007.84,-206.39"/>
+</g>
+<!-- proc~verify_data -->
+<g id="proc~~sphere_update~~CallsGraph_node45" class="node">
+<title>proc~verify_data</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node45"><a xlink:href="../proc/verify_data.html" xlink:title="Trajectory%verify_data">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1148.75,-529.27 1015.73,-529.27 1015.73,-505 1148.75,-505 1148.75,-529.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-513.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%verify_data</text>
+</a>
+</g>
+</g>
+<!-- proc~data_valid&#45;&gt;proc~verify_data -->
+<g id="proc~~sphere_update~~CallsGraph_edge39" class="edge">
+<title>proc~data_valid&#45;&gt;proc~verify_data</title>
+<path fill="none" stroke="#000000" d="M940.89,-455.69C951.01,-458.77 961.16,-462.54 970.35,-467.13 988.72,-476.33 988.09,-486.72 1006.35,-496.13 1009.37,-497.69 1012.53,-499.15 1015.75,-500.5"/>
+<polygon fill="#000000" stroke="#000000" points="1014.25,-503.68 1024.84,-503.97 1016.74,-497.13 1014.25,-503.68"/>
+</g>
+<!-- proc~attitude~3 -->
+<g id="proc~~sphere_update~~CallsGraph_node36" class="node">
+<title>proc~attitude~3</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node36"><a xlink:href="../proc/attitude~3.html" xlink:title="Trajectory%attitude">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1139.75,-445.27 1024.73,-445.27 1024.73,-421 1139.75,-421 1139.75,-445.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-429.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~attitude~3 -->
+<g id="proc~~sphere_update~~CallsGraph_edge40" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~attitude~3</title>
+<path fill="none" stroke="#000000" d="M933.96,-405.82C958.6,-410.39 987.56,-415.76 1013.24,-420.52"/>
+<polygon fill="#000000" stroke="#000000" points="1012.44,-423.94 1022.91,-422.32 1013.72,-417.05 1012.44,-423.94"/>
+</g>
+<!-- proc~num_attitudes -->
+<g id="proc~~sphere_update~~CallsGraph_node38" class="node">
+<title>proc~num_attitudes</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node38"><a xlink:href="../proc/num_attitudes.html" xlink:title="Trajectory%num_attitudes">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1157,-403.27 1007.48,-403.27 1007.48,-379 1157,-379 1157,-403.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-387.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_attitudes</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~num_attitudes -->
+<g id="proc~~sphere_update~~CallsGraph_edge41" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~num_attitudes</title>
+<path fill="none" stroke="#000000" d="M933.96,-394.01C953.14,-393.64 974.92,-393.21 995.74,-392.8"/>
+<polygon fill="#000000" stroke="#000000" points="995.75,-396.3 1005.68,-392.61 995.61,-389.31 995.75,-396.3"/>
+</g>
+<!-- proc~quat_slerp -->
+<g id="proc~~sphere_update~~CallsGraph_node42" class="node">
+<title>proc~quat_slerp</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node42"><a xlink:href="../proc/quat_slerp.html" xlink:title="quat_slerp">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1115.75,-487.27 1048.73,-487.27 1048.73,-463 1115.75,-463 1115.75,-487.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-471.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_slerp</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~quat_slerp -->
+<g id="proc~~sphere_update~~CallsGraph_edge42" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~quat_slerp</title>
+<path fill="none" stroke="#000000" d="M933.64,-407.18C946.17,-411 959.04,-415.91 970.35,-422.13 989.1,-432.46 987.56,-443.87 1006.35,-454.13 1015.83,-459.32 1026.71,-463.31 1037.18,-466.35"/>
+<polygon fill="#000000" stroke="#000000" points="1036.27,-469.73 1046.83,-468.91 1038.06,-462.97 1036.27,-469.73"/>
+</g>
+<!-- proc~num_points -->
+<g id="proc~~sphere_update~~CallsGraph_node39" class="node">
+<title>proc~num_points</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node39"><a xlink:href="../proc/num_points.html" xlink:title="Trajectory%num_points">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1333.89,-365.27 1198.62,-365.27 1198.62,-341 1333.89,-341 1333.89,-365.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1266.26" y="-349.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_points</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~num_points -->
+<g id="proc~~sphere_update~~CallsGraph_edge43" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M934.16,-322.4C956.65,-325.79 982.66,-329.45 1006.35,-332.13 1066.86,-339 1135.57,-344.47 1187,-348.1"/>
+<polygon fill="#000000" stroke="#000000" points="1186.63,-351.58 1196.85,-348.79 1187.11,-344.6 1186.63,-351.58"/>
+</g>
+<!-- proc~point -->
+<g id="proc~~sphere_update~~CallsGraph_node40" class="node">
+<title>proc~point</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node40"><a xlink:href="../proc/point.html" xlink:title="Trajectory%point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1316.64,-281.27 1215.87,-281.27 1215.87,-257 1316.64,-257 1316.64,-281.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1266.26" y="-265.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point -->
+<g id="proc~~sphere_update~~CallsGraph_edge44" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M934.41,-301.66C956.82,-297.54 982.71,-293.18 1006.35,-290.13 1073.71,-281.46 1151.43,-275.73 1204,-272.47"/>
+<polygon fill="#000000" stroke="#000000" points="1204.2,-275.97 1213.97,-271.87 1203.77,-268.98 1204.2,-275.97"/>
+</g>
+<!-- proc~point_between -->
+<g id="proc~~sphere_update~~CallsGraph_node41" class="node">
+<title>proc~point_between</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node41"><a xlink:href="../proc/point_between.html" xlink:title="Trajectory%point_between">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1158.12,-323.27 1006.35,-323.27 1006.35,-299 1158.12,-299 1158.12,-323.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-307.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point_between</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point_between -->
+<g id="proc~~sphere_update~~CallsGraph_edge45" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point_between</title>
+<path fill="none" stroke="#000000" d="M934.23,-312.57C952.92,-312.39 974.06,-312.18 994.36,-311.98"/>
+<polygon fill="#000000" stroke="#000000" points="994.39,-315.48 1004.35,-311.89 994.32,-308.48 994.39,-315.48"/>
+</g>
+<!-- proc~local_matrix_at&#45;&gt;proc~followed_pose -->
+<g id="proc~~sphere_update~~CallsGraph_edge46" class="edge">
+<title>proc~local_matrix_at&#45;&gt;proc~followed_pose</title>
+<path fill="none" stroke="#000000" d="M823.48,-154.66C809.47,-158.23 794.28,-162.23 780.33,-166.13 764.22,-170.65 760.88,-174.66 744.33,-177.13 659.15,-189.86 636.6,-180.93 550.56,-177.13 531.31,-176.29 510.27,-174.63 491.62,-172.9"/>
+<polygon fill="#000000" stroke="#000000" points="492.14,-169.44 481.85,-171.97 491.47,-176.4 492.14,-169.44"/>
+</g>
+<!-- proc~frame_matrix -->
+<g id="proc~~sphere_update~~CallsGraph_node37" class="node">
+<title>proc~frame_matrix</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node37"><a xlink:href="../proc/frame_matrix.html" xlink:title="frame_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1124,-154.27 1040.48,-154.27 1040.48,-130 1124,-130 1124,-154.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-138.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">frame_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~local_matrix_at&#45;&gt;proc~frame_matrix -->
+<g id="proc~~sphere_update~~CallsGraph_edge47" class="edge">
+<title>proc~local_matrix_at&#45;&gt;proc~frame_matrix</title>
+<path fill="none" stroke="#000000" d="M970.69,-142.13C990.58,-142.13 1010.89,-142.13 1028.57,-142.13"/>
+<polygon fill="#000000" stroke="#000000" points="1028.56,-145.64 1038.56,-142.14 1028.56,-138.64 1028.56,-145.64"/>
+</g>
+<!-- proc~time_index&#45;&gt;proc~time_distance -->
+<g id="proc~~sphere_update~~CallsGraph_edge48" class="edge">
+<title>proc~time_index&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M941.45,-187.45C958.92,-187.54 978.06,-187.63 996.43,-187.72"/>
+<polygon fill="#000000" stroke="#000000" points="996.21,-191.22 1006.23,-187.77 996.24,-184.22 996.21,-191.22"/>
+</g>
+<!-- proc~time_range~2 -->
+<g id="proc~~sphere_update~~CallsGraph_node44" class="node">
+<title>proc~time_range~2</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node44"><a xlink:href="../proc/time_range~2.html" xlink:title="Trajectory%time_range">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1149.5,-243.27 1014.98,-243.27 1014.98,-219 1149.5,-219 1149.5,-243.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1082.24" y="-227.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_range</text>
+</a>
+</g>
+</g>
+<!-- proc~wrapped_time&#45;&gt;proc~time_range~2 -->
+<g id="proc~~sphere_update~~CallsGraph_edge49" class="edge">
+<title>proc~wrapped_time&#45;&gt;proc~time_range~2</title>
+<path fill="none" stroke="#000000" d="M919.29,-262.75C944.27,-257.87 976.46,-251.59 1005.55,-245.91"/>
+<polygon fill="#000000" stroke="#000000" points="1005.9,-249.41 1015.04,-244.06 1004.56,-242.54 1005.9,-249.41"/>
+</g>
+<!-- proc~quat_to_matrix -->
+<g id="proc~~sphere_update~~CallsGraph_node46" class="node">
+<title>proc~quat_to_matrix</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node46"><a xlink:href="../proc/quat_to_matrix.html" xlink:title="quat_to_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1311.77,-154.27 1220.75,-154.27 1220.75,-130 1311.77,-130 1311.77,-154.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1266.26" y="-138.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_to_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~frame_matrix&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~sphere_update~~CallsGraph_edge50" class="edge">
+<title>proc~frame_matrix&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M1124.08,-142.13C1149.12,-142.13 1181.53,-142.13 1208.97,-142.13"/>
+<polygon fill="#000000" stroke="#000000" points="1208.88,-145.64 1218.88,-142.14 1208.88,-138.64 1208.88,-145.64"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~num_points -->
+<g id="proc~~sphere_update~~CallsGraph_edge51" class="edge">
+<title>proc~point_between&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M1137.85,-323.74C1157.29,-328.22 1179.38,-333.32 1199.64,-337.99"/>
+<polygon fill="#000000" stroke="#000000" points="1198.68,-341.36 1209.21,-340.2 1200.25,-334.54 1198.68,-341.36"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~point -->
+<g id="proc~~sphere_update~~CallsGraph_edge52" class="edge">
+<title>proc~point_between&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M1137.85,-298.53C1158.89,-293.68 1183.05,-288.1 1204.63,-283.12"/>
+<polygon fill="#000000" stroke="#000000" points="1205.21,-286.58 1214.17,-280.92 1203.64,-279.76 1205.21,-286.58"/>
+</g>
+<!-- proc~time_fraction -->
+<g id="proc~~sphere_update~~CallsGraph_node47" class="node">
+<title>proc~time_fraction</title>
+<g id="a_proc~~sphere_update~~CallsGraph_node47"><a xlink:href="../proc/time_fraction.html" xlink:title="Trajectory%time_fraction">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1338.39,-323.27 1194.12,-323.27 1194.12,-299 1338.39,-299 1338.39,-323.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1266.26" y="-307.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_fraction</text>
+</a>
+</g>
+</g>
+<!-- proc~point_between&#45;&gt;proc~time_fraction -->
+<g id="proc~~sphere_update~~CallsGraph_edge53" class="edge">
+<title>proc~point_between&#45;&gt;proc~time_fraction</title>
+<path fill="none" stroke="#000000" d="M1158.58,-311.13C1166.4,-311.13 1174.38,-311.13 1182.28,-311.13"/>
+<polygon fill="#000000" stroke="#000000" points="1182.25,-314.64 1192.25,-311.14 1182.25,-307.64 1182.25,-314.64"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocsphere_updateCallsGraph = svgPanZoom('#procsphere_updateCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">recursive subroutine </span><span class="n">sphere_update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">Sphere</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w">                           </span><span class="c">!! the scene time</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">wanted</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">self</span><span class="p">%</span><span class="n">ReferenceFrame</span><span class="p">%</span><span class="n">update</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">c_associated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">lod_node</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        </span><span class="n">wanted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vkf_sphere_lod_requested</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">lod_node</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">wanted</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">findloc</span><span class="p">(</span><span class="n">lod_segments</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">wanted</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">true</span><span class="p">.,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">lod_segments</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">c_associated</span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">lod_mesh</span><span class="p">(</span><span class="n">k</span><span class="p">)))</span><span class="w"> </span><span class="k">call </span><span class="n">build_lod_mesh</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">compile</span><span class="o">=</span><span class="n">self</span><span class="p">%</span><span class="n">shown</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">sphere_update</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-06 15:34 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

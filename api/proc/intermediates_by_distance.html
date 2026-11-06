@@ -1,0 +1,1245 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>intermediates_by_distance &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>intermediates_by_distance
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">27 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_artists.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_artists.f90.html'>vkf_artists.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_artists.html'>vkf_artists</a></li>
+            <li class="breadcrumb-item active" aria-current="page">intermediates_by_distance</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/intermediates_by_distance.html#src">intermediates_by_distance</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine intermediates_by_distance(self, n)  
+</h2>
+    
+
+    <p>Every <code>spacing</code> of arc length (the points joined by straight lines).</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~758"></span>
+              type(<a href='../type/markerartist.html'>MarkerArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~78"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                <p>the points</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~intermediates_by_distance~~CallsGraph Pages: 1 -->
+<svg id="procintermediates_by_distanceCallsGraph" width="641pt" height="135pt"
+ viewBox="0.00 0.00 641.00 135.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~intermediates_by_distance~~CallsGraph" class="graph" transform="scale(0.299884 0.299884) rotate(0) translate(4 445.92)">
+<title>proc~~intermediates_by_distance~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-445.92 2133.49,-445.92 2133.49,4 -4,4"/>
+<!-- proc~intermediates_by_distance -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node1" class="node">
+<title>proc~intermediates_by_distance</title>
+<polygon fill="none" stroke="black" points="154.02,-135.27 0,-135.27 0,-111 154.02,-111 154.02,-135.27"/>
+<text xml:space="preserve" text-anchor="middle" x="77.01" y="-119.53" font-family="Helvetica,sans-Serif" font-size="10.50">intermediates_by_distance</text>
+</g>
+<!-- proc~art_point -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node2" class="node">
+<title>proc~art_point</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node2"><a xlink:href="../proc/art_point.html" xlink:title="art_point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="275.04,-187.27 216.27,-187.27 216.27,-163 275.04,-163 275.04,-187.27"/>
+<text xml:space="preserve" text-anchor="middle" x="245.66" y="-171.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">art_point</text>
+</a>
+</g>
+</g>
+<!-- proc~intermediates_by_distance&#45;&gt;proc~art_point -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge1" class="edge">
+<title>proc~intermediates_by_distance&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M118.35,-135.72C144.73,-143.95 179.03,-154.66 205.23,-162.83"/>
+<polygon fill="#000000" stroke="#000000" points="203.88,-166.08 214.47,-165.71 205.96,-159.39 203.88,-166.08"/>
+</g>
+<!-- proc~counted -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node3" class="node">
+<title>proc~counted</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node3"><a xlink:href="../proc/counted.html" xlink:title="counted">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="273.17,-135.27 218.15,-135.27 218.15,-111 273.17,-111 273.17,-135.27"/>
+<text xml:space="preserve" text-anchor="middle" x="245.66" y="-119.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">counted</text>
+</a>
+</g>
+</g>
+<!-- proc~intermediates_by_distance&#45;&gt;proc~counted -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge2" class="edge">
+<title>proc~intermediates_by_distance&#45;&gt;proc~counted</title>
+<path fill="none" stroke="#000000" d="M154.5,-123.14C172.64,-123.14 191.21,-123.14 206.75,-123.14"/>
+<polygon fill="#000000" stroke="#000000" points="206.47,-126.64 216.47,-123.14 206.47,-119.64 206.47,-126.64"/>
+</g>
+<!-- proc~push_intermediate -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node4" class="node">
+<title>proc~push_intermediate</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node4"><a xlink:href="../proc/push_intermediate.html" xlink:title="push_intermediate">
+<polygon fill="#d9534f" stroke="#d9534f" points="301.29,-72.27 190.02,-72.27 190.02,-48 301.29,-48 301.29,-72.27"/>
+<text xml:space="preserve" text-anchor="middle" x="245.66" y="-56.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">push_intermediate</text>
+</a>
+</g>
+</g>
+<!-- proc~intermediates_by_distance&#45;&gt;proc~push_intermediate -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge3" class="edge">
+<title>proc~intermediates_by_distance&#45;&gt;proc~push_intermediate</title>
+<path fill="none" stroke="#000000" d="M111.33,-110.54C136.99,-100.84 172.69,-87.34 200.69,-76.76"/>
+<polygon fill="#000000" stroke="#000000" points="201.86,-80.06 209.97,-73.25 199.38,-73.51 201.86,-80.06"/>
+</g>
+<!-- proc~point -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node7" class="node">
+<title>proc~point</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node7"><a xlink:href="../proc/point.html" xlink:title="Trajectory%point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2107.74,-235.27 2006.97,-235.27 2006.97,-211 2107.74,-211 2107.74,-235.27"/>
+<text xml:space="preserve" text-anchor="middle" x="2057.36" y="-219.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point</text>
+</a>
+</g>
+</g>
+<!-- proc~art_point&#45;&gt;proc~point -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge4" class="edge">
+<title>proc~art_point&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M253.2,-187.58C280.82,-238.23 393.35,-426.13 542.57,-426.13 542.57,-426.13 542.57,-426.13 1675.69,-426.13 1797.55,-426.13 1845.74,-471.5 1949.22,-407.13 2008.8,-370.08 2038.93,-286.82 2050.52,-246.24"/>
+<polygon fill="#000000" stroke="#000000" points="2053.84,-247.37 2053.08,-236.8 2047.09,-245.53 2053.84,-247.37"/>
+</g>
+<!-- proc~to_shown_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node8" class="node">
+<title>proc~to_shown_at</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node8"><a xlink:href="../proc/to_shown_at.html" xlink:title="to_shown_at">
+<polygon fill="#d9534f" stroke="#d9534f" points="439.56,-187.27 362.79,-187.27 362.79,-163 439.56,-163 439.56,-187.27"/>
+<text xml:space="preserve" text-anchor="middle" x="401.18" y="-171.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">to_shown_at</text>
+</a>
+</g>
+</g>
+<!-- proc~art_point&#45;&gt;proc~to_shown_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge5" class="edge">
+<title>proc~art_point&#45;&gt;proc~to_shown_at</title>
+<path fill="none" stroke="#000000" d="M275.53,-175.13C296.75,-175.13 326.1,-175.13 350.99,-175.13"/>
+<polygon fill="#000000" stroke="#000000" points="350.91,-178.64 360.91,-175.14 350.91,-171.64 350.91,-178.64"/>
+</g>
+<!-- proc~color_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node5" class="node">
+<title>proc~color_at</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node5"><a xlink:href="../proc/color_at.html" xlink:title="color_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="428.31,-72.27 374.04,-72.27 374.04,-48 428.31,-48 428.31,-72.27"/>
+<text xml:space="preserve" text-anchor="middle" x="401.18" y="-56.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">color_at</text>
+</a>
+</g>
+</g>
+<!-- proc~push_intermediate&#45;&gt;proc~color_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge6" class="edge">
+<title>proc~push_intermediate&#45;&gt;proc~color_at</title>
+<path fill="none" stroke="#000000" d="M301.65,-60.14C321.83,-60.14 344.21,-60.14 362.52,-60.14"/>
+<polygon fill="#000000" stroke="#000000" points="362.4,-63.64 372.4,-60.14 362.4,-56.64 362.4,-63.64"/>
+</g>
+<!-- proc~is_colored -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node6" class="node">
+<title>proc~is_colored</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node6"><a xlink:href="../proc/is_colored.html" xlink:title="LineChain%is_colored">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="465.06,-30.27 337.29,-30.27 337.29,-6 465.06,-6 465.06,-30.27"/>
+<text xml:space="preserve" text-anchor="middle" x="401.18" y="-14.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%is_colored</text>
+</a>
+</g>
+</g>
+<!-- proc~push_intermediate&#45;&gt;proc~is_colored -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge7" class="edge">
+<title>proc~push_intermediate&#45;&gt;proc~is_colored</title>
+<path fill="none" stroke="#000000" d="M292.72,-47.53C308.66,-43.17 326.71,-38.23 343.41,-33.67"/>
+<polygon fill="#000000" stroke="#000000" points="343.96,-37.14 352.69,-31.13 342.12,-30.39 343.96,-37.14"/>
+</g>
+<!-- num_times -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node9" class="node">
+<title>num_times</title>
+<polygon fill="#777777" stroke="#777777" points="578.58,-108.27 508.56,-108.27 508.56,-84 578.58,-84 578.58,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="543.57" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">num_times</text>
+</g>
+<!-- proc~color_at&#45;&gt;num_times -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge8" class="edge">
+<title>proc~color_at&#45;&gt;num_times</title>
+<path fill="none" stroke="#000000" d="M428.58,-66.91C447.88,-71.85 474.53,-78.69 497.21,-84.5"/>
+<polygon fill="#000000" stroke="#000000" points="496.29,-87.88 506.84,-86.97 498.03,-81.1 496.29,-87.88"/>
+</g>
+<!-- proc~point_rgba_or -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node10" class="node">
+<title>proc~point_rgba_or</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node10"><a xlink:href="../proc/point_rgba_or.html" xlink:title="point_rgba_or">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="586.08,-66.27 501.06,-66.27 501.06,-42 586.08,-42 586.08,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="543.57" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">point_rgba_or</text>
+</a>
+</g>
+</g>
+<!-- proc~color_at&#45;&gt;proc~point_rgba_or -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge9" class="edge">
+<title>proc~color_at&#45;&gt;proc~point_rgba_or</title>
+<path fill="none" stroke="#000000" d="M428.58,-59.01C445.74,-58.27 468.71,-57.29 489.53,-56.4"/>
+<polygon fill="#000000" stroke="#000000" points="489.47,-59.91 499.31,-55.98 489.17,-52.91 489.47,-59.91"/>
+</g>
+<!-- time_index -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node13" class="node">
+<title>time_index</title>
+<polygon fill="#777777" stroke="#777777" points="578.21,-24.27 508.94,-24.27 508.94,0 578.21,0 578.21,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="543.57" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">time_index</text>
+</g>
+<!-- proc~color_at&#45;&gt;time_index -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge10" class="edge">
+<title>proc~color_at&#45;&gt;time_index</title>
+<path fill="none" stroke="#000000" d="M428.51,-51.42C439.78,-47.67 453.08,-43.22 465.06,-39.14 475.67,-35.52 487.08,-31.57 497.79,-27.84"/>
+<polygon fill="#000000" stroke="#000000" points="498.93,-31.15 507.22,-24.56 496.62,-24.54 498.93,-31.15"/>
+</g>
+<!-- proc~to_shown -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node11" class="node">
+<title>proc~to_shown</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node11"><a xlink:href="../proc/to_shown.html" xlink:title="to_shown">
+<polygon fill="#d9534f" stroke="#d9534f" points="574.08,-192.27 513.06,-192.27 513.06,-168 574.08,-168 574.08,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="543.57" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">to_shown</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown_at&#45;&gt;proc~to_shown -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge11" class="edge">
+<title>proc~to_shown_at&#45;&gt;proc~to_shown</title>
+<path fill="none" stroke="#000000" d="M439.8,-176.47C458.86,-177.15 482.03,-177.98 501.54,-178.67"/>
+<polygon fill="#000000" stroke="#000000" points="501.22,-182.16 511.34,-179.02 501.47,-175.17 501.22,-182.16"/>
+</g>
+<!-- proc~transformed -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node12" class="node">
+<title>proc~transformed</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node12"><a xlink:href="../proc/transformed.html" xlink:title="transformed">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="582.33,-150.27 504.81,-150.27 504.81,-126 582.33,-126 582.33,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="543.57" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">transformed</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown_at&#45;&gt;proc~transformed -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge12" class="edge">
+<title>proc~to_shown_at&#45;&gt;proc~transformed</title>
+<path fill="none" stroke="#000000" d="M439.8,-165.22C456.27,-160.88 475.81,-155.73 493.41,-151.09"/>
+<polygon fill="#000000" stroke="#000000" points="494.11,-154.53 502.89,-148.59 492.33,-147.76 494.11,-154.53"/>
+</g>
+<!-- proc~color~2 -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node14" class="node">
+<title>proc~color~2</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node14"><a xlink:href="../proc/color~2.html" xlink:title="Trajectory%color">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="740.1,-78.27 639.33,-78.27 639.33,-54 740.1,-54 740.1,-78.27"/>
+<text xml:space="preserve" text-anchor="middle" x="689.72" y="-62.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%color</text>
+</a>
+</g>
+</g>
+<!-- proc~point_rgba_or&#45;&gt;proc~color~2 -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge13" class="edge">
+<title>proc~point_rgba_or&#45;&gt;proc~color~2</title>
+<path fill="none" stroke="#000000" d="M586.26,-57.61C599.25,-58.69 613.86,-59.9 627.88,-61.07"/>
+<polygon fill="#000000" stroke="#000000" points="627.19,-64.53 637.45,-61.87 627.77,-57.55 627.19,-64.53"/>
+</g>
+<!-- proc~num_colors -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node17" class="node">
+<title>proc~num_colors</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node17"><a xlink:href="../proc/num_colors.html" xlink:title="Trajectory%num_colors">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="757.35,-36.27 622.08,-36.27 622.08,-12 757.35,-12 757.35,-36.27"/>
+<text xml:space="preserve" text-anchor="middle" x="689.72" y="-20.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_colors</text>
+</a>
+</g>
+</g>
+<!-- proc~point_rgba_or&#45;&gt;proc~num_colors -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge14" class="edge">
+<title>proc~point_rgba_or&#45;&gt;proc~num_colors</title>
+<path fill="none" stroke="#000000" d="M586.26,-45.46C595.95,-43.44 606.54,-41.24 617.11,-39.04"/>
+<polygon fill="#000000" stroke="#000000" points="617.52,-42.53 626.6,-37.06 616.1,-35.67 617.52,-42.53"/>
+</g>
+<!-- proc~data_to_shown -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node15" class="node">
+<title>proc~data_to_shown</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node15"><a xlink:href="../proc/data_to_shown.html" xlink:title="data_to_shown">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="734.85,-192.27 644.58,-192.27 644.58,-168 734.85,-168 734.85,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="689.72" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">data_to_shown</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown&#45;&gt;proc~data_to_shown -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge15" class="edge">
+<title>proc~to_shown&#45;&gt;proc~data_to_shown</title>
+<path fill="none" stroke="#000000" d="M574.44,-180.13C591.26,-180.13 612.81,-180.13 632.66,-180.13"/>
+<polygon fill="#000000" stroke="#000000" points="632.59,-183.64 642.59,-180.14 632.59,-176.64 632.59,-183.64"/>
+</g>
+<!-- proc~moves -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node16" class="node">
+<title>proc~moves</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node16"><a xlink:href="../proc/moves.html" xlink:title="moves">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="716.72,-126.27 662.72,-126.27 662.72,-102 716.72,-102 716.72,-126.27"/>
+<text xml:space="preserve" text-anchor="middle" x="689.72" y="-110.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">moves</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown&#45;&gt;proc~moves -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge16" class="edge">
+<title>proc~to_shown&#45;&gt;proc~moves</title>
+<path fill="none" stroke="#000000" d="M572.02,-167.57C594.75,-157.16 627.24,-142.28 652.17,-130.87"/>
+<polygon fill="#000000" stroke="#000000" points="653.33,-134.19 660.96,-126.84 650.41,-127.82 653.33,-134.19"/>
+</g>
+<!-- proc~rigid_inverse -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node21" class="node">
+<title>proc~rigid_inverse</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node21"><a xlink:href="../proc/rigid_inverse.html" xlink:title="rigid_inverse">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1511.43,-238.27 1431.66,-238.27 1431.66,-214 1511.43,-214 1511.43,-238.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1471.55" y="-222.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">rigid_inverse</text>
+</a>
+</g>
+</g>
+<!-- proc~data_to_shown&#45;&gt;proc~rigid_inverse -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge17" class="edge">
+<title>proc~data_to_shown&#45;&gt;proc~rigid_inverse</title>
+<path fill="none" stroke="#000000" d="M729.76,-192.66C748.74,-198.17 772.01,-204.07 793.35,-207.13 1025.54,-240.48 1306.97,-233.4 1419.99,-228.65"/>
+<polygon fill="#000000" stroke="#000000" points="1419.99,-232.15 1429.83,-228.22 1419.69,-225.16 1419.99,-232.15"/>
+</g>
+<!-- proc~world_matrix_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node22" class="node">
+<title>proc~world_matrix_at</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node22"><a xlink:href="../proc/world_matrix_at.html" xlink:title="ReferenceFrame%world_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="987.12,-180.27 793.35,-180.27 793.35,-156 987.12,-156 987.12,-180.27"/>
+<text xml:space="preserve" text-anchor="middle" x="890.24" y="-164.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%world_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~data_to_shown&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge18" class="edge">
+<title>proc~data_to_shown&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M735.27,-177.44C749.2,-176.6 765.22,-175.63 781.55,-174.64"/>
+<polygon fill="#000000" stroke="#000000" points="781.6,-178.15 791.37,-174.05 781.18,-171.16 781.6,-178.15"/>
+</g>
+<!-- proc~moves&#45;&gt;proc~moves -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge20" class="edge">
+<title>proc~moves&#45;&gt;proc~moves</title>
+<path fill="none" stroke="#000000" d="M665.26,-126.52C657.3,-135.41 665.45,-144.27 689.72,-144.27 702.98,-144.27 711.43,-141.62 715.06,-137.76"/>
+<polygon fill="#000000" stroke="#000000" points="718.57,-137.72 714.29,-128.03 711.59,-138.27 718.57,-137.72"/>
+</g>
+<!-- proc~is_following -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node18" class="node">
+<title>proc~is_following</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node18"><a xlink:href="../proc/is_following.html" xlink:title="ReferenceFrame%is_following">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="975.5,-96.27 804.98,-96.27 804.98,-72 975.5,-72 975.5,-96.27"/>
+<text xml:space="preserve" text-anchor="middle" x="890.24" y="-80.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%is_following</text>
+</a>
+</g>
+</g>
+<!-- proc~moves&#45;&gt;proc~is_following -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge19" class="edge">
+<title>proc~moves&#45;&gt;proc~is_following</title>
+<path fill="none" stroke="#000000" d="M717.08,-110.15C737.19,-107.11 766.2,-102.73 794.69,-98.42"/>
+<polygon fill="#000000" stroke="#000000" points="795.13,-101.9 804.49,-96.94 794.08,-94.97 795.13,-101.9"/>
+</g>
+<!-- proc~num_parents -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node19" class="node">
+<title>proc~num_parents</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node19"><a xlink:href="../proc/num_parents.html" xlink:title="ReferenceFrame%num_parents">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="979.25,-54.27 801.23,-54.27 801.23,-30 979.25,-30 979.25,-54.27"/>
+<text xml:space="preserve" text-anchor="middle" x="890.24" y="-38.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%num_parents</text>
+</a>
+</g>
+</g>
+<!-- proc~moves&#45;&gt;proc~num_parents -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge21" class="edge">
+<title>proc~moves&#45;&gt;proc~num_parents</title>
+<path fill="none" stroke="#000000" d="M716.9,-104.94C729.41,-100.19 744.44,-93.96 757.35,-87.14 774.35,-78.14 775.65,-70.66 793.35,-63.14 797.67,-61.3 802.18,-59.61 806.77,-58.07"/>
+<polygon fill="#000000" stroke="#000000" points="807.65,-61.46 816.17,-55.16 805.58,-54.77 807.65,-61.46"/>
+</g>
+<!-- proc~parent -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node20" class="node">
+<title>proc~parent</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node20"><a xlink:href="../proc/parent.html" xlink:title="ReferenceFrame%parent">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="962,-138.27 818.48,-138.27 818.48,-114 962,-114 962,-138.27"/>
+<text xml:space="preserve" text-anchor="middle" x="890.24" y="-122.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%parent</text>
+</a>
+</g>
+</g>
+<!-- proc~moves&#45;&gt;proc~parent -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge22" class="edge">
+<title>proc~moves&#45;&gt;proc~parent</title>
+<path fill="none" stroke="#000000" d="M717.08,-115.73C740.1,-117.12 774.78,-119.22 806.99,-121.16"/>
+<polygon fill="#000000" stroke="#000000" points="806.56,-124.64 816.75,-121.75 806.98,-117.66 806.56,-124.64"/>
+</g>
+<!-- proc~num_trajectories -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node24" class="node">
+<title>proc~num_trajectories</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node24"><a xlink:href="../proc/num_trajectories.html" xlink:title="TrajectoryFollower%num_trajectories">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1231.89,-96.27 1023.12,-96.27 1023.12,-72 1231.89,-72 1231.89,-96.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1127.51" y="-80.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%num_trajectories</text>
+</a>
+</g>
+</g>
+<!-- proc~is_following&#45;&gt;proc~num_trajectories -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge23" class="edge">
+<title>proc~is_following&#45;&gt;proc~num_trajectories</title>
+<path fill="none" stroke="#000000" d="M975.84,-84.14C987.42,-84.14 999.47,-84.14 1011.48,-84.14"/>
+<polygon fill="#000000" stroke="#000000" points="1011.45,-87.64 1021.45,-84.14 1011.45,-80.64 1011.45,-87.64"/>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge25" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M856.69,-180.52C845.76,-189.41 856.95,-198.27 890.24,-198.27 908.44,-198.27 920.03,-195.62 925.02,-191.76"/>
+<polygon fill="#000000" stroke="#000000" points="928.52,-191.58 923.95,-182.02 921.56,-192.34 928.52,-191.58"/>
+</g>
+<!-- proc~local_matrix_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node23" class="node">
+<title>proc~local_matrix_at</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node23"><a xlink:href="../proc/local_matrix_at.html" xlink:title="ReferenceFrame%local_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1222.52,-140.27 1032.5,-140.27 1032.5,-116 1222.52,-116 1222.52,-140.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1127.51" y="-124.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%local_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~local_matrix_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge24" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~local_matrix_at</title>
+<path fill="none" stroke="#000000" d="M965.35,-155.53C989.41,-151.44 1016.3,-146.87 1041.12,-142.65"/>
+<polygon fill="#000000" stroke="#000000" points="1041.59,-146.12 1050.86,-141 1040.42,-139.22 1041.59,-146.12"/>
+</g>
+<!-- proc~followed_pose -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node25" class="node">
+<title>proc~followed_pose</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node25"><a xlink:href="../proc/followed_pose.html" xlink:title="followed_pose">
+<polygon fill="#d9534f" stroke="#d9534f" points="1355.16,-154.27 1267.89,-154.27 1267.89,-130 1355.16,-130 1355.16,-154.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1311.53" y="-138.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">followed_pose</text>
+</a>
+</g>
+</g>
+<!-- proc~local_matrix_at&#45;&gt;proc~followed_pose -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge26" class="edge">
+<title>proc~local_matrix_at&#45;&gt;proc~followed_pose</title>
+<path fill="none" stroke="#000000" d="M1222.98,-135.4C1234.3,-136.27 1245.55,-137.14 1256.03,-137.94"/>
+<polygon fill="#000000" stroke="#000000" points="1255.74,-141.43 1265.98,-138.71 1256.28,-134.45 1255.74,-141.43"/>
+</g>
+<!-- proc~frame_matrix -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node26" class="node">
+<title>proc~frame_matrix</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node26"><a xlink:href="../proc/frame_matrix.html" xlink:title="frame_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1353.29,-70.27 1269.77,-70.27 1269.77,-46 1353.29,-46 1353.29,-70.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1311.53" y="-54.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">frame_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~local_matrix_at&#45;&gt;proc~frame_matrix -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge27" class="edge">
+<title>proc~local_matrix_at&#45;&gt;proc~frame_matrix</title>
+<path fill="none" stroke="#000000" d="M1199.49,-115.51C1210.51,-112.65 1221.64,-109.22 1231.89,-105.14 1250.14,-97.87 1269.08,-86.68 1283.8,-77.04"/>
+<polygon fill="#000000" stroke="#000000" points="1285.66,-80.01 1292,-71.52 1281.75,-74.2 1285.66,-80.01"/>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~rigid_inverse -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge31" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~rigid_inverse</title>
+<path fill="none" stroke="#000000" d="M1324.71,-154.66C1339.25,-168.91 1364.92,-191.9 1391.16,-205.13 1400.22,-209.71 1410.39,-213.36 1420.34,-216.25"/>
+<polygon fill="#000000" stroke="#000000" points="1419.38,-219.62 1429.95,-218.81 1421.18,-212.85 1419.38,-219.62"/>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge33" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M1267.69,-146.21C1256.08,-147.24 1243.51,-148.29 1231.89,-149.13 1153.98,-154.77 1065.95,-159.64 998.89,-163.04"/>
+<polygon fill="#000000" stroke="#000000" points="998.79,-159.54 988.98,-163.54 999.14,-166.53 998.79,-159.54"/>
+</g>
+<!-- proc~quat_from_matrix -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node27" class="node">
+<title>proc~quat_from_matrix</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node27"><a xlink:href="../proc/quat_from_matrix.html" xlink:title="quat_from_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1524.18,-154.27 1418.91,-154.27 1418.91,-130 1524.18,-130 1524.18,-154.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1471.55" y="-138.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_from_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_from_matrix -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge28" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_from_matrix</title>
+<path fill="none" stroke="#000000" d="M1355.29,-142.13C1371.26,-142.13 1389.75,-142.13 1407.19,-142.13"/>
+<polygon fill="#000000" stroke="#000000" points="1406.94,-145.64 1416.94,-142.14 1406.94,-138.64 1406.94,-145.64"/>
+</g>
+<!-- proc~quat_multiply -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node28" class="node">
+<title>proc~quat_multiply</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node28"><a xlink:href="../proc/quat_multiply.html" xlink:title="quat_multiply">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1513.31,-112.27 1429.79,-112.27 1429.79,-88 1513.31,-88 1513.31,-112.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1471.55" y="-96.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_multiply</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_multiply -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge29" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_multiply</title>
+<path fill="none" stroke="#000000" d="M1355.37,-130.67C1366.98,-127.57 1379.55,-124.22 1391.16,-121.14 1399.98,-118.79 1409.34,-116.31 1418.44,-113.9"/>
+<polygon fill="#000000" stroke="#000000" points="1419.1,-117.34 1427.87,-111.4 1417.31,-110.58 1419.1,-117.34"/>
+</g>
+<!-- proc~quat_normalize -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node29" class="node">
+<title>proc~quat_normalize</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node29"><a xlink:href="../proc/quat_normalize.html" xlink:title="quat_normalize">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1518.56,-70.27 1424.54,-70.27 1424.54,-46 1518.56,-46 1518.56,-70.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1471.55" y="-54.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_normalize</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_normalize -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge30" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_normalize</title>
+<path fill="none" stroke="#000000" d="M1324.71,-129.61C1339.25,-115.36 1364.92,-92.37 1391.16,-79.14 1398.17,-75.6 1405.83,-72.62 1413.55,-70.11"/>
+<polygon fill="#000000" stroke="#000000" points="1414.39,-73.51 1422.98,-67.3 1412.39,-66.8 1414.39,-73.51"/>
+</g>
+<!-- proc~state_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node31" class="node">
+<title>proc~state_at</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node31"><a xlink:href="../proc/state_at.html" xlink:title="TrajectoryFollower%state_at">
+<polygon fill="#d9534f" stroke="#d9534f" points="1551.93,-196.27 1391.16,-196.27 1391.16,-172 1551.93,-172 1551.93,-196.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1471.55" y="-180.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%state_at</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~state_at -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge32" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~state_at</title>
+<path fill="none" stroke="#000000" d="M1355.37,-153.6C1366.98,-156.7 1379.55,-160.05 1391.16,-163.13 1397.94,-164.94 1405.05,-166.82 1412.11,-168.69"/>
+<polygon fill="#000000" stroke="#000000" points="1411.08,-172.04 1421.64,-171.22 1412.87,-165.27 1411.08,-172.04"/>
+</g>
+<!-- proc~quat_to_matrix -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node30" class="node">
+<title>proc~quat_to_matrix</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node30"><a xlink:href="../proc/quat_to_matrix.html" xlink:title="quat_to_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1517.06,-28.27 1426.04,-28.27 1426.04,-4 1517.06,-4 1517.06,-28.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1471.55" y="-12.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_to_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~frame_matrix&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge34" class="edge">
+<title>proc~frame_matrix&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M1353.74,-47.11C1365.8,-43.89 1379.01,-40.37 1391.16,-37.14 1398.75,-35.12 1406.74,-33 1414.62,-30.91"/>
+<polygon fill="#000000" stroke="#000000" points="1415.38,-34.33 1424.16,-28.39 1413.59,-27.56 1415.38,-34.33"/>
+</g>
+<!-- proc~chosen_trajectory -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node32" class="node">
+<title>proc~chosen_trajectory</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node32"><a xlink:href="../proc/chosen_trajectory.html" xlink:title="chosen_trajectory">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1728.08,-154.27 1621.31,-154.27 1621.31,-130 1728.08,-130 1728.08,-154.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1674.69" y="-138.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">chosen_trajectory</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~chosen_trajectory -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge35" class="edge">
+<title>proc~state_at&#45;&gt;proc~chosen_trajectory</title>
+<path fill="none" stroke="#000000" d="M1532.9,-171.53C1557.18,-166.46 1585.21,-160.61 1609.84,-155.47"/>
+<polygon fill="#000000" stroke="#000000" points="1610.33,-158.94 1619.41,-153.47 1608.9,-152.09 1610.33,-158.94"/>
+</g>
+<!-- proc~data_valid -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node33" class="node">
+<title>proc~data_valid</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node33"><a xlink:href="../proc/data_valid.html" xlink:title="TrajectoryFollower%data_valid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1761.45,-70.27 1587.93,-70.27 1587.93,-46 1761.45,-46 1761.45,-70.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1674.69" y="-54.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%data_valid</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~data_valid -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge36" class="edge">
+<title>proc~state_at&#45;&gt;proc~data_valid</title>
+<path fill="none" stroke="#000000" d="M1539.06,-171.7C1543.68,-169.32 1548.05,-166.49 1551.93,-163.13 1582.67,-136.59 1556.94,-105.4 1587.93,-79.14 1588.89,-78.32 1589.89,-77.53 1590.9,-76.77"/>
+<polygon fill="#000000" stroke="#000000" points="1592.69,-79.78 1599.34,-71.53 1589,-73.84 1592.69,-79.78"/>
+</g>
+<!-- proc~interpolate_attitude -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node34" class="node">
+<title>proc~interpolate_attitude</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node34"><a xlink:href="../proc/interpolate_attitude.html" xlink:title="interpolate_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="1732.95,-335.27 1616.43,-335.27 1616.43,-311 1732.95,-311 1732.95,-335.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1674.69" y="-319.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~interpolate_attitude -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge37" class="edge">
+<title>proc~state_at&#45;&gt;proc~interpolate_attitude</title>
+<path fill="none" stroke="#000000" d="M1537.36,-196.66C1542.53,-199.01 1547.47,-201.81 1551.93,-205.13 1576.55,-223.5 1566.81,-241.83 1587.93,-264.13 1603.2,-280.26 1623.57,-294.5 1640.62,-304.95"/>
+<polygon fill="#000000" stroke="#000000" points="1638.53,-307.78 1648.92,-309.87 1642.11,-301.76 1638.53,-307.78"/>
+</g>
+<!-- proc~interpolate_position -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node35" class="node">
+<title>proc~interpolate_position</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node35"><a xlink:href="../proc/interpolate_position.html" xlink:title="interpolate_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="1733.33,-196.27 1616.06,-196.27 1616.06,-172 1733.33,-172 1733.33,-196.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1674.69" y="-180.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_position</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~interpolate_position -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge38" class="edge">
+<title>proc~state_at&#45;&gt;proc~interpolate_position</title>
+<path fill="none" stroke="#000000" d="M1552.33,-184.13C1569.53,-184.13 1587.58,-184.13 1604.34,-184.13"/>
+<polygon fill="#000000" stroke="#000000" points="1604.2,-187.64 1614.2,-184.14 1604.2,-180.64 1604.2,-187.64"/>
+</g>
+<!-- proc~time_index -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node36" class="node">
+<title>proc~time_index</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node36"><a xlink:href="../proc/time_index.html" xlink:title="Trajectory%time_index">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1740.45,-112.27 1608.93,-112.27 1608.93,-88 1740.45,-88 1740.45,-112.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1674.69" y="-96.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_index</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~time_index -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge39" class="edge">
+<title>proc~state_at&#45;&gt;proc~time_index</title>
+<path fill="none" stroke="#000000" d="M1534.77,-171.64C1540.78,-169.28 1546.62,-166.47 1551.93,-163.13 1572.76,-150.07 1566.99,-134.01 1587.93,-121.14 1591.23,-119.11 1594.71,-117.27 1598.31,-115.62"/>
+<polygon fill="#000000" stroke="#000000" points="1599.35,-118.98 1607.3,-111.97 1596.72,-112.49 1599.35,-118.98"/>
+</g>
+<!-- proc~wrapped_time -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node37" class="node">
+<title>proc~wrapped_time</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node37"><a xlink:href="../proc/wrapped_time.html" xlink:title="wrapped_time">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1718.33,-255.27 1631.06,-255.27 1631.06,-231 1718.33,-231 1718.33,-255.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1674.69" y="-239.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">wrapped_time</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~wrapped_time -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge40" class="edge">
+<title>proc~state_at&#45;&gt;proc~wrapped_time</title>
+<path fill="none" stroke="#000000" d="M1521.34,-196.68C1531.47,-199.39 1542.07,-202.29 1551.93,-205.13 1575.78,-212.01 1602.08,-220.14 1624.12,-227.12"/>
+<polygon fill="#000000" stroke="#000000" points="1622.85,-230.39 1633.45,-230.09 1624.98,-223.72 1622.85,-230.39"/>
+</g>
+<!-- proc~time_distance -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node43" class="node">
+<title>proc~time_distance</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node43"><a xlink:href="../proc/time_distance.html" xlink:title="Trajectory%time_distance">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1947.35,-112.27 1799.33,-112.27 1799.33,-88 1947.35,-88 1947.35,-112.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1873.34" y="-96.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_distance</text>
+</a>
+</g>
+</g>
+<!-- proc~chosen_trajectory&#45;&gt;proc~time_distance -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge41" class="edge">
+<title>proc~chosen_trajectory&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M1728.39,-130.88C1751.08,-126.03 1777.94,-120.3 1802.27,-115.1"/>
+<polygon fill="#000000" stroke="#000000" points="1802.72,-118.58 1811.77,-113.07 1801.26,-111.74 1802.72,-118.58"/>
+</g>
+<!-- proc~verify_data -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node45" class="node">
+<title>proc~verify_data</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node45"><a xlink:href="../proc/verify_data.html" xlink:title="Trajectory%verify_data">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1939.85,-70.27 1806.83,-70.27 1806.83,-46 1939.85,-46 1939.85,-70.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1873.34" y="-54.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%verify_data</text>
+</a>
+</g>
+</g>
+<!-- proc~data_valid&#45;&gt;proc~verify_data -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge42" class="edge">
+<title>proc~data_valid&#45;&gt;proc~verify_data</title>
+<path fill="none" stroke="#000000" d="M1761.94,-58.14C1773.05,-58.14 1784.36,-58.14 1795.31,-58.14"/>
+<polygon fill="#000000" stroke="#000000" points="1795.04,-61.64 1805.04,-58.14 1795.04,-54.64 1795.04,-61.64"/>
+</g>
+<!-- proc~attitude~3 -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node38" class="node">
+<title>proc~attitude~3</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node38"><a xlink:href="../proc/attitude~3.html" xlink:title="Trajectory%attitude">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1930.85,-356.27 1815.83,-356.27 1815.83,-332 1930.85,-332 1930.85,-356.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1873.34" y="-340.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~attitude~3 -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge43" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~attitude~3</title>
+<path fill="none" stroke="#000000" d="M1733.36,-329.29C1755.47,-331.65 1780.9,-334.37 1803.91,-336.83"/>
+<polygon fill="#000000" stroke="#000000" points="1803.52,-340.31 1813.84,-337.89 1804.27,-333.35 1803.52,-340.31"/>
+</g>
+<!-- proc~num_attitudes -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node39" class="node">
+<title>proc~num_attitudes</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node39"><a xlink:href="../proc/num_attitudes.html" xlink:title="Trajectory%num_attitudes">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1948.1,-314.27 1798.58,-314.27 1798.58,-290 1948.1,-290 1948.1,-314.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1873.34" y="-298.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_attitudes</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~num_attitudes -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge44" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~num_attitudes</title>
+<path fill="none" stroke="#000000" d="M1733.36,-316.98C1750.08,-315.19 1768.7,-313.2 1786.75,-311.28"/>
+<polygon fill="#000000" stroke="#000000" points="1787.11,-314.76 1796.68,-310.21 1786.37,-307.8 1787.11,-314.76"/>
+</g>
+<!-- proc~quat_slerp -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node42" class="node">
+<title>proc~quat_slerp</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node42"><a xlink:href="../proc/quat_slerp.html" xlink:title="quat_slerp">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1906.85,-398.27 1839.83,-398.27 1839.83,-374 1906.85,-374 1906.85,-398.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1873.34" y="-382.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_slerp</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~quat_slerp -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge45" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~quat_slerp</title>
+<path fill="none" stroke="#000000" d="M1710.41,-335.72C1734.67,-344.36 1767.89,-355.9 1797.45,-365.13 1807.48,-368.27 1818.34,-371.44 1828.59,-374.33"/>
+<polygon fill="#000000" stroke="#000000" points="1827.37,-377.63 1837.95,-376.94 1829.26,-370.89 1827.37,-377.63"/>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge47" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M1733.52,-192.86C1753.72,-195.73 1776.56,-198.79 1797.45,-201.13 1864.97,-208.71 1942.65,-214.99 1995.17,-218.87"/>
+<polygon fill="#000000" stroke="#000000" points="1994.9,-222.36 2005.13,-219.6 1995.42,-215.38 1994.9,-222.36"/>
+</g>
+<!-- proc~num_points -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node40" class="node">
+<title>proc~num_points</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node40"><a xlink:href="../proc/num_points.html" xlink:title="Trajectory%num_points">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2124.99,-151.27 1989.72,-151.27 1989.72,-127 2124.99,-127 2124.99,-151.27"/>
+<text xml:space="preserve" text-anchor="middle" x="2057.36" y="-135.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_points</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~num_points -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge46" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M1729.68,-171.53C1750.73,-167.02 1775.12,-162.28 1797.45,-159.13 1857.73,-150.65 1926.46,-145.55 1977.95,-142.63"/>
+<polygon fill="#000000" stroke="#000000" points="1978.02,-146.13 1987.81,-142.09 1977.63,-139.14 1978.02,-146.13"/>
+</g>
+<!-- proc~point_between -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node41" class="node">
+<title>proc~point_between</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node41"><a xlink:href="../proc/point_between.html" xlink:title="Trajectory%point_between">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1949.22,-192.27 1797.45,-192.27 1797.45,-168 1949.22,-168 1949.22,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1873.34" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point_between</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point_between -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge48" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point_between</title>
+<path fill="none" stroke="#000000" d="M1733.63,-182.96C1749.98,-182.62 1768.14,-182.25 1785.79,-181.9"/>
+<polygon fill="#000000" stroke="#000000" points="1785.85,-185.4 1795.78,-181.69 1785.71,-178.4 1785.85,-185.4"/>
+</g>
+<!-- proc~time_index&#45;&gt;proc~time_distance -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge49" class="edge">
+<title>proc~time_index&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M1740.9,-100.14C1755.92,-100.14 1772.11,-100.14 1787.82,-100.14"/>
+<polygon fill="#000000" stroke="#000000" points="1787.64,-103.64 1797.64,-100.14 1787.64,-96.64 1787.64,-103.64"/>
+</g>
+<!-- proc~time_range~2 -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node44" class="node">
+<title>proc~time_range~2</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node44"><a xlink:href="../proc/time_range~2.html" xlink:title="Trajectory%time_range">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1940.6,-272.27 1806.08,-272.27 1806.08,-248 1940.6,-248 1940.6,-272.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1873.34" y="-256.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_range</text>
+</a>
+</g>
+</g>
+<!-- proc~wrapped_time&#45;&gt;proc~time_range~2 -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge50" class="edge">
+<title>proc~wrapped_time&#45;&gt;proc~time_range~2</title>
+<path fill="none" stroke="#000000" d="M1718.36,-246.82C1740.6,-248.75 1768.5,-251.16 1794.42,-253.4"/>
+<polygon fill="#000000" stroke="#000000" points="1794,-256.88 1804.26,-254.25 1794.6,-249.9 1794,-256.88"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~point -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge52" class="edge">
+<title>proc~point_between&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M1927.47,-192.69C1948.84,-197.74 1973.59,-203.58 1995.66,-208.8"/>
+<polygon fill="#000000" stroke="#000000" points="1994.58,-212.14 2005.11,-211.03 1996.18,-205.32 1994.58,-212.14"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~num_points -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge51" class="edge">
+<title>proc~point_between&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M1929.94,-167.61C1948.73,-163.38 1969.9,-158.61 1989.47,-154.2"/>
+<polygon fill="#000000" stroke="#000000" points="1990,-157.67 1998.99,-152.06 1988.47,-150.84 1990,-157.67"/>
+</g>
+<!-- proc~time_fraction -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_node46" class="node">
+<title>proc~time_fraction</title>
+<g id="a_proc~~intermediates_by_distance~~CallsGraph_node46"><a xlink:href="../proc/time_fraction.html" xlink:title="Trajectory%time_fraction">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="2129.49,-193.27 1985.22,-193.27 1985.22,-169 2129.49,-169 2129.49,-193.27"/>
+<text xml:space="preserve" text-anchor="middle" x="2057.36" y="-177.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_fraction</text>
+</a>
+</g>
+</g>
+<!-- proc~point_between&#45;&gt;proc~time_fraction -->
+<g id="proc~~intermediates_by_distance~~CallsGraph_edge53" class="edge">
+<title>proc~point_between&#45;&gt;proc~time_fraction</title>
+<path fill="none" stroke="#000000" d="M1949.68,-180.55C1957.5,-180.59 1965.48,-180.64 1973.38,-180.68"/>
+<polygon fill="#000000" stroke="#000000" points="1973.33,-184.18 1983.35,-180.73 1973.37,-177.18 1973.33,-184.18"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocintermediates_by_distanceCallsGraph = svgPanZoom('#procintermediates_by_distanceCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~intermediates_by_distance~~CalledByGraph Pages: 1 -->
+<svg id="procintermediates_by_distanceCalledByGraph" width="514pt" height="32pt"
+ viewBox="0.00 0.00 514.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~intermediates_by_distance~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>proc~~intermediates_by_distance~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 509.56,-28.27 509.56,4 -4,4"/>
+<!-- proc~intermediates_by_distance -->
+<g id="proc~~intermediates_by_distance~~CalledByGraph_node1" class="node">
+<title>proc~intermediates_by_distance</title>
+<polygon fill="none" stroke="black" points="505.56,-24.27 351.54,-24.27 351.54,0 505.56,0 505.56,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="428.55" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">intermediates_by_distance</text>
+</g>
+<!-- proc~add_intermediates -->
+<g id="proc~~intermediates_by_distance~~CalledByGraph_node2" class="node">
+<title>proc~add_intermediates</title>
+<g id="a_proc~~intermediates_by_distance~~CalledByGraph_node2"><a xlink:href="../proc/add_intermediates.html" xlink:title="add_intermediates">
+<polygon fill="#d9534f" stroke="#d9534f" points="315.54,-24.27 204.27,-24.27 204.27,0 315.54,0 315.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="259.91" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">add_intermediates</text>
+</a>
+</g>
+</g>
+<!-- proc~add_intermediates&#45;&gt;proc~intermediates_by_distance -->
+<g id="proc~~intermediates_by_distance~~CalledByGraph_edge1" class="edge">
+<title>proc~add_intermediates&#45;&gt;proc~intermediates_by_distance</title>
+<path fill="none" stroke="#000000" d="M315.93,-12.13C323.6,-12.13 331.63,-12.13 339.72,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="339.65,-15.64 349.65,-12.14 339.65,-8.64 339.65,-15.64"/>
+</g>
+<!-- proc~marker_update -->
+<g id="proc~~intermediates_by_distance~~CalledByGraph_node3" class="node">
+<title>proc~marker_update</title>
+<g id="a_proc~~intermediates_by_distance~~CalledByGraph_node3"><a xlink:href="../proc/marker_update.html" xlink:title="MarkerArtist%marker_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="168.27,-24.27 0,-24.27 0,0 168.27,0 168.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="84.13" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">MarkerArtist%marker_update</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_update&#45;&gt;proc~add_intermediates -->
+<g id="proc~~intermediates_by_distance~~CalledByGraph_edge2" class="edge">
+<title>proc~marker_update&#45;&gt;proc~add_intermediates</title>
+<path fill="none" stroke="#000000" d="M168.71,-12.13C176.77,-12.13 184.87,-12.13 192.73,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="192.53,-15.64 202.53,-12.14 192.53,-8.64 192.53,-15.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">intermediates_by_distance</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">MarkerArtist</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="w">                            </span><span class="c">!! the points</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">p</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">frac</span><span class="p">,</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="n">t1</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">j</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">next_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">next_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">arc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">prev_arc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="k">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">spacing_</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">prev_point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">art_point</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">counted</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">sources_</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">next_index</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="w"></span>
+<span class="w">            </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">art_point</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">counted</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">sources_</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">arc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">arc</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">prev_point</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">counted</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">counted</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="k">do while</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">arc</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="k">target</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="n">frac</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="k">target</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">prev_arc</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">arc</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">prev_arc</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">call </span><span class="n">push_intermediate</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">prev_point</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">frac</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">prev_point</span><span class="p">),</span><span class="w"> </span><span class="n">t0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">frac</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">))</span><span class="w"></span>
+<span class="w">                </span><span class="n">self</span><span class="p">%</span><span class="k">target</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="k">target</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">spacing_</span><span class="w"></span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">            </span><span class="n">self</span><span class="p">%</span><span class="n">prev_arc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">arc</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">prev_point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"></span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">        </span><span class="n">self</span><span class="p">%</span><span class="n">next_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">intermediates_by_distance</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-06 15:34 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

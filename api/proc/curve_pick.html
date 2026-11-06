@@ -1,0 +1,1416 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>curve_pick &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>curve_pick
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.1% of total for procedures.">104 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_artists.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_artists.f90.html'>vkf_artists.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_artists.html'>vkf_artists</a></li>
+            <li class="breadcrumb-item active" aria-current="page">curve_pick</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/curve_pick.html#src">curve_pick</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine curve_pick(a, frame, cam, m, hits, n)  
+</h2>
+    
+
+    <p>A curve's best hit: on the segments drawn (and the trace tail).</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~42"></span>
+              class(<a href='../type/curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>a</strong></td>
+            <td>
+                <p>the artist</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~18"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+            <td>
+                <p>the frame drawing it (for the hit)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~27"></span>
+              type(<a href='../type/pickcamera.html'>PickCamera</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong></td>
+            <td>
+                <p>the pick camera</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~52"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>m</strong>(4,4)</td>
+            <td>
+                <p>the frame's transform to the root frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hits~11"></span>
+              type(<a href='../type/pickhit.html'>PickHit</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>hits</strong>(:)</td>
+            <td>
+                <p>hits are added to hits(1:n)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~80"></span>
+              integer,
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+                <p>number of hits</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~curve_pick~~CallsGraph Pages: 1 -->
+<svg id="proccurve_pickCallsGraph" width="641pt" height="176pt"
+ viewBox="0.00 0.00 641.00 176.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~curve_pick~~CallsGraph" class="graph" transform="scale(0.332686 0.332686) rotate(0) translate(4 523.92)">
+<title>proc~~curve_pick~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-523.92 1922.74,-523.92 1922.74,4 -4,4"/>
+<!-- proc~curve_pick -->
+<g id="proc~~curve_pick~~CallsGraph_node1" class="node">
+<title>proc~curve_pick</title>
+<polygon fill="none" stroke="black" points="68.52,-252.27 0,-252.27 0,-228 68.52,-228 68.52,-252.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.26" y="-236.53" font-family="Helvetica,sans-Serif" font-size="10.50">curve_pick</text>
+</g>
+<!-- chunk_bounds -->
+<g id="proc~~curve_pick~~CallsGraph_node2" class="node">
+<title>chunk_bounds</title>
+<polygon fill="#777777" stroke="#777777" points="193.29,-482.27 105.27,-482.27 105.27,-458 193.29,-458 193.29,-482.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-466.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">chunk_bounds</text>
+</g>
+<!-- proc~curve_pick&#45;&gt;chunk_bounds -->
+<g id="proc~~curve_pick~~CallsGraph_edge1" class="edge">
+<title>proc~curve_pick&#45;&gt;chunk_bounds</title>
+<path fill="none" stroke="#000000" d="M36.07,-252.62C38.98,-287.81 51.74,-389.16 104.52,-449.13 104.97,-449.65 105.44,-450.15 105.92,-450.64"/>
+<polygon fill="#000000" stroke="#000000" points="103.53,-453.21 113.53,-456.71 107.89,-447.74 103.53,-453.21"/>
+</g>
+<!-- is_built -->
+<g id="proc~~curve_pick~~CallsGraph_node3" class="node">
+<title>is_built</title>
+<polygon fill="#777777" stroke="#777777" points="176.28,-440.27 122.28,-440.27 122.28,-416 176.28,-416 176.28,-440.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-424.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">is_built</text>
+</g>
+<!-- proc~curve_pick&#45;&gt;is_built -->
+<g id="proc~~curve_pick~~CallsGraph_edge2" class="edge">
+<title>proc~curve_pick&#45;&gt;is_built</title>
+<path fill="none" stroke="#000000" d="M37.3,-252.7C42.83,-282.97 60.7,-360.87 104.52,-407.13 106.8,-409.54 109.42,-411.71 112.21,-413.65"/>
+<polygon fill="#000000" stroke="#000000" points="110.43,-416.66 120.84,-418.64 113.94,-410.6 110.43,-416.66"/>
+</g>
+<!-- num_chunks -->
+<g id="proc~~curve_pick~~CallsGraph_node4" class="node">
+<title>num_chunks</title>
+<polygon fill="#777777" stroke="#777777" points="188.41,-398.27 110.14,-398.27 110.14,-374 188.41,-374 188.41,-398.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-382.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">num_chunks</text>
+</g>
+<!-- proc~curve_pick&#45;&gt;num_chunks -->
+<g id="proc~~curve_pick~~CallsGraph_edge3" class="edge">
+<title>proc~curve_pick&#45;&gt;num_chunks</title>
+<path fill="none" stroke="#000000" d="M39.32,-252.77C47.78,-277.35 69.5,-332.11 104.52,-365.13 105.27,-365.84 106.05,-366.53 106.85,-367.2"/>
+<polygon fill="#000000" stroke="#000000" points="104.71,-369.97 114.93,-372.78 108.69,-364.21 104.71,-369.97"/>
+</g>
+<!-- positions -->
+<g id="proc~~curve_pick~~CallsGraph_node5" class="node">
+<title>positions</title>
+<polygon fill="#777777" stroke="#777777" points="178.66,-356.27 119.89,-356.27 119.89,-332 178.66,-332 178.66,-356.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-340.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">positions</text>
+</g>
+<!-- proc~curve_pick&#45;&gt;positions -->
+<g id="proc~~curve_pick~~CallsGraph_edge4" class="edge">
+<title>proc~curve_pick&#45;&gt;positions</title>
+<path fill="none" stroke="#000000" d="M43.09,-252.54C54.71,-270.14 78.01,-302.5 104.52,-323.13 106.22,-324.45 108.01,-325.72 109.86,-326.93"/>
+<polygon fill="#000000" stroke="#000000" points="107.74,-329.75 118.15,-331.73 111.25,-323.69 107.74,-329.75"/>
+</g>
+<!-- proc~add_pick_hit -->
+<g id="proc~~curve_pick~~CallsGraph_node6" class="node">
+<title>proc~add_pick_hit</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node6"><a xlink:href="../proc/add_pick_hit.html" xlink:title="add_pick_hit">
+<polygon fill="#d9534f" stroke="#d9534f" points="188.04,-314.27 110.52,-314.27 110.52,-290 188.04,-290 188.04,-314.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-298.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">add_pick_hit</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~add_pick_hit -->
+<g id="proc~~curve_pick~~CallsGraph_edge5" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~add_pick_hit</title>
+<path fill="none" stroke="#000000" d="M55.3,-252.63C68.99,-261 87.64,-272.11 104.52,-281.13 106.61,-282.25 108.77,-283.38 110.96,-284.5"/>
+<polygon fill="#000000" stroke="#000000" points="109.38,-287.62 119.89,-288.94 112.5,-281.35 109.38,-287.62"/>
+</g>
+<!-- proc~art_point -->
+<g id="proc~~curve_pick~~CallsGraph_node7" class="node">
+<title>proc~art_point</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node7"><a xlink:href="../proc/art_point.html" xlink:title="art_point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="178.66,-272.27 119.89,-272.27 119.89,-248 178.66,-248 178.66,-272.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-256.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">art_point</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~art_point -->
+<g id="proc~~curve_pick~~CallsGraph_edge6" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M68.86,-246.08C81.34,-248.29 95.62,-250.82 108.59,-253.11"/>
+<polygon fill="#000000" stroke="#000000" points="107.63,-256.5 118.09,-254.79 108.85,-249.6 107.63,-256.5"/>
+</g>
+<!-- proc~better -->
+<g id="proc~~curve_pick~~CallsGraph_node8" class="node">
+<title>proc~better</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node8"><a xlink:href="../proc/better.html" xlink:title="better">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="176.28,-192.27 122.28,-192.27 122.28,-168 176.28,-168 176.28,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">better</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~better -->
+<g id="proc~~curve_pick~~CallsGraph_edge7" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~better</title>
+<path fill="none" stroke="#000000" d="M58.95,-227.56C75.08,-219 96.66,-207.54 114.57,-198.03"/>
+<polygon fill="#000000" stroke="#000000" points="116.09,-201.19 123.28,-193.41 112.81,-195 116.09,-201.19"/>
+</g>
+<!-- proc~is_position_xyz -->
+<g id="proc~~curve_pick~~CallsGraph_node9" class="node">
+<title>proc~is_position_xyz</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node9"><a xlink:href="../proc/is_position_xyz.html" xlink:title="is_position_xyz">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="194.04,-150.27 104.52,-150.27 104.52,-126 194.04,-126 194.04,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">is_position_xyz</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~is_position_xyz -->
+<g id="proc~~curve_pick~~CallsGraph_edge8" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~is_position_xyz</title>
+<path fill="none" stroke="#000000" d="M43.36,-227.75C55.12,-210.53 78.41,-179.21 104.52,-159.13 105.81,-158.14 107.16,-157.18 108.55,-156.24"/>
+<polygon fill="#000000" stroke="#000000" points="110.01,-159.45 116.81,-151.32 106.43,-153.43 110.01,-159.45"/>
+</g>
+<!-- proc~point_pick -->
+<g id="proc~~curve_pick~~CallsGraph_node10" class="node">
+<title>proc~point_pick</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node10"><a xlink:href="../proc/point_pick.html" xlink:title="point_pick">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="182.04,-108.27 116.52,-108.27 116.52,-84 182.04,-84 182.04,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">point_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~point_pick -->
+<g id="proc~~curve_pick~~CallsGraph_edge9" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~point_pick</title>
+<path fill="none" stroke="#000000" d="M39.37,-227.7C47.94,-203.51 69.82,-149.64 104.52,-117.14 105.27,-116.43 106.05,-115.74 106.86,-115.08"/>
+<polygon fill="#000000" stroke="#000000" points="108.69,-118.06 114.95,-109.51 104.72,-112.3 108.69,-118.06"/>
+</g>
+<!-- proc~segment_pick -->
+<g id="proc~~curve_pick~~CallsGraph_node11" class="node">
+<title>proc~segment_pick</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node11"><a xlink:href="../proc/segment_pick.html" xlink:title="segment_pick">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="191.79,-66.27 106.77,-66.27 106.77,-42 191.79,-42 191.79,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">segment_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~segment_pick -->
+<g id="proc~~curve_pick~~CallsGraph_edge10" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~segment_pick</title>
+<path fill="none" stroke="#000000" d="M37.35,-227.72C42.97,-197.81 61.05,-120.83 104.52,-75.14 105.11,-74.52 105.72,-73.91 106.35,-73.33"/>
+<polygon fill="#000000" stroke="#000000" points="108.27,-76.26 114.19,-67.47 104.08,-70.65 108.27,-76.26"/>
+</g>
+<!-- proc~sphere_near -->
+<g id="proc~~curve_pick~~CallsGraph_node12" class="node">
+<title>proc~sphere_near</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node12"><a xlink:href="../proc/sphere_near.html" xlink:title="sphere_near">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="188.04,-24.27 110.52,-24.27 110.52,0 188.04,0 188.04,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="149.28" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">sphere_near</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~sphere_near -->
+<g id="proc~~curve_pick~~CallsGraph_edge11" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~sphere_near</title>
+<path fill="none" stroke="#000000" d="M36.11,-227.77C39.11,-192.91 52.11,-92.52 104.52,-33.14 104.97,-32.62 105.44,-32.12 105.92,-31.63"/>
+<polygon fill="#000000" stroke="#000000" points="107.89,-34.53 113.54,-25.57 103.54,-29.06 107.89,-34.53"/>
+</g>
+<!-- proc~transformed -->
+<g id="proc~~curve_pick~~CallsGraph_node13" class="node">
+<title>proc~transformed</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node13"><a xlink:href="../proc/transformed.html" xlink:title="transformed">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="420.33,-231.27 342.81,-231.27 342.81,-207 420.33,-207 420.33,-231.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.57" y="-215.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">transformed</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~transformed -->
+<g id="proc~~curve_pick~~CallsGraph_edge12" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~transformed</title>
+<path fill="none" stroke="#000000" d="M69,-238.08C130.25,-234.36 259.96,-226.47 331.19,-222.14"/>
+<polygon fill="#000000" stroke="#000000" points="331.24,-225.64 341,-221.54 330.81,-218.65 331.24,-225.64"/>
+</g>
+<!-- proc~point -->
+<g id="proc~~curve_pick~~CallsGraph_node14" class="node">
+<title>proc~point</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node14"><a xlink:href="../proc/point.html" xlink:title="Trajectory%point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1896.99,-313.27 1796.22,-313.27 1796.22,-289 1896.99,-289 1896.99,-313.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1846.61" y="-297.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point</text>
+</a>
+</g>
+</g>
+<!-- proc~art_point&#45;&gt;proc~point -->
+<g id="proc~~curve_pick~~CallsGraph_edge13" class="edge">
+<title>proc~art_point&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M179.1,-271.79C184.31,-274.49 189.52,-277.62 194.04,-281.13 296.05,-360.44 251.36,-504.13 380.57,-504.13 380.57,-504.13 380.57,-504.13 1464.94,-504.13 1586.8,-504.13 1634.99,-549.5 1738.47,-485.13 1798.05,-448.08 1828.18,-364.82 1839.77,-324.24"/>
+<polygon fill="#000000" stroke="#000000" points="1843.09,-325.37 1842.33,-314.8 1836.34,-323.53 1843.09,-325.37"/>
+</g>
+<!-- proc~to_shown_at -->
+<g id="proc~~curve_pick~~CallsGraph_node16" class="node">
+<title>proc~to_shown_at</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node16"><a xlink:href="../proc/to_shown_at.html" xlink:title="to_shown_at">
+<polygon fill="#d9534f" stroke="#d9534f" points="306.81,-272.27 230.04,-272.27 230.04,-248 306.81,-248 306.81,-272.27"/>
+<text xml:space="preserve" text-anchor="middle" x="268.42" y="-256.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">to_shown_at</text>
+</a>
+</g>
+</g>
+<!-- proc~art_point&#45;&gt;proc~to_shown_at -->
+<g id="proc~~curve_pick~~CallsGraph_edge14" class="edge">
+<title>proc~art_point&#45;&gt;proc~to_shown_at</title>
+<path fill="none" stroke="#000000" d="M178.94,-260.13C190.9,-260.13 205.13,-260.13 218.65,-260.13"/>
+<polygon fill="#000000" stroke="#000000" points="218.26,-263.64 228.26,-260.14 218.26,-256.64 218.26,-263.64"/>
+</g>
+<!-- proc~project -->
+<g id="proc~~curve_pick~~CallsGraph_node15" class="node">
+<title>proc~project</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node15"><a xlink:href="../proc/project.html" xlink:title="project">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="295.42,-66.27 241.42,-66.27 241.42,-42 295.42,-42 295.42,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="268.42" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">project</text>
+</a>
+</g>
+</g>
+<!-- proc~point_pick&#45;&gt;proc~project -->
+<g id="proc~~curve_pick~~CallsGraph_edge15" class="edge">
+<title>proc~point_pick&#45;&gt;proc~project</title>
+<path fill="none" stroke="#000000" d="M182.29,-84.66C197.12,-79.34 214.83,-72.99 230.24,-67.47"/>
+<polygon fill="#000000" stroke="#000000" points="231.33,-70.79 239.56,-64.12 228.97,-64.2 231.33,-70.79"/>
+</g>
+<!-- proc~segment_pick&#45;&gt;proc~project -->
+<g id="proc~~curve_pick~~CallsGraph_edge16" class="edge">
+<title>proc~segment_pick&#45;&gt;proc~project</title>
+<path fill="none" stroke="#000000" d="M192.24,-54.14C204.45,-54.14 217.71,-54.14 229.65,-54.14"/>
+<polygon fill="#000000" stroke="#000000" points="229.54,-57.64 239.54,-54.14 229.54,-50.64 229.54,-57.64"/>
+</g>
+<!-- proc~sphere_near&#45;&gt;proc~project -->
+<g id="proc~~curve_pick~~CallsGraph_edge17" class="edge">
+<title>proc~sphere_near&#45;&gt;proc~project</title>
+<path fill="none" stroke="#000000" d="M185.43,-24.74C199.71,-29.86 216.22,-35.78 230.67,-40.96"/>
+<polygon fill="#000000" stroke="#000000" points="229.22,-44.16 239.82,-44.24 231.59,-37.57 229.22,-44.16"/>
+</g>
+<!-- proc~to_shown_at&#45;&gt;proc~transformed -->
+<g id="proc~~curve_pick~~CallsGraph_edge19" class="edge">
+<title>proc~to_shown_at&#45;&gt;proc~transformed</title>
+<path fill="none" stroke="#000000" d="M303.38,-247.61C313.62,-243.83 325.03,-239.62 335.86,-235.63"/>
+<polygon fill="#000000" stroke="#000000" points="336.85,-238.99 345.02,-232.25 334.43,-232.42 336.85,-238.99"/>
+</g>
+<!-- proc~to_shown -->
+<g id="proc~~curve_pick~~CallsGraph_node17" class="node">
+<title>proc~to_shown</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node17"><a xlink:href="../proc/to_shown.html" xlink:title="to_shown">
+<polygon fill="#d9534f" stroke="#d9534f" points="412.08,-273.27 351.06,-273.27 351.06,-249 412.08,-249 412.08,-273.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.57" y="-257.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">to_shown</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown_at&#45;&gt;proc~to_shown -->
+<g id="proc~~curve_pick~~CallsGraph_edge18" class="edge">
+<title>proc~to_shown_at&#45;&gt;proc~to_shown</title>
+<path fill="none" stroke="#000000" d="M307.05,-260.47C317.39,-260.57 328.66,-260.67 339.2,-260.76"/>
+<polygon fill="#000000" stroke="#000000" points="339.16,-264.26 349.19,-260.85 339.22,-257.26 339.16,-264.26"/>
+</g>
+<!-- proc~data_to_shown -->
+<g id="proc~~curve_pick~~CallsGraph_node18" class="node">
+<title>proc~data_to_shown</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node18"><a xlink:href="../proc/data_to_shown.html" xlink:title="data_to_shown">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="546.6,-273.27 456.33,-273.27 456.33,-249 546.6,-249 546.6,-273.27"/>
+<text xml:space="preserve" text-anchor="middle" x="501.46" y="-257.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">data_to_shown</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown&#45;&gt;proc~data_to_shown -->
+<g id="proc~~curve_pick~~CallsGraph_edge20" class="edge">
+<title>proc~to_shown&#45;&gt;proc~data_to_shown</title>
+<path fill="none" stroke="#000000" d="M412.32,-261.13C422.14,-261.13 433.41,-261.13 444.53,-261.13"/>
+<polygon fill="#000000" stroke="#000000" points="444.5,-264.64 454.5,-261.14 444.5,-257.64 444.5,-264.64"/>
+</g>
+<!-- proc~moves -->
+<g id="proc~~curve_pick~~CallsGraph_node19" class="node">
+<title>proc~moves</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node19"><a xlink:href="../proc/moves.html" xlink:title="moves">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="528.46,-201.27 474.46,-201.27 474.46,-177 528.46,-177 528.46,-201.27"/>
+<text xml:space="preserve" text-anchor="middle" x="501.46" y="-185.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">moves</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown&#45;&gt;proc~moves -->
+<g id="proc~~curve_pick~~CallsGraph_edge21" class="edge">
+<title>proc~to_shown&#45;&gt;proc~moves</title>
+<path fill="none" stroke="#000000" d="M405.46,-248.69C410.39,-245.93 415.56,-242.98 420.33,-240.13 437.76,-229.75 456.95,-217.57 472.18,-207.71"/>
+<polygon fill="#000000" stroke="#000000" points="473.81,-210.83 480.29,-202.44 470,-204.96 473.81,-210.83"/>
+</g>
+<!-- proc~rigid_inverse -->
+<g id="proc~~curve_pick~~CallsGraph_node23" class="node">
+<title>proc~rigid_inverse</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node23"><a xlink:href="../proc/rigid_inverse.html" xlink:title="rigid_inverse">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1300.68,-316.27 1220.91,-316.27 1220.91,-292 1300.68,-292 1300.68,-316.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1260.8" y="-300.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">rigid_inverse</text>
+</a>
+</g>
+</g>
+<!-- proc~data_to_shown&#45;&gt;proc~rigid_inverse -->
+<g id="proc~~curve_pick~~CallsGraph_edge22" class="edge">
+<title>proc~data_to_shown&#45;&gt;proc~rigid_inverse</title>
+<path fill="none" stroke="#000000" d="M537.11,-273.68C551.05,-278.15 567.4,-282.69 582.6,-285.13 814.19,-322.4 1095.96,-313.13 1209.15,-307.22"/>
+<polygon fill="#000000" stroke="#000000" points="1209.22,-310.72 1219.01,-306.69 1208.84,-303.73 1209.22,-310.72"/>
+</g>
+<!-- proc~world_matrix_at -->
+<g id="proc~~curve_pick~~CallsGraph_node24" class="node">
+<title>proc~world_matrix_at</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node24"><a xlink:href="../proc/world_matrix_at.html" xlink:title="ReferenceFrame%world_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="776.37,-258.27 582.6,-258.27 582.6,-234 776.37,-234 776.37,-258.27"/>
+<text xml:space="preserve" text-anchor="middle" x="679.48" y="-242.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%world_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~data_to_shown&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~curve_pick~~CallsGraph_edge23" class="edge">
+<title>proc~data_to_shown&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M546.88,-257.35C554.37,-256.71 562.43,-256.02 570.73,-255.32"/>
+<polygon fill="#000000" stroke="#000000" points="571,-258.81 580.67,-254.47 570.41,-251.83 571,-258.81"/>
+</g>
+<!-- proc~moves&#45;&gt;proc~moves -->
+<g id="proc~~curve_pick~~CallsGraph_edge25" class="edge">
+<title>proc~moves&#45;&gt;proc~moves</title>
+<path fill="none" stroke="#000000" d="M481.41,-201.52C474.87,-210.41 481.56,-219.27 501.46,-219.27 512.35,-219.27 519.28,-216.62 522.26,-212.76"/>
+<polygon fill="#000000" stroke="#000000" points="525.77,-212.78 521.62,-203.03 518.78,-213.23 525.77,-212.78"/>
+</g>
+<!-- proc~is_following -->
+<g id="proc~~curve_pick~~CallsGraph_node20" class="node">
+<title>proc~is_following</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node20"><a xlink:href="../proc/is_following.html" xlink:title="ReferenceFrame%is_following">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="764.74,-174.27 594.22,-174.27 594.22,-150 764.74,-150 764.74,-174.27"/>
+<text xml:space="preserve" text-anchor="middle" x="679.48" y="-158.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%is_following</text>
+</a>
+</g>
+</g>
+<!-- proc~moves&#45;&gt;proc~is_following -->
+<g id="proc~~curve_pick~~CallsGraph_edge24" class="edge">
+<title>proc~moves&#45;&gt;proc~is_following</title>
+<path fill="none" stroke="#000000" d="M528.82,-185.09C544.1,-182.75 564.37,-179.64 585.04,-176.47"/>
+<polygon fill="#000000" stroke="#000000" points="585.35,-179.96 594.7,-174.99 584.29,-173.04 585.35,-179.96"/>
+</g>
+<!-- proc~num_parents -->
+<g id="proc~~curve_pick~~CallsGraph_node21" class="node">
+<title>proc~num_parents</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node21"><a xlink:href="../proc/num_parents.html" xlink:title="ReferenceFrame%num_parents">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="768.49,-132.27 590.47,-132.27 590.47,-108 768.49,-108 768.49,-132.27"/>
+<text xml:space="preserve" text-anchor="middle" x="679.48" y="-116.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%num_parents</text>
+</a>
+</g>
+</g>
+<!-- proc~moves&#45;&gt;proc~num_parents -->
+<g id="proc~~curve_pick~~CallsGraph_edge26" class="edge">
+<title>proc~moves&#45;&gt;proc~num_parents</title>
+<path fill="none" stroke="#000000" d="M519.74,-176.52C535.42,-165.64 559.54,-150.28 582.6,-141.13 587.44,-139.21 592.5,-137.45 597.64,-135.84"/>
+<polygon fill="#000000" stroke="#000000" points="598.22,-139.32 606.84,-133.16 596.26,-132.59 598.22,-139.32"/>
+</g>
+<!-- proc~parent -->
+<g id="proc~~curve_pick~~CallsGraph_node22" class="node">
+<title>proc~parent</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node22"><a xlink:href="../proc/parent.html" xlink:title="ReferenceFrame%parent">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="751.24,-216.27 607.72,-216.27 607.72,-192 751.24,-192 751.24,-216.27"/>
+<text xml:space="preserve" text-anchor="middle" x="679.48" y="-200.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%parent</text>
+</a>
+</g>
+</g>
+<!-- proc~moves&#45;&gt;proc~parent -->
+<g id="proc~~curve_pick~~CallsGraph_edge27" class="edge">
+<title>proc~moves&#45;&gt;proc~parent</title>
+<path fill="none" stroke="#000000" d="M528.82,-191.38C546.86,-192.92 571.86,-195.05 596.27,-197.13"/>
+<polygon fill="#000000" stroke="#000000" points="595.64,-200.59 605.9,-197.95 596.23,-193.61 595.64,-200.59"/>
+</g>
+<!-- proc~num_trajectories -->
+<g id="proc~~curve_pick~~CallsGraph_node26" class="node">
+<title>proc~num_trajectories</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node26"><a xlink:href="../proc/num_trajectories.html" xlink:title="TrajectoryFollower%num_trajectories">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1021.14,-174.27 812.37,-174.27 812.37,-150 1021.14,-150 1021.14,-174.27"/>
+<text xml:space="preserve" text-anchor="middle" x="916.75" y="-158.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%num_trajectories</text>
+</a>
+</g>
+</g>
+<!-- proc~is_following&#45;&gt;proc~num_trajectories -->
+<g id="proc~~curve_pick~~CallsGraph_edge28" class="edge">
+<title>proc~is_following&#45;&gt;proc~num_trajectories</title>
+<path fill="none" stroke="#000000" d="M765.09,-162.13C776.67,-162.13 788.72,-162.13 800.73,-162.13"/>
+<polygon fill="#000000" stroke="#000000" points="800.7,-165.64 810.7,-162.14 800.7,-158.64 800.7,-165.64"/>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~curve_pick~~CallsGraph_edge30" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M649.7,-258.52C640,-267.41 649.93,-276.27 679.48,-276.27 695.65,-276.27 705.94,-273.62 710.36,-269.76"/>
+<polygon fill="#000000" stroke="#000000" points="713.87,-269.64 709.42,-260.02 706.9,-270.32 713.87,-269.64"/>
+</g>
+<!-- proc~local_matrix_at -->
+<g id="proc~~curve_pick~~CallsGraph_node25" class="node">
+<title>proc~local_matrix_at</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node25"><a xlink:href="../proc/local_matrix_at.html" xlink:title="ReferenceFrame%local_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1011.76,-218.27 821.75,-218.27 821.75,-194 1011.76,-194 1011.76,-218.27"/>
+<text xml:space="preserve" text-anchor="middle" x="916.75" y="-202.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%local_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~local_matrix_at -->
+<g id="proc~~curve_pick~~CallsGraph_edge29" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~local_matrix_at</title>
+<path fill="none" stroke="#000000" d="M754.6,-233.53C778.66,-229.44 805.55,-224.87 830.37,-220.65"/>
+<polygon fill="#000000" stroke="#000000" points="830.84,-224.12 840.11,-219 829.67,-217.22 830.84,-224.12"/>
+</g>
+<!-- proc~followed_pose -->
+<g id="proc~~curve_pick~~CallsGraph_node27" class="node">
+<title>proc~followed_pose</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node27"><a xlink:href="../proc/followed_pose.html" xlink:title="followed_pose">
+<polygon fill="#d9534f" stroke="#d9534f" points="1144.41,-232.27 1057.14,-232.27 1057.14,-208 1144.41,-208 1144.41,-232.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1100.78" y="-216.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">followed_pose</text>
+</a>
+</g>
+</g>
+<!-- proc~local_matrix_at&#45;&gt;proc~followed_pose -->
+<g id="proc~~curve_pick~~CallsGraph_edge31" class="edge">
+<title>proc~local_matrix_at&#45;&gt;proc~followed_pose</title>
+<path fill="none" stroke="#000000" d="M1012.23,-213.4C1023.55,-214.27 1034.8,-215.14 1045.28,-215.94"/>
+<polygon fill="#000000" stroke="#000000" points="1044.99,-219.43 1055.23,-216.71 1045.53,-212.45 1044.99,-219.43"/>
+</g>
+<!-- proc~frame_matrix -->
+<g id="proc~~curve_pick~~CallsGraph_node28" class="node">
+<title>proc~frame_matrix</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node28"><a xlink:href="../proc/frame_matrix.html" xlink:title="frame_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1142.54,-148.27 1059.02,-148.27 1059.02,-124 1142.54,-124 1142.54,-148.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1100.78" y="-132.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">frame_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~local_matrix_at&#45;&gt;proc~frame_matrix -->
+<g id="proc~~curve_pick~~CallsGraph_edge32" class="edge">
+<title>proc~local_matrix_at&#45;&gt;proc~frame_matrix</title>
+<path fill="none" stroke="#000000" d="M988.74,-193.51C999.76,-190.65 1010.89,-187.22 1021.14,-183.13 1039.39,-175.87 1058.33,-164.68 1073.05,-155.04"/>
+<polygon fill="#000000" stroke="#000000" points="1074.91,-158.01 1081.25,-149.52 1071,-152.2 1074.91,-158.01"/>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~rigid_inverse -->
+<g id="proc~~curve_pick~~CallsGraph_edge36" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~rigid_inverse</title>
+<path fill="none" stroke="#000000" d="M1113.96,-232.66C1128.5,-246.91 1154.17,-269.9 1180.41,-283.13 1189.47,-287.71 1199.64,-291.36 1209.59,-294.25"/>
+<polygon fill="#000000" stroke="#000000" points="1208.63,-297.62 1219.2,-296.81 1210.43,-290.85 1208.63,-297.62"/>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~curve_pick~~CallsGraph_edge38" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M1056.94,-224.21C1045.33,-225.24 1032.76,-226.29 1021.14,-227.13 943.23,-232.77 855.2,-237.64 788.14,-241.04"/>
+<polygon fill="#000000" stroke="#000000" points="788.04,-237.54 778.23,-241.54 788.39,-244.53 788.04,-237.54"/>
+</g>
+<!-- proc~quat_from_matrix -->
+<g id="proc~~curve_pick~~CallsGraph_node29" class="node">
+<title>proc~quat_from_matrix</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node29"><a xlink:href="../proc/quat_from_matrix.html" xlink:title="quat_from_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1313.43,-232.27 1208.16,-232.27 1208.16,-208 1313.43,-208 1313.43,-232.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1260.8" y="-216.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_from_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_from_matrix -->
+<g id="proc~~curve_pick~~CallsGraph_edge33" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_from_matrix</title>
+<path fill="none" stroke="#000000" d="M1144.54,-220.13C1160.51,-220.13 1179,-220.13 1196.44,-220.13"/>
+<polygon fill="#000000" stroke="#000000" points="1196.19,-223.64 1206.19,-220.14 1196.19,-216.64 1196.19,-223.64"/>
+</g>
+<!-- proc~quat_multiply -->
+<g id="proc~~curve_pick~~CallsGraph_node30" class="node">
+<title>proc~quat_multiply</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node30"><a xlink:href="../proc/quat_multiply.html" xlink:title="quat_multiply">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1302.56,-190.27 1219.04,-190.27 1219.04,-166 1302.56,-166 1302.56,-190.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1260.8" y="-174.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_multiply</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_multiply -->
+<g id="proc~~curve_pick~~CallsGraph_edge34" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_multiply</title>
+<path fill="none" stroke="#000000" d="M1144.62,-208.67C1156.23,-205.57 1168.8,-202.22 1180.41,-199.13 1189.23,-196.79 1198.59,-194.31 1207.69,-191.9"/>
+<polygon fill="#000000" stroke="#000000" points="1208.35,-195.34 1217.12,-189.4 1206.56,-188.58 1208.35,-195.34"/>
+</g>
+<!-- proc~quat_normalize -->
+<g id="proc~~curve_pick~~CallsGraph_node31" class="node">
+<title>proc~quat_normalize</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node31"><a xlink:href="../proc/quat_normalize.html" xlink:title="quat_normalize">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1307.81,-148.27 1213.79,-148.27 1213.79,-124 1307.81,-124 1307.81,-148.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1260.8" y="-132.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_normalize</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~quat_normalize -->
+<g id="proc~~curve_pick~~CallsGraph_edge35" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~quat_normalize</title>
+<path fill="none" stroke="#000000" d="M1113.96,-207.61C1128.5,-193.36 1154.17,-170.37 1180.41,-157.13 1187.42,-153.6 1195.08,-150.62 1202.8,-148.11"/>
+<polygon fill="#000000" stroke="#000000" points="1203.64,-151.51 1212.23,-145.3 1201.64,-144.8 1203.64,-151.51"/>
+</g>
+<!-- proc~state_at -->
+<g id="proc~~curve_pick~~CallsGraph_node33" class="node">
+<title>proc~state_at</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node33"><a xlink:href="../proc/state_at.html" xlink:title="TrajectoryFollower%state_at">
+<polygon fill="#d9534f" stroke="#d9534f" points="1341.18,-274.27 1180.41,-274.27 1180.41,-250 1341.18,-250 1341.18,-274.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1260.8" y="-258.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%state_at</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~state_at -->
+<g id="proc~~curve_pick~~CallsGraph_edge37" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~state_at</title>
+<path fill="none" stroke="#000000" d="M1144.62,-231.6C1156.23,-234.7 1168.8,-238.05 1180.41,-241.13 1187.19,-242.94 1194.3,-244.82 1201.36,-246.69"/>
+<polygon fill="#000000" stroke="#000000" points="1200.33,-250.04 1210.89,-249.22 1202.12,-243.27 1200.33,-250.04"/>
+</g>
+<!-- proc~quat_to_matrix -->
+<g id="proc~~curve_pick~~CallsGraph_node32" class="node">
+<title>proc~quat_to_matrix</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node32"><a xlink:href="../proc/quat_to_matrix.html" xlink:title="quat_to_matrix">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1306.31,-106.27 1215.29,-106.27 1215.29,-82 1306.31,-82 1306.31,-106.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1260.8" y="-90.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_to_matrix</text>
+</a>
+</g>
+</g>
+<!-- proc~frame_matrix&#45;&gt;proc~quat_to_matrix -->
+<g id="proc~~curve_pick~~CallsGraph_edge39" class="edge">
+<title>proc~frame_matrix&#45;&gt;proc~quat_to_matrix</title>
+<path fill="none" stroke="#000000" d="M1142.99,-125.11C1155.05,-121.89 1168.26,-118.37 1180.41,-115.14 1188,-113.12 1195.99,-111 1203.87,-108.91"/>
+<polygon fill="#000000" stroke="#000000" points="1204.63,-112.33 1213.41,-106.39 1202.84,-105.56 1204.63,-112.33"/>
+</g>
+<!-- proc~chosen_trajectory -->
+<g id="proc~~curve_pick~~CallsGraph_node34" class="node">
+<title>proc~chosen_trajectory</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node34"><a xlink:href="../proc/chosen_trajectory.html" xlink:title="chosen_trajectory">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1517.33,-232.27 1410.56,-232.27 1410.56,-208 1517.33,-208 1517.33,-232.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1463.94" y="-216.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">chosen_trajectory</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~chosen_trajectory -->
+<g id="proc~~curve_pick~~CallsGraph_edge40" class="edge">
+<title>proc~state_at&#45;&gt;proc~chosen_trajectory</title>
+<path fill="none" stroke="#000000" d="M1322.15,-249.53C1346.43,-244.46 1374.46,-238.61 1399.09,-233.47"/>
+<polygon fill="#000000" stroke="#000000" points="1399.58,-236.94 1408.66,-231.47 1398.15,-230.09 1399.58,-236.94"/>
+</g>
+<!-- proc~data_valid -->
+<g id="proc~~curve_pick~~CallsGraph_node35" class="node">
+<title>proc~data_valid</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node35"><a xlink:href="../proc/data_valid.html" xlink:title="TrajectoryFollower%data_valid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1550.7,-148.27 1377.18,-148.27 1377.18,-124 1550.7,-124 1550.7,-148.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1463.94" y="-132.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%data_valid</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~data_valid -->
+<g id="proc~~curve_pick~~CallsGraph_edge41" class="edge">
+<title>proc~state_at&#45;&gt;proc~data_valid</title>
+<path fill="none" stroke="#000000" d="M1328.31,-249.7C1332.93,-247.32 1337.3,-244.49 1341.18,-241.13 1371.92,-214.59 1346.19,-183.4 1377.18,-157.13 1378.14,-156.32 1379.14,-155.53 1380.15,-154.77"/>
+<polygon fill="#000000" stroke="#000000" points="1381.94,-157.78 1388.59,-149.53 1378.25,-151.84 1381.94,-157.78"/>
+</g>
+<!-- proc~interpolate_attitude -->
+<g id="proc~~curve_pick~~CallsGraph_node36" class="node">
+<title>proc~interpolate_attitude</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node36"><a xlink:href="../proc/interpolate_attitude.html" xlink:title="interpolate_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="1522.2,-413.27 1405.68,-413.27 1405.68,-389 1522.2,-389 1522.2,-413.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1463.94" y="-397.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~interpolate_attitude -->
+<g id="proc~~curve_pick~~CallsGraph_edge42" class="edge">
+<title>proc~state_at&#45;&gt;proc~interpolate_attitude</title>
+<path fill="none" stroke="#000000" d="M1326.61,-274.66C1331.78,-277.01 1336.72,-279.81 1341.18,-283.13 1365.8,-301.5 1356.06,-319.83 1377.18,-342.13 1392.45,-358.26 1412.82,-372.5 1429.87,-382.95"/>
+<polygon fill="#000000" stroke="#000000" points="1427.78,-385.78 1438.17,-387.87 1431.36,-379.76 1427.78,-385.78"/>
+</g>
+<!-- proc~interpolate_position -->
+<g id="proc~~curve_pick~~CallsGraph_node37" class="node">
+<title>proc~interpolate_position</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node37"><a xlink:href="../proc/interpolate_position.html" xlink:title="interpolate_position">
+<polygon fill="#d9534f" stroke="#d9534f" points="1522.58,-274.27 1405.31,-274.27 1405.31,-250 1522.58,-250 1522.58,-274.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1463.94" y="-258.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_position</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~interpolate_position -->
+<g id="proc~~curve_pick~~CallsGraph_edge43" class="edge">
+<title>proc~state_at&#45;&gt;proc~interpolate_position</title>
+<path fill="none" stroke="#000000" d="M1341.58,-262.13C1358.78,-262.13 1376.83,-262.13 1393.59,-262.13"/>
+<polygon fill="#000000" stroke="#000000" points="1393.45,-265.64 1403.45,-262.14 1393.45,-258.64 1393.45,-265.64"/>
+</g>
+<!-- proc~time_index -->
+<g id="proc~~curve_pick~~CallsGraph_node38" class="node">
+<title>proc~time_index</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node38"><a xlink:href="../proc/time_index.html" xlink:title="Trajectory%time_index">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1529.7,-190.27 1398.18,-190.27 1398.18,-166 1529.7,-166 1529.7,-190.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1463.94" y="-174.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_index</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~time_index -->
+<g id="proc~~curve_pick~~CallsGraph_edge44" class="edge">
+<title>proc~state_at&#45;&gt;proc~time_index</title>
+<path fill="none" stroke="#000000" d="M1324.02,-249.64C1330.03,-247.28 1335.87,-244.47 1341.18,-241.13 1362.01,-228.07 1356.24,-212.01 1377.18,-199.13 1380.48,-197.11 1383.96,-195.27 1387.56,-193.62"/>
+<polygon fill="#000000" stroke="#000000" points="1388.6,-196.98 1396.55,-189.97 1385.97,-190.49 1388.6,-196.98"/>
+</g>
+<!-- proc~wrapped_time -->
+<g id="proc~~curve_pick~~CallsGraph_node39" class="node">
+<title>proc~wrapped_time</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node39"><a xlink:href="../proc/wrapped_time.html" xlink:title="wrapped_time">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1507.58,-333.27 1420.31,-333.27 1420.31,-309 1507.58,-309 1507.58,-333.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1463.94" y="-317.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">wrapped_time</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~wrapped_time -->
+<g id="proc~~curve_pick~~CallsGraph_edge45" class="edge">
+<title>proc~state_at&#45;&gt;proc~wrapped_time</title>
+<path fill="none" stroke="#000000" d="M1310.59,-274.68C1320.72,-277.39 1331.32,-280.29 1341.18,-283.13 1365.03,-290.01 1391.33,-298.14 1413.37,-305.12"/>
+<polygon fill="#000000" stroke="#000000" points="1412.1,-308.39 1422.7,-308.09 1414.23,-301.72 1412.1,-308.39"/>
+</g>
+<!-- proc~time_distance -->
+<g id="proc~~curve_pick~~CallsGraph_node45" class="node">
+<title>proc~time_distance</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node45"><a xlink:href="../proc/time_distance.html" xlink:title="Trajectory%time_distance">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1736.6,-190.27 1588.58,-190.27 1588.58,-166 1736.6,-166 1736.6,-190.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1662.59" y="-174.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_distance</text>
+</a>
+</g>
+</g>
+<!-- proc~chosen_trajectory&#45;&gt;proc~time_distance -->
+<g id="proc~~curve_pick~~CallsGraph_edge46" class="edge">
+<title>proc~chosen_trajectory&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M1517.64,-208.88C1540.33,-204.03 1567.19,-198.3 1591.52,-193.1"/>
+<polygon fill="#000000" stroke="#000000" points="1591.97,-196.58 1601.02,-191.07 1590.51,-189.74 1591.97,-196.58"/>
+</g>
+<!-- proc~verify_data -->
+<g id="proc~~curve_pick~~CallsGraph_node47" class="node">
+<title>proc~verify_data</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node47"><a xlink:href="../proc/verify_data.html" xlink:title="Trajectory%verify_data">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1729.1,-148.27 1596.08,-148.27 1596.08,-124 1729.1,-124 1729.1,-148.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1662.59" y="-132.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%verify_data</text>
+</a>
+</g>
+</g>
+<!-- proc~data_valid&#45;&gt;proc~verify_data -->
+<g id="proc~~curve_pick~~CallsGraph_edge47" class="edge">
+<title>proc~data_valid&#45;&gt;proc~verify_data</title>
+<path fill="none" stroke="#000000" d="M1551.19,-136.13C1562.3,-136.13 1573.61,-136.13 1584.56,-136.13"/>
+<polygon fill="#000000" stroke="#000000" points="1584.29,-139.64 1594.29,-136.14 1584.29,-132.64 1584.29,-139.64"/>
+</g>
+<!-- proc~attitude~3 -->
+<g id="proc~~curve_pick~~CallsGraph_node40" class="node">
+<title>proc~attitude~3</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node40"><a xlink:href="../proc/attitude~3.html" xlink:title="Trajectory%attitude">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1720.1,-434.27 1605.08,-434.27 1605.08,-410 1720.1,-410 1720.1,-434.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1662.59" y="-418.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~attitude~3 -->
+<g id="proc~~curve_pick~~CallsGraph_edge48" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~attitude~3</title>
+<path fill="none" stroke="#000000" d="M1522.61,-407.29C1544.72,-409.65 1570.15,-412.37 1593.16,-414.83"/>
+<polygon fill="#000000" stroke="#000000" points="1592.77,-418.31 1603.09,-415.89 1593.52,-411.35 1592.77,-418.31"/>
+</g>
+<!-- proc~num_attitudes -->
+<g id="proc~~curve_pick~~CallsGraph_node41" class="node">
+<title>proc~num_attitudes</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node41"><a xlink:href="../proc/num_attitudes.html" xlink:title="Trajectory%num_attitudes">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1737.35,-392.27 1587.83,-392.27 1587.83,-368 1737.35,-368 1737.35,-392.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1662.59" y="-376.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_attitudes</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~num_attitudes -->
+<g id="proc~~curve_pick~~CallsGraph_edge49" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~num_attitudes</title>
+<path fill="none" stroke="#000000" d="M1522.61,-394.98C1539.33,-393.19 1557.95,-391.2 1576,-389.28"/>
+<polygon fill="#000000" stroke="#000000" points="1576.36,-392.76 1585.93,-388.21 1575.62,-385.8 1576.36,-392.76"/>
+</g>
+<!-- proc~quat_slerp -->
+<g id="proc~~curve_pick~~CallsGraph_node44" class="node">
+<title>proc~quat_slerp</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node44"><a xlink:href="../proc/quat_slerp.html" xlink:title="quat_slerp">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1696.1,-476.27 1629.08,-476.27 1629.08,-452 1696.1,-452 1696.1,-476.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1662.59" y="-460.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_slerp</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~quat_slerp -->
+<g id="proc~~curve_pick~~CallsGraph_edge50" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~quat_slerp</title>
+<path fill="none" stroke="#000000" d="M1499.66,-413.72C1523.92,-422.36 1557.14,-433.9 1586.7,-443.13 1596.73,-446.27 1607.59,-449.44 1617.84,-452.33"/>
+<polygon fill="#000000" stroke="#000000" points="1616.62,-455.63 1627.2,-454.94 1618.51,-448.89 1616.62,-455.63"/>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point -->
+<g id="proc~~curve_pick~~CallsGraph_edge52" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M1522.77,-270.86C1542.97,-273.73 1565.81,-276.79 1586.7,-279.13 1654.22,-286.71 1731.9,-292.99 1784.42,-296.87"/>
+<polygon fill="#000000" stroke="#000000" points="1784.15,-300.36 1794.38,-297.6 1784.67,-293.38 1784.15,-300.36"/>
+</g>
+<!-- proc~num_points -->
+<g id="proc~~curve_pick~~CallsGraph_node42" class="node">
+<title>proc~num_points</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node42"><a xlink:href="../proc/num_points.html" xlink:title="Trajectory%num_points">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1914.24,-229.27 1778.97,-229.27 1778.97,-205 1914.24,-205 1914.24,-229.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1846.61" y="-213.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%num_points</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~num_points -->
+<g id="proc~~curve_pick~~CallsGraph_edge51" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M1518.93,-249.53C1539.98,-245.02 1564.37,-240.28 1586.7,-237.13 1646.98,-228.65 1715.71,-223.55 1767.2,-220.63"/>
+<polygon fill="#000000" stroke="#000000" points="1767.27,-224.13 1777.06,-220.09 1766.88,-217.14 1767.27,-224.13"/>
+</g>
+<!-- proc~point_between -->
+<g id="proc~~curve_pick~~CallsGraph_node43" class="node">
+<title>proc~point_between</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node43"><a xlink:href="../proc/point_between.html" xlink:title="Trajectory%point_between">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1738.47,-270.27 1586.7,-270.27 1586.7,-246 1738.47,-246 1738.47,-270.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1662.59" y="-254.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%point_between</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_position&#45;&gt;proc~point_between -->
+<g id="proc~~curve_pick~~CallsGraph_edge53" class="edge">
+<title>proc~interpolate_position&#45;&gt;proc~point_between</title>
+<path fill="none" stroke="#000000" d="M1522.88,-260.96C1539.23,-260.62 1557.39,-260.25 1575.04,-259.9"/>
+<polygon fill="#000000" stroke="#000000" points="1575.1,-263.4 1585.03,-259.69 1574.96,-256.4 1575.1,-263.4"/>
+</g>
+<!-- proc~time_index&#45;&gt;proc~time_distance -->
+<g id="proc~~curve_pick~~CallsGraph_edge54" class="edge">
+<title>proc~time_index&#45;&gt;proc~time_distance</title>
+<path fill="none" stroke="#000000" d="M1530.15,-178.13C1545.17,-178.13 1561.36,-178.13 1577.07,-178.13"/>
+<polygon fill="#000000" stroke="#000000" points="1576.89,-181.64 1586.89,-178.14 1576.89,-174.64 1576.89,-181.64"/>
+</g>
+<!-- proc~time_range~2 -->
+<g id="proc~~curve_pick~~CallsGraph_node46" class="node">
+<title>proc~time_range~2</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node46"><a xlink:href="../proc/time_range~2.html" xlink:title="Trajectory%time_range">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1729.85,-350.27 1595.33,-350.27 1595.33,-326 1729.85,-326 1729.85,-350.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1662.59" y="-334.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_range</text>
+</a>
+</g>
+</g>
+<!-- proc~wrapped_time&#45;&gt;proc~time_range~2 -->
+<g id="proc~~curve_pick~~CallsGraph_edge55" class="edge">
+<title>proc~wrapped_time&#45;&gt;proc~time_range~2</title>
+<path fill="none" stroke="#000000" d="M1507.61,-324.82C1529.85,-326.75 1557.75,-329.16 1583.67,-331.4"/>
+<polygon fill="#000000" stroke="#000000" points="1583.25,-334.88 1593.51,-332.25 1583.85,-327.9 1583.25,-334.88"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~point -->
+<g id="proc~~curve_pick~~CallsGraph_edge57" class="edge">
+<title>proc~point_between&#45;&gt;proc~point</title>
+<path fill="none" stroke="#000000" d="M1716.72,-270.69C1738.09,-275.74 1762.84,-281.58 1784.91,-286.8"/>
+<polygon fill="#000000" stroke="#000000" points="1783.83,-290.14 1794.36,-289.03 1785.43,-283.32 1783.83,-290.14"/>
+</g>
+<!-- proc~point_between&#45;&gt;proc~num_points -->
+<g id="proc~~curve_pick~~CallsGraph_edge56" class="edge">
+<title>proc~point_between&#45;&gt;proc~num_points</title>
+<path fill="none" stroke="#000000" d="M1719.19,-245.61C1737.98,-241.38 1759.15,-236.61 1778.72,-232.2"/>
+<polygon fill="#000000" stroke="#000000" points="1779.25,-235.67 1788.24,-230.06 1777.72,-228.84 1779.25,-235.67"/>
+</g>
+<!-- proc~time_fraction -->
+<g id="proc~~curve_pick~~CallsGraph_node48" class="node">
+<title>proc~time_fraction</title>
+<g id="a_proc~~curve_pick~~CallsGraph_node48"><a xlink:href="../proc/time_fraction.html" xlink:title="Trajectory%time_fraction">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1918.74,-271.27 1774.47,-271.27 1774.47,-247 1918.74,-247 1918.74,-271.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1846.61" y="-255.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%time_fraction</text>
+</a>
+</g>
+</g>
+<!-- proc~point_between&#45;&gt;proc~time_fraction -->
+<g id="proc~~curve_pick~~CallsGraph_edge58" class="edge">
+<title>proc~point_between&#45;&gt;proc~time_fraction</title>
+<path fill="none" stroke="#000000" d="M1738.93,-258.55C1746.75,-258.59 1754.73,-258.64 1762.63,-258.68"/>
+<polygon fill="#000000" stroke="#000000" points="1762.58,-262.18 1772.6,-258.73 1762.62,-255.18 1762.58,-262.18"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panproccurve_pickCallsGraph = svgPanZoom('#proccurve_pickCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~curve_pick~~CalledByGraph Pages: 1 -->
+<svg id="proccurve_pickCalledByGraph" width="314pt" height="32pt"
+ viewBox="0.00 0.00 314.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~curve_pick~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>proc~~curve_pick~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 309.79,-28.27 309.79,4 -4,4"/>
+<!-- proc~curve_pick -->
+<g id="proc~~curve_pick~~CalledByGraph_node1" class="node">
+<title>proc~curve_pick</title>
+<polygon fill="none" stroke="black" points="305.79,-24.27 237.27,-24.27 237.27,0 305.79,0 305.79,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="271.53" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">curve_pick</text>
+</g>
+<!-- proc~drawable_pick -->
+<g id="proc~~curve_pick~~CalledByGraph_node2" class="node">
+<title>proc~drawable_pick</title>
+<g id="a_proc~~curve_pick~~CalledByGraph_node2"><a xlink:href="../proc/drawable_pick.html" xlink:title="DrawableTrajectory%drawable_pick">
+<polygon fill="#d9534f" stroke="#d9534f" points="201.27,-24.27 0,-24.27 0,0 201.27,0 201.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="100.64" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DrawableTrajectory%drawable_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~drawable_pick&#45;&gt;proc~curve_pick -->
+<g id="proc~~curve_pick~~CalledByGraph_edge1" class="edge">
+<title>proc~drawable_pick&#45;&gt;proc~curve_pick</title>
+<path fill="none" stroke="#000000" d="M201.35,-12.13C209.69,-12.13 217.83,-12.13 225.42,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="225.33,-15.64 235.33,-12.14 225.33,-8.64 225.33,-15.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">curve_pick</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">frame</span><span class="p">,</span><span class="w"> </span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">hits</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">CurveArtist</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="c">!! the artist</span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">ReferenceFrame</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">frame</span><span class="w">  </span><span class="c">!! the frame drawing it (for the hit)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">PickCamera</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cam</span><span class="w">         </span><span class="c">!! the pick camera</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span><span class="w">              </span><span class="c">!! the frame&#39;s transform to the root frame</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">PickHit</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">hits</span><span class="p">(:)</span><span class="w">  </span><span class="c">!! hits are added to hits(1:n)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span><span class="w">                 </span><span class="c">!! number of hits</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">dimension</span><span class="p">(:,:),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pos</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">extra</span><span class="p">,</span><span class="w"> </span><span class="n">lo</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">hi</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">c</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">p0</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">p1</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">px</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">depth</span><span class="p">,</span><span class="w"> </span><span class="n">best_px</span><span class="p">,</span><span class="w"> </span><span class="n">best_depth</span><span class="p">,</span><span class="w"> </span><span class="n">best_s</span><span class="p">,</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="n">t1</span><span class="p">,</span><span class="w"> </span><span class="n">frac</span><span class="w"></span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="nb">count</span><span class="p">,</span><span class="w"> </span><span class="n">i1</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">best_i</span><span class="p">,</span><span class="w"> </span><span class="n">best_j</span><span class="p">,</span><span class="w"> </span><span class="n">nd</span><span class="p">,</span><span class="w"> </span><span class="n">d1</span><span class="p">,</span><span class="w"> </span><span class="n">d2</span><span class="w"></span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">xyz</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">PickHit</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">h</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="nb">associated</span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">traj</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">is_built</span><span class="p">())</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        </span><span class="n">nd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">n_drawn</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nd</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        </span><span class="n">d1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">first_drawn_</span><span class="w">                                     </span><span class="c">! (the points drawn: d1 .. d2)</span>
+<span class="w">        </span><span class="n">d2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">nd</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">        </span><span class="n">extra</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">width_</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cam</span><span class="p">%</span><span class="n">pixel_ratio</span><span class="w"></span>
+<span class="w">        </span><span class="n">xyz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">is_position_xyz</span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">sources_</span><span class="p">)</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">transformed</span><span class="p">(</span><span class="n">a</span><span class="p">)</span><span class="w">   </span><span class="c">! (transformed: art_point)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">a</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="n">positions</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">best_px</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">huge</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">best_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">huge</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">best_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"></span>
+<span class="w">        </span><span class="n">best_j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">                                              </span><span class="c">! (the hit is between points best_i and best_j)</span>
+<span class="w">        </span><span class="n">best_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nd</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">                                       </span><span class="c">! (a single point)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">point_pick</span><span class="p">(</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">root_point</span><span class="p">(</span><span class="n">d1</span><span class="p">),</span><span class="w"> </span><span class="n">px</span><span class="p">,</span><span class="w"> </span><span class="n">depth</span><span class="p">,</span><span class="w"> </span><span class="n">extra</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">best_px</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">px</span><span class="w"></span>
+<span class="w">                </span><span class="n">best_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">depth</span><span class="w"></span>
+<span class="w">                </span><span class="n">best_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d1</span><span class="w"></span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end if</span>
+<span class="k">        do </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">num_chunks</span><span class="p">()</span><span class="w">                          </span><span class="c">! the segments drawn, chunk by chunk</span>
+<span class="w">            </span><span class="k">call </span><span class="n">a</span><span class="p">%</span><span class="n">chain</span><span class="p">%</span><span class="n">chunk_bounds</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="nb">count</span><span class="p">,</span><span class="w"> </span><span class="n">lo</span><span class="p">,</span><span class="w"> </span><span class="n">hi</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">i1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">d1</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">i2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">first</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">d2</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nb">count</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="n">i2</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">i1</span><span class="p">)</span><span class="w"> </span><span class="k">cycle</span>
+<span class="k">            </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">matmul</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="mf">0.5_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">lo</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">hi</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">sphere_near</span><span class="p">(</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5_wp</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">hi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lo</span><span class="p">),</span><span class="w"> </span><span class="n">extra</span><span class="p">))</span><span class="w"> </span><span class="k">cycle</span><span class="w">       </span><span class="c">! (a chunk far off: skipped)</span>
+<span class="w">            </span><span class="n">p0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root_point</span><span class="p">(</span><span class="n">i1</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i1</span><span class="p">,</span><span class="w"> </span><span class="n">i2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">                </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root_point</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">segment_pick</span><span class="p">(</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">p0</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="p">,</span><span class="w"> </span><span class="n">px</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">depth</span><span class="p">,</span><span class="w"> </span><span class="n">extra</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    if</span><span class="w"> </span><span class="p">(</span><span class="n">better</span><span class="p">(</span><span class="n">px</span><span class="p">,</span><span class="w"> </span><span class="n">depth</span><span class="p">,</span><span class="w"> </span><span class="n">best_px</span><span class="p">,</span><span class="w"> </span><span class="n">best_depth</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                        </span><span class="n">best_px</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">px</span><span class="w"></span>
+<span class="w">                        </span><span class="n">best_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">depth</span><span class="w"></span>
+<span class="w">                        </span><span class="n">best_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"></span>
+<span class="w">                        </span><span class="n">best_j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"></span>
+<span class="w">                        </span><span class="n">best_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="w"></span>
+<span class="w">                    </span><span class="k">end if</span>
+<span class="k">                end if</span>
+<span class="k">                </span><span class="n">p0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p1</span><span class="w"></span>
+<span class="w">            </span><span class="k">end do</span>
+<span class="k">        end do</span><span class="w"></span>
+<span class="w">        </span><span class="c">! trace mode: the tail from the latest point passed to the point at the time drawn</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">trace</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">tail_shown</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">tail_from</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">tail_to</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">frac</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="n">frac</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">tail_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)))</span><span class="w"></span>
+<span class="w">            </span><span class="n">p0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root_point</span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">tail_from</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">frac</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">root_point</span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">tail_to</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p0</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">segment_pick</span><span class="p">(</span><span class="n">cam</span><span class="p">,</span><span class="w"> </span><span class="n">p0</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="p">,</span><span class="w"> </span><span class="n">px</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">depth</span><span class="p">,</span><span class="w"> </span><span class="n">extra</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                if</span><span class="w"> </span><span class="p">(</span><span class="n">better</span><span class="p">(</span><span class="n">px</span><span class="p">,</span><span class="w"> </span><span class="n">depth</span><span class="p">,</span><span class="w"> </span><span class="n">best_px</span><span class="p">,</span><span class="w"> </span><span class="n">best_depth</span><span class="p">))</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                    </span><span class="n">best_px</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">px</span><span class="w"></span>
+<span class="w">                    </span><span class="n">best_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">depth</span><span class="w"></span>
+<span class="w">                    </span><span class="n">best_i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">tail_from</span><span class="w"></span>
+<span class="w">                    </span><span class="n">best_j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">tail_to</span><span class="w"></span>
+<span class="w">                    </span><span class="n">best_s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">frac</span><span class="w"></span>
+<span class="w">                </span><span class="k">end if</span>
+<span class="k">            end if</span>
+<span class="k">        end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">best_i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        </span><span class="n">h</span><span class="p">%</span><span class="nb">kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PICK_CURVE</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="n">frame</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">frame</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="n">artist</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">a</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="n">trajectory</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">traj</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="nb">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">best_i</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">best_j</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="n">h</span><span class="p">%</span><span class="nb">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">min</span><span class="p">(</span><span class="n">best_i</span><span class="p">,</span><span class="w"> </span><span class="n">best_j</span><span class="p">)</span><span class="w">           </span><span class="c">! (the point the hit is after, in point order)</span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="n">local</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">local_point</span><span class="p">(</span><span class="n">best_i</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="nb">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">best_i</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">best_j</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">h</span><span class="p">%</span><span class="n">local</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">h</span><span class="p">%</span><span class="n">local</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">best_s</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">local_point</span><span class="p">(</span><span class="n">best_j</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">h</span><span class="p">%</span><span class="n">local</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">h</span><span class="p">%</span><span class="nb">time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">h</span><span class="p">%</span><span class="nb">time</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">best_s</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">%</span><span class="n">traj</span><span class="p">%</span><span class="nb">time</span><span class="p">(</span><span class="n">best_j</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">h</span><span class="p">%</span><span class="nb">time</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        </span><span class="n">h</span><span class="p">%</span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">matmul</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">h</span><span class="p">%</span><span class="n">local</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="n">distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">best_depth</span><span class="w"></span>
+<span class="w">        </span><span class="n">h</span><span class="p">%</span><span class="n">pixels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">best_px</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">add_pick_hit</span><span class="p">(</span><span class="n">hits</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="p">)</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">contains</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; Point i in the frame&#39;s coordinates (straight from the positions if they are the sources).</span>
+<span class="w">        </span><span class="k">function </span><span class="n">local_point</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w">                        </span><span class="c">!! the trajectory point</span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">v</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">xyz</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">                </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pos</span><span class="p">(:,</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">else</span>
+<span class="k">                </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">art_point</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">sources_</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="k">end if</span>
+<span class="k">        end function </span><span class="n">local_point</span><span class="w"></span>
+
+<span class="w">        </span><span class="c">!&gt; Point i in the root frame.</span>
+<span class="w">        </span><span class="k">function </span><span class="n">root_point</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span><span class="w">                        </span><span class="c">!! the trajectory point</span>
+<span class="w">            </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">v</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">matmul</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">),</span><span class="w"> </span><span class="n">local_point</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">m</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">end function </span><span class="n">root_point</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">curve_pick</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-06 15:34 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,1345 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>curve_update &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>curve_update
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">13 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_artists.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_artists.f90.html'>vkf_artists.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_artists.html'>vkf_artists</a></li>
+            <li class="breadcrumb-item active" aria-current="page">curve_update</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/curve_update.html#src">curve_update</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine curve_update(self, t)  
+</h2>
+    
+
+    <p>Write the points added (all of them on a redraw), and draw them all, or
+in trace mode those passed and the tail to the point at time t, or with
+a trail the window about time t.</p>
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/curveartist.html'>CurveArtist</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~642"></span>
+              class(<a href='../type/curveartist.html'>CurveArtist</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~53"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+                <p>the current time</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~curve_update~~CallsGraph Pages: 1 -->
+<svg id="proccurve_updateCallsGraph" width="641pt" height="714pt"
+ viewBox="0.00 0.00 641.00 714.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~curve_update~~CallsGraph" class="graph" transform="scale(0.51855 0.51855) rotate(0) translate(4 1373.27)">
+<title>proc~~curve_update~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-1373.27 1232.14,-1373.27 1232.14,4 -4,4"/>
+<!-- proc~curve_update -->
+<g id="proc~~curve_update~~CallsGraph_node1" class="node">
+<title>proc~curve_update</title>
+<polygon fill="none" stroke="black" points="153.27,-1027.27 0,-1027.27 0,-1003 153.27,-1003 153.27,-1027.27"/>
+<text xml:space="preserve" text-anchor="middle" x="76.63" y="-1011.53" font-family="Helvetica,sans-Serif" font-size="10.50">CurveArtist%curve_update</text>
+</g>
+<!-- proc~draw_trail -->
+<g id="proc~~curve_update~~CallsGraph_node2" class="node">
+<title>proc~draw_trail</title>
+<g id="a_proc~~curve_update~~CallsGraph_node2"><a xlink:href="../proc/draw_trail.html" xlink:title="draw_trail">
+<polygon fill="#d9534f" stroke="#d9534f" points="413.69,-1247.27 349.67,-1247.27 349.67,-1223 413.69,-1223 413.69,-1247.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-1231.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">draw_trail</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_update&#45;&gt;proc~draw_trail -->
+<g id="proc~~curve_update~~CallsGraph_edge1" class="edge">
+<title>proc~curve_update&#45;&gt;proc~draw_trail</title>
+<path fill="none" stroke="#000000" d="M94.8,-1027.59C145.31,-1064.26 293.7,-1171.99 354.37,-1216.04"/>
+<polygon fill="#000000" stroke="#000000" points="351.95,-1218.61 362.1,-1221.65 356.07,-1212.94 351.95,-1218.61"/>
+</g>
+<!-- proc~draw_written -->
+<g id="proc~~curve_update~~CallsGraph_node3" class="node">
+<title>proc~draw_written</title>
+<g id="a_proc~~curve_update~~CallsGraph_node3"><a xlink:href="../proc/draw_written.html" xlink:title="draw_written">
+<polygon fill="#d9534f" stroke="#d9534f" points="273.92,-1027.27 194.15,-1027.27 194.15,-1003 273.92,-1003 273.92,-1027.27"/>
+<text xml:space="preserve" text-anchor="middle" x="234.03" y="-1011.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">draw_written</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_update&#45;&gt;proc~draw_written -->
+<g id="proc~~curve_update~~CallsGraph_edge2" class="edge">
+<title>proc~curve_update&#45;&gt;proc~draw_written</title>
+<path fill="none" stroke="#000000" d="M153.51,-1015.13C163.37,-1015.13 173.27,-1015.13 182.57,-1015.13"/>
+<polygon fill="#000000" stroke="#000000" points="182.47,-1018.64 192.47,-1015.14 182.47,-1011.64 182.47,-1018.64"/>
+</g>
+<!-- proc~write_changed -->
+<g id="proc~~curve_update~~CallsGraph_node4" class="node">
+<title>proc~write_changed</title>
+<g id="a_proc~~curve_update~~CallsGraph_node4"><a xlink:href="../proc/write_changed.html" xlink:title="write_changed">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="278.79,-696.27 189.27,-696.27 189.27,-672 278.79,-672 278.79,-696.27"/>
+<text xml:space="preserve" text-anchor="middle" x="234.03" y="-680.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_update&#45;&gt;proc~write_changed -->
+<g id="proc~~curve_update~~CallsGraph_edge3" class="edge">
+<title>proc~curve_update&#45;&gt;proc~write_changed</title>
+<path fill="none" stroke="#000000" d="M83.54,-1002.56C106.76,-953.1 192.03,-771.46 222.29,-707.01"/>
+<polygon fill="#000000" stroke="#000000" points="225.4,-708.63 226.48,-698.09 219.06,-705.65 225.4,-708.63"/>
+</g>
+<!-- distance -->
+<g id="proc~~curve_update~~CallsGraph_node6" class="node">
+<title>distance</title>
+<polygon fill="#777777" stroke="#777777" points="581.96,-1327.27 525.44,-1327.27 525.44,-1303 581.96,-1303 581.96,-1327.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-1311.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">distance</text>
+</g>
+<!-- proc~draw_trail&#45;&gt;distance -->
+<g id="proc~~curve_update~~CallsGraph_edge4" class="edge">
+<title>proc~draw_trail&#45;&gt;distance</title>
+<path fill="none" stroke="#000000" d="M404.54,-1247.73C424.91,-1259.22 456.3,-1276.31 484.56,-1289.13 494.11,-1293.47 504.61,-1297.72 514.45,-1301.49"/>
+<polygon fill="#000000" stroke="#000000" points="513.18,-1304.75 523.78,-1304.98 515.64,-1298.2 513.18,-1304.75"/>
+</g>
+<!-- draw_range -->
+<g id="proc~~curve_update~~CallsGraph_node7" class="node">
+<title>draw_range</title>
+<polygon fill="#777777" stroke="#777777" points="590.96,-1247.27 516.44,-1247.27 516.44,-1223 590.96,-1223 590.96,-1247.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-1231.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">draw_range</text>
+</g>
+<!-- proc~draw_trail&#45;&gt;draw_range -->
+<g id="proc~~curve_update~~CallsGraph_edge5" class="edge">
+<title>proc~draw_trail&#45;&gt;draw_range</title>
+<path fill="none" stroke="#000000" d="M413.86,-1235.13C439.33,-1235.13 475.76,-1235.13 504.91,-1235.13"/>
+<polygon fill="#000000" stroke="#000000" points="504.58,-1238.64 514.58,-1235.14 504.58,-1231.64 504.58,-1238.64"/>
+</g>
+<!-- interface~vkf_line_set_range -->
+<g id="proc~~curve_update~~CallsGraph_node9" class="node">
+<title>interface~vkf_line_set_range</title>
+<g id="a_proc~~curve_update~~CallsGraph_node9"><a xlink:href="../interface/vkf_line_set_range.html" xlink:title="vkf_line_set_range">
+<polygon fill="#a7506f" stroke="#a7506f" points="798.98,-1169.27 689.21,-1169.27 689.21,-1145 798.98,-1145 798.98,-1169.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-1153.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_set_range</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_trail&#45;&gt;interface~vkf_line_set_range -->
+<g id="proc~~curve_update~~CallsGraph_edge6" class="edge">
+<title>proc~draw_trail&#45;&gt;interface~vkf_line_set_range</title>
+<path fill="none" stroke="#000000" d="M414.07,-1246.07C461,-1260.62 551.52,-1281.71 622.83,-1256.13 665.94,-1240.67 704.65,-1202.34 725.9,-1178.16"/>
+<polygon fill="#000000" stroke="#000000" points="728.35,-1180.69 732.19,-1170.82 723.03,-1176.14 728.35,-1180.69"/>
+</g>
+<!-- proc~check_status -->
+<g id="proc~~curve_update~~CallsGraph_node13" class="node">
+<title>proc~check_status</title>
+<g id="a_proc~~curve_update~~CallsGraph_node13"><a xlink:href="../proc/check_status.html" xlink:title="check_status">
+<polygon fill="#d9534f" stroke="#d9534f" points="783.98,-948.27 704.21,-948.27 704.21,-924 783.98,-924 783.98,-948.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-932.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_status</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_trail&#45;&gt;proc~check_status -->
+<g id="proc~~curve_update~~CallsGraph_edge7" class="edge">
+<title>proc~draw_trail&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M414.07,-1229.21C463.44,-1218.54 560.02,-1191.99 622.83,-1138.13 681.89,-1087.49 719.68,-1000.26 735.12,-959.01"/>
+<polygon fill="#000000" stroke="#000000" points="738.32,-960.46 738.45,-949.87 731.74,-958.07 738.32,-960.46"/>
+</g>
+<!-- proc~decreasing_times -->
+<g id="proc~~curve_update~~CallsGraph_node15" class="node">
+<title>proc~decreasing_times</title>
+<g id="a_proc~~curve_update~~CallsGraph_node15"><a xlink:href="../proc/decreasing_times.html" xlink:title="decreasing_times">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="605.96,-1129.27 501.44,-1129.27 501.44,-1105 605.96,-1105 605.96,-1129.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-1113.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">decreasing_times</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_trail&#45;&gt;proc~decreasing_times -->
+<g id="proc~~curve_update~~CallsGraph_edge8" class="edge">
+<title>proc~draw_trail&#45;&gt;proc~decreasing_times</title>
+<path fill="none" stroke="#000000" d="M400.87,-1222.51C430.78,-1201.75 490.51,-1160.3 525.47,-1136.03"/>
+<polygon fill="#000000" stroke="#000000" points="527.17,-1139.11 533.39,-1130.54 523.18,-1133.36 527.17,-1139.11"/>
+</g>
+<!-- set_trail -->
+<g id="proc~~curve_update~~CallsGraph_node25" class="node">
+<title>set_trail</title>
+<polygon fill="#777777" stroke="#777777" points="580.7,-1369.27 526.7,-1369.27 526.7,-1345 580.7,-1345 580.7,-1369.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-1353.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">set_trail</text>
+</g>
+<!-- proc~draw_trail&#45;&gt;set_trail -->
+<g id="proc~~curve_update~~CallsGraph_edge9" class="edge">
+<title>proc~draw_trail&#45;&gt;set_trail</title>
+<path fill="none" stroke="#000000" d="M391.92,-1247.63C408.28,-1268.88 444.4,-1312.06 484.56,-1336.13 493.92,-1341.74 504.9,-1345.98 515.29,-1349.12"/>
+<polygon fill="#000000" stroke="#000000" points="514.2,-1352.45 524.76,-1351.72 516.05,-1345.7 514.2,-1352.45"/>
+</g>
+<!-- draw_tail -->
+<g id="proc~~curve_update~~CallsGraph_node8" class="node">
+<title>draw_tail</title>
+<polygon fill="#777777" stroke="#777777" points="411.44,-927.27 351.92,-927.27 351.92,-903 411.44,-903 411.44,-927.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-911.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">draw_tail</text>
+</g>
+<!-- proc~draw_written&#45;&gt;draw_tail -->
+<g id="proc~~curve_update~~CallsGraph_edge10" class="edge">
+<title>proc~draw_written&#45;&gt;draw_tail</title>
+<path fill="none" stroke="#000000" d="M245.78,-1002.61C260.12,-986.54 286.98,-958.65 314.79,-941.13 322.85,-936.06 332.07,-931.67 341.01,-928.02"/>
+<polygon fill="#000000" stroke="#000000" points="342.17,-931.33 350.26,-924.49 339.67,-924.79 342.17,-931.33"/>
+</g>
+<!-- proc~draw_written&#45;&gt;interface~vkf_line_set_range -->
+<g id="proc~~curve_update~~CallsGraph_edge11" class="edge">
+<title>proc~draw_written&#45;&gt;interface~vkf_line_set_range</title>
+<path fill="none" stroke="#000000" d="M241.2,-1027.54C255.72,-1056.17 292.48,-1125.36 314.79,-1138.13 428.65,-1203.32 588.78,-1187.74 677.47,-1171.72"/>
+<polygon fill="#000000" stroke="#000000" points="678.04,-1175.18 687.23,-1169.9 676.75,-1168.29 678.04,-1175.18"/>
+</g>
+<!-- proc~chain_points_per_point -->
+<g id="proc~~curve_update~~CallsGraph_node12" class="node">
+<title>proc~chain_points_per_point</title>
+<g id="a_proc~~curve_update~~CallsGraph_node12"><a xlink:href="../proc/chain_points_per_point.html" xlink:title="chain_points_per_point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="448.56,-843.27 314.79,-843.27 314.79,-819 448.56,-819 448.56,-843.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-827.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">chain_points_per_point</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_written&#45;&gt;proc~chain_points_per_point -->
+<g id="proc~~curve_update~~CallsGraph_edge12" class="edge">
+<title>proc~draw_written&#45;&gt;proc~chain_points_per_point</title>
+<path fill="none" stroke="#000000" d="M237.54,-1002.89C244.38,-972.7 266.14,-894.13 314.79,-852.13 315.74,-851.31 316.73,-850.52 317.75,-849.76"/>
+<polygon fill="#000000" stroke="#000000" points="319.57,-852.74 326.24,-844.51 315.89,-846.79 319.57,-852.74"/>
+</g>
+<!-- proc~draw_written&#45;&gt;proc~check_status -->
+<g id="proc~~curve_update~~CallsGraph_edge13" class="edge">
+<title>proc~draw_written&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M254.14,-1002.63C269.77,-993.07 292.8,-980.5 314.79,-974.13 447.04,-935.87 611.03,-933.02 692.39,-934.41"/>
+<polygon fill="#000000" stroke="#000000" points="692.2,-937.91 702.27,-934.61 692.34,-930.91 692.2,-937.91"/>
+</g>
+<!-- proc~draw -->
+<g id="proc~~curve_update~~CallsGraph_node17" class="node">
+<title>proc~draw</title>
+<g id="a_proc~~curve_update~~CallsGraph_node17"><a xlink:href="../proc/draw.html" xlink:title="LineChain%draw">
+<polygon fill="#d9534f" stroke="#d9534f" points="432.06,-1007.27 331.29,-1007.27 331.29,-983 432.06,-983 432.06,-1007.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-991.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%draw</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_written&#45;&gt;proc~draw -->
+<g id="proc~~curve_update~~CallsGraph_edge14" class="edge">
+<title>proc~draw_written&#45;&gt;proc~draw</title>
+<path fill="none" stroke="#000000" d="M274.06,-1009.78C288.1,-1007.85 304.28,-1005.63 319.74,-1003.5"/>
+<polygon fill="#000000" stroke="#000000" points="319.89,-1007.02 329.32,-1002.19 318.94,-1000.08 319.89,-1007.02"/>
+</g>
+<!-- proc~draw_range -->
+<g id="proc~~curve_update~~CallsGraph_node18" class="node">
+<title>proc~draw_range</title>
+<g id="a_proc~~curve_update~~CallsGraph_node18"><a xlink:href="../proc/draw_range.html" xlink:title="LineChain%draw_range">
+<polygon fill="#d9534f" stroke="#d9534f" points="622.46,-1027.27 484.94,-1027.27 484.94,-1003 622.46,-1003 622.46,-1027.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-1011.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%draw_range</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_written&#45;&gt;proc~draw_range -->
+<g id="proc~~curve_update~~CallsGraph_edge15" class="edge">
+<title>proc~draw_written&#45;&gt;proc~draw_range</title>
+<path fill="none" stroke="#000000" d="M274.38,-1015.73C287.26,-1015.89 301.63,-1016.05 314.79,-1016.13 374.24,-1016.51 389.11,-1016.42 448.56,-1016.13 456.58,-1016.1 464.94,-1016.04 473.29,-1015.98"/>
+<polygon fill="#000000" stroke="#000000" points="473.15,-1019.48 483.12,-1015.9 473.09,-1012.48 473.15,-1019.48"/>
+</g>
+<!-- proc~tail_ends -->
+<g id="proc~~curve_update~~CallsGraph_node22" class="node">
+<title>proc~tail_ends</title>
+<g id="a_proc~~curve_update~~CallsGraph_node22"><a xlink:href="../proc/tail_ends.html" xlink:title="tail_ends">
+<polygon fill="#d9534f" stroke="#d9534f" points="411.06,-1087.27 352.29,-1087.27 352.29,-1063 411.06,-1063 411.06,-1087.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-1071.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">tail_ends</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_written&#45;&gt;proc~tail_ends -->
+<g id="proc~~curve_update~~CallsGraph_edge16" class="edge">
+<title>proc~draw_written&#45;&gt;proc~tail_ends</title>
+<path fill="none" stroke="#000000" d="M264.12,-1027.76C279.2,-1034.25 297.94,-1042.22 314.79,-1049.13 323.44,-1052.69 332.77,-1056.42 341.61,-1059.92"/>
+<polygon fill="#000000" stroke="#000000" points="340.07,-1063.08 350.66,-1063.49 342.64,-1056.56 340.07,-1063.08"/>
+</g>
+<!-- proc~trace_range -->
+<g id="proc~~curve_update~~CallsGraph_node23" class="node">
+<title>proc~trace_range</title>
+<g id="a_proc~~curve_update~~CallsGraph_node23"><a xlink:href="../proc/trace_range.html" xlink:title="trace_range">
+<polygon fill="#d9534f" stroke="#d9534f" points="419.69,-1129.27 343.67,-1129.27 343.67,-1105 419.69,-1105 419.69,-1129.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-1113.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">trace_range</text>
+</a>
+</g>
+</g>
+<!-- proc~draw_written&#45;&gt;proc~trace_range -->
+<g id="proc~~curve_update~~CallsGraph_edge17" class="edge">
+<title>proc~draw_written&#45;&gt;proc~trace_range</title>
+<path fill="none" stroke="#000000" d="M244.17,-1027.69C257.69,-1045.41 284.69,-1077.64 314.79,-1096.13 320.36,-1099.56 326.54,-1102.47 332.82,-1104.94"/>
+<polygon fill="#000000" stroke="#000000" points="331.37,-1108.14 341.97,-1108.19 333.71,-1101.55 331.37,-1108.14"/>
+</g>
+<!-- apply_style -->
+<g id="proc~~curve_update~~CallsGraph_node5" class="node">
+<title>apply_style</title>
+<polygon fill="#777777" stroke="#777777" points="417.06,-511.27 346.29,-511.27 346.29,-487 417.06,-487 417.06,-511.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-495.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_style</text>
+</g>
+<!-- proc~write_changed&#45;&gt;apply_style -->
+<g id="proc~~curve_update~~CallsGraph_edge18" class="edge">
+<title>proc~write_changed&#45;&gt;apply_style</title>
+<path fill="none" stroke="#000000" d="M237.52,-671.82C244.3,-641.45 265.95,-562.4 314.79,-520.13 320.65,-515.07 327.73,-511.22 335.06,-508.3"/>
+<polygon fill="#000000" stroke="#000000" points="336.06,-511.66 344.42,-505.14 333.82,-505.03 336.06,-511.66"/>
+</g>
+<!-- points -->
+<g id="proc~~curve_update~~CallsGraph_node10" class="node">
+<title>points</title>
+<polygon fill="#777777" stroke="#777777" points="408.68,-801.27 354.68,-801.27 354.68,-777 408.68,-777 408.68,-801.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-785.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">points</text>
+</g>
+<!-- proc~write_changed&#45;&gt;points -->
+<g id="proc~~curve_update~~CallsGraph_edge19" class="edge">
+<title>proc~write_changed&#45;&gt;points</title>
+<path fill="none" stroke="#000000" d="M243.61,-696.56C256.85,-714.82 283.95,-748.8 314.79,-768.13 323.51,-773.6 333.78,-777.76 343.58,-780.88"/>
+<polygon fill="#000000" stroke="#000000" points="342.31,-784.15 352.89,-783.55 344.24,-777.43 342.31,-784.15"/>
+</g>
+<!-- proc~chain_init -->
+<g id="proc~~curve_update~~CallsGraph_node11" class="node">
+<title>proc~chain_init</title>
+<g id="a_proc~~curve_update~~CallsGraph_node11"><a xlink:href="../proc/chain_init.html" xlink:title="ChainArtist%chain_init">
+<polygon fill="#d9534f" stroke="#d9534f" points="447.06,-633.27 316.29,-633.27 316.29,-609 447.06,-609 447.06,-633.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-617.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ChainArtist%chain_init</text>
+</a>
+</g>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~chain_init -->
+<g id="proc~~curve_update~~CallsGraph_edge20" class="edge">
+<title>proc~write_changed&#45;&gt;proc~chain_init</title>
+<path fill="none" stroke="#000000" d="M256.2,-671.67C271.99,-662.7 294.29,-650.72 314.79,-642.13 318.61,-640.53 322.6,-638.98 326.65,-637.5"/>
+<polygon fill="#000000" stroke="#000000" points="327.69,-640.84 335.97,-634.23 325.37,-634.23 327.69,-640.84"/>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~chain_points_per_point -->
+<g id="proc~~curve_update~~CallsGraph_edge21" class="edge">
+<title>proc~write_changed&#45;&gt;proc~chain_points_per_point</title>
+<path fill="none" stroke="#000000" d="M239.5,-696.54C249.21,-721.74 274.63,-779.12 314.79,-810.13 316.13,-811.17 317.51,-812.15 318.95,-813.08"/>
+<polygon fill="#000000" stroke="#000000" points="317.13,-816.08 327.57,-817.85 320.51,-809.95 317.13,-816.08"/>
+</g>
+<!-- proc~data_changed -->
+<g id="proc~~curve_update~~CallsGraph_node14" class="node">
+<title>proc~data_changed</title>
+<g id="a_proc~~curve_update~~CallsGraph_node14"><a xlink:href="../proc/data_changed.html" xlink:title="data_changed">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="425.31,-553.27 338.04,-553.27 338.04,-529 425.31,-529 425.31,-553.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-537.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">data_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~data_changed -->
+<g id="proc~~curve_update~~CallsGraph_edge22" class="edge">
+<title>proc~write_changed&#45;&gt;proc~data_changed</title>
+<path fill="none" stroke="#000000" d="M240.41,-671.75C251.21,-648.21 277.72,-596.75 314.79,-567.13 318.73,-563.98 323.11,-561.18 327.67,-558.68"/>
+<polygon fill="#000000" stroke="#000000" points="329.05,-561.9 336.51,-554.37 325.99,-555.61 329.05,-561.9"/>
+</g>
+<!-- proc~detach~2 -->
+<g id="proc~~curve_update~~CallsGraph_node16" class="node">
+<title>proc~detach~2</title>
+<g id="a_proc~~curve_update~~CallsGraph_node16"><a xlink:href="../proc/detach~2.html" xlink:title="LineChain%detach">
+<polygon fill="#d9534f" stroke="#d9534f" points="437.31,-885.27 326.04,-885.27 326.04,-861 437.31,-861 437.31,-885.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-869.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%detach</text>
+</a>
+</g>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~detach~2 -->
+<g id="proc~~curve_update~~CallsGraph_edge23" class="edge">
+<title>proc~write_changed&#45;&gt;proc~detach~2</title>
+<path fill="none" stroke="#000000" d="M237.43,-696.75C243.99,-727.85 265.19,-808.8 314.79,-852.13 315.74,-852.96 316.72,-853.76 317.73,-854.53"/>
+<polygon fill="#000000" stroke="#000000" points="315.86,-857.49 326.2,-859.8 319.56,-851.54 315.86,-857.49"/>
+</g>
+<!-- proc~is_built -->
+<g id="proc~~curve_update~~CallsGraph_node19" class="node">
+<title>proc~is_built</title>
+<g id="a_proc~~curve_update~~CallsGraph_node19"><a xlink:href="../proc/is_built.html" xlink:title="LineChain%is_built">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="437.31,-759.27 326.04,-759.27 326.04,-735 437.31,-735 437.31,-759.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-743.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%is_built</text>
+</a>
+</g>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~is_built -->
+<g id="proc~~curve_update~~CallsGraph_edge24" class="edge">
+<title>proc~write_changed&#45;&gt;proc~is_built</title>
+<path fill="none" stroke="#000000" d="M256.2,-696.6C271.99,-705.57 294.29,-717.55 314.79,-726.13 318.61,-727.74 322.6,-729.29 326.65,-730.77"/>
+<polygon fill="#000000" stroke="#000000" points="325.37,-734.04 335.97,-734.04 327.69,-727.43 325.37,-734.04"/>
+</g>
+<!-- proc~is_colored -->
+<g id="proc~~curve_update~~CallsGraph_node20" class="node">
+<title>proc~is_colored</title>
+<g id="a_proc~~curve_update~~CallsGraph_node20"><a xlink:href="../proc/is_colored.html" xlink:title="LineChain%is_colored">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="445.56,-717.27 317.79,-717.27 317.79,-693 445.56,-693 445.56,-717.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-701.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%is_colored</text>
+</a>
+</g>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~is_colored -->
+<g id="proc~~curve_update~~CallsGraph_edge25" class="edge">
+<title>proc~write_changed&#45;&gt;proc~is_colored</title>
+<path fill="none" stroke="#000000" d="M279.12,-690.49C287.69,-691.73 296.9,-693.06 306.14,-694.39"/>
+<polygon fill="#000000" stroke="#000000" points="305.49,-697.83 315.89,-695.79 306.49,-690.9 305.49,-697.83"/>
+</g>
+<!-- proc~reserve~2 -->
+<g id="proc~~curve_update~~CallsGraph_node21" class="node">
+<title>proc~reserve~2</title>
+<g id="a_proc~~curve_update~~CallsGraph_node21"><a xlink:href="../proc/reserve~2.html" xlink:title="LineChain%reserve">
+<polygon fill="#d9534f" stroke="#d9534f" points="438.81,-234.27 324.54,-234.27 324.54,-210 438.81,-210 438.81,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%reserve</text>
+</a>
+</g>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~reserve~2 -->
+<g id="proc~~curve_update~~CallsGraph_edge26" class="edge">
+<title>proc~write_changed&#45;&gt;proc~reserve~2</title>
+<path fill="none" stroke="#000000" d="M238.93,-671.78C258.59,-609.41 347.01,-328.92 373.29,-245.57"/>
+<polygon fill="#000000" stroke="#000000" points="376.58,-246.78 376.24,-236.19 369.9,-244.68 376.58,-246.78"/>
+</g>
+<!-- proc~uses_colors -->
+<g id="proc~~curve_update~~CallsGraph_node24" class="node">
+<title>proc~uses_colors</title>
+<g id="a_proc~~curve_update~~CallsGraph_node24"><a xlink:href="../proc/uses_colors.html" xlink:title="uses_colors">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="590.21,-676.27 517.19,-676.27 517.19,-652 590.21,-652 590.21,-676.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-660.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">uses_colors</text>
+</a>
+</g>
+</g>
+<!-- proc~write_changed&#45;&gt;proc~uses_colors -->
+<g id="proc~~curve_update~~CallsGraph_edge27" class="edge">
+<title>proc~write_changed&#45;&gt;proc~uses_colors</title>
+<path fill="none" stroke="#000000" d="M242.14,-671.72C254.17,-652.15 280.61,-614.82 314.79,-600.13 369.42,-576.67 393.94,-576.64 448.56,-600.13 469.93,-609.33 465.21,-625.22 484.56,-638.13 491.22,-642.58 498.74,-646.41 506.3,-649.67"/>
+<polygon fill="#000000" stroke="#000000" points="504.92,-652.89 515.51,-653.33 507.51,-646.38 504.92,-652.89"/>
+</g>
+<!-- write_points -->
+<g id="proc~~curve_update~~CallsGraph_node26" class="node">
+<title>write_points</title>
+<polygon fill="#777777" stroke="#777777" points="419.31,-675.27 344.04,-675.27 344.04,-651 419.31,-651 419.31,-675.27"/>
+<text xml:space="preserve" text-anchor="middle" x="381.68" y="-659.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_points</text>
+</g>
+<!-- proc~write_changed&#45;&gt;write_points -->
+<g id="proc~~curve_update~~CallsGraph_edge28" class="edge">
+<title>proc~write_changed&#45;&gt;write_points</title>
+<path fill="none" stroke="#000000" d="M279.12,-677.78C296.02,-675.34 315.37,-672.55 332.62,-670.06"/>
+<polygon fill="#000000" stroke="#000000" points="332.71,-673.59 342.11,-668.7 331.71,-666.66 332.71,-673.59"/>
+</g>
+<!-- proc~chain_init&#45;&gt;proc~uses_colors -->
+<g id="proc~~curve_update~~CallsGraph_edge32" class="edge">
+<title>proc~chain_init&#45;&gt;proc~uses_colors</title>
+<path fill="none" stroke="#000000" d="M432.31,-633.69C455.45,-639.54 482.85,-646.47 505.66,-652.24"/>
+<polygon fill="#000000" stroke="#000000" points="504.76,-655.62 515.32,-654.68 506.48,-648.84 504.76,-655.62"/>
+</g>
+<!-- chain_kind -->
+<g id="proc~~curve_update~~CallsGraph_node27" class="node">
+<title>chain_kind</title>
+<polygon fill="#777777" stroke="#777777" points="587.96,-804.27 519.44,-804.27 519.44,-780 587.96,-780 587.96,-804.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-788.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">chain_kind</text>
+</g>
+<!-- proc~chain_init&#45;&gt;chain_kind -->
+<g id="proc~~curve_update~~CallsGraph_edge29" class="edge">
+<title>proc~chain_init&#45;&gt;chain_kind</title>
+<path fill="none" stroke="#000000" d="M437.73,-633.75C441.7,-636.09 445.39,-638.86 448.56,-642.13 489.37,-684.29 444.11,-726.64 484.56,-769.13 490.99,-775.89 499.46,-780.65 508.24,-784.02"/>
+<polygon fill="#000000" stroke="#000000" points="506.95,-787.29 517.54,-787.02 509.09,-780.62 506.95,-787.29"/>
+</g>
+<!-- proc~init -->
+<g id="proc~~curve_update~~CallsGraph_node38" class="node">
+<title>proc~init</title>
+<g id="a_proc~~curve_update~~CallsGraph_node38"><a xlink:href="../proc/init.html" xlink:title="LineChain%init">
+<polygon fill="#d9534f" stroke="#d9534f" points="599.21,-718.27 508.19,-718.27 508.19,-694 599.21,-694 599.21,-718.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-702.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%init</text>
+</a>
+</g>
+</g>
+<!-- proc~chain_init&#45;&gt;proc~init -->
+<g id="proc~~curve_update~~CallsGraph_edge30" class="edge">
+<title>proc~chain_init&#45;&gt;proc~init</title>
+<path fill="none" stroke="#000000" d="M432.66,-633.69C438.25,-636.06 443.68,-638.86 448.56,-642.13 469.25,-656.03 463.8,-671.34 484.56,-685.13 488.5,-687.75 492.79,-690.06 497.23,-692.09"/>
+<polygon fill="#000000" stroke="#000000" points="495.78,-695.28 506.37,-695.76 498.4,-688.78 495.78,-695.28"/>
+</g>
+<!-- proc~set_compile -->
+<g id="proc~~curve_update~~CallsGraph_node44" class="node">
+<title>proc~set_compile</title>
+<g id="a_proc~~curve_update~~CallsGraph_node44"><a xlink:href="../proc/set_compile.html" xlink:title="LineChain%set_compile">
+<polygon fill="#d9534f" stroke="#d9534f" points="622.83,-760.27 484.56,-760.27 484.56,-736 622.83,-736 622.83,-760.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-744.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%set_compile</text>
+</a>
+</g>
+</g>
+<!-- proc~chain_init&#45;&gt;proc~set_compile -->
+<g id="proc~~curve_update~~CallsGraph_edge31" class="edge">
+<title>proc~chain_init&#45;&gt;proc~set_compile</title>
+<path fill="none" stroke="#000000" d="M436.34,-633.67C440.76,-636.03 444.92,-638.82 448.56,-642.13 478.87,-669.78 454.11,-699.64 484.56,-727.13 485.48,-727.96 486.43,-728.76 487.41,-729.53"/>
+<polygon fill="#000000" stroke="#000000" points="485.3,-732.33 495.6,-734.78 489.08,-726.44 485.3,-732.33"/>
+</g>
+<!-- proc~chain_points_per_point&#45;&gt;chain_kind -->
+<g id="proc~~curve_update~~CallsGraph_edge33" class="edge">
+<title>proc~chain_points_per_point&#45;&gt;chain_kind</title>
+<path fill="none" stroke="#000000" d="M437.41,-818.58C460.2,-813.35 486.33,-807.36 507.95,-802.4"/>
+<polygon fill="#000000" stroke="#000000" points="508.68,-805.82 517.65,-800.17 507.12,-799 508.68,-805.82"/>
+</g>
+<!-- proc~generation -->
+<g id="proc~~curve_update~~CallsGraph_node37" class="node">
+<title>proc~generation</title>
+<g id="a_proc~~curve_update~~CallsGraph_node37"><a xlink:href="../proc/generation.html" xlink:title="Trajectory%generation">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1228.14,-583.27 1095.87,-583.27 1095.87,-559 1228.14,-559 1228.14,-583.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1162.01" y="-567.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%generation</text>
+</a>
+</g>
+</g>
+<!-- proc~data_changed&#45;&gt;proc~generation -->
+<g id="proc~~curve_update~~CallsGraph_edge34" class="edge">
+<title>proc~data_changed&#45;&gt;proc~generation</title>
+<path fill="none" stroke="#000000" d="M420.54,-553.74C473.24,-570.56 572.02,-599.45 658.83,-610.13 835.78,-631.91 883.97,-630.19 1059.87,-601.13 1078.4,-598.07 1098.31,-592.65 1115.52,-587.25"/>
+<polygon fill="#000000" stroke="#000000" points="1116.53,-590.61 1124.96,-584.2 1114.37,-583.95 1116.53,-590.61"/>
+</g>
+<!-- proc~motion_changed -->
+<g id="proc~~curve_update~~CallsGraph_node40" class="node">
+<title>proc~motion_changed</title>
+<g id="a_proc~~curve_update~~CallsGraph_node40"><a xlink:href="../proc/motion_changed.html" xlink:title="motion_changed">
+<polygon fill="#d9534f" stroke="#d9534f" points="604.08,-545.27 503.31,-545.27 503.31,-521 604.08,-521 604.08,-545.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-529.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">motion_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~data_changed&#45;&gt;proc~motion_changed -->
+<g id="proc~~curve_update~~CallsGraph_edge35" class="edge">
+<title>proc~data_changed&#45;&gt;proc~motion_changed</title>
+<path fill="none" stroke="#000000" d="M425.58,-539.12C445.51,-538.18 469.57,-537.05 491.37,-536.02"/>
+<polygon fill="#000000" stroke="#000000" points="491.53,-539.52 501.36,-535.55 491.2,-532.52 491.53,-539.52"/>
+</g>
+<!-- proc~revision -->
+<g id="proc~~curve_update~~CallsGraph_node43" class="node">
+<title>proc~revision</title>
+<g id="a_proc~~curve_update~~CallsGraph_node43"><a xlink:href="../proc/revision.html" xlink:title="Trajectory%revision">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1219.52,-517.27 1104.5,-517.27 1104.5,-493 1219.52,-493 1219.52,-517.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1162.01" y="-501.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Trajectory%revision</text>
+</a>
+</g>
+</g>
+<!-- proc~data_changed&#45;&gt;proc~revision -->
+<g id="proc~~curve_update~~CallsGraph_edge36" class="edge">
+<title>proc~data_changed&#45;&gt;proc~revision</title>
+<path fill="none" stroke="#000000" d="M423.57,-528.55C488.66,-508.78 613.13,-472.06 658.83,-466.13 813.57,-446.06 996.57,-472.92 1093.25,-491.03"/>
+<polygon fill="#000000" stroke="#000000" points="1092.36,-494.43 1102.84,-492.86 1093.67,-487.55 1092.36,-494.43"/>
+</g>
+<!-- proc~detach~2&#45;&gt;proc~check_status -->
+<g id="proc~~curve_update~~CallsGraph_edge38" class="edge">
+<title>proc~detach~2&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M429.9,-885.71C447.04,-890.01 466.6,-894.62 484.56,-898.13 556.37,-912.19 640.33,-923.62 692.61,-930.15"/>
+<polygon fill="#000000" stroke="#000000" points="692.06,-933.61 702.41,-931.36 692.92,-926.66 692.06,-933.61"/>
+</g>
+<!-- interface~vkf_node_remove_child -->
+<g id="proc~~curve_update~~CallsGraph_node33" class="node">
+<title>interface~vkf_node_remove_child</title>
+<g id="a_proc~~curve_update~~CallsGraph_node33"><a xlink:href="../interface/vkf_node_remove_child.html" xlink:title="vkf_node_remove_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="621.71,-889.27 485.69,-889.27 485.69,-865 621.71,-865 621.71,-889.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-873.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_remove_child</text>
+</a>
+</g>
+</g>
+<!-- proc~detach~2&#45;&gt;interface~vkf_node_remove_child -->
+<g id="proc~~curve_update~~CallsGraph_edge37" class="edge">
+<title>proc~detach~2&#45;&gt;interface~vkf_node_remove_child</title>
+<path fill="none" stroke="#000000" d="M437.41,-874.42C449.07,-874.7 461.62,-874.99 473.98,-875.28"/>
+<polygon fill="#000000" stroke="#000000" points="473.67,-878.78 483.75,-875.51 473.83,-871.78 473.67,-878.78"/>
+</g>
+<!-- proc~release~2 -->
+<g id="proc~~curve_update~~CallsGraph_node42" class="node">
+<title>proc~release~2</title>
+<g id="a_proc~~curve_update~~CallsGraph_node42"><a xlink:href="../proc/release~2.html" xlink:title="LineChain%release">
+<polygon fill="#d9534f" stroke="#d9534f" points="610.46,-847.27 496.94,-847.27 496.94,-823 610.46,-823 610.46,-847.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-831.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">LineChain%release</text>
+</a>
+</g>
+</g>
+<!-- proc~detach~2&#45;&gt;proc~release~2 -->
+<g id="proc~~curve_update~~CallsGraph_edge39" class="edge">
+<title>proc~detach~2&#45;&gt;proc~release~2</title>
+<path fill="none" stroke="#000000" d="M437.41,-860.9C452.79,-857.46 469.69,-853.69 485.7,-850.11"/>
+<polygon fill="#000000" stroke="#000000" points="486.13,-853.6 495.13,-848 484.61,-846.77 486.13,-853.6"/>
+</g>
+<!-- proc~draw&#45;&gt;proc~draw_range -->
+<g id="proc~~curve_update~~CallsGraph_edge40" class="edge">
+<title>proc~draw&#45;&gt;proc~draw_range</title>
+<path fill="none" stroke="#000000" d="M432.31,-1000.97C445.22,-1002.49 459.47,-1004.17 473.5,-1005.82"/>
+<polygon fill="#000000" stroke="#000000" points="472.83,-1009.26 483.17,-1006.96 473.65,-1002.31 472.83,-1009.26"/>
+</g>
+<!-- proc~draw_range&#45;&gt;interface~vkf_line_set_range -->
+<g id="proc~~curve_update~~CallsGraph_edge41" class="edge">
+<title>proc~draw_range&#45;&gt;interface~vkf_line_set_range</title>
+<path fill="none" stroke="#000000" d="M571.41,-1027.74C604.51,-1052.68 678.56,-1108.49 717.7,-1138"/>
+<polygon fill="#000000" stroke="#000000" points="715.11,-1140.43 725.2,-1143.65 719.32,-1134.84 715.11,-1140.43"/>
+</g>
+<!-- proc~draw_range&#45;&gt;proc~check_status -->
+<g id="proc~~curve_update~~CallsGraph_edge42" class="edge">
+<title>proc~draw_range&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M584.55,-1002.62C616.42,-989.25 667.13,-967.99 702.59,-953.12"/>
+<polygon fill="#000000" stroke="#000000" points="703.8,-956.4 711.67,-949.31 701.1,-949.95 703.8,-956.4"/>
+</g>
+<!-- proc~reserve~2&#45;&gt;proc~check_status -->
+<g id="proc~~curve_update~~CallsGraph_edge50" class="edge">
+<title>proc~reserve~2&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M385.29,-234.59C396.78,-288.4 443.97,-500.55 484.56,-554.13 528.69,-612.39 582.59,-582.13 622.83,-643.13 675.7,-723.28 613.7,-771.39 658.83,-856.13 672.05,-880.96 695.87,-902.48 714.82,-916.92"/>
+<polygon fill="#000000" stroke="#000000" points="712.58,-919.62 722.71,-922.73 716.73,-913.98 712.58,-919.62"/>
+</g>
+<!-- interface~vkf_compile_node -->
+<g id="proc~~curve_update~~CallsGraph_node28" class="node">
+<title>interface~vkf_compile_node</title>
+<g id="a_proc~~curve_update~~CallsGraph_node28"><a xlink:href="../interface/vkf_compile_node.html" xlink:title="vkf_compile_node">
+<polygon fill="#a7506f" stroke="#a7506f" points="607.46,-276.27 499.94,-276.27 499.94,-252 607.46,-252 607.46,-276.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-260.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_compile_node</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;interface~vkf_compile_node -->
+<g id="proc~~curve_update~~CallsGraph_edge43" class="edge">
+<title>proc~reserve~2&#45;&gt;interface~vkf_compile_node</title>
+<path fill="none" stroke="#000000" d="M433.69,-234.74C451.59,-239.16 471.9,-244.18 490.62,-248.8"/>
+<polygon fill="#000000" stroke="#000000" points="489.7,-252.18 500.25,-251.18 491.38,-245.38 489.7,-252.18"/>
+</g>
+<!-- interface~vkf_line_create -->
+<g id="proc~~curve_update~~CallsGraph_node29" class="node">
+<title>interface~vkf_line_create</title>
+<g id="a_proc~~curve_update~~CallsGraph_node29"><a xlink:href="../interface/vkf_line_create.html" xlink:title="vkf_line_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="599.21,-234.27 508.19,-234.27 508.19,-210 599.21,-210 599.21,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_create</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;interface~vkf_line_create -->
+<g id="proc~~curve_update~~CallsGraph_edge44" class="edge">
+<title>proc~reserve~2&#45;&gt;interface~vkf_line_create</title>
+<path fill="none" stroke="#000000" d="M439.29,-222.13C457.68,-222.13 478.08,-222.13 496.44,-222.13"/>
+<polygon fill="#000000" stroke="#000000" points="496.36,-225.64 506.36,-222.14 496.36,-218.64 496.36,-225.64"/>
+</g>
+<!-- interface~vkf_line_create_colored -->
+<g id="proc~~curve_update~~CallsGraph_node30" class="node">
+<title>interface~vkf_line_create_colored</title>
+<g id="a_proc~~curve_update~~CallsGraph_node30"><a xlink:href="../interface/vkf_line_create_colored.html" xlink:title="vkf_line_create_colored">
+<polygon fill="#a7506f" stroke="#a7506f" points="621.71,-192.27 485.69,-192.27 485.69,-168 621.71,-168 621.71,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_create_colored</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;interface~vkf_line_create_colored -->
+<g id="proc~~curve_update~~CallsGraph_edge45" class="edge">
+<title>proc~reserve~2&#45;&gt;interface~vkf_line_create_colored</title>
+<path fill="none" stroke="#000000" d="M433.69,-209.53C451.59,-205.11 471.9,-200.09 490.62,-195.47"/>
+<polygon fill="#000000" stroke="#000000" points="491.38,-198.89 500.25,-193.09 489.7,-192.09 491.38,-198.89"/>
+</g>
+<!-- interface~vkf_marker_create -->
+<g id="proc~~curve_update~~CallsGraph_node31" class="node">
+<title>interface~vkf_marker_create</title>
+<g id="a_proc~~curve_update~~CallsGraph_node31"><a xlink:href="../interface/vkf_marker_create.html" xlink:title="vkf_marker_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="608.96,-150.27 498.44,-150.27 498.44,-126 608.96,-126 608.96,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_marker_create</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;interface~vkf_marker_create -->
+<g id="proc~~curve_update~~CallsGraph_edge46" class="edge">
+<title>proc~reserve~2&#45;&gt;interface~vkf_marker_create</title>
+<path fill="none" stroke="#000000" d="M399.94,-209.54C419.62,-195.66 453.13,-173.41 484.56,-159.13 488.1,-157.52 491.81,-155.99 495.57,-154.55"/>
+<polygon fill="#000000" stroke="#000000" points="496.64,-157.88 504.86,-151.2 494.27,-151.3 496.64,-157.88"/>
+</g>
+<!-- interface~vkf_node_add_child -->
+<g id="proc~~curve_update~~CallsGraph_node32" class="node">
+<title>interface~vkf_node_add_child</title>
+<g id="a_proc~~curve_update~~CallsGraph_node32"><a xlink:href="../interface/vkf_node_add_child.html" xlink:title="vkf_node_add_child">
+<polygon fill="#a7506f" stroke="#a7506f" points="611.58,-108.27 495.81,-108.27 495.81,-84 611.58,-84 611.58,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-92.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_add_child</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;interface~vkf_node_add_child -->
+<g id="proc~~curve_update~~CallsGraph_edge47" class="edge">
+<title>proc~reserve~2&#45;&gt;interface~vkf_node_add_child</title>
+<path fill="none" stroke="#000000" d="M391.29,-209.82C407.22,-187.97 443.41,-142.35 484.56,-117.13 486.7,-115.82 488.94,-114.58 491.23,-113.42"/>
+<polygon fill="#000000" stroke="#000000" points="492.53,-116.67 500.21,-109.38 489.66,-110.29 492.53,-116.67"/>
+</g>
+<!-- interface~vkf_ribbon_create -->
+<g id="proc~~curve_update~~CallsGraph_node34" class="node">
+<title>interface~vkf_ribbon_create</title>
+<g id="a_proc~~curve_update~~CallsGraph_node34"><a xlink:href="../interface/vkf_ribbon_create.html" xlink:title="vkf_ribbon_create">
+<polygon fill="#a7506f" stroke="#a7506f" points="606.71,-66.27 500.69,-66.27 500.69,-42 606.71,-42 606.71,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-50.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_ribbon_create</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;interface~vkf_ribbon_create -->
+<g id="proc~~curve_update~~CallsGraph_edge48" class="edge">
+<title>proc~reserve~2&#45;&gt;interface~vkf_ribbon_create</title>
+<path fill="none" stroke="#000000" d="M387.79,-209.8C400.11,-181.6 434.2,-112 484.56,-75.13 486.36,-73.82 488.24,-72.58 490.19,-71.43"/>
+<polygon fill="#000000" stroke="#000000" points="491.68,-74.59 498.99,-66.93 488.5,-68.36 491.68,-74.59"/>
+</g>
+<!-- proc~apply_style -->
+<g id="proc~~curve_update~~CallsGraph_node36" class="node">
+<title>proc~apply_style</title>
+<g id="a_proc~~curve_update~~CallsGraph_node36"><a xlink:href="../proc/apply_style.html" xlink:title="apply_style">
+<polygon fill="#d9534f" stroke="#d9534f" points="589.08,-356.27 518.31,-356.27 518.31,-332 589.08,-332 589.08,-356.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-340.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">apply_style</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;proc~apply_style -->
+<g id="proc~~curve_update~~CallsGraph_edge49" class="edge">
+<title>proc~reserve~2&#45;&gt;proc~apply_style</title>
+<path fill="none" stroke="#000000" d="M393.05,-234.68C410.22,-254.75 446.47,-294.25 484.56,-318.13 491.57,-322.53 499.43,-326.37 507.26,-329.66"/>
+<polygon fill="#000000" stroke="#000000" points="505.84,-332.86 516.43,-333.25 508.39,-326.34 505.84,-332.86"/>
+</g>
+<!-- proc~line_set_segments -->
+<g id="proc~~curve_update~~CallsGraph_node39" class="node">
+<title>proc~line_set_segments</title>
+<g id="a_proc~~curve_update~~CallsGraph_node39"><a xlink:href="../proc/line_set_segments.html" xlink:title="line_set_segments">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="798.6,-167.27 689.58,-167.27 689.58,-143 798.6,-143 798.6,-167.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-151.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_segments</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;proc~line_set_segments -->
+<g id="proc~~curve_update~~CallsGraph_edge51" class="edge">
+<title>proc~reserve~2&#45;&gt;proc~line_set_segments</title>
+<path fill="none" stroke="#000000" d="M396.95,-234.61C415.59,-249.99 449.95,-275.3 484.56,-285.13 543.67,-301.93 573.03,-321.14 622.83,-285.13 664.18,-255.25 621.43,-210.84 658.83,-176.13 664.47,-170.9 671.22,-166.92 678.4,-163.89"/>
+<polygon fill="#000000" stroke="#000000" points="679.45,-167.24 687.73,-160.62 677.13,-160.63 679.45,-167.24"/>
+</g>
+<!-- proc~move_chunks -->
+<g id="proc~~curve_update~~CallsGraph_node41" class="node">
+<title>proc~move_chunks</title>
+<g id="a_proc~~curve_update~~CallsGraph_node41"><a xlink:href="../proc/move_chunks.html" xlink:title="move_chunks">
+<polygon fill="#d9534f" stroke="#d9534f" points="595.83,-24.27 511.56,-24.27 511.56,0 595.83,0 595.83,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="553.7" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">move_chunks</text>
+</a>
+</g>
+</g>
+<!-- proc~reserve~2&#45;&gt;proc~move_chunks -->
+<g id="proc~~curve_update~~CallsGraph_edge52" class="edge">
+<title>proc~reserve~2&#45;&gt;proc~move_chunks</title>
+<path fill="none" stroke="#000000" d="M385.76,-209.88C394.83,-176.36 424.65,-82.35 484.56,-33.13 489.34,-29.21 494.86,-26.01 500.63,-23.41"/>
+<polygon fill="#000000" stroke="#000000" points="501.72,-26.75 509.8,-19.89 499.21,-20.21 501.72,-26.75"/>
+</g>
+<!-- proc~tail_ends&#45;&gt;proc~decreasing_times -->
+<g id="proc~~curve_update~~CallsGraph_edge53" class="edge">
+<title>proc~tail_ends&#45;&gt;proc~decreasing_times</title>
+<path fill="none" stroke="#000000" d="M411.52,-1082.26C433.17,-1087.61 463.61,-1095.13 490.69,-1101.82"/>
+<polygon fill="#000000" stroke="#000000" points="489.64,-1105.16 500.19,-1104.17 491.32,-1098.37 489.64,-1105.16"/>
+</g>
+<!-- proc~trace_range&#45;&gt;proc~decreasing_times -->
+<g id="proc~~curve_update~~CallsGraph_edge54" class="edge">
+<title>proc~trace_range&#45;&gt;proc~decreasing_times</title>
+<path fill="none" stroke="#000000" d="M419.99,-1117.13C440.4,-1117.13 466.24,-1117.13 489.68,-1117.13"/>
+<polygon fill="#000000" stroke="#000000" points="489.45,-1120.64 499.45,-1117.14 489.45,-1113.64 489.45,-1120.64"/>
+</g>
+<!-- num_colors -->
+<g id="proc~~curve_update~~CallsGraph_node35" class="node">
+<title>num_colors</title>
+<polygon fill="#777777" stroke="#777777" points="780.6,-681.27 707.58,-681.27 707.58,-657 780.6,-657 780.6,-681.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-665.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">num_colors</text>
+</g>
+<!-- proc~uses_colors&#45;&gt;num_colors -->
+<g id="proc~~curve_update~~CallsGraph_edge55" class="edge">
+<title>proc~uses_colors&#45;&gt;num_colors</title>
+<path fill="none" stroke="#000000" d="M590.57,-665.09C620.56,-665.88 663.55,-667.02 696.25,-667.89"/>
+<polygon fill="#000000" stroke="#000000" points="695.74,-671.38 705.83,-668.15 695.93,-664.38 695.74,-671.38"/>
+</g>
+<!-- proc~apply_style&#45;&gt;proc~check_status -->
+<g id="proc~~curve_update~~CallsGraph_edge59" class="edge">
+<title>proc~apply_style&#45;&gt;proc~check_status</title>
+<path fill="none" stroke="#000000" d="M561.07,-356.37C574.9,-383.56 607.65,-451.37 622.83,-512.13 660.08,-661.28 590.89,-718.24 658.83,-856.13 671.19,-881.21 694.86,-902.58 713.97,-916.91"/>
+<polygon fill="#000000" stroke="#000000" points="711.81,-919.66 721.97,-922.67 715.9,-913.98 711.81,-919.66"/>
+</g>
+<!-- interface~vkf_line_set_dash_mode -->
+<g id="proc~~curve_update~~CallsGraph_node45" class="node">
+<title>interface~vkf_line_set_dash_mode</title>
+<g id="a_proc~~curve_update~~CallsGraph_node45"><a xlink:href="../interface/vkf_line_set_dash_mode.html" xlink:title="vkf_line_set_dash_mode">
+<polygon fill="#a7506f" stroke="#a7506f" points="813.98,-209.27 674.21,-209.27 674.21,-185 813.98,-185 813.98,-209.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-193.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_set_dash_mode</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_style&#45;&gt;interface~vkf_line_set_dash_mode -->
+<g id="proc~~curve_update~~CallsGraph_edge56" class="edge">
+<title>proc~apply_style&#45;&gt;interface~vkf_line_set_dash_mode</title>
+<path fill="none" stroke="#000000" d="M589.53,-337.12C601.38,-333.23 613.87,-327.26 622.83,-318.13 655.91,-284.42 623.78,-249.8 658.83,-218.13 660.51,-216.62 662.28,-215.21 664.13,-213.9"/>
+<polygon fill="#000000" stroke="#000000" points="665.78,-216.99 672.61,-208.89 662.22,-210.96 665.78,-216.99"/>
+</g>
+<!-- interface~vkf_line_set_highlight -->
+<g id="proc~~curve_update~~CallsGraph_node46" class="node">
+<title>interface~vkf_line_set_highlight</title>
+<g id="a_proc~~curve_update~~CallsGraph_node46"><a xlink:href="../interface/vkf_line_set_highlight.html" xlink:title="vkf_line_set_highlight">
+<polygon fill="#a7506f" stroke="#a7506f" points="806.48,-419.27 681.71,-419.27 681.71,-395 806.48,-395 806.48,-419.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-403.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_set_highlight</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_style&#45;&gt;interface~vkf_line_set_highlight -->
+<g id="proc~~curve_update~~CallsGraph_edge57" class="edge">
+<title>proc~apply_style&#45;&gt;interface~vkf_line_set_highlight</title>
+<path fill="none" stroke="#000000" d="M582.59,-356.62C603.34,-365.6 632.5,-377.59 658.83,-386.13 664.66,-388.03 670.75,-389.84 676.89,-391.57"/>
+<polygon fill="#000000" stroke="#000000" points="675.91,-394.93 686.47,-394.16 677.74,-388.17 675.91,-394.93"/>
+</g>
+<!-- interface~vkf_line_set_trail -->
+<g id="proc~~curve_update~~CallsGraph_node47" class="node">
+<title>interface~vkf_line_set_trail</title>
+<g id="a_proc~~curve_update~~CallsGraph_node47"><a xlink:href="../interface/vkf_line_set_trail.html" xlink:title="vkf_line_set_trail">
+<polygon fill="#a7506f" stroke="#a7506f" points="793.73,-377.27 694.46,-377.27 694.46,-353 793.73,-353 793.73,-377.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-361.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_set_trail</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_style&#45;&gt;interface~vkf_line_set_trail -->
+<g id="proc~~curve_update~~CallsGraph_edge58" class="edge">
+<title>proc~apply_style&#45;&gt;interface~vkf_line_set_trail</title>
+<path fill="none" stroke="#000000" d="M589.25,-347.99C615.46,-350.91 652.13,-355 683.09,-358.45"/>
+<polygon fill="#000000" stroke="#000000" points="682.38,-361.89 692.71,-359.52 683.15,-354.93 682.38,-361.89"/>
+</g>
+<!-- proc~line_set_pattern -->
+<g id="proc~~curve_update~~CallsGraph_node51" class="node">
+<title>proc~line_set_pattern</title>
+<g id="a_proc~~curve_update~~CallsGraph_node51"><a xlink:href="../proc/line_set_pattern.html" xlink:title="line_set_pattern">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="792.23,-293.27 695.96,-293.27 695.96,-269 792.23,-269 792.23,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_pattern</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_style&#45;&gt;proc~line_set_pattern -->
+<g id="proc~~curve_update~~CallsGraph_edge60" class="edge">
+<title>proc~apply_style&#45;&gt;proc~line_set_pattern</title>
+<path fill="none" stroke="#000000" d="M588.8,-331.53C599.72,-327.39 611.83,-322.67 622.83,-318.13 639.02,-311.46 642.27,-307.83 658.83,-302.13 667.15,-299.27 676.06,-296.63 684.85,-294.24"/>
+<polygon fill="#000000" stroke="#000000" points="685.61,-297.66 694.41,-291.75 683.85,-290.89 685.61,-297.66"/>
+</g>
+<!-- proc~line_set_style -->
+<g id="proc~~curve_update~~CallsGraph_node52" class="node">
+<title>proc~line_set_style</title>
+<g id="a_proc~~curve_update~~CallsGraph_node52"><a xlink:href="../proc/line_set_style.html" xlink:title="line_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="785.1,-251.27 703.08,-251.27 703.08,-227 785.1,-227 785.1,-251.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-235.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">line_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_style&#45;&gt;proc~line_set_style -->
+<g id="proc~~curve_update~~CallsGraph_edge61" class="edge">
+<title>proc~apply_style&#45;&gt;proc~line_set_style</title>
+<path fill="none" stroke="#000000" d="M589.23,-335.79C600.78,-331.81 613.16,-326.11 622.83,-318.13 646.23,-298.82 634.31,-278 658.83,-260.13 668.43,-253.14 680.11,-248.46 691.67,-245.33"/>
+<polygon fill="#000000" stroke="#000000" points="692.23,-248.8 701.18,-243.13 690.64,-241.98 692.23,-248.8"/>
+</g>
+<!-- proc~marker_set_style -->
+<g id="proc~~curve_update~~CallsGraph_node53" class="node">
+<title>proc~marker_set_style</title>
+<g id="a_proc~~curve_update~~CallsGraph_node53"><a xlink:href="../proc/marker_set_style.html" xlink:title="marker_set_style">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="794.85,-335.27 693.33,-335.27 693.33,-311 794.85,-311 794.85,-335.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-319.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_set_style</text>
+</a>
+</g>
+</g>
+<!-- proc~apply_style&#45;&gt;proc~marker_set_style -->
+<g id="proc~~curve_update~~CallsGraph_edge62" class="edge">
+<title>proc~apply_style&#45;&gt;proc~marker_set_style</title>
+<path fill="none" stroke="#000000" d="M589.25,-340.28C615.17,-337.39 651.33,-333.36 682.08,-329.94"/>
+<polygon fill="#000000" stroke="#000000" points="682.08,-333.46 691.63,-328.87 681.31,-326.5 682.08,-333.46"/>
+</g>
+<!-- interface~vkf_line_style -->
+<g id="proc~~curve_update~~CallsGraph_node48" class="node">
+<title>interface~vkf_line_style</title>
+<g id="a_proc~~curve_update~~CallsGraph_node48"><a xlink:href="../interface/vkf_line_style.html" xlink:title="vkf_line_style">
+<polygon fill="#a7506f" stroke="#a7506f" points="1003.62,-293.27 921.6,-293.27 921.6,-269 1003.62,-269 1003.62,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="962.61" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~curve_update~~CallsGraph_edge63" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M798.98,-160.79C809.94,-163.97 820.74,-168.81 829.35,-176.13 860.28,-202.46 834.03,-234.27 865.35,-260.13 877.87,-270.48 894.35,-276.04 910.12,-278.94"/>
+<polygon fill="#000000" stroke="#000000" points="909.52,-282.39 919.92,-280.39 910.54,-275.46 909.52,-282.39"/>
+</g>
+<!-- interface~vkf_line_style_changed -->
+<g id="proc~~curve_update~~CallsGraph_node49" class="node">
+<title>interface~vkf_line_style_changed</title>
+<g id="a_proc~~curve_update~~CallsGraph_node49"><a xlink:href="../interface/vkf_line_style_changed.html" xlink:title="vkf_line_style_changed">
+<polygon fill="#a7506f" stroke="#a7506f" points="1029.5,-251.27 895.73,-251.27 895.73,-227 1029.5,-227 1029.5,-251.27"/>
+<text xml:space="preserve" text-anchor="middle" x="962.61" y="-235.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_style_changed</text>
+</a>
+</g>
+</g>
+<!-- proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~curve_update~~CallsGraph_edge64" class="edge">
+<title>proc~line_set_segments&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M799.06,-166.88C809.23,-169.57 819.7,-172.67 829.35,-176.13 864.28,-188.66 902.35,-207.37 928.64,-221.15"/>
+<polygon fill="#000000" stroke="#000000" points="926.99,-224.23 937.46,-225.83 930.27,-218.05 926.99,-224.23"/>
+</g>
+<!-- proc~motion_key -->
+<g id="proc~~curve_update~~CallsGraph_node54" class="node">
+<title>proc~motion_key</title>
+<g id="a_proc~~curve_update~~CallsGraph_node54"><a xlink:href="../proc/motion_key.html" xlink:title="ReferenceFrame%motion_key">
+<polygon fill="#d9534f" stroke="#d9534f" points="829.35,-583.27 658.83,-583.27 658.83,-559 829.35,-559 829.35,-583.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-567.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%motion_key</text>
+</a>
+</g>
+</g>
+<!-- proc~motion_changed&#45;&gt;proc~motion_key -->
+<g id="proc~~curve_update~~CallsGraph_edge65" class="edge">
+<title>proc~motion_changed&#45;&gt;proc~motion_key</title>
+<path fill="none" stroke="#000000" d="M604.19,-543.12C624.15,-547.15 647.6,-551.87 669.49,-556.29"/>
+<polygon fill="#000000" stroke="#000000" points="668.78,-559.72 679.28,-558.26 670.17,-552.86 668.78,-559.72"/>
+</g>
+<!-- proc~same_pointer -->
+<g id="proc~~curve_update~~CallsGraph_node55" class="node">
+<title>proc~same_pointer</title>
+<g id="a_proc~~curve_update~~CallsGraph_node55"><a xlink:href="../proc/same_pointer.html" xlink:title="same_pointer">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="786.23,-499.27 701.96,-499.27 701.96,-475 786.23,-475 786.23,-499.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-483.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">same_pointer</text>
+</a>
+</g>
+</g>
+<!-- proc~motion_changed&#45;&gt;proc~same_pointer -->
+<g id="proc~~curve_update~~CallsGraph_edge66" class="edge">
+<title>proc~motion_changed&#45;&gt;proc~same_pointer</title>
+<path fill="none" stroke="#000000" d="M604.19,-521.05C630.83,-514.55 663.68,-506.53 690.74,-499.92"/>
+<polygon fill="#000000" stroke="#000000" points="691.21,-503.41 700.09,-497.63 689.55,-496.61 691.21,-503.41"/>
+</g>
+<!-- proc~transformed -->
+<g id="proc~~curve_update~~CallsGraph_node56" class="node">
+<title>proc~transformed</title>
+<g id="a_proc~~curve_update~~CallsGraph_node56"><a xlink:href="../proc/transformed.html" xlink:title="transformed">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="782.85,-541.27 705.33,-541.27 705.33,-517 782.85,-517 782.85,-541.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-525.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">transformed</text>
+</a>
+</g>
+</g>
+<!-- proc~motion_changed&#45;&gt;proc~transformed -->
+<g id="proc~~curve_update~~CallsGraph_edge67" class="edge">
+<title>proc~motion_changed&#45;&gt;proc~transformed</title>
+<path fill="none" stroke="#000000" d="M604.19,-532.08C631.76,-531.5 665.98,-530.77 693.55,-530.19"/>
+<polygon fill="#000000" stroke="#000000" points="693.49,-533.69 703.41,-529.98 693.34,-526.69 693.49,-533.69"/>
+</g>
+<!-- interface~vkf_node_delete -->
+<g id="proc~~curve_update~~CallsGraph_node50" class="node">
+<title>interface~vkf_node_delete</title>
+<g id="a_proc~~curve_update~~CallsGraph_node50"><a xlink:href="../interface/vkf_node_delete.html" xlink:title="vkf_node_delete">
+<polygon fill="#a7506f" stroke="#a7506f" points="793.35,-847.27 694.83,-847.27 694.83,-823 793.35,-823 793.35,-847.27"/>
+<text xml:space="preserve" text-anchor="middle" x="744.09" y="-831.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_node_delete</text>
+</a>
+</g>
+</g>
+<!-- proc~release~2&#45;&gt;interface~vkf_node_delete -->
+<g id="proc~~curve_update~~CallsGraph_edge68" class="edge">
+<title>proc~release~2&#45;&gt;interface~vkf_node_delete</title>
+<path fill="none" stroke="#000000" d="M610.71,-835.13C633.54,-835.13 659.96,-835.13 683.17,-835.13"/>
+<polygon fill="#000000" stroke="#000000" points="683.12,-838.64 693.12,-835.14 683.12,-831.64 683.12,-838.64"/>
+</g>
+<!-- proc~line_set_pattern&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~curve_update~~CallsGraph_edge69" class="edge">
+<title>proc~line_set_pattern&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M792.61,-281.13C827.32,-281.13 874.34,-281.13 909.98,-281.13"/>
+<polygon fill="#000000" stroke="#000000" points="909.6,-284.64 919.6,-281.14 909.6,-277.64 909.6,-284.64"/>
+</g>
+<!-- proc~line_set_pattern&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~curve_update~~CallsGraph_edge70" class="edge">
+<title>proc~line_set_pattern&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M792.61,-271.92C819.77,-266.65 854.48,-259.92 885.36,-253.93"/>
+<polygon fill="#000000" stroke="#000000" points="885.91,-257.38 895.06,-252.04 884.58,-250.51 885.91,-257.38"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~curve_update~~CallsGraph_edge71" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M785.56,-246.99C820.88,-253.84 872.29,-263.81 910.45,-271.21"/>
+<polygon fill="#000000" stroke="#000000" points="909.37,-274.57 919.85,-273.03 910.7,-267.69 909.37,-274.57"/>
+</g>
+<!-- proc~line_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~curve_update~~CallsGraph_edge72" class="edge">
+<title>proc~line_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M785.56,-239.13C813.27,-239.13 850.9,-239.13 884.26,-239.13"/>
+<polygon fill="#000000" stroke="#000000" points="883.87,-242.64 893.87,-239.14 883.87,-235.64 883.87,-242.64"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style -->
+<g id="proc~~curve_update~~CallsGraph_edge73" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style</title>
+<path fill="none" stroke="#000000" d="M795.31,-313.39C829.92,-306.68 875.76,-297.79 910.55,-291.04"/>
+<polygon fill="#000000" stroke="#000000" points="910.79,-294.56 919.94,-289.22 909.45,-287.69 910.79,-294.56"/>
+</g>
+<!-- proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed -->
+<g id="proc~~curve_update~~CallsGraph_edge74" class="edge">
+<title>proc~marker_set_style&#45;&gt;interface~vkf_line_style_changed</title>
+<path fill="none" stroke="#000000" d="M795.26,-315.99C807.01,-312.9 819.09,-308.47 829.35,-302.13 850.27,-289.22 844.24,-272.74 865.35,-260.13 871.32,-256.57 877.83,-253.6 884.55,-251.14"/>
+<polygon fill="#000000" stroke="#000000" points="885.37,-254.55 893.8,-248.13 883.21,-247.89 885.37,-254.55"/>
+</g>
+<!-- proc~motion_key&#45;&gt;proc~motion_key -->
+<g id="proc~~curve_update~~CallsGraph_edge76" class="edge">
+<title>proc~motion_key&#45;&gt;proc~motion_key</title>
+<path fill="none" stroke="#000000" d="M712.23,-583.52C701.86,-592.41 712.48,-601.27 744.09,-601.27 761.38,-601.27 772.38,-598.62 777.12,-594.76"/>
+<polygon fill="#000000" stroke="#000000" points="780.62,-594.61 776.1,-585.02 773.66,-595.33 780.62,-594.61"/>
+</g>
+<!-- proc~data_revision -->
+<g id="proc~~curve_update~~CallsGraph_node57" class="node">
+<title>proc~data_revision</title>
+<g id="a_proc~~curve_update~~CallsGraph_node57"><a xlink:href="../proc/data_revision.html" xlink:title="TrajectoryFollower%data_revision">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1057.25,-550.27 867.98,-550.27 867.98,-526 1057.25,-526 1057.25,-550.27"/>
+<text xml:space="preserve" text-anchor="middle" x="962.61" y="-534.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%data_revision</text>
+</a>
+</g>
+</g>
+<!-- proc~motion_key&#45;&gt;proc~data_revision -->
+<g id="proc~~curve_update~~CallsGraph_edge75" class="edge">
+<title>proc~motion_key&#45;&gt;proc~data_revision</title>
+<path fill="none" stroke="#000000" d="M827.87,-558.52C840.93,-556.53 854.51,-554.46 867.8,-552.43"/>
+<polygon fill="#000000" stroke="#000000" points="868.02,-555.94 877.38,-550.97 866.96,-549.02 868.02,-555.94"/>
+</g>
+<!-- proc~motion_stamp -->
+<g id="proc~~curve_update~~CallsGraph_node58" class="node">
+<title>proc~motion_stamp</title>
+<g id="a_proc~~curve_update~~CallsGraph_node58"><a xlink:href="../proc/motion_stamp.html" xlink:title="TrajectoryFollower%motion_stamp">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1059.87,-592.27 865.35,-592.27 865.35,-568 1059.87,-568 1059.87,-592.27"/>
+<text xml:space="preserve" text-anchor="middle" x="962.61" y="-576.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%motion_stamp</text>
+</a>
+</g>
+</g>
+<!-- proc~motion_key&#45;&gt;proc~motion_stamp -->
+<g id="proc~~curve_update~~CallsGraph_edge77" class="edge">
+<title>proc~motion_key&#45;&gt;proc~motion_stamp</title>
+<path fill="none" stroke="#000000" d="M829.73,-574.65C837.63,-574.98 845.71,-575.32 853.78,-575.65"/>
+<polygon fill="#000000" stroke="#000000" points="853.53,-579.15 863.66,-576.06 853.82,-572.15 853.53,-579.15"/>
+</g>
+<!-- proc~data_revision&#45;&gt;proc~generation -->
+<g id="proc~~curve_update~~CallsGraph_edge78" class="edge">
+<title>proc~data_revision&#45;&gt;proc~generation</title>
+<path fill="none" stroke="#000000" d="M1039.08,-550.75C1053.91,-553.23 1069.49,-555.83 1084.35,-558.32"/>
+<polygon fill="#000000" stroke="#000000" points="1083.63,-561.75 1094.07,-559.95 1084.79,-554.84 1083.63,-561.75"/>
+</g>
+<!-- proc~data_revision&#45;&gt;proc~revision -->
+<g id="proc~~curve_update~~CallsGraph_edge79" class="edge">
+<title>proc~data_revision&#45;&gt;proc~revision</title>
+<path fill="none" stroke="#000000" d="M1039.08,-525.52C1056.76,-522.56 1075.49,-519.43 1092.83,-516.53"/>
+<polygon fill="#000000" stroke="#000000" points="1093.22,-520.02 1102.5,-514.92 1092.06,-513.11 1093.22,-520.02"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panproccurve_updateCallsGraph = svgPanZoom('#proccurve_updateCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">curve_update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">CurveArtist</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w">                           </span><span class="c">!! the current time</span>
+<span class="w">        </span><span class="kt">logical</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">changed</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">write_changed</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">changed</span><span class="p">))</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="n">self</span><span class="p">%</span><span class="n">trail_</span><span class="p">%</span><span class="n">on</span><span class="p">)</span><span class="w"> </span><span class="k">then</span><span class="w">                           </span><span class="c">! a trail: the window about time t</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">changed</span><span class="w"> </span><span class="p">.</span><span class="nb">and</span><span class="p">.</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">tail_time</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">            call </span><span class="n">draw_trail</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">self</span><span class="p">%</span><span class="n">tail_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="w"></span>
+<span class="w">            </span><span class="k">return</span>
+<span class="k">        end if</span>
+<span class="k">        call </span><span class="n">draw_written</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">changed</span><span class="p">)</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">curve_update</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-06 15:34 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>
