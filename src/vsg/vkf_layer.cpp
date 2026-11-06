@@ -2242,7 +2242,12 @@ VKF_API void* vkf_viewer_create(int width, int height, const char* title, int ti
         auto perspective = vsg::Perspective::create(30.0, aspect, 0.001, 1000.0);
         v->camera = vsg::Camera::create(perspective, lookAt, vsg::ViewportState::create(extent));
 
-        v->viewer->addEventHandler(vsg::CloseHandler::create(v->viewer));
+        // closing: on the window's close (vkf_viewer_close too), and on Escape
+        // only in a window of its own: in a host's window the host closes it
+        // (and Escape is the program's: stopping the viewer there froze it)
+        auto closeHandler = vsg::CloseHandler::create(v->viewer);
+        if (native_window != 0) closeHandler->closeKey = vsg::KEY_Undefined;
+        v->viewer->addEventHandler(closeHandler);
         v->viewer->addEventHandler(EventRecorder::create(v.get()));
         // the trackball (mouse only, as OpenFrames': its keys are the program's
         // and vkframes' built-in keys, WindowProxy: no viewpoint on the space

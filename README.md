@@ -688,6 +688,31 @@ hundreds are propagated (two-body, exact) and drawn together.
 pixi run -e qt dispersions-demo
 ```
 
+#### Orbit palette demo
+
+<img src="media/screenshots/palette_demo.jpg" alt="Geostationary, Molniya and low Earth orbits dropped on the Earth, the Molniya orbit selected and highlighted" width="300" align="right">
+
+[demos/palette](demos/palette): drag and drop. The dock holds a palette of
+orbit types: low Earth orbit, sun-synchronous, GPS, geostationary, GTO and
+Molniya. Each has an icon of its shape drawn with QPainter. Drag one onto the
+scene to make that orbit.
+
+- While dragging, a dashed preview follows the cursor. The orbit's periapsis
+  points at the spot under the cursor, on the Earth or nearest it, as far in
+  latitude as the orbit's inclination reaches.
+- Dropping it adds the orbit to the scene while the scene is running: its
+  line, a translucent fill, and a labeled spacecraft moving along it.
+- Click an orbit (its line or its spacecraft) to select it. It's highlighted
+  with a pulse and arrows moving along it. Delete (or Backspace) deletes it,
+  and Escape deselects it. Dragging still turns the camera: only a click
+  selects.
+- The dock: the time scale, and buttons to delete the selected orbit, the
+  last one dropped, or all of them.
+
+```sh
+pixi run -e qt palette-demo
+```
+
 #### PySide6 demo
 
 [demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI
