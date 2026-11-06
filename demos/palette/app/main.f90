@@ -679,7 +679,7 @@ contains
         type(QWidget) :: panel
         type(QFormLayout) :: form
         type(QPushButton) :: delete_selected, remove_last, clear, reset_view
-        type(QHBoxLayout) :: buttons
+        type(QGridLayout) :: buttons
         type(QLabel) :: help
 
         app%main = QMainWindow()
@@ -702,7 +702,7 @@ contains
         call app%palette%setDragEnabled(.true.)
         call app%palette%setDragDropMode(QAbstractItemView_DragOnly)
         call app%palette%setSpacing(4)
-        call app%palette%setMinimumSize(260, (icon_size + 10) * n_types)
+        call app%palette%setMinimumHeight((icon_size + 10) * n_types)
         call form%addRow(QLabel('<b>Orbits</b> (drag one onto the scene)'))
         call form%addRow(app%palette)
 
@@ -725,11 +725,11 @@ contains
         call clear%clicked%connect(on_clear)
         reset_view = QPushButton('Reset view')
         call reset_view%clicked%connect(on_reset_view)
-        buttons = QHBoxLayout()
-        call buttons%addWidget(delete_selected)
-        call buttons%addWidget(remove_last)
-        call buttons%addWidget(clear)
-        call buttons%addWidget(reset_view)
+        buttons = QGridLayout()                             ! (two by two: the dock can be narrow)
+        call buttons%addWidget(delete_selected, 0, 0)
+        call buttons%addWidget(remove_last, 0, 1)
+        call buttons%addWidget(clear, 1, 0)
+        call buttons%addWidget(reset_view, 1, 1)
         call form%addRow('', buttons)
         help = QLabel('<small>An orbit dropped has its periapsis (or, if circular, its start) ' // &
                       'where the cursor points: on the Earth, or toward the ray''s closest ' // &
@@ -739,7 +739,7 @@ contains
                       'view.</small>')
         call help%setWordWrap(.true.)
         call form%addRow(help)
-        call panel%setMaximumWidth(460)
+        call panel%setMinimumWidth(240)                    ! (no maximum: the dock's edge drags it wider)
         dock = QDockWidget('Palette', app%main)
         call dock%setWidget(panel)
         call app%main%addDockWidget(Qt_LeftDockWidgetArea, dock)
