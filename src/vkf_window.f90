@@ -39,12 +39,18 @@
 !> handler's [[WindowEventHandler:key_press]] says it handled the key, or `set_default_keys(.false.)`).
 !> The mouse moves the camera (the trackball); the keys don't.
 !>
-!> Each frame, the handler's `before_draw(window, t)` is called once the
+!> Each frame, the handler's `before_update(window, t)` is called first,
+!> with the frame's time, before the scene is updated for it and the camera
+!> placed: the data a program computes for time t (trajectories' points,
+!> frames' positions, colors) changed there is uploaded, and followed by the
+!> views, in this frame. Then `before_draw(window, t)` is called once the
 !> scene is at the frame's time and the camera is placed (the trackball's
 !> moves included), just before drawing: what it changes (HUD text, labels,
 !> frames' positions) is in this frame, e.g. a callout kept next to a moving
 !> object ([[screen_position]]) without lagging a frame behind, whoever runs
-!> the frame loop (the program or a host GUI).
+!> the frame loop (the program or a host GUI). (Trajectories' points changed
+!> in before_draw are drawn from the next frame: change them in
+!> before_update.)
 !>
 !> The camera (OpenFrames' trackball getTransformation / setTransformation):
 !> [[get_camera]] and [[set_camera]] (eye, center, up in the shown view's frame,
@@ -203,6 +209,7 @@ module vkf_window
         procedure :: mouse_motion => handler_mouse_motion
         procedure :: button_press => handler_button_press
         procedure :: button_release => handler_button_release
+        procedure :: before_update => handler_before_update
         procedure :: before_draw => handler_before_draw
         procedure :: handle_drag => handler_handle_drag
     end type WindowEventHandler
@@ -475,6 +482,8 @@ contains
             self%scene_added = .true.
         end if
         t = self%clock_%update(window_wall(self))
+        if (associated(self%handler)) call self%handler%before_update(self, t)
+        if (.not. self%is_open()) return                    ! (closed by the handler)
         if (associated(root)) call self%scene%update(t, self%scene_seen)     ! (once per time across windows)
         call update_window_light(self, root)
         call place_camera(self)
@@ -483,6 +492,10 @@ contains
         if (self%running .and. associated(self%handler)) then
             call self%handler%before_draw(self, t)
             if (associated(root) .and. self%is_open()) call root%sync()      ! (frames it moved)
+            ! the view's frame again, where before_draw left it: a view following a
+            ! frame it moved would otherwise lag a frame behind it (jittering as
+            ! the frames' times vary)
+            if (self%is_open()) call track_view(self)
         end if
         if (self%running .and. self%is_open()) then
             call update_huds(self)
@@ -1504,6 +1517,17 @@ contains
         end if
     end subroutine place_camera
 
+    !> The view's frame (the frame it follows) where it is now: the renderer's
+    !> world-to-view transform (the camera stays where it is in that frame).
+    subroutine track_view(self)
+        type(WindowProxy), intent(inout), target :: self
+        type(View), pointer :: v
+        v => self%current_view()
+        if (.not. associated(v)) return
+        if (vkf_viewer_set_view_transform(self%viewer_, v%world_to_view()) /= 0) &
+            write(*, '(a)') 'vkframes: could not set the view'
+    end subroutine track_view
+
     !> The renderer's camera (columns: eye, center, up; the shown view's frame).
     subroutine put_camera(self, cam)
         type(WindowProxy), intent(inout) :: self
@@ -1776,9 +1800,22 @@ contains
         integer, intent(in) :: button                       !! as button_press's
     end subroutine handler_button_release
 
+    !> Called each frame with its time `t`, before the scene is updated for it
+    !> and the camera placed (see the module documentation): to change the
+    !> data for time t (trajectories' points, frames' positions), drawn and
+    !> followed by the views in this frame.
+    subroutine handler_before_update(self, window, t)
+        class(WindowEventHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window         !! the window about to update
+        real(wp), intent(in) :: t                           !! simulation time
+    end subroutine handler_before_update
+
     !> Called each frame just before drawing, the scene at time `t` and the
     !> camera placed (see the module documentation): e.g. to move HUD text
-    !> next to a moving object.
+    !> next to a moving object, or frames. A view following a frame moved here
+    !> follows it in this frame's drawing (its transform is taken again after);
+    !> trajectories' points changed here are drawn from the next frame (change
+    !> them in [[WindowEventHandler:before_update]]).
     subroutine handler_before_draw(self, window, t)
         class(WindowEventHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window         !! the window about to draw

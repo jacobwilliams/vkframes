@@ -118,7 +118,8 @@ jobs:
         continue-on-error: true
         run: pixi run -e qt burn-demo --drag-test --capture "$PWD/captures/burn_demo.png" --capture-frame 40 --quit-after 10
 
-      # The dispersions demo (qt-fortran; Monte Carlo samples, statistics printed with --still).
+      # The dispersions demo (qt-fortran; Monte Carlo samples, statistics printed with --still;
+      # --pick-test clicks a sample's dot and prints what is selected).
       - name: Build the dispersions demo
         continue-on-error: ${{ runner.os == 'Windows' }}
         run: pixi run -e qt dispersions-build
@@ -126,7 +127,7 @@ jobs:
       - name: Run the dispersions demo (macOS)
         if: runner.os == 'macOS'
         continue-on-error: true
-        run: pixi run -e qt dispersions-demo --still --capture "$PWD/captures/dispersions_demo.png" --capture-frame 30 --quit-after 10
+        run: pixi run -e qt dispersions-demo --still --pick-test --capture "$PWD/captures/dispersions_demo.png" --capture-frame 30 --quit-after 10
 
       # The palette demo (qt-fortran drag and drop; --drop-test drops three
       # orbits with synthetic drag events, then selects one and deletes it).

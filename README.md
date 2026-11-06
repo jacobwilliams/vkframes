@@ -681,6 +681,11 @@ hundreds are propagated (two-body, exact) and drawn together.
   spreads and the ellipsoid stretches and turns.
 - The spread (1-sigma radial, in-track and cross-track from the nominal) and
   the ellipsoid's axes, in the HUD.
+- Click a sample's trajectory, or its dot in the cloud, to select it. Its
+  trajectory is highlighted, its dot turns green, and a label follows it
+  with its burn and state errors, its offset from the nominal now (radial,
+  in-track, cross-track) and its miss at apoapsis. The same info is in the
+  dock. Escape, or a click on nothing, deselects it.
 - The dock: the number of samples, the errors' sizes, the random seed, what
   is shown, and a view that follows the cloud.
 

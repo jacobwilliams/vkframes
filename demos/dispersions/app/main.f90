@@ -23,10 +23,18 @@
 !> sizes, the random seed (the same seed: the same samples), what is shown,
 !> and the view (the whole transfer, or following the cloud's center).
 !>
+!> Click a sample's trajectory, or its dot in the cloud, to select it
+!> (WindowProxy%pick): its trajectory is highlighted, its dot turns green, and
+!> a label follows its dot with its errors (the burn's, the state's), its offset from the nominal
+!> now (radial, in-track, cross-track) and its miss at the nominal's
+!> apoapsis; also in the dock. A click elsewhere, or Escape, deselects it.
+!>
 !> Run with `pixi run -e qt dispersions-demo` (from the vkframes root).
 !> Options: `--samples n`, `--capture file` saves frame `--capture-frame n`
 !> (default 120), `--quit-after seconds`, and, for tests, `--still` (not
-!> animated: the cloud at the end) with the statistics printed.
+!> animated: the cloud at the end) with the statistics printed, and
+!> `--pick-test` (with --still: a click on the dot of the sample that misses
+!> most, synthetic, and what is selected printed).
 module dispersions_demo
 
     use qt
@@ -46,12 +54,20 @@ module dispersions_demo
     character(len=20), parameter :: view_names(n_views) = [character(len=20) :: 'The transfer', 'Following the cloud']
     real(wp), parameter :: nominal_color(4) = [1.0_wp, 1.0_wp, 1.0_wp, 0.95_wp]
     real(wp), parameter :: ellipsoid_color(3) = [1.0_wp, 0.85_wp, 0.3_wp]
+    real(wp), parameter :: dot_color(4) = [1.0_wp, 1.0_wp, 0.85_wp, 1.0_wp]           !! the cloud's dots
+    real(wp), parameter :: selected_dot_color(4) = [0.2_wp, 1.0_wp, 0.4_wp, 1.0_wp]   !! the selected sample's dot
 
-    !> Each frame, just before drawing: the cloud and its ellipsoid at the
-    !> frame's time; the time looped.
+    !> Each frame, before the scene's update for its time: the cloud and its
+    !> ellipsoid at the frame's time (drawn, and followed, in this frame); the
+    !> time looped.
+    !> Also: a click selects a sample (picked), Escape deselects it.
     type, extends(WindowEventHandler) :: CloudHandler
+        real(wp) :: press(2) = 0.0_wp                       !! where the left button was pressed (-1 to 1, y up)
     contains
-        procedure :: before_draw => cloud_before_draw
+        procedure :: before_update => cloud_before_update
+        procedure :: button_press => cloud_button_press
+        procedure :: button_release => cloud_button_release
+        procedure :: key_press => cloud_key_press
     end type CloudHandler
 
     !> The errors' 1-sigma sizes.
@@ -78,7 +94,7 @@ module dispersions_demo
         type(QDoubleSpinBox) :: dv_size_box, dv_pointing_box, position_box, velocity_box
         type(QCheckBox) :: animate, show_samples, show_cloud, show_ellipsoid, show_nominal
         type(QComboBox) :: view_choice
-        type(QLabel) :: stats_label
+        type(QLabel) :: stats_label, selected_label
         type(HUDText) :: hud_title, hud_stats
         ! the scene
         type(ReferenceFrame) :: root                        !! Earth-centered inertial (km)
@@ -91,6 +107,8 @@ module dispersions_demo
         type(MarkerArtist) :: cloud_dots
         type(DrawableTrajectory) :: nominal_frame, cloud_frame
         type(Sphere) :: ellipsoid                           !! the cloud's 3-sigma ellipsoid (its frame at the cloud's center)
+        type(ReferenceFrame) :: tag                         !! at the selected sample's dot: only its label, the sample's info
+        integer :: selected = 0                             !! the sample selected (0: none)
         type(SkySphere) :: sky
         type(FrameManager) :: scene
         ! the dispersions
@@ -100,10 +118,17 @@ module dispersions_demo
         real(wp) :: t_end                                   !! the transfer's apoapsis (s after the burn)
         real(wp) :: spread(3) = 0.0_wp                      !! the cloud's 1-sigma radial, in-track, cross-track spread (km)
         real(wp) :: axes(3) = 0.0_wp                        !! the ellipsoid's semi-axes (km, largest first)
+        ! each sample's errors and miss (max_samples)
+        real(wp), allocatable :: dv_size_err(:)             !! the burn's size error (%)
+        real(wp), allocatable :: dv_pointing_err(:)         !! the burn's direction error (deg)
+        real(wp), allocatable :: position_err(:)            !! the state's position error (km)
+        real(wp), allocatable :: velocity_err(:)            !! the state's velocity error (m/s)
+        real(wp), allocatable :: miss(:)                    !! how far it ends from the nominal's end (km)
         ! options
         integer :: start_view = 1
         type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after
         logical :: still = .false.                          !! --still: not animated, the statistics printed
+        logical :: pick_test = .false.                      !! --pick-test: a click on sample 7's dot (synthetic)
     end type app_t
 
     type(app_t), target, save :: app
@@ -132,7 +157,6 @@ contains
             app%samples(k) = Trajectory()
             call app%samples(k)%reserve(n_points)
             app%sample_curves(k) = CurveArtist(app%samples(k), width=1.0_wp)
-            call app%sample_curves(k)%set_pickable(.false.)
             call app%samples_frame%add_artist(app%sample_curves(k))
         end do
 
@@ -141,6 +165,8 @@ contains
         app%nominal_curve = CurveArtist(app%nominal, color=nominal_color, width=2.5_wp)
         app%initial_curve = CurveArtist(app%initial, color=[0.7_wp, 0.7_wp, 0.7_wp, 0.6_wp], width=1.5_wp)
         call app%initial_curve%set_pattern(4, int(z'00FF'))
+        call app%nominal_curve%set_pickable(.false.)       ! (clicks select samples only)
+        call app%initial_curve%set_pickable(.false.)
         app%nominal_frame = DrawableTrajectory('Nominal')
         call app%nominal_frame%show_decorations(.false.)
         call app%nominal_frame%add_artist(app%initial_curve)
@@ -148,11 +174,12 @@ contains
 
         ! the cloud: the samples' positions now, as dots
         app%cloud = Trajectory()
-        call app%cloud%reserve(max_samples)
+        call app%cloud%reserve(max_samples, colors=.true.)  ! (each dot's color: the selected sample's stands out)
         app%cloud_dots = MarkerArtist(app%cloud, markers=ior(ior(MARKER_START, MARKER_END), MARKER_INTERMEDIATE), &
-                                      size=4.0_wp, color=[1.0_wp, 1.0_wp, 0.85_wp])
+                                      size=4.0_wp, color=dot_color)
         call app%cloud_dots%set_intermediate_spacing(1.0_wp)
         call app%cloud_dots%set_auto_attenuate(.false.)
+        call app%cloud_dots%set_point_colors(.true.)
         app%cloud_frame = DrawableTrajectory('Cloud')
         call app%cloud_frame%show_decorations(.false.)
         call app%cloud_frame%add_artist(app%cloud_dots)
@@ -162,6 +189,17 @@ contains
         call app%ellipsoid%show_decorations(.false.)
         call app%ellipsoid%set_opacity(0.3_wp)
         call app%ellipsoid%set_pickable(.false.)
+
+        ! the selected sample's tag: no axes, only its label (the sample's info)
+        app%tag = ReferenceFrame('')
+        call app%tag%show_axes(NO_AXES)
+        call app%tag%show_axes_labels(NO_AXES)
+        call app%tag%set_color([1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp])
+        call app%tag%set_label_size(14)
+        call app%tag%set_label_alignment(ALIGN_LEFT_CENTER)
+        call app%tag%set_name_label_on_top(.true.)
+        allocate(app%dv_size_err(max_samples), app%dv_pointing_err(max_samples), app%position_err(max_samples), &
+                 app%velocity_err(max_samples), app%miss(max_samples), source=0.0_wp)
 
         if (.not. (app%root%add_child(app%earth) .and. app%root%add_child(app%samples_frame) .and. &
                    app%root%add_child(app%nominal_frame) .and. app%root%add_child(app%cloud_frame) .and. &
@@ -202,7 +240,7 @@ contains
     !> far each ends from the nominal; the ones beyond n_samples emptied.
     subroutine resample()
         real(wp) :: r(3), v(3), dv(3), g(3), u(3), e1(3), e2(3), size, t(n_points), p(3, n_points)
-        real(wp) :: miss(max_samples), end_nominal(3), worst, f
+        real(wp) :: end_nominal(3), worst, f
         integer :: k, n
         logical :: cut0, cut1
         call seed_random(app%seed_box%value())
@@ -214,28 +252,33 @@ contains
             ! the state known with errors; the burn's size and direction executed with errors
             call gauss3(g)
             r = app%r0 + app%err%position * g
+            app%position_err(k) = app%err%position * norm2(g)
             call gauss3(g)
             v = app%v0 + 1.0e-3_wp * app%err%velocity * g
+            app%velocity_err(k) = app%err%velocity * norm2(g)
             call gauss3(g)
             size = norm2(app%dv0) * (1.0_wp + 0.01_wp * app%err%dv_size * g(1))
+            app%dv_size_err(k) = app%err%dv_size * g(1)
             dv = u + (app%err%dv_pointing * pi / 180.0_wp) * (g(2) * e1 + g(3) * e2)
+            app%dv_pointing_err(k) = atan(app%err%dv_pointing * pi / 180.0_wp * norm2(g(2:3))) * 180.0_wp / pi
             dv = size * dv / norm2(dv)
             n = n_points
             call propagate(r, v + dv, 0.0_wp, app%t_end, n, t, p, cut0, cut1)
             call app%samples(k)%clear()
             call app%samples(k)%add(t(1:n), pos=p(:, 1:n))
-            miss(k) = norm2(p(:, n) - end_nominal)
+            app%miss(k) = norm2(p(:, n) - end_nominal)
         end do
         do k = app%n_samples + 1, max_samples
             if (app%samples(k)%num_times() > 0) call app%samples(k)%clear()
         end do
         ! colors: blue (near the nominal's end) to red (the farthest)
-        worst = max(maxval(miss(1:app%n_samples)), tiny(1.0_wp))
+        worst = max(maxval(app%miss(1:app%n_samples)), tiny(1.0_wp))
         do k = 1, app%n_samples
-            f = miss(k) / worst
+            f = app%miss(k) / worst
             call app%sample_curves(k)%set_color([0.25_wp + 0.75_wp * f, 0.55_wp * (1.0_wp - f) + 0.25_wp, &
                                                  1.0_wp - 0.8_wp * f, 0.35_wp])
         end do
+        if (app%selected > app%n_samples) call select_sample(0)
         call place_cloud(app%proxy%time())
     end subroutine resample
 
@@ -250,7 +293,7 @@ contains
         call app%cloud%clear()
         do k = 1, n
             p(:, k) = app%samples(k)%point_at(tt)
-            call app%cloud%add(real(k, wp), pos=p(:, k))
+            call app%cloud%add(real(k, wp), pos=p(:, k), color=merge(selected_dot_color, dot_color, k == app%selected))
         end do
         mean = sum(p(:, 1:n), dim=2) / n
         cov = 0.0_wp
@@ -275,7 +318,53 @@ contains
         call app%ellipsoid%set_sphere_attitude(quat_from_matrix(vecs))
         call app%ellipsoid%set_sphere_scale(max(app%axes, 1.0e-3_wp))
         call update_readouts(tt)
+        ! the selected sample's tag: at its dot, its offset from the nominal now
+        if (app%selected > 0) then
+            k = app%selected
+            d = p(:, k) - nom
+            call app%tag%set_position(p(:, k))
+            call show_sample_info(tt, [dot_product(ric(:, 1), d), dot_product(ric(:, 2), d), dot_product(ric(:, 3), d)])
+        end if
     end subroutine place_cloud
+
+    !> Select sample k (0: none): its trajectory highlighted, its dot green,
+    !> the tag (its label) at its dot.
+    subroutine select_sample(k)
+        integer, value :: k                                 !! the sample (0: none; by value: app%selected may be passed)
+        if (app%selected > 0) call app%sample_curves(app%selected)%set_highlight(HIGHLIGHT_NONE)
+        if (k > 0 .and. app%selected == 0) then
+            if (.not. app%root%add_child(app%tag)) write(*, '(a)') 'dispersions demo: could not show the tag'
+        else if (k == 0 .and. app%selected > 0) then
+            if (.not. app%root%remove_child(app%tag)) write(*, '(a)') 'dispersions demo: could not hide the tag'
+        end if
+        app%selected = k
+        if (k > 0) then
+            call app%sample_curves(k)%set_highlight(HIGHLIGHT_PULSE + HIGHLIGHT_ARROWS, color=[1.0_wp, 1.0_wp, 1.0_wp])
+        else
+            call app%selected_label%setText('None: click a trajectory, or a dot')
+        end if
+        call place_cloud(app%proxy%time())                  ! (the dots' colors, the tag)
+    end subroutine select_sample
+
+    !> The selected sample's info, on its tag and in the dock.
+    subroutine show_sample_info(t, offset)
+        real(wp), intent(in) :: t                           !! the time (s after the burn)
+        real(wp), intent(in) :: offset(3)                   !! its offset from the nominal now: radial, in-track, cross-track (km)
+        character(len=:), allocatable :: lines(:)
+        character(len=*), parameter :: pad = '    '
+        integer :: k
+        k = app%selected
+        allocate(character(len=80) :: lines(5))
+        lines(1) = 'Sample '//int_text(k)
+        lines(2) = 'burn: '//signed(app%dv_size_err(k), 2)//' % size, '//num(app%dv_pointing_err(k), 2)//' deg off'
+        lines(3) = 'state: '//num(app%position_err(k), 2)//' km, '//num(app%velocity_err(k), 2)//' m/s off'
+        lines(4) = 'at '//num(t / 3600.0_wp, 2)//' h: R '//signed(offset(1), 1)//', I '//signed(offset(2), 1)//', C '//signed(offset(3), 1)//' km'
+        lines(5) = 'miss at apoapsis: '//num(app%miss(k), 1)//' km'
+        call app%tag%set_name(pad//trim(lines(1))//new_line('a')//pad//trim(lines(2))//new_line('a')//pad// &
+                              trim(lines(3))//new_line('a')//pad//trim(lines(4))//new_line('a')//pad//trim(lines(5)))
+        call app%selected_label%setText(trim(lines(1))//new_line('a')//trim(lines(2))//new_line('a')// &
+                                        trim(lines(3))//new_line('a')//trim(lines(4))//new_line('a')//trim(lines(5)))
+    end subroutine show_sample_info
 
     !> d d^T.
     pure function spread_product(d) result(m)
@@ -417,6 +506,15 @@ contains
         text = trim(adjustl(buf))
     end function num
 
+    !> x with `decimals` decimals and its sign (+0.5, -0.5).
+    function signed(x, decimals) result(text)
+        real(wp), intent(in) :: x                           !! the number
+        integer, intent(in) :: decimals                     !! decimals shown
+        character(len=:), allocatable :: text
+        text = num(x, decimals)
+        if (text(1:1) /= '-') text = '+'//text
+    end function signed
+
     !> An integer as text.
     function int_text(n) result(text)
         integer, intent(in) :: n                            !! the number
@@ -429,15 +527,81 @@ contains
     ! ==================================================================
     ! the frames
 
-    !> Just before drawing: the time looped over the transfer (animated), and
-    !> the cloud and its ellipsoid at the frame's time.
-    subroutine cloud_before_draw(self, window, t)
+    !> Before the scene's update for time t: the time looped over the transfer
+    !> (animated), and the cloud (its dots' trajectory), its ellipsoid and the
+    !> selected sample's tag at the frame's time: uploaded and followed by the
+    !> view in this frame.
+    subroutine cloud_before_update(self, window, t)
         class(CloudHandler), intent(inout) :: self
         class(WindowProxy), intent(inout) :: window         !! the window about to draw
         real(wp), intent(in) :: t                           !! the simulation time (s after the burn)
         if (app%animate%isChecked() .and. t >= app%t_end) call window%set_time(0.0_wp)   ! (from the next frame)
         call place_cloud(t)
-    end subroutine cloud_before_draw
+    end subroutine cloud_before_update
+
+    !> The left button pressed: where (a click selects on the release there).
+    subroutine cloud_button_press(self, window, x, y, button)
+        class(CloudHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window         !! the scene's window
+        real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
+        integer, intent(in) :: button                       !! MOUSE_LEFT, MOUSE_MIDDLE or MOUSE_RIGHT
+        if (button == MOUSE_LEFT) self%press = [x, y]
+    end subroutine cloud_button_press
+
+    !> The left button released where it was pressed (a click, not a drag of
+    !> the camera): the sample under it selected (its trajectory, or its dot
+    !> in the cloud: the cloud's points are the samples, their times the
+    !> samples' numbers), or none.
+    subroutine cloud_button_release(self, window, x, y, button)
+        class(CloudHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window         !! the scene's window
+        real(wp), intent(in) :: x, y                        !! -1 to 1 across the window, y up
+        integer, intent(in) :: button                       !! MOUSE_LEFT, MOUSE_MIDDLE or MOUSE_RIGHT
+        type(PickHit), allocatable :: hits(:)
+        integer :: k, best, sample
+        real(wp) :: score, best_score
+        if (button /= MOUSE_LEFT .or. norm2([x, y] - self%press) > 0.01_wp) return
+        ! all the hits, the one nearest the cursor kept (a dot before a curve
+        ! as near): the nearest to the eye (nearest=.true.) would often be
+        ! another sample's curve passing in front, in a dense cloud
+        call window%pick(x, y, hits, kinds=[PICK_CURVE, PICK_MARKER])
+        best = 0
+        best_score = huge(1.0_wp)
+        do k = 1, size(hits)
+            score = hits(k)%pixels + merge(-0.5_wp, 0.0_wp, hits(k)%kind == PICK_MARKER)
+            if (score < best_score) then
+                best = k
+                best_score = score
+            end if
+        end do
+        sample = 0
+        if (best > 0) then
+            if (hits(best)%kind == PICK_MARKER) then
+                if (associated(hits(best)%frame, app%cloud_frame)) sample = nint(hits(best)%time)
+            else if (associated(hits(best)%trajectory)) then
+                do k = 1, app%n_samples
+                    if (associated(hits(best)%trajectory, app%samples(k))) then
+                        sample = k
+                        exit
+                    end if
+                end do
+            end if
+        end if
+        if (sample < 0 .or. sample > app%n_samples) sample = 0
+        call select_sample(sample)
+    end subroutine cloud_button_release
+
+    !> Escape: the sample deselected.
+    subroutine cloud_key_press(self, window, key, modifiers, handled)
+        class(CloudHandler), intent(inout) :: self
+        class(WindowProxy), intent(inout) :: window         !! the scene's window
+        integer, intent(in) :: key, modifiers               !! a character code or KEY_*; MOD_* bits
+        logical, intent(inout) :: handled                   !! (true: skip the built-in key)
+        if (key == KEY_ESCAPE) then
+            call select_sample(0)
+            handled = .true.
+        end if
+    end subroutine cloud_key_press
 
     !> The views, the HUD texts, and the QWindow the scene is drawn in, with
     !> its events connected.
@@ -507,9 +671,32 @@ contains
                             num(app%spread(2), 1)//' km, cross-track '//num(app%spread(3), 1)//' km; 3-sigma axes '// &
                             num(app%axes(1), 1)//', '//num(app%axes(2), 1)//', '//num(app%axes(3), 1)//' km'
         end if
+        if (app%pick_test) call pick_test_step()
         if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
+
+    !> --pick-test: a click on the dot of the sample that misses most (alone,
+    !> outside the cloud) (frames 12 to 14), what is selected printed (frame 17).
+    subroutine pick_test_step()
+        integer, save :: px, py, target_sample
+        real(wp) :: on(2)
+        if (app%frame == 12) then
+            target_sample = maxloc(app%miss(1:app%n_samples), 1)
+            if (.not. app%proxy%screen_position(app%samples(target_sample)%point_at(min(app%t_end, app%proxy%time())), &
+                                                on)) error stop 'dispersions demo: the sample is off the screen'
+            px = nint(on(1) * app%window%width() * app%window%devicePixelRatio())
+            py = nint((1.0_wp - on(2)) * app%window%height() * app%window%devicePixelRatio())
+            call app%proxy%mouse(MOUSE_MOVE, px, py, 0, 0)
+            call app%proxy%mouse(MOUSE_PRESS, px, py, 256, MOUSE_LEFT)
+        else if (app%frame == 14) then
+            call app%proxy%mouse(MOUSE_RELEASE, px, py, 0, MOUSE_LEFT)
+        else if (app%frame == 17) then
+            write(*, '(a)') 'pick test: clicked sample '//int_text(target_sample)//"'s dot, selected sample "// &
+                            int_text(app%selected)
+            if (app%selected > 0) write(*, '(a)') 'pick test: '//app%tag%name()
+        end if
+    end subroutine pick_test_step
 
     ! ==================================================================
     ! controls
@@ -691,9 +878,13 @@ contains
         app%stats_label = QLabel('')
         call app%stats_label%setWordWrap(.true.)
         call form%addRow('Statistics', app%stats_label)
+        app%selected_label = QLabel('None: click a trajectory, or a dot')
+        call app%selected_label%setWordWrap(.true.)
+        call form%addRow('Selected', app%selected_label)
         call form%addRow(QLabel('<small>Each sample: the burn executed with errors in its size and ' // &
                                 'direction, from a state known with errors, propagated to the nominal ' // &
-                                'transfer''s apoapsis. Left drag rotates, right drag zooms, middle drag pans; ' // &
+                                'transfer''s apoapsis. Click a trajectory or a dot to select its sample; ' // &
+                                'Escape deselects it. Left drag rotates, right drag zooms, middle drag pans; ' // &
                                 'space resets the view.</small>'))
         call panel%setMaximumWidth(420)
         dock = QDockWidget('Dispersions', app%main)
@@ -732,6 +923,8 @@ program vkframes_dispersions_demo
             i = i + 1
         case ('--still')
             app%still = .true.
+        case ('--pick-test')
+            app%pick_test = .true.
         end select
         i = i + 1
     end do
