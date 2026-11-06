@@ -752,7 +752,8 @@ vkframes builds no frames of its own.
   the frames they were computed in, and only the view moves.
 - Each spacecraft rides on its curve in every frame and mode.
 - Trails (the last orbit; the Moon's last day), or all three days, the
-  time scale, and Pause / Resume.
+  time scale, and Pause / Resume. A time slider under the scene follows the
+  time; drag it, or click along it, to go to any minute of the three days.
 
 ```sh
 pixi run -e qt frames-demo

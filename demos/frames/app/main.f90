@@ -46,8 +46,9 @@
 !> and the frames following the data agree at the current time.
 !>
 !> Trails (on by default) draw the last orbit of each (the Moon's: the last
-!> day); off, the whole three days. Pause stops the time (the camera still
-!> moves), Resume starts it again.
+!> day); off, the whole three days. The time slider under the scene follows the time, and dragging it
+!> (or clicking along it) sets the time, to the minute. Pause stops the time
+!> (the camera still moves), Resume starts it again.
 !>
 !> Run with `pixi run -e qt frames-demo` (from the vkframes root). Options:
 !> `--frame k` (1 to 8) and `--mode m` (1: drawn in the frame, 2: as
@@ -55,7 +56,8 @@
 !> `--quit-after seconds`, and for tests `--frame-test`: every frame in both
 !> modes, each spacecraft's distance from its curve (the curve's point at the
 !> current time, as drawn, against the spacecraft's frame) printed; then
-!> Pause and Resume clicked, the time stopped and running again.
+!> Pause and Resume clicked, the time stopped and running again; the slider
+!> moved (the time set there) and following the time.
 module frames_demo
 
     use qt
@@ -129,6 +131,11 @@ module frames_demo
         type(QCheckBox) :: trails
         type(QDoubleSpinBox) :: time_scale
         type(QPushButton) :: pause                          !! Pause / Resume
+        type(QSlider) :: slider                             !! the time, in minutes
+        type(QLabel) :: slider_time                         !! the time, beside it
+        type(QWidget) :: central                            !! the scene and the time bar under it
+        logical :: setting_slider = .false.                 !! (the program moving it: not a time chosen)
+        logical :: holding_slider = .false.                 !! (pressed: not following the time)
         logical :: paused = .false.
         type(HUDText) :: hud_title, hud_time
         ! the scene: the frames
@@ -520,10 +527,24 @@ contains
         call app%hud_time%set_text(trim(text))
         if (.not. app%proxy%frame()) return
         app%frame = app%frame + 1
+        call follow_time()
         if (app%frame_test) call frame_test_step()
         if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
+
+    !> The slider and its label at the current time (not while held).
+    subroutine follow_time()
+        character(len=32) :: text
+        integer :: minute
+        minute = nint(app%proxy%time() / 60.0_wp)
+        write(text, '(f7.2,a)') app%proxy%time() / 3600.0_wp, ' h'
+        call app%slider_time%setText(trim(adjustl(text)))
+        if (app%holding_slider .or. app%slider%value() == minute) return
+        app%setting_slider = .true.
+        call app%slider%setValue(minute)
+        app%setting_slider = .false.
+    end subroutine follow_time
 
     !> --frame-test: each frame in both modes (one every 6 frames), and each
     !> spacecraft's distance from its curve printed: the curve's point at
@@ -549,6 +570,13 @@ contains
             case (16)
                 write(*, '(a,l1,a,l1)') 'frame test: resumed ', .not. app%proxy%is_time_paused(), &
                     ', the time running ', app%proxy%time() > paused_at
+                call app%slider%setValue(2000)                  ! (as a click along it: the time set there)
+            case (18)
+                write(*, '(a,f8.2,a)') 'frame test: slider moved to minute 2000, the time ', &
+                    app%proxy%time() / 60.0_wp, ' min'
+            case (24)
+                write(*, '(a,i0,a,f8.2,a)') 'frame test: the slider following the time: minute ', app%slider%value(), &
+                    ' at ', app%proxy%time() / 60.0_wp, ' min'
                 write(*, '(a)') 'frame test: done'
                 call app%main%close()
             end select
@@ -615,6 +643,24 @@ contains
         call apply_trails(checked)
     end subroutine on_trails
 
+    !> The slider moved by the user (dragged, or clicked along): the time set there.
+    subroutine on_slider(value, data)
+        integer, intent(in) :: value                        !! minutes
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
+        if (app%setting_slider) return                      ! (following the time)
+        if (app%proxy%is_open()) call app%proxy%set_time(60.0_wp * value)
+    end subroutine on_slider
+
+    subroutine on_slider_pressed(data)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
+        app%holding_slider = .true.
+    end subroutine on_slider_pressed
+
+    subroutine on_slider_released(data)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
+        app%holding_slider = .false.
+    end subroutine on_slider_released
+
     subroutine on_time_scale(value, data)
         real(c_double), intent(in) :: value                 !! simulation seconds per second
         class(*), intent(inout), optional :: data           !! the connection's data (unused)
@@ -651,14 +697,33 @@ contains
         type(QWidget) :: panel
         type(QFormLayout) :: form
         type(QPushButton) :: reset_view
-        type(QHBoxLayout) :: buttons
+        type(QHBoxLayout) :: buttons, bar
+        type(QVBoxLayout) :: column
         type(QLabel) :: help
 
         app%main = QMainWindow()
         call app%main%setWindowTitle('vkframes: one scene, seen from any of its frames')
         call app%main%closeEvent%connect(on_close)
         call build_window()
-        call app%main%setCentralWidget(app%container)
+        ! the scene, and under it the time bar: a slider (minutes) and the time
+        app%central = QWidget()
+        column = QVBoxLayout(app%central)
+        call column%addWidget(app%container, stretch=1)
+        app%slider = QSlider(Qt_Horizontal)
+        call app%slider%setRange(0, nint(span / 60.0_wp))
+        call app%slider%setSingleStep(10)
+        call app%slider%setPageStep(360)
+        call app%slider%valueChanged%connect(on_slider)
+        call app%slider%sliderPressed%connect(on_slider_pressed)
+        call app%slider%sliderReleased%connect(on_slider_released)
+        app%slider_time = QLabel('0.00 h')
+        call app%slider_time%setMinimumWidth(70)
+        bar = QHBoxLayout()
+        call bar%addWidget(QLabel('Time'))
+        call bar%addWidget(app%slider, stretch=1)
+        call bar%addWidget(app%slider_time)
+        call column%addLayout(bar)
+        call app%main%setCentralWidget(app%central)
 
         panel = QWidget()
         form = QFormLayout(panel)
