@@ -633,6 +633,34 @@ the marker goes).
 pixi run -e qt design-demo
 ```
 
+#### Burn demo
+
+<img src="media/screenshots/burn_demo.jpg" alt="The orbit view, with the delta-v as a red line at the burn point, and the spacecraft view, with the delta-v arrow being dragged" width="300" align="right">
+
+[demos/burn](demos/burn): designing a burn with the mouse, in two views side
+by side. A spacecraft on a circular Earth orbit gets a delta-v at a point of
+it, and the trajectory after the burn (two-body) is computed again as the
+delta-v is dragged.
+
+- The orbit view (left, Earth-centered): the orbit before the burn
+  (dashed) and the trajectory after it (cyan), each filled in translucent
+  in a color of its own (`RibbonArtist`), the latter's apsides, the burn
+  point, and the delta-v as a red line from it (a `SegmentArtist`).
+- The spacecraft view (right): a view of the spacecraft's frame, whose axes
+  are the burn's directions (prograde, normal, radial: the VNB frame), with
+  the delta-v as an arrow (a `VectorHandle` in that frame). Drag its tip and
+  the trajectory follows in both views.
+- Each view has its own scene; the trajectories are drawn in both by
+  artists of their own, from the same `Trajectory` data.
+- The dock: the delta-v as numbers (typed in, or following the drag), how
+  the arrow moves (freely, in the orbit's plane, its size or its direction
+  only), where the burn is along the orbit, the arrow's scale, how long the
+  trajectory is drawn, and the orbit's elements after the burn.
+
+```sh
+pixi run -e qt burn-demo
+```
+
 #### PySide6 demo
 
 [demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI

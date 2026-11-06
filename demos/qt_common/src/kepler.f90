@@ -1,4 +1,4 @@
-!> Two-body motion about the Earth, for the trajectory design demo: a state
+!> Two-body motion about the Earth, for the trajectory design and burn demos: a state
 !> (position, km; velocity, km/s) propagated exactly with universal
 !> variables (any conic: ellipse, parabola, hyperbola), and its orbital
 !> elements.
