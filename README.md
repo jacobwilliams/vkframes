@@ -664,6 +664,30 @@ delta-v is dragged.
 pixi run -e qt burn-demo
 ```
 
+#### Monte Carlo dispersions demo
+
+<img src="media/screenshots/dispersions_demo.jpg" alt="Hundreds of dispersed transfer trajectories colored by their miss, their end points, and the cloud's 3-sigma ellipsoid" width="300" align="right">
+
+[demos/dispersions](demos/dispersions): Monte Carlo dispersions of a burn
+from a 300 km orbit into a transfer to geostationary altitude. Each sample
+has errors in the burn's size and pointing and in the state it starts from;
+hundreds are propagated (two-body, exact) and drawn together.
+
+- Each sample's trajectory, faint, colored by how far it ends from the
+  nominal (blue near, red far), with the nominal in white.
+- The cloud of the samples' positions at the current time, and its 3-sigma
+  ellipsoid from the cloud's covariance (eigenvectors and eigenvalues),
+  computed again every frame: as time runs (trace mode, looping) the cloud
+  spreads and the ellipsoid stretches and turns.
+- The spread (1-sigma radial, in-track and cross-track from the nominal) and
+  the ellipsoid's axes, in the HUD.
+- The dock: the number of samples, the errors' sizes, the random seed, what
+  is shown, and a view that follows the cloud.
+
+```sh
+pixi run -e qt dispersions-demo
+```
+
 #### PySide6 demo
 
 [demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI
