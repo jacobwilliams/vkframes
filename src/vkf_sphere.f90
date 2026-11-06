@@ -457,7 +457,7 @@ contains
     !> detail, build the mesh the views have wanted if it isn't built yet (the
     !> coarsest with as many segments as wanted, or the finest).
     recursive subroutine sphere_update(self, t)
-        class(Sphere), intent(inout) :: self
+        class(Sphere), intent(inout), target :: self
         real(wp), intent(in) :: t                           !! the scene time
         integer :: wanted, k
         call self%ReferenceFrame%update(t)

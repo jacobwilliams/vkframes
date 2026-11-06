@@ -1,14 +1,20 @@
 !> One trajectory in two frames, in two windows at once: a free-return lunar
-!> flyby (from low Earth orbit, around the Moon's far side and back), shown in
-!> inertial coordinates about the Earth in one window and in the Moon's
-!> body-fixed frame about the Moon in the other.
+!> flyby (from low Earth orbit, around the Moon's far side and back), computed
+!> in inertial coordinates about the Earth, drawn both as it is (cyan) and in
+!> the Moon's body-fixed frame (orange), each point where it is relative to
+!> the Moon at its own time. One window looks from the inertial frame, the
+!> other rides with the Moon.
 !>
-!> vkframes draws a trajectory in the coordinates of the frame it is in, so
-!> the Moon-fixed view needs the points transformed into that frame, each at
-!> its own time (the Moon's position and attitude then): a second Trajectory,
-!> computed here. Each window has a scene of its own (a FrameManager with its
-!> own root and frames), and their clocks are synchronized, so both show the
-!> same moment, with a spacecraft marker following each copy.
+!> One scene and one copy of the data: the Moon is a frame following its
+!> ephemeris (position and attitude); the Moon-fixed curve is a
+!> DrawableTrajectory under it whose data frame is the inertial root
+!> (`set_data_frame`), so vkframes transforms each point by the Moon's pose
+!> at that point's time. A spacecraft marker follows the data in each frame
+!> (the Moon-fixed one with `follow(..., data_frame=inertial)`): the two
+!> curves meet where the spacecraft is now. (Before set_data_frame this
+!> needed a second, transformed Trajectory and a scene for each window; the
+!> example checks the drawn Moon-fixed points against that transformed copy
+!> and prints the largest difference.)
 !>
 !> The model, simple but enough to show the frames: the Earth fixed at the
 !> origin; the Moon on a circular orbit in the x-y plane, tidally locked (its
@@ -34,22 +40,24 @@ program earth_moon_frames
     integer, parameter :: max_points = 4000
     real(wp), parameter :: path_color(3) = [0.3_wp, 0.85_wp, 1.0_wp], moon_color(3) = [0.75_wp, 0.75_wp, 0.72_wp]
 
-    ! the two scenes: inertial about the Earth, and Moon-fixed about the Moon
-    type(ReferenceFrame), target :: inertial, moon_fixed
-    type(Sphere), target :: earth1, moon1, earth2, moon2
-    type(Trajectory), target :: path, path_mf, moon_orbit, earth_mf, moon_circle
+    real(wp), parameter :: mf_color(3) = [1.0_wp, 0.6_wp, 0.2_wp]
+
+    ! one scene: the inertial root (the Earth at its origin), the Moon following its ephemeris
+    type(ReferenceFrame), target :: inertial
+    type(Sphere), target :: earth, moon
+    type(Trajectory), target :: path, moon_orbit, moon_circle
     type(DrawableTrajectory), target :: path_frame, path_mf_frame, moon_orbit_frame, craft1, craft2, moon_mark_frame
     type(CurveArtist), target :: path_curve, path_mf_curve, moon_orbit_curve
     type(MarkerArtist), target :: marker1, marker2, moon_mark
-    type(FrameManager), target :: scene_inertial, scene_moon
+    type(FrameManager), target :: scene
     type(WindowProxy), target :: w1, w2
     type(View), target :: view1, view2
-    type(HUDText), target :: title1, title2, clock_text
+    type(HUDText), target :: title1, title2, legend, clock_text
     type(SimulationClock), pointer :: master, clock2
 
     character(len=1024) :: arg, prefix
     character(len=64) :: text
-    real(wp) :: times(max_points), states(6, max_points), s(6), t, angle, d(3)
+    real(wp) :: times(max_points), states(6, max_points), s(6), t, angle, d(3), worst
     integer :: n, k, frame, max_frames
     logical :: running, ok
 
@@ -72,39 +80,36 @@ program earth_moon_frames
     n = n - 1                                               ! (the periapsis again, forwards)
     call integrate(s, dt)
 
-    ! the trajectory twice: inertial, and in the Moon-fixed frame (each point
-    ! at its own time); the Moon's orbit and attitude, and the Earth as seen
-    ! from the Moon, at the same times
+    ! the trajectory (inertial), and the Moon's orbit and attitude at the same times
     path = Trajectory()
-    path_mf = Trajectory()
     moon_orbit = Trajectory()
-    earth_mf = Trajectory()
     call path%reserve(n)
-    call path_mf%reserve(n)
     call moon_orbit%reserve(n, attitudes=.true.)
-    call earth_mf%reserve(n)
     do k = 1, n
         t = times(k)
         angle = moon_angle(t)                               ! the Moon-fixed x axis, toward the Earth
         call path%add(t, pos=states(1:3, k))
         call moon_orbit%add(t, pos=moon_position(t), att=quat_from_axis_angle([0.0_wp, 0.0_wp, 1.0_wp], angle))
-        d = states(1:3, k) - moon_position(t)
-        call path_mf%add(t, pos=to_moon_fixed(d, angle))
-        call earth_mf%add(t, pos=to_moon_fixed(-moon_position(t), angle))
     end do
     write(*, '(a,i0,a,f6.2,a,f6.2,a)') 'flyby: ', n, ' points, from ', times(1) / 86400.0_wp, ' to ', &
         times(n) / 86400.0_wp, ' days'
 
-    ! scene 1: the Earth at the origin, the Moon on its orbit, the trajectory
+    ! the scene: the Earth at the origin, the Moon (its body-fixed frame)
+    ! following its ephemeris, the flyby drawn in both frames
     inertial = ReferenceFrame('Inertial')
     call inertial%show_decorations(.false.)
-    earth1 = Sphere('Earth', radius=re)
-    call earth1%set_texture_map('2k_earth_daymap.jpg')                    ! (data/, on VKFRAMES_DATA_PATH)
-    moon1 = Sphere('Moon', radius=rm, color=moon_color)
-    call moon1%follow(moon_orbit)                                         ! (position and attitude)
+    earth = Sphere('Earth', radius=re)
+    call earth%set_texture_map('2k_earth_daymap.jpg')                     ! (data/, on VKFRAMES_DATA_PATH)
+    moon = Sphere('Moon', radius=rm, color=moon_color)
+    call moon%follow(moon_orbit, mode=FOLLOW_LIMIT)                       ! (position and attitude; not looping)
     path_curve = CurveArtist(path, color=path_color, width=2.0_wp)
     path_frame = DrawableTrajectory('Flyby (inertial)')
     call path_frame%add_artist(path_curve)
+    ! the same data in the Moon's frame: each point at its time
+    path_mf_curve = CurveArtist(path, color=mf_color, width=2.0_wp)
+    path_mf_frame = DrawableTrajectory('Flyby (Moon-fixed)')
+    call path_mf_frame%add_artist(path_mf_curve)
+    call path_mf_frame%set_data_frame(inertial)
     moon_circle = Trajectory()                              ! (the Moon's whole orbit, for reference)
     do k = 0, 360
         call moon_circle%add(real(k, wp), pos=moon_distance * [cos(k * pi / 180.0_wp), sin(k * pi / 180.0_wp), 0.0_wp])
@@ -113,61 +118,44 @@ program earth_moon_frames
     call moon_orbit_curve%set_pattern(2, int(z'00FF'))
     moon_orbit_frame = DrawableTrajectory('Moon orbit')
     call moon_orbit_frame%add_artist(moon_orbit_curve)
+    ! the spacecraft: a marker on each curve (they meet there)
     marker1 = MarkerArtist(markers=MARKER_START, size=12.0_wp, color=[1.0_wp, 1.0_wp, 1.0_wp])
     craft1 = DrawableTrajectory('Spacecraft')
     call craft1%add_artist(marker1)
     call craft1%follow(path, data=FOLLOW_POSITION)
-    ! (the Moon is far smaller than a pixel from here: a marker at it too)
+    marker2 = MarkerArtist(markers=MARKER_START, size=12.0_wp, color=[1.0_wp, 1.0_wp, 1.0_wp])
+    craft2 = DrawableTrajectory('Spacecraft (Moon-fixed)')
+    call craft2%add_artist(marker2)
+    call craft2%follow(path, data=FOLLOW_POSITION, data_frame=inertial)
+    ! (the Moon is far smaller than a pixel from the Earth: a marker at it too)
     moon_mark = MarkerArtist(markers=MARKER_START, size=10.0_wp, color=moon_color)
     moon_mark_frame = DrawableTrajectory('Moon marker')
     call moon_mark_frame%add_artist(moon_mark)
     call moon_mark_frame%show_decorations(.false.)
-    if (.not. moon1%add_child(moon_mark_frame)) error stop 'add_child failed'
-    call hide_axes(earth1)
-    call hide_axes(moon1)
+    call hide_axes(earth)
+    call hide_axes(moon)
     call path_frame%show_decorations(.false.)
+    call path_mf_frame%show_decorations(.false.)
     call moon_orbit_frame%show_decorations(.false.)
     call craft1%show_decorations(.false.)
-    ok = inertial%add_child(earth1) .and. inertial%add_child(moon1) .and. inertial%add_child(path_frame) .and. &
-         inertial%add_child(moon_orbit_frame) .and. inertial%add_child(craft1)
-    if (.not. ok) error stop 'add_child failed'
-    scene_inertial = FrameManager(inertial)
-
-    ! scene 2: the Moon at the origin (not turning: the frame is its own), the
-    ! Earth where it is seen from the Moon, the transformed trajectory
-    moon_fixed = ReferenceFrame('Moon-fixed')
-    call moon_fixed%show_decorations(.false.)
-    moon2 = Sphere('Moon', radius=rm, color=moon_color)
-    earth2 = Sphere('Earth', radius=re)
-    call earth2%set_texture_map('2k_earth_daymap.jpg')
-    call earth2%follow(earth_mf, data=FOLLOW_POSITION)
-    path_mf_curve = CurveArtist(path_mf, color=path_color, width=2.0_wp)
-    path_mf_frame = DrawableTrajectory('Flyby (Moon-fixed)')
-    call path_mf_frame%add_artist(path_mf_curve)
-    marker2 = MarkerArtist(markers=MARKER_START, size=12.0_wp, color=[1.0_wp, 1.0_wp, 1.0_wp])
-    craft2 = DrawableTrajectory('Spacecraft')
-    call craft2%add_artist(marker2)
-    call craft2%follow(path_mf, data=FOLLOW_POSITION)
-    call hide_axes(moon2)
-    call hide_axes(earth2)
-    call path_mf_frame%show_decorations(.false.)
     call craft2%show_decorations(.false.)
-    ok = moon_fixed%add_child(moon2) .and. moon_fixed%add_child(earth2) .and. moon_fixed%add_child(path_mf_frame) .and. &
-         moon_fixed%add_child(craft2)
+    ok = inertial%add_child(earth) .and. inertial%add_child(moon) .and. inertial%add_child(path_frame) .and. &
+         inertial%add_child(moon_orbit_frame) .and. inertial%add_child(craft1) .and. &
+         moon%add_child(path_mf_frame) .and. moon%add_child(craft2) .and. moon%add_child(moon_mark_frame)
     if (.not. ok) error stop 'add_child failed'
-    scene_moon = FrameManager(moon_fixed)
+    scene = FrameManager(inertial)
 
-    ! two windows, one scene each, one clock
+    ! two windows on the one scene, one clock
     if (.not. w1%open(800, 600, 'vkframes: inertial, about the Earth')) error stop 'could not open window 1'
     if (.not. w2%open(800, 600, 'vkframes: Moon-fixed, about the Moon')) error stop 'could not open window 2'
-    call w1%set_scene(scene_inertial)
-    call w2%set_scene(scene_moon)
+    call w1%set_scene(scene)
+    call w2%set_scene(scene)
     call w1%set_background_color([0.0_wp, 0.0_wp, 0.02_wp])
     call w2%set_background_color([0.0_wp, 0.0_wp, 0.02_wp])
-    view1 = View(inertial, earth1)
+    view1 = View(inertial, earth)
     call view1%set_default_view_parameters(eye=[0.0_wp, -1.6_wp, 2.6_wp] * moon_distance, &
                                            center=[0.0_wp, 0.0_wp, 0.0_wp] * moon_distance, up=[0.0_wp, 0.0_wp, 1.0_wp])
-    view2 = View(moon_fixed, moon2)
+    view2 = View(inertial, moon)                            ! (riding with the Moon: its frame turns with it)
     call view2%set_default_view_parameters(eye=[-20000.0_wp, -90000.0_wp, 65000.0_wp], &
                                            center=[15000.0_wp, 0.0_wp, 0.0_wp], up=[0.0_wp, 0.0_wp, 1.0_wp])
     call w1%add_view(view1)
@@ -176,8 +164,12 @@ program earth_moon_frames
     title2 = HUDText('Moon-fixed, about the Moon', position=[0.01_wp, 0.99_wp], alignment=ALIGN_LEFT_TOP, size=18.0_wp)
     clock_text = HUDText('', position=[0.01_wp, 0.01_wp], alignment=ALIGN_LEFT_BOTTOM, size=16.0_wp, &
                          color=[0.85_wp, 0.85_wp, 0.85_wp])
+    legend = HUDText('cyan: the flyby, inertial;  orange: in the Moon''s frame', position=[0.01_wp, 0.94_wp], &
+                     alignment=ALIGN_LEFT_TOP, size=15.0_wp, color=[0.85_wp, 0.85_wp, 0.85_wp])
     call w1%add_hud_text(title1)
     call w2%add_hud_text(title2)
+    call w1%add_hud_text(legend)
+    call w2%add_hud_text(legend)
     call w1%add_hud_text(clock_text)                        ! (one HUD text, in both windows)
     call w2%add_hud_text(clock_text)
     call w1%set_time_range(times(1), times(n))
@@ -187,8 +179,18 @@ program earth_moon_frames
     clock2 => w2%clock()
     if (.not. clock2%synchronize(master)) error stop 'could not synchronize the clocks'
 
+    ! the Moon-fixed curve as drawn, against the data transformed by hand (each
+    ! point by the Moon's position and attitude at its time)
+    running = w1%frame()
+    running = w2%frame() .and. running
+    worst = 0.0_wp
+    do k = 1, n
+        d = states(1:3, k) - moon_position(times(k))
+        worst = max(worst, maxval(abs(path_mf_curve%drawn_point(k) - to_moon_fixed(d, moon_angle(times(k))))))
+    end do
+    write(*, '(a,es9.2,a)') 'Moon-fixed points drawn: largest difference from the transformed data ', worst, ' km'
+
     frame = 0
-    running = .true.
     do while (running .and. frame < max_frames)
         write(text, '(a,f6.2,a)') 't = ', w1%time() / 86400.0_wp, ' days from the flyby'
         call clock_text%set_text(trim(text))

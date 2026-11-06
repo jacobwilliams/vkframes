@@ -1580,7 +1580,7 @@ Astrodynamics graphics:
 - [ ] Osculating orbit: the two-body orbit through a frame's current state,
       redrawn as it moves (e.g. while thrusting), with its apsides and nodes
       marked.
-- [ ] **(first)** Trajectories drawn in a moving frame, each point at its
+- [x] **(first)** Trajectories drawn in a moving frame, each point at its
       own time: one trajectory's data shown relative to a chief spacecraft
       (RIC/LVLH, for rendezvous), in a rotating frame (CR3BP, a body-fixed
       frame), without a second copy, by an artist transforming the points as
@@ -1591,6 +1591,69 @@ Astrodynamics graphics:
       Trajectory, and show each copy in a scene of its own, in its own window
       (`example/earth_moon_frames.f90`: a lunar flyby, inertial and
       Moon-fixed, two scenes with synchronized clocks).
+
+      Design: the frames are the scene's own, the ones the program adds;
+      vkframes defines no frames or axes of its own (no LVLH, RIC, VNB or
+      rotating frames built in). A vehicle-centered LVLH or VUW frame is a
+      frame the program adds, following a trajectory whose attitudes the
+      program computed (positions and attitudes in one trajectory, or a
+      position-following frame with a child following an attitude-only
+      trajectory); a rotating frame likewise.
+      - The DrawableTrajectory goes under the frame it is shown in (B), and
+        `set_data_frame(A)` says which frame its points are in (unset: the
+        parent's, as now). Each point is written as
+        q_i = T_{B<-A}(t_i) p_i, both frames' poses at the point's own time,
+        composed up to their common ancestor. At the current time this
+        agrees with the scene graph. Showing it in another frame: move the
+        drawable to another parent (the points rewritten). One trajectory
+        in two frames: two drawables over the same Trajectory (no data
+        copied).
+      - Frames usable: fixed ones (their pose at every time) and ones
+        following trajectories (their pose at any time from the data, with
+        the follower's offset and loop/limit mapping). A frame moved by the
+        program each frame has no history: used at its latest pose, with a
+        warning once; optionally a program procedure `pose_at(t)` on the
+        frame for analytic motion.
+      - Steps:
+        - [x] `ReferenceFrame%world_matrix_at(t)` / `local_matrix_at(t)`: no
+              side effects; following frames via `TrajectoryFollower%state_at`
+              (update is state_at plus its caches: the same time mapping and
+              interpolation, so curves and followers agree exactly).
+              - [ ] Later: vectorized over sorted times (one walk of the
+                    followed data instead of a bisection per point).
+        - [x] The transform between two frames at given times, composed up
+              to the common ancestor (a frame with several parents: the
+              drawable's own parent, else the first parent; documented).
+        - [x] A motion revision per frame (set_position/set_attitude,
+              follow/unfollow, the followed trajectories' revisions),
+              combined along the chain (`motion_key`: the latest motion stamp,
+              from one clock, and the followed data's revisions): changed, the
+              points rewritten.
+              - [ ] Later: only the times newly covered when a followed
+                    trajectory grows (now all the points).
+        - [x] The artists' write paths through one shared gather that
+              transforms only the points written (CurveArtist, SegmentArtist,
+              MarkerArtist, RibbonArtist; the trace tail and trails at the
+              current time), and the LOD and bound distances and picking on
+              the transformed points.
+        - [x] Followers: `follow(traj, data_frame=A)`, so a spacecraft under
+              B sits on the transformed curve (the transform at the current
+              time only).
+        - [x] `example/earth_moon_frames.f90` as one scene: the same
+              Trajectory under the inertial frame and under the Moon's frame,
+              in two views; checked against the second-copy version's
+              points.
+        - [x] `test/test_data_frames.f90`: every artist's points against the
+              analytic transform, the trace tail, a follower on the curve,
+              poses at any time against the scene, appends, motion changes,
+              re-parenting, unsetting, another tree.
+        - [ ] Not done: the warning for a frame the program moves each frame
+              (every move rewrites the points; documented), and the optional
+              `pose_at(t)` procedure for analytic frames.
+        - [ ] Not seen on screen yet: the example's windows (stand-alone
+              windows don't show on the development Mac at the moment; the
+              drawn points checked numerically). Its README screenshots are
+              of the two-scene version.
 - [ ] Event markers and time labels: text at chosen trajectory points
       (maneuvers, apoapsis, eclipse entry) and tick marks at regular times.
 - [ ] Covariance ellipsoids at chosen points of a trajectory (navigation,

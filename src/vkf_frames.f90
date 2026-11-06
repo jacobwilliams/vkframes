@@ -15,6 +15,16 @@
 !> transform node, with its contents ([[build_contents]], which extensions
 !> override) under a switch for [[show_contents]]; children's nodes go under the
 !> parent's transform, so a frame with several parents is drawn under each.
+!> Poses at any time ([[world_matrix_at]]): a frame's transform to the root
+!> at a time other than the current one, from what moves it: its fixed
+!> position and attitude, and the trajectories it follows (their state at that
+!> time, [[TrajectoryFollower:state_at]]). A frame the program moves (sets its
+!> position each frame) has no history: its current pose is used for every
+!> time. Trajectories drawn in a frame other than the one their data are in
+!> (DrawableTrajectory's set_data_frame) use these, each point at its own
+!> time; [[motion_key]] tells them when a frame's motion changed (its pose
+!> set, its parents, what it follows and how, the followed data).
+!>
 !> Each frame, [[update]] moves followed frames to the time, then [[late_update]]
 !> lets contents depend on other frames' positions at that time (e.g.
 !> CustomLineSegments between spacecraft), and [[sync]] copies positions and
@@ -42,10 +52,11 @@ module vkf_frames
                          vkf_light_create, vkf_light_set, vkf_label_set_text, vkf_label_set_color, vkf_label_set_on_top
     use vkf_geometry, only: arrow_create
     use vkf_text, only: label_create, label_set_layout
-    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, rigid_inverse
+    use vkf_math, only: wp, quat_identity, quat_normalize, frame_matrix, rigid_inverse, identity_matrix, &
+                        quat_multiply, quat_from_matrix
     use vkf_pick, only: PickCamera, point_pick, ray, ray_ellipsoid, wants
     use vkf_trajectory, only: Trajectory
-    use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE
+    use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE, next_motion_stamp
 
     implicit none
 
@@ -112,6 +123,8 @@ module vkf_frames
         integer :: n_children = 0, n_parents = 0            !! number of children and parents
         type(TrajectoryFollower) :: follower_               !! sets position and attitude from followed trajectories
         logical :: following = .false.                      !! following trajectories ([[follow]], until [[unfollow]])
+        class(ReferenceFrame), pointer :: follow_frame_ => null()  !! the frame the followed data are in (null: the parent)
+        integer :: stamp_ = 0                               !! motion stamp of the last change of its pose or parents
         ! decorations (drawn by the renderer)
         integer :: axes = ALL_AXES                          !! OpenFrames' defaults: all shown
         integer :: axes_labels = ALL_AXES                   !! axes labels shown (as axes)
@@ -152,6 +165,7 @@ module vkf_frames
         procedure :: set_position, position
         procedure :: set_attitude, attitude
         procedure :: local_matrix, world_matrix, position_of
+        procedure :: local_matrix_at, world_matrix_at, motion_key
         procedure :: show_axes, axes_shown
         procedure :: show_axes_labels, axes_labels_shown
         procedure :: show_name_label, name_label_shown
@@ -170,7 +184,7 @@ module vkf_frames
         procedure :: num_children, child, child_index
         procedure :: num_parents, parent, parent_index
         procedure :: frame_string
-        procedure :: follow, unfollow, follower, is_following
+        procedure :: follow, unfollow, follower, is_following, follow_frame
         procedure :: update, late_update
         procedure :: realize, build_contents, sync, node
         procedure :: bound, pick, set_pickable, pickable
@@ -243,6 +257,7 @@ contains
     subroutine set_position(self, position)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: position(3)                 !! parent frame's coordinates
+        if (any(position /= self%position_)) self%stamp_ = next_motion_stamp()
         self%position_ = position
     end subroutine set_position
 
@@ -258,7 +273,10 @@ contains
     subroutine set_attitude(self, q)
         class(ReferenceFrame), intent(inout) :: self
         real(wp), intent(in) :: q(4)                        !! attitude quaternion [x, y, z, w] (normalized here)
-        self%attitude_ = quat_normalize(q)
+        real(wp) :: qn(4)
+        qn = quat_normalize(q)
+        if (any(qn /= self%attitude_)) self%stamp_ = next_motion_stamp()
+        self%attitude_ = qn
     end subroutine set_attitude
 
     !> Attitude relative to the parent frame, a quaternion [x, y, z, w].
@@ -283,6 +301,66 @@ contains
         m = self%local_matrix()
         if (self%n_parents > 0) m = matmul(self%parents(1)%p%world_matrix(), m)
     end function world_matrix
+
+    !> The transform from this frame to its parent at simulation time `t`: its
+    !> fixed position and attitude, with what it follows at time t (the
+    !> followed trajectories' state then, in the parent's coordinates). The
+    !> same as [[local_matrix]] after [[update]] at time t, for any t, without
+    !> changing anything.
+    recursive function local_matrix_at(self, t) result(m)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp), intent(in) :: t                           !! simulation time
+        real(wp) :: m(4,4)
+        real(wp) :: pos(3), att(4)
+        pos = self%position_
+        att = self%attitude_
+        if (self%following) call followed_pose(self, t, pos, att)
+        m = frame_matrix(pos, att)
+    end function local_matrix_at
+
+    !> The transform from this frame to the root of its tree at simulation
+    !> time `t` (through the first parent at each level): each frame's
+    !> [[local_matrix_at]] time t. The same as [[world_matrix]] after the tree's
+    !> update at time t, for any t, without changing anything.
+    recursive function world_matrix_at(self, t) result(m)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp), intent(in) :: t                           !! simulation time
+        real(wp) :: m(4,4)
+        integer, save :: depth = 0
+        depth = depth + 1
+        if (depth > 256) error stop 'vkframes: frames following data in frames that depend on them (a cycle)'
+        m = self%local_matrix_at(t)
+        if (self%n_parents > 0) m = matmul(self%parents(1)%p%world_matrix_at(t), m)
+        depth = depth - 1
+    end function world_matrix_at
+
+    !> What the frame's motion depends on, for drawings that depend on it to
+    !> know when to redraw: `stamp`, the latest change of the motion of it and
+    !> its ancestors (through first parents), and of the frames their followed
+    !> data are in (poses set, parents changed, what is followed and how); and
+    !> `data`, the followed trajectories' revisions summed. Either changes
+    !> when the frame's motion over time changes.
+    recursive subroutine motion_key(self, stamp, data)
+        class(ReferenceFrame), intent(in) :: self
+        integer, intent(out) :: stamp, data                 !! the latest change; the followed data's revisions
+        integer :: s, d
+        stamp = self%stamp_
+        data = 0
+        if (self%following) then
+            stamp = max(stamp, self%follower_%motion_stamp())
+            data = self%follower_%data_revision()
+            if (associated(self%follow_frame_)) then
+                call self%follow_frame_%motion_key(s, d)
+                stamp = max(stamp, s)
+                data = data + d
+            end if
+        end if
+        if (self%n_parents > 0) then
+            call self%parents(1)%p%motion_key(s, d)
+            stamp = max(stamp, s)
+            data = data + d
+        end if
+    end subroutine motion_key
 
     !> The origin of `other` (a frame of the same tree) in this frame's
     !> coordinates, from both frames' transforms to the root (through their
@@ -768,6 +846,7 @@ contains
         if (is_descendant(child, self)) return
         call append(self%children, self%n_children, child)
         call append(child%parents, child%n_parents, self)
+        if (child%n_parents == 1) child%stamp_ = next_motion_stamp()   ! (its first parent: where it is)
         ok = .true.
         if (self%realized) then                         ! shown: draw the child from the next frame
             if (.not. child%realized) then
@@ -788,6 +867,7 @@ contains
         class(ReferenceFrame), intent(inout), target :: child !! the child to remove
         ok = remove(self%children, self%n_children, child)
         if (ok) ok = remove(child%parents, child%n_parents, self)
+        if (ok) child%stamp_ = next_motion_stamp()          ! (its first parent may have changed)
         if (ok .and. self%realized .and. child%realized) call check_status(vkf_node_remove_child(self%node_, child%node_))
     end function remove_child
 
@@ -871,15 +951,25 @@ contains
     !> FOLLOW_ATTITUDE; default both) and how (`mode`: FOLLOW_LOOP, the
     !> default, or FOLLOW_LIMIT). `traj` must stay alive while followed.
     !>
+    !> The followed data are in the parent's coordinates, unless `data_frame`
+    !> (a frame of the same tree) says which frame they are in: e.g. a
+    !> spacecraft's inertial trajectory followed by a frame shown in a
+    !> rotating frame, placed (and turned) by both frames' poses at each time
+    !> (see [[world_matrix_at]]), so that it rides on the trajectory drawn in
+    !> that frame (DrawableTrajectory's set_data_frame). `data_frame` must not
+    !> depend on this frame (be it or one of its descendants).
+    !>
     !> ```fortran
     !> call craft%follow(orbit)                                  ! position (and attitude, if any), looping
     !> call craft%follow(orbit, data=FOLLOW_POSITION, mode=FOLLOW_LIMIT)   ! position only, held at the ends
+    !> call craft%follow(flyby, data_frame=eci)                  ! inertial data, the craft under a rotating frame
     !> ```
-    subroutine follow(self, traj, data, mode, add)
+    subroutine follow(self, traj, data, mode, add, data_frame)
         class(ReferenceFrame), intent(inout) :: self
         type(Trajectory), intent(in), target :: traj        !! the trajectory to follow (not owned)
         integer, intent(in), optional :: data, mode         !! FOLLOW_POSITION/FOLLOW_ATTITUDE; FOLLOW_LOOP/FOLLOW_LIMIT
         logical, intent(in), optional :: add                !! (true: in addition to those followed (default false))
+        class(ReferenceFrame), intent(in), target, optional :: data_frame  !! the frame the data are in (default: the parent)
         type(Trajectory), pointer :: p
         integer :: d, m
         logical :: adding
@@ -897,6 +987,9 @@ contains
         end if
         call self%follower_%set_follow_type(d, m)
         self%following = .true.
+        self%follow_frame_ => null()
+        if (present(data_frame)) self%follow_frame_ => data_frame
+        self%stamp_ = next_motion_stamp()
     end subroutine follow
 
     !> Stop following trajectories (the frame keeps its last position and attitude).
@@ -904,7 +997,41 @@ contains
         class(ReferenceFrame), intent(inout) :: self
         call self%follower_%remove_all()
         self%following = .false.
+        self%follow_frame_ => null()
+        self%stamp_ = next_motion_stamp()
     end subroutine unfollow
+
+    !> The frame the followed data are in ([[follow]]'s `data_frame`; null:
+    !> the parent).
+    function follow_frame(self) result(f)
+        class(ReferenceFrame), intent(in) :: self
+        class(ReferenceFrame), pointer :: f
+        f => self%follow_frame_
+    end function follow_frame
+
+    !> The followed position and attitude at time t, in the parent's
+    !> coordinates (from the data frame's, if [[follow]] had one, by both
+    !> frames' poses at time t); `pos` and `att` unchanged where nothing is
+    !> followed.
+    recursive subroutine followed_pose(self, t, pos, att)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp), intent(in) :: t                           !! simulation time
+        real(wp), intent(inout) :: pos(3), att(4)           !! the pose (in the parent's coordinates)
+        real(wp) :: m(4,4), p(3), q(4)
+        logical :: has_position, has_attitude
+        p = pos
+        q = att
+        call self%follower_%state_at(t, p, q, has_position, has_attitude)
+        if (.not. (has_position .or. has_attitude)) return
+        if (associated(self%follow_frame_)) then            ! the data frame's coordinates to the parent's, at t
+            m = self%follow_frame_%world_matrix_at(t)
+            if (self%n_parents > 0) m = matmul(rigid_inverse(self%parents(1)%p%world_matrix_at(t)), m)
+            if (has_position) p = matmul(m(1:3, 1:3), p) + m(1:3, 4)
+            if (has_attitude) q = quat_normalize(quat_multiply(quat_from_matrix(m(1:3, 1:3)), q))
+        end if
+        if (has_position) pos = p
+        if (has_attitude) att = q
+    end subroutine followed_pose
 
     !> The frame's trajectory follower, for finer control (data sources, time
     !> offset, ...).
@@ -923,12 +1050,21 @@ contains
     !> Update this frame and its descendants for simulation time `t` (followed
     !> trajectories set positions and attitudes).
     recursive subroutine update(self, t)
-        class(ReferenceFrame), intent(inout) :: self
+        class(ReferenceFrame), intent(inout), target :: self
         real(wp), intent(in) :: t                           !! simulation time
         logical :: has_position, has_attitude
+        real(wp) :: pos(3), att(4)
         integer :: k
-        if (self%following) &
-            call self%follower_%update(t, self%position_, self%attitude_, has_position, has_attitude)
+        if (self%following) then
+            if (associated(self%follow_frame_)) then        ! (the data in another frame's coordinates)
+                pos = self%position_
+                att = self%attitude_
+                call self%follower_%update(t, pos, att, has_position, has_attitude)   ! (its time and trajectory)
+                call followed_pose(self, t, self%position_, self%attitude_)
+            else
+                call self%follower_%update(t, self%position_, self%attitude_, has_position, has_attitude)
+            end if
+        end if
         do k = 1, self%n_children
             call self%children(k)%p%update(t)
         end do

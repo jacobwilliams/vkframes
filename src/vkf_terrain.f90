@@ -289,7 +289,7 @@ contains
     !> it), the map again for a window still open (compiled for the windows
     !> running), then the frame's update.
     recursive subroutine terrain_update(self, t)
-        class(TerrainBody), intent(inout) :: self
+        class(TerrainBody), intent(inout), target :: self
         real(wp), intent(in) :: t           !! simulation time (s)
         type(c_ptr) :: viewer
         integer(c_int) :: status

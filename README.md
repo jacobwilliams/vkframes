@@ -62,7 +62,7 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     <td><img src="media/screenshots/frames_moon_fixed.png" alt="The same lunar flyby in the Moon-fixed frame"></td>
   </tr>
   <tr>
-    <td colspan="2">One trajectory in two frames, in two windows at the same moment: a free-return lunar flyby, inertial about the Earth (left) and Moon-fixed about the Moon (right) (<code>earth_moon_frames</code>).</td>
+    <td colspan="2">One trajectory in two frames, in two windows at the same moment: a free-return lunar flyby, inertial (cyan) and in the Moon's body-fixed frame (orange), seen from the Earth (left) and riding with the Moon (right) (<code>earth_moon_frames</code>).</td>
   </tr>
 </table>
 
@@ -126,6 +126,14 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     each point, and its curve is then drawn in them. Each segment blends
     from one point's color to the next, so runs of one color are solid and
     changes are smooth. Without colors, curves work as before.
+  - Data in another frame (not in OpenFrames): a trajectory computed in one
+    frame of the scene can be drawn in another (`set_data_frame`), each point
+    where it is in that frame at the point's own time: an inertial flyby
+    drawn in the Moon's rotating, body-fixed frame, or a chaser's path
+    relative to a target's LVLH frame. The frames are your own (fixed, or
+    following trajectories with the attitudes you give them), there's no
+    second copy of the data, and a frame following the same data
+    (`follow(..., data_frame=)`) rides on the curve.
 - **Custom line segments**: `CustomLineSegments` (as OpenFrames') draws
   segments with a color at each end, set by the program or computed each
   frame by a callback: for example, lines of sight between spacecraft.
@@ -345,7 +353,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `highlight_trajectory` | <img src="media/screenshots/examples/highlight_trajectory.jpg" width="160" alt="highlight_trajectory"> | Highlighting a selected trajectory: four Earth orbits (parking, transfer, geostationary, Molniya); the program selects the next every few seconds and a click selects the one under the pointer. The selected orbit pulses, with arrows moving along it from its initial time to its final in a translucent band (`set_highlight`, animated by the GPU); `m` changes the highlight's mode. |
 | `record_video` | <img src="media/screenshots/examples/record_video.jpg" width="160" alt="record_video"> | Recording a video: a spacecraft on a highlighted orbit with a pulsing marker, the Earth spinning with its axes and a latitude/longitude grid, and a camera flight half way, recorded to a video file by ffmpeg (`start_recording`, `stop_recording`), with the vkframes logo as a translucent watermark; the simulation time, the flight and the animations advance by exactly one frame's time per frame, so the video is smooth however fast the window draws. |
 | `camera_tour` | <img src="media/screenshots/examples/camera_tour.jpg" width="160" alt="camera_tour"> | The camera from a program: a scripted tour that flies between an Earth view and one following a spacecraft (a view transition), and to cameras given in the root frame (`set_camera` with a duration), printing where the camera is (`get_camera`). |
-| `earth_moon_frames` | <img src="media/screenshots/examples/earth_moon_frames_1.jpg" width="78" alt="earth_moon_frames, window 1"><img src="media/screenshots/examples/earth_moon_frames_2.jpg" width="78" alt="earth_moon_frames, window 2"> | One trajectory in two frames at once: a free-return lunar flyby shown in inertial coordinates about the Earth in one window, and in the Moon's body-fixed frame about the Moon in the other. Each window has its own scene; the Moon-fixed copy is transformed in Fortran, each point at its own time. |
+| `earth_moon_frames` | <img src="media/screenshots/examples/earth_moon_frames_1.jpg" width="78" alt="earth_moon_frames, window 1"><img src="media/screenshots/examples/earth_moon_frames_2.jpg" width="78" alt="earth_moon_frames, window 2"> | One trajectory in two frames at once: a free-return lunar flyby computed in inertial coordinates, drawn as it is and in the Moon's body-fixed frame (`set_data_frame`: each point by the Moon's pose at its time, no second copy), in one scene shown in two windows, one seen from the Earth and one riding with the Moon. |
 | `live_changes` | <img src="media/screenshots/examples/live_changes.jpg" width="160" alt="live_changes"> | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text, a starry sky, star names and constellations added. |
 | `precision` | <img src="media/screenshots/examples/precision.jpg" width="160" alt="precision"> | Double precision: a 10 m spacecraft on a 7000 km orbit line, seen from 30 m away; the line passes through the spacecraft's center (in plain float it would be off by about a meter). |
 | `line_of_sight` | <img src="media/screenshots/examples/line_of_sight.jpg" width="160" alt="line_of_sight"> | `CustomLineSegments`: five spacecraft in different orbits (LEO, sun-synchronous, GPS, GEO, Molniya), shown as markers, with a line of sight between every pair, recomputed each frame by a callback: clear links in the spacecraft's colors, links the Earth blocks dashed. |
@@ -717,6 +725,37 @@ scene to make that orbit.
 
 ```sh
 pixi run -e qt palette-demo
+```
+
+#### Frames demo
+
+<img src="media/screenshots/frames_demo.jpg" alt="The Earth from its rotating frame, with the Earth orbiter's last orbit drawn in that frame" width="300" align="right">
+
+[demos/frames](demos/frames): one scene seen from any of its frames. The
+Earth and the Moon each have an inertial and a rotating (body-fixed) frame,
+and a spacecraft orbits each, its frame carrying the LVLH attitudes the
+program computed. Each has a companion on a nearby orbit (the same size,
+slightly eccentric and inclined). All the data is computed in the demo;
+vkframes builds no frames of its own.
+
+- The dock's Frame menu shows the scene from the frame chosen: ECI,
+  Earth-fixed, Moon-centered inertial, Moon-fixed, or any of the four
+  spacecraft. The camera rides with the frame and turns with it, and ticked
+  axes (lines with major and minor tick marks, sized to the frame) replace
+  that frame's arrows at its origin.
+- Trajectories "drawn in this frame": the three trajectories move under the
+  chosen frame, each point drawn where it is in that frame at its own time
+  (`set_data_frame`). In the Earth-fixed frame the orbiter's orbit becomes a
+  ground-track spiral; in an orbiter's own frame its orbit is a point, its
+  companion loops about it (relative motion: a 2:1 ellipse along-track and
+  radial, and a cross-track swing), and everything else wheels around it. "As computed": the trajectories stay in
+  the frames they were computed in, and only the view moves.
+- Each spacecraft rides on its curve in every frame and mode.
+- Trails (the last orbit; the Moon's last day), or all three days, the
+  time scale, and Pause / Resume.
+
+```sh
+pixi run -e qt frames-demo
 ```
 
 #### PySide6 demo

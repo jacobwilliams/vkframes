@@ -61,10 +61,31 @@
 !> Lines are reached within the tolerance plus half their width, markers
 !> plus half their size. Each artist gives its best hit: the closest to the
 !> cursor (and of those, the nearest).
+!>
+!> Data in another frame (not in OpenFrames): a DrawableTrajectory's points
+!> are in its own coordinates, unless [[set_data_frame]] says which frame of
+!> the scene its trajectories' data are in. Each point is then drawn where it
+!> is in the drawable's frame at the point's own time: q = T(t_i) p_i, T(t)
+!> the transform from the data frame to the drawable's from both frames'
+!> poses at time t (vkf_frames' world_matrix_at: fixed poses, and followed
+!> trajectories' states at t). So a trajectory computed in an inertial frame
+!> is drawn in a rotating frame, or relative to a spacecraft's frame (its
+!> attitude the program's, e.g. LVLH), as it moves through that frame, with
+!> no second copy of its data. The frames are the program's own (vkframes
+!> builds none). Only the points written are transformed; when a frame's
+!> motion changes (vkf_frames' motion_key: a pose set, parents changed, what
+!> is followed, the followed data), or the drawable moves to another parent,
+!> all are written again. At the current time this agrees with the scene:
+!> a frame following the same data with `follow(..., data_frame=)` rides on
+!> the curve. Everything an artist draws from the data is in the data frame:
+!> a segment's relative end is added to its start before the transform, and
+!> zero sources are the data frame's origin. (A frame the program moves each
+!> frame has no history: its current pose is used for all times, and every
+!> move writes the points again.)
 module vkf_artists
 
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_float, c_f_pointer
-    use vkf_math, only: wp, set_rgba
+    use vkf_math, only: wp, set_rgba, rigid_inverse
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, SOURCE_ZERO, SOURCE_POSOPT, &
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
     use vkf_frames, only: ReferenceFrame, PickHit, add_pick_hit, PICK_CURVE, PICK_SEGMENT, PICK_MARKER
@@ -88,8 +109,13 @@ module vkf_artists
         type(Trajectory), pointer :: traj => null()  !! the trajectory drawn (not owned; null if none)
         logical :: trace = .false.                  !! trace mode: drawn up to the current time
         logical :: pickable_ = .true.               !! picked ([[WindowProxy:pick]])
+        ! the frames (set by the DrawableTrajectory drawing it, when it updates or picks)
+        class(ReferenceFrame), pointer :: shown_in => null()    !! the DrawableTrajectory drawing it (its points' coordinates)
+        class(ReferenceFrame), pointer :: data_frame => null()  !! the frame the data are in (null: shown_in's)
         ! what was drawn
         integer :: seen_generation = -1, seen_revision = -1  !! trajectory generation and revision drawn (-1: none)
+        integer :: seen_motion(4) = -1                      !! both frames' motion keys drawn for (-1: not transformed)
+        class(ReferenceFrame), pointer :: seen_data_frame => null()  !! the data frame drawn for
     contains
         procedure :: set_trajectory, get_trajectory
         procedure :: set_trace_mode, trace_mode
@@ -488,8 +514,12 @@ module vkf_artists
         integer :: n_artists = 0                    !! number of artists
         type(c_ptr) :: contents_group = c_null_ptr  !! the artists' group (null until built)
         logical :: shown = .false.                  !! built for a window (artists added later are compiled)
+        class(ReferenceFrame), pointer :: data_frame_ => null()  !! the frame the data are in (null: this frame)
+        logical :: data_frame_ok = .false.          !! data_frame_ is in this frame's tree (checked each update)
+        logical :: warned = .false.                 !! warned that the data frame is in another tree
     contains
         procedure :: add_artist, remove_artist, remove_all_artists, num_artists, artist
+        procedure :: set_data_frame, data_frame
         procedure :: set_highlight => drawable_set_highlight
         procedure :: frame_info => drawable_frame_info
         procedure :: build_contents => drawable_build_contents
@@ -570,9 +600,146 @@ contains
             self%seen_generation = self%traj%generation()
             self%seen_revision = -1
         end if
+        call motion_changed(self, redraw)
+        if (redraw) self%seen_revision = -1
         changed = self%traj%revision() /= self%seen_revision
         self%seen_revision = self%traj%revision()
     end function data_changed
+
+    !> With data in another frame (transformed): `redraw` set if either
+    !> frame's motion changed, the data frame changed, or the transform began
+    !> or ended since the points were written.
+    subroutine motion_changed(self, redraw)
+        class(TrajectoryArtist), intent(inout) :: self
+        logical, intent(inout) :: redraw                    !! set to true if everything must be drawn again
+        integer :: key(4)
+        key = -1
+        if (transformed(self)) then
+            call self%data_frame%motion_key(key(1), key(2))
+            call self%shown_in%motion_key(key(3), key(4))
+        end if
+        if (any(key /= self%seen_motion) .or. .not. same_pointer(self%data_frame, self%seen_data_frame)) redraw = .true.
+        self%seen_motion = key
+        self%seen_data_frame => self%data_frame
+    end subroutine motion_changed
+
+    !> Whether two frame pointers are both null or point to the same frame.
+    logical function same_pointer(a, b)
+        class(ReferenceFrame), pointer, intent(in) :: a, b  !! the pointers
+        if (associated(a)) then
+            same_pointer = associated(b, a)
+        else
+            same_pointer = .not. associated(b)
+        end if
+    end function same_pointer
+
+    ! ------------------------------------------------------------------
+    ! points from the data, in the drawable's coordinates
+
+    !> Whether the artist's data are in another frame than the drawable's
+    !> (DrawableTrajectory's set_data_frame), so its points are transformed.
+    logical function transformed(self)
+        class(TrajectoryArtist), intent(in) :: self
+        transformed = .false.
+        if (.not. (associated(self%data_frame) .and. associated(self%shown_in))) return
+        transformed = .not. associated(self%data_frame, self%shown_in)
+    end function transformed
+
+    !> Whether a frame moves in time: it or an ancestor (first parents) follows trajectories.
+    recursive logical function moves(f) result(m)
+        class(ReferenceFrame), intent(in) :: f              !! the frame
+        class(ReferenceFrame), pointer :: g
+        m = f%is_following()
+        if (m .or. f%num_parents() == 0) return
+        g => f%parent(1)
+        m = moves(g)
+    end function moves
+
+    !> The transform from the data frame's coordinates to the drawable's at time t.
+    function data_to_shown(self, t) result(m)
+        class(TrajectoryArtist), intent(in) :: self
+        real(wp), intent(in) :: t                           !! simulation time
+        real(wp) :: m(4,4)
+        m = matmul(rigid_inverse(self%shown_in%world_matrix_at(t)), self%data_frame%world_matrix_at(t))
+    end function data_to_shown
+
+    !> Points v (data frame) at times `times` into the drawable's coordinates,
+    !> each by the transform at its own time (one transform for all if neither
+    !> frame moves).
+    subroutine to_shown(self, times, v)
+        class(TrajectoryArtist), intent(in) :: self
+        real(wp), intent(in) :: times(:)                    !! each point's time
+        real(wp), intent(inout) :: v(:,:)                   !! (3, size(times)): the points
+        real(wp) :: m(4,4)
+        integer :: k
+        if (size(v, 2) == 0) return
+        if (.not. (moves(self%data_frame) .or. moves(self%shown_in))) then
+            m = data_to_shown(self, times(1))
+            do k = 1, size(v, 2)
+                v(:, k) = matmul(m(1:3, 1:3), v(:, k)) + m(1:3, 4)
+            end do
+        else
+            do k = 1, size(v, 2)
+                m = data_to_shown(self, times(k))
+                v(:, k) = matmul(m(1:3, 1:3), v(:, k)) + m(1:3, 4)
+            end do
+        end if
+    end subroutine to_shown
+
+    !> Points i1, i1 + stride, ... (data frame; their times the trajectory's)
+    !> into the drawable's coordinates, if transformed.
+    subroutine to_shown_at(self, i1, v, stride)
+        class(TrajectoryArtist), intent(in) :: self
+        integer, intent(in) :: i1                           !! the first point
+        real(wp), intent(inout) :: v(:,:)                   !! (3, n): the points
+        integer, intent(in), optional :: stride             !! step between points (default 1)
+        real(wp) :: times(size(v, 2))
+        integer :: k, st
+        if (.not. transformed(self)) return
+        st = 1
+        if (present(stride)) st = stride
+        do k = 1, size(v, 2)
+            times(k) = self%traj%time(i1 + (k - 1) * st)
+        end do
+        call to_shown(self, times, v)
+    end subroutine to_shown_at
+
+    !> Points i1 .. i2 (every `stride`-th) from `sources`, in the drawable's coordinates.
+    subroutine art_points(self, i1, i2, sources, v, stride)
+        class(TrajectoryArtist), intent(in) :: self
+        integer, intent(in) :: i1, i2                       !! first and last points
+        type(DataSource), intent(in) :: sources(3)          !! where the components come from
+        real(wp), intent(out) :: v(:,:)                     !! (3, number of points)
+        integer, intent(in), optional :: stride             !! step between points (default 1)
+        call self%traj%points(i1, i2, sources, v, stride)
+        call to_shown_at(self, i1, v, stride)
+    end subroutine art_points
+
+    !> Point i from `sources`, in the drawable's coordinates.
+    function art_point(self, i, sources) result(v)
+        class(TrajectoryArtist), intent(in) :: self
+        integer, intent(in) :: i                            !! the point
+        type(DataSource), intent(in) :: sources(3)          !! where the components come from
+        real(wp) :: v(3)
+        real(wp) :: w(3, 1)
+        w(:, 1) = self%traj%point(i, sources)
+        call to_shown_at(self, i, w)
+        v = w(:, 1)
+    end function art_point
+
+    !> The point at time t between points k and k2 (interpolated in the data
+    !> frame), in the drawable's coordinates (by the transform at time t).
+    function art_point_between(self, k, k2, t, sources) result(v)
+        class(TrajectoryArtist), intent(in) :: self
+        integer, intent(in) :: k, k2                        !! the points
+        real(wp), intent(in) :: t                           !! the time
+        type(DataSource), intent(in) :: sources(3)          !! where the components come from
+        real(wp) :: v(3)
+        real(wp) :: w(3, 1)
+        w(:, 1) = self%traj%point_between(k, k2, t, sources)
+        if (transformed(self)) call to_shown(self, [t], w)
+        v = w(:, 1)
+    end function art_point_between
 
     !> The points of 1 .. n whose times are at most t (trace mode): i1 .. i2
     !> (none: i2 < i1), the first points for increasing times, the last for
@@ -1183,18 +1350,18 @@ contains
         do j = 1, self%chain%num_chunks()
             call self%chain%slice(j, i1, i2, lo, hi, p)
             if (.not. associated(p)) cycle
-            if (is_position_xyz(self%sources_)) then        ! the usual case: straight from the positions
+            if (is_position_xyz(self%sources_) .and. .not. transformed(self)) then   ! the usual case: the positions
                 call self%traj%positions(pos)
                 call split_points(pos(:, lo:hi), p)
-            else                                            ! other sources: gathered a range at a time
+            else                                            ! other sources, or transformed: a range at a time
                 allocate(v(3, hi - lo + 1))
-                call self%traj%points(lo, hi, self%sources_, v)
+                call art_points(self, lo, hi, self%sources_, v)
                 call split_points(v, p)
                 deallocate(v)
             end if
         end do
         if (self%chain%is_colored()) call write_colors(self, i1, i2)
-        if (is_position_xyz(self%sources_)) then           ! distances from the positions in double
+        if (is_position_xyz(self%sources_) .and. .not. transformed(self)) then   ! distances from the positions in double
             call self%traj%positions(pos)
             call self%chain%written(i1, i2, pos)
         else
@@ -1360,8 +1527,8 @@ contains
             return
         end if
         frac = self%traj%time_fraction(k, k2, t)
-        xyz(:, 1) = self%traj%point(k, self%sources_)
-        xyz(:, 2) = self%traj%point_between(k, k2, t, self%sources_)
+        xyz(:, 1) = art_point(self, k, self%sources_)
+        xyz(:, 2) = art_point_between(self, k, k2, t, self%sources_)
         call line_buffer(self%tail, p)
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:2))
@@ -1788,9 +1955,11 @@ contains
             ib = 1 + (sb - 1) * self%stride_
             allocate(v(3, sb - sa + 1), w(3, sb - sa + 1))
             call self%traj%points(ia, ib, self%start_, v, self%stride_)
-            call split_points(v, p(:, :, 2*sa-lo:2*sb-lo:2))
             call self%traj%points(ia, ib, self%end_, w, self%stride_)
             if (self%end_relative_) w = v + w        ! (no offset: exactly the start, a segment drawn as nothing)
+            call to_shown_at(self, ia, v, self%stride_)     ! (data in another frame: both ends, at their time)
+            call to_shown_at(self, ia, w, self%stride_)
+            call split_points(v, p(:, :, 2*sa-lo:2*sb-lo:2))
             call split_points(w, p(:, :, 2*sa-lo+1:2*sb-lo+1:2))
             deallocate(v, w)
         end do
@@ -1989,9 +2158,9 @@ contains
             ia = (lo + 1) / 2                             ! the trajectory points of the pairs
             ib = hi / 2
             allocate(v(3, ib - ia + 1))
-            call self%traj%points(ia, ib, self%start_, v)
+            call art_points(self, ia, ib, self%start_, v)
             call split_points(v, p(:, :, 1:hi-lo+1:2))
-            call self%traj%points(ia, ib, self%end_, v)
+            call art_points(self, ia, ib, self%end_, v)
             call split_points(v, p(:, :, 2:hi-lo+1:2))
             deallocate(v)
         end do
@@ -2035,10 +2204,10 @@ contains
             return
         end if
         frac = self%traj%time_fraction(k, k2, t)
-        xyz(:, 1) = self%traj%point(k, self%start_)
-        xyz(:, 2) = self%traj%point(k, self%end_)
-        xyz(:, 3) = self%traj%point_between(k, k2, t, self%start_)
-        xyz(:, 4) = self%traj%point_between(k, k2, t, self%end_)
+        xyz(:, 1) = art_point(self, k, self%start_)
+        xyz(:, 2) = art_point(self, k, self%end_)
+        xyz(:, 3) = art_point_between(self, k, k2, t, self%start_)
+        xyz(:, 4) = art_point_between(self, k, k2, t, self%end_)
         call line_buffer(self%tail, p)
         if (.not. associated(p)) return
         call split_points(xyz, p(:, :, 1:4))
@@ -2588,8 +2757,17 @@ contains
         integer, intent(in) :: i                    !! the trajectory point
         logical, intent(in) :: zero                 !! all sources zero, or no trajectory: the origin
         real(wp) :: v(3)
+        real(wp) :: w(3, 1)
         v = 0.0_wp
-        if (.not. zero) v = self%traj%point(i, self%sources_)
+        if (.not. zero) then
+            v = art_point(self, i, self%sources_)
+        else if (associated(self%traj)) then                ! (the data frame's origin, at the point's time)
+            if (i >= 1 .and. i <= self%traj%num_times()) then
+                w = 0.0_wp
+                call to_shown_at(self, i, w)
+                v = w(:, 1)
+            end if
+        end if
     end function marker_point
 
     !> A single marker's point (in a chain of one marker), and its color (a
@@ -2631,7 +2809,7 @@ contains
             self%hi = 0.0_wp
         else if (n > self%n_seen) then                      ! the new points, a range at a time
             allocate(v(3, n - self%n_seen))
-            call self%traj%points(self%n_seen + 1, n, self%sources_, v)
+            call art_points(self, self%n_seen + 1, n, self%sources_, v)
             if (self%n_seen == 0) then
                 self%lo = v(:, 1)
                 self%hi = v(:, 1)
@@ -2702,7 +2880,7 @@ contains
             tm = self%next_time
             status = self%traj%time_index(tm, index)
             index = max(1, min(n - 1, index))
-            call push_intermediate(self, self%traj%point_between(index, index + 1, tm, self%sources_), tm)
+            call push_intermediate(self, art_point_between(self, index, index + 1, tm, self%sources_), tm)
             self%next_time = self%next_time + step
         end do
     end subroutine intermediates_by_time
@@ -2716,7 +2894,7 @@ contains
         if (self%next_index == 0) self%next_index = 1 + step
         do while (self%next_index < n)
             i = counted(self, self%next_index, n)
-            call push_intermediate(self, self%traj%point(i, self%sources_), self%traj%time(i))
+            call push_intermediate(self, art_point(self, i, self%sources_), self%traj%time(i))
             self%next_index = self%next_index + step
         end do
     end subroutine intermediates_by_data
@@ -2732,10 +2910,10 @@ contains
             self%arc = 0.0_wp
             self%prev_arc = 0.0_wp
             self%target = self%spacing_
-            self%prev_point = self%traj%point(counted(self, 1, n), self%sources_)
+            self%prev_point = art_point(self, counted(self, 1, n), self%sources_)
         end if
         do j = self%next_index, n
-            p = self%traj%point(counted(self, j, n), self%sources_)
+            p = art_point(self, counted(self, j, n), self%sources_)
             self%arc = self%arc + norm2(p - self%prev_point)
             t0 = self%traj%time(counted(self, j - 1, n))
             t1 = self%traj%time(counted(self, j, n))
@@ -2913,6 +3091,64 @@ contains
         a => self%artists(i)%p
     end function artist
 
+    !> The frame of the scene its trajectories' data are in (see the module
+    !> documentation): each point drawn where it is in this frame at the
+    !> point's own time. Absent: this frame's own coordinates (the default).
+    !> `frame` must be in the same tree (else the data are drawn as they are,
+    !> with a warning) and stay alive while set. The frames' poses at the
+    !> points' times are as the scene would place them then, follow modes
+    !> included: a frame following with FOLLOW_LOOP (the default) wraps the
+    !> points' times into its data's range too (at its data's last time, the
+    !> first), so a frame following an ephemeris usually wants FOLLOW_LIMIT.
+    !>
+    !> A lunar flyby computed in Earth-centered inertial coordinates, drawn in
+    !> the Moon's body-fixed frame (`moon` following the Moon's ephemeris,
+    !> with its attitude) and, from the same Trajectory, in the inertial frame:
+    !>
+    !> ```fortran
+    !> call fixed_path%add_artist(CurveArtist(flyby))   ! (artists declared target, as usual)
+    !> call fixed_path%set_data_frame(eci)
+    !> if (.not. moon%add_child(fixed_path)) error stop 'add_child failed'
+    !> if (.not. eci%add_child(inertial_path)) error stop 'add_child failed'
+    !> call craft%follow(flyby, data_frame=eci)         ! (craft under moon: on the curve)
+    !> ```
+    subroutine set_data_frame(self, frame)
+        class(DrawableTrajectory), intent(inout) :: self
+        class(ReferenceFrame), intent(in), target, optional :: frame  !! the frame the data are in (absent: this one's)
+        self%data_frame_ => null()
+        if (present(frame)) self%data_frame_ => frame
+        self%warned = .false.
+    end subroutine set_data_frame
+
+    !> The frame the data are in ([[set_data_frame]]; null: this frame).
+    function data_frame(self) result(f)
+        class(DrawableTrajectory), intent(in) :: self
+        class(ReferenceFrame), pointer :: f
+        f => self%data_frame_
+    end function data_frame
+
+    !> The root of a frame's tree (through first parents).
+    function root_of(f) result(r)
+        class(ReferenceFrame), intent(in), target :: f      !! the frame
+        class(ReferenceFrame), pointer :: r
+        r => f
+        do while (r%num_parents() > 0)
+            r => r%parent(1)
+        end do
+    end function root_of
+
+    !> Give the artists the frames: this one (their points' coordinates) and
+    !> the data frame (if set, and in the same tree).
+    subroutine attach_frames(self)
+        class(DrawableTrajectory), intent(in), target :: self
+        integer :: k
+        do k = 1, self%n_artists
+            self%artists(k)%p%shown_in => self
+            self%artists(k)%p%data_frame => null()
+            if (associated(self%data_frame_) .and. self%data_frame_ok) self%artists(k)%p%data_frame => self%data_frame_
+        end do
+    end subroutine attach_frames
+
     !> Highlight all the frame's curve and segment artists (see
     !> [[CurveArtist:set_highlight]]; HIGHLIGHT_NONE: none of them).
     subroutine drawable_set_highlight(self, mode, color, arrow_spacing, arrow_speed, band_width, pulse_period)
@@ -2944,6 +3180,7 @@ contains
         integer, intent(inout) :: n                 !! number of hits
         integer :: k
         if (self%contents_shown()) then
+            call attach_frames(self)
             do k = 1, self%n_artists
                 if (.not. self%artists(k)%p%pickable_) cycle
                 select type (a => self%artists(k)%p)
@@ -2987,7 +3224,7 @@ contains
         d1 = a%first_drawn_                                     ! (the points drawn: d1 .. d2)
         d2 = d1 + nd - 1
         extra = 0.5_wp * a%width_ * cam%pixel_ratio
-        xyz = is_position_xyz(a%sources_)
+        xyz = is_position_xyz(a%sources_) .and. .not. transformed(a)   ! (transformed: art_point)
         if (xyz) call a%traj%positions(pos)
         best_px = huge(1.0_wp)
         best_depth = huge(1.0_wp)
@@ -3068,7 +3305,7 @@ contains
             if (xyz) then
                 v = pos(:, i)
             else
-                v = a%traj%point(i, a%sources_)
+                v = art_point(a, i, a%sources_)
             end if
         end function local_point
 
@@ -3221,10 +3458,22 @@ contains
 
     !> Update the frame (and its descendants), then its artists.
     recursive subroutine drawable_update(self, t)
-        class(DrawableTrajectory), intent(inout) :: self
+        class(DrawableTrajectory), intent(inout), target :: self
         real(wp), intent(in) :: t                           !! the current time
+        class(ReferenceFrame), pointer :: r1, r2
         integer :: k
         call self%ReferenceFrame%update(t)
+        self%data_frame_ok = .false.
+        if (associated(self%data_frame_)) then              ! (in this tree: else drawn as they are)
+            r1 => root_of(self)
+            r2 => root_of(self%data_frame_)
+            self%data_frame_ok = associated(r1, r2)
+            if (.not. self%data_frame_ok .and. .not. self%warned) then
+                write(*, '(a)') 'vkframes: '//self%name()//': its data frame is not in its tree (data drawn as they are)'
+                self%warned = .true.
+            end if
+        end if
+        call attach_frames(self)
         do k = 1, self%n_artists
             if (.not. c_associated(self%artists(k)%group) .and. c_associated(self%contents_group)) &
                 call build_artist(self, k, compile=.true.)

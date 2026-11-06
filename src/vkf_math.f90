@@ -121,8 +121,11 @@ contains
     end function quat_from_matrix
 
     !> Spherical linear interpolation from `a` (t = 0) to `b` (t = 1), along the
-    !> shorter arc; linear when the two are nearly equal. Same as OpenSceneGraph's
-    !> osg::Quat::slerp, which OpenFrames' TrajectoryFollower uses.
+    !> shorter arc; linear when the two are nearly equal. As OpenSceneGraph's
+    !> osg::Quat::slerp, which OpenFrames' TrajectoryFollower uses, except that
+    !> the linear case is normalized (OSG's isn't: a quaternion a little short of
+    !> unit length, its rotation matrix then also scaling, by a millionth for
+    !> attitudes 0.25 deg apart, a kilometre at the Moon's distance).
     pure function quat_slerp(t, a, b) result(q)
         real(wp), intent(in) :: t           !! the fraction of the way (0 to 1)
         real(wp), intent(in) :: a(4), b(4)  !! unit quaternions [x, y, z, w] at t = 0 and t = 1
@@ -140,11 +143,12 @@ contains
             sin_omega = sin(omega)
             scale_a = sin((1.0_wp - t) * omega) / sin_omega
             scale_b = sin(t * omega) / sin_omega
-        else
+        else                                ! (close: linear, then normalized below)
             scale_a = 1.0_wp - t
             scale_b = t
         end if
         q = scale_a * a + scale_b * to
+        if (1.0_wp - cos_omega <= epsilon) q = q / norm2(q)   ! (a unit quaternion: a rotation, not also a scale)
     end function quat_slerp
 
     !> The shortest rotation taking the direction of `from` to that of `to`

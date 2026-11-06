@@ -9,6 +9,13 @@
 !> The time is either the global simulation time plus an offset
 !> ([[set_offset_time]], the default with offset 0) or a fixed time ([[set_time]]).
 !> The trajectories are not owned: they must stay alive while followed.
+!>
+!> [[state_at]] gives the followed state at any time without changing the
+!> follower (for frames' poses at points' own times: vkf_frames'
+!> world_matrix_at); [[update]] is state_at at the simulation time. Every
+!> change to what is followed and how stamps the follower ([[motion_stamp]],
+!> from [[next_motion_stamp]]'s clock), so that drawings depending on its
+!> motion know to redraw.
 module vkf_follower
 
     use vkf_math, only: wp, quat_slerp
@@ -26,6 +33,11 @@ module vkf_follower
     !> what to follow (OpenFrames' FollowData), combined with ior
     integer, parameter, public :: FOLLOW_POSITION = 1  !! follow the position
     integer, parameter, public :: FOLLOW_ATTITUDE = 2  !! follow the attitude
+
+    !> The clock of motion stamps ([[next_motion_stamp]]).
+    integer, save :: motion_clock = 0
+
+    public :: next_motion_stamp
 
     !> A pointer to a followed trajectory (for an array of them).
     type :: TrajectoryPointer
@@ -45,6 +57,7 @@ module vkf_follower
         logical :: follow_time = .true.             !! (true: simulation time + time_value; false: time_value)
         real(wp) :: time_value = 0.0_wp             !! time offset or fixed time (s)
         real(wp) :: last_time_ = 0.0_wp             !! time (after looping) at the last update (s)
+        integer :: stamp_ = 0                       !! motion stamp of the last change of settings (next_motion_stamp)
     contains
         procedure :: set_trajectory, add_trajectory, remove_trajectory, remove_all
         procedure :: num_trajectories
@@ -53,10 +66,37 @@ module vkf_follower
         procedure :: set_default_data, using_default_data, data_valid
         procedure :: set_time, set_offset_time, is_following_time
         procedure :: last_time, last_trajectory
-        procedure :: update
+        procedure :: update, state_at
+        procedure :: motion_stamp, data_revision
     end type TrajectoryFollower
 
 contains
+
+    !> A new motion stamp: larger than all before (a change of some frame's
+    !> motion: its pose, its parents, what it follows and how).
+    integer function next_motion_stamp() result(stamp)
+        motion_clock = motion_clock + 1
+        stamp = motion_clock
+    end function next_motion_stamp
+
+    !> The stamp of the last change of the follower's settings (the
+    !> trajectories followed, what and how, the time); 0 if never changed.
+    pure integer function motion_stamp(self)
+        class(TrajectoryFollower), intent(in) :: self
+        motion_stamp = self%stamp_
+    end function motion_stamp
+
+    !> The sum of the followed trajectories' revisions and generations: it
+    !> grows with any change to their data (the set of trajectories itself
+    !> changes the [[motion_stamp]]).
+    pure integer function data_revision(self)
+        class(TrajectoryFollower), intent(in) :: self
+        integer :: k
+        data_revision = 0
+        do k = 1, self%n
+            data_revision = data_revision + self%trajs(k)%p%revision() + self%trajs(k)%p%generation()
+        end do
+    end function data_revision
 
     ! ==================================================================
     ! trajectories
@@ -88,6 +128,7 @@ contains
         self%n = self%n + 1
         self%trajs(self%n)%p => traj
         if (self%default_data) call self%set_default_data()
+        self%stamp_ = next_motion_stamp()
     end subroutine add_trajectory
 
     !> Stop following `traj`.
@@ -101,6 +142,7 @@ contains
                 self%trajs(self%n)%p => null()
                 self%n = self%n - 1
                 if (self%current >= k) self%current = max(0, self%current - 1)
+        self%stamp_ = next_motion_stamp()
                 exit
             end if
         end do
@@ -115,6 +157,7 @@ contains
         end do
         self%n = 0
         self%current = 0
+        self%stamp_ = next_motion_stamp()
     end subroutine remove_all
 
     !> Number of trajectories followed.
@@ -134,6 +177,7 @@ contains
         integer, intent(in) :: mode     !! FOLLOW_LOOP or FOLLOW_LIMIT
         self%data_ = data
         self%mode_ = mode
+        self%stamp_ = next_motion_stamp()
     end subroutine set_follow_type
 
     !> How time outside the trajectories is handled: FOLLOW_LOOP or FOLLOW_LIMIT.
@@ -156,6 +200,7 @@ contains
         type(DataSource), intent(in) :: src                 !! where the x comes from
         self%sources_(1) = src
         self%default_data = .false.
+        self%stamp_ = next_motion_stamp()
         valid = self%data_valid()
     end function set_x_data
 
@@ -165,6 +210,7 @@ contains
         type(DataSource), intent(in) :: src                 !! where the y comes from
         self%sources_(2) = src
         self%default_data = .false.
+        self%stamp_ = next_motion_stamp()
         valid = self%data_valid()
     end function set_y_data
 
@@ -174,6 +220,7 @@ contains
         type(DataSource), intent(in) :: src                 !! where the z comes from
         self%sources_(3) = src
         self%default_data = .false.
+        self%stamp_ = next_motion_stamp()
         valid = self%data_valid()
     end function set_z_data
 
@@ -193,6 +240,7 @@ contains
             self%sources_ = position_sources(0)
         end if
         self%default_data = .true.
+        self%stamp_ = next_motion_stamp()
     end subroutine set_default_data
 
     !> True if the followed position is the trajectories' positions ([[set_default_data]]).
@@ -217,6 +265,7 @@ contains
         real(wp), intent(in) :: t           !! the time (s)
         self%time_value = t
         self%follow_time = .false.
+        self%stamp_ = next_motion_stamp()
     end subroutine set_time
 
     !> Follow at the simulation time plus `offset` (the default, offset 0).
@@ -225,6 +274,7 @@ contains
         real(wp), intent(in) :: offset      !! added to the simulation time (s)
         self%time_value = offset
         self%follow_time = .true.
+        self%stamp_ = next_motion_stamp()
     end subroutine set_offset_time
 
     !> True if following the simulation time plus an offset, false for a fixed time.
@@ -259,11 +309,33 @@ contains
         real(wp), intent(inout) :: position(3)      !! the followed position (in the trajectories' frame)
         real(wp), intent(inout) :: attitude(4)      !! the followed attitude (quaternion [x, y, z, w])
         logical, intent(out) :: has_position, has_attitude !! (true: position / attitude set)
+        integer :: k
+        real(wp) :: t
+        call self%state_at(sim_time, position, attitude, has_position, has_attitude, t, k)
+        if (self%n == 0) return
+        self%last_time_ = t
+        self%current = k
+    end subroutine update
+
+    !> The position and attitude followed at simulation time `sim_time`, as
+    !> [[update]] (the same time mapping, choice of trajectory and
+    !> interpolation) but without changing the follower: for any time, e.g.
+    !> a frame's pose at a trajectory point's own time.
+    subroutine state_at(self, sim_time, position, attitude, has_position, has_attitude, time, chosen)
+        class(TrajectoryFollower), intent(in) :: self
+        real(wp), intent(in) :: sim_time            !! simulation time (s)
+        real(wp), intent(inout) :: position(3)      !! the followed position (in the trajectories' frame; unchanged if none)
+        real(wp), intent(inout) :: attitude(4)      !! the followed attitude (quaternion [x, y, z, w]; unchanged if none)
+        logical, intent(out) :: has_position, has_attitude !! (true: position / attitude set)
+        real(wp), intent(out), optional :: time     !! the trajectories' time used (after the offset and looping)
+        integer, intent(out), optional :: chosen    !! the trajectory used (index in the followed ones)
         type(Trajectory), pointer :: traj
         real(wp) :: t
-        integer :: status, i
+        integer :: status, i, k
         has_position = .false.
         has_attitude = .false.
+        if (present(time)) time = 0.0_wp
+        if (present(chosen)) chosen = 0
         if (self%n == 0) return
         if (self%follow_time) then
             t = sim_time + self%time_value
@@ -271,15 +343,16 @@ contains
             t = self%time_value
         end if
         t = wrapped_time(self, t)
-        self%last_time_ = t
-        self%current = chosen_trajectory(self, t)
-        traj => self%trajs(self%current)%p
+        k = chosen_trajectory(self, t)
+        if (present(time)) time = t
+        if (present(chosen)) chosen = k
+        traj => self%trajs(k)%p
         status = traj%time_index(t, i)                      ! (once, for the position and the attitude)
         if (iand(self%data_, FOLLOW_POSITION) /= 0 .and. self%data_valid()) &
             call interpolate_position(traj, self%sources_, t, status, i, position, has_position)
         if (iand(self%data_, FOLLOW_ATTITUDE) /= 0) &
             call interpolate_attitude(traj, t, status, i, attitude, has_attitude)
-    end subroutine update
+    end subroutine state_at
 
     !> For FOLLOW_LOOP, t wrapped into the combined time range of the trajectories.
     real(wp) function wrapped_time(self, t) result(tw)
