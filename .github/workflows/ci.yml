@@ -157,6 +157,19 @@ jobs:
         continue-on-error: true
         run: pixi run -e qt frames-demo --frame-test --capture "$PWD/captures/frames_demo.png" --capture-frame 40 --quit-after 60
 
+      # The Artemis I demo (qt-fortran; NASA's trajectory from JPL Horizons, downloaded
+      # by the run; --export writes the mission to a web page, checked).
+      - name: Build the Artemis I demo
+        continue-on-error: ${{ runner.os == 'Windows' }}
+        run: pixi run -e qt artemis-build
+
+      - name: Run the Artemis I demo (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: |
+          pixi run -e qt artemis-demo --export "$PWD/captures/artemis1.html" --capture "$PWD/captures/artemis_demo.png" --capture-frame 40 --quit-after 20
+          pixi run python tools/check_web_page.py captures/artemis1.html
+
       # The PySide6 demo (separate fpm project, a shared library driven by a
       # Python GUI through ctypes).
       - name: Build the PySide6 demo

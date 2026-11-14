@@ -1794,7 +1794,12 @@ Sharing:
         - the Qt demo: "Export web page..." (animated) and "Record web
           page..." (start/stop);
         - the frames demo: "Export web page..." (the frame and mode chosen,
-          animated over the three days), or `--export file.html`.
+          animated over the three days), or `--export file.html`;
+        - the Artemis I demo (demos/artemis): NASA's flown trajectory from
+          JPL Horizons (`tools/get_artemis1.py`: Orion every minute, the Moon,
+          the Sun, and events found in the data: burns with their delta-v,
+          the flybys, the farthest point). Seen from five frames, exported
+          the same way.
       - **Tests:**
         - `test/test_web_export.f90` (no window):
           - base64 and JSON numbers;

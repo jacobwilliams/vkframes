@@ -816,10 +816,14 @@ if (views.length > 1) {
 const reset = document.createElement('button');
 reset.textContent = 'Reset view';
 reset.addEventListener('click', () => resetView(views[current]));
+// (HUD text above the bar)
+function placeHud() { hudLayer.style.bottom = `${bar.offsetHeight + 16}px`; }
+window.addEventListener('resize', placeHud);
 const help = document.createElement('span');
 help.id = 'vkf-help';
 help.textContent = 'drag: turn · right-drag: pan · wheel: zoom · v: next view';
 bar.append(reset, help);
+placeHud();
 
 function setPlaying(p) {
     playing = p;

@@ -780,6 +780,44 @@ pixi run -e qt frames-demo
 pixi run -e qt frames-demo --frame 3 --export orbiter.html --quit-after 5   # a web page, then quit
 ```
 
+#### Artemis I demo
+
+<img src="media/screenshots/artemis_demo.jpg" alt="Artemis I in the Earth-Moon rotating frame: outbound, the distant retrograde orbit and the return, with the events" width="300" align="right">
+
+[demos/artemis](demos/artemis): NASA's Artemis I mission (November 16 to
+December 11, 2022) from its flown trajectory. Orion's states come from JPL
+Horizons, one a minute, from after the trans-lunar injection to just before
+entry, with the Moon's and the Sun's. `tools/get_artemis1.py` downloads them
+into `data/artemis1/`; the demo does this itself the first time.
+
+- **Events found in the data:** the burns (where Orion's acceleration isn't
+  gravity's), with their delta-v: the outbound and return powered flybys
+  (179 and 294 m/s, both 130 km above the Moon), the distant retrograde
+  orbit's insertion and departure, and the trajectory corrections. Also the
+  farthest point from the Earth: 438,586 km from its center, NASA's 432,210
+  km from its surface. Each event is marked and labeled on the trajectory,
+  and "Go to event" jumps to it.
+- **The scene:** the Earth turns (its rotation angle, with night lights),
+  the Moon follows its ephemeris with its near side toward the Earth, and
+  the Sun lights the scene from where it is. Orion's path is colored by
+  phase: blue outbound, orange in the distant retrograde orbit, green on
+  the return.
+- **The Frame menu:** Earth-centered inertial; Earth-Moon rotating (the
+  mission's familiar picture); Moon-centered inertial; Moon-fixed; and
+  Orion. The trajectories are drawn in the chosen frame, each point where
+  Orion was in that frame at its time, and the camera rides with the frame.
+- **Controls:** trails, event labels, the time scale, Pause / Resume, and a
+  time slider over the 25 days.
+- **"Export web page...":** writes the mission to a web page (`export_web`:
+  the 25 days animated, in the chosen frame), or use `--export
+  artemis1.html`.
+
+```sh
+pixi run artemis-data                  # (optional: the demo downloads the data if missing)
+pixi run -e qt artemis-demo
+pixi run -e qt artemis-demo --frame 2 --export artemis1.html --quit-after 5   # a web page, then quit
+```
+
 #### PySide6 demo
 
 [demos/pyside6](demos/pyside6): the same kind of scene in a Python GUI
