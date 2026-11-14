@@ -53,7 +53,7 @@
   const box = document.getElementById('lightbox');
   const img = box.querySelector('img');
   const caption = box.querySelector('p');
-  document.querySelectorAll('.gallery img, .hero-shot img, .code-shot img').forEach((el) => {
+  document.querySelectorAll('.gallery figure:not(.live) img, .hero-shot img, .code-shot img').forEach((el) => {
     el.addEventListener('click', () => {
       img.src = el.src;
       img.alt = el.alt;
