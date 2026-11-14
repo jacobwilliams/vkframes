@@ -346,6 +346,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `orbit_demo` | <img src="media/screenshots/examples/orbit_demo.jpg" width="160" alt="orbit_demo"> | The program in [A small program](#a-small-program): a textured Earth, a spacecraft following an inclined circular orbit, and the orbit drawn as a line (`Trajectory`, `CurveArtist`). |
 | `orbit` | <img src="media/screenshots/examples/orbit.jpg" width="160" alt="orbit"> | An inclined elliptical orbit drawn as a thick line (`CurveArtist`), a dashed equator, and a spacecraft moved along the orbit by Fortran each frame (Kepler's equation). |
 | `earth` | <img src="media/screenshots/examples/earth.jpg" width="160" alt="earth"> | A textured WGS84 Earth and a 3D model following an orbit (`Model`, `Trajectory`, `TrajectoryFollower`), with three views: of the Earth, of the spacecraft, and from the spacecraft toward the Earth. Needs a texture and a model file. |
+| `spinning_model` | <img src="media/screenshots/examples/spinning_model.jpg" width="160" alt="spinning_model"> | A 3D model (`Model`: the pepper logo, glTF, in data/Models/pepper) turning over a star map with constellation lines (`SkySphere`), its attitude set each frame from the time. |
 | `day_night` | <img src="media/screenshots/examples/day_night.jpg" width="160" alt="day_night"> | Lighting: the Sun as a light source an astronomical unit away, day and night textures (city lights on the night side), and a specular glint from the sphere's material. |
 | `shapes` | <img src="media/screenshots/examples/shapes.jpg" width="160" alt="shapes"> | The reference shapes: coordinate axes with tick marks, a latitude/longitude grid, an equatorial plane and sensor cones pointed at the Earth. |
 | `two_windows` | <img src="media/screenshots/examples/two_windows_1.jpg" width="78" alt="two_windows, window 1"><img src="media/screenshots/examples/two_windows_2.jpg" width="78" alt="two_windows, window 2"> | One scene in two windows, each with its own view, their clocks synchronized so both show the same time. |
@@ -370,6 +371,7 @@ pixi run example hello_sphere
 pixi run example orbit_demo
 pixi run example orbit
 pixi run example earth -- texture.jpg model.3ds     # e.g. OpenFrames' Demos/Images and Demos/Models/Hubble.3ds
+pixi run example spinning_model
 pixi run example day_night
 pixi run example shapes
 pixi run example two_windows
