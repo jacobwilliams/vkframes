@@ -1526,6 +1526,7 @@ contains
             names(3) = f%axis_label(Z_AXIS)
             call w%put('axis_names', names)
             call w%put('name_label', f%name_label)
+            call w%put('name_on_top', f%name_on_top)
             call w%put('label_size', f%label_size_)
             call w%put('label_alignment', f%label_alignment_)
             if (f%light_source) then

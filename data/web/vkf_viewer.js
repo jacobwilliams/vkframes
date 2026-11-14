@@ -14,7 +14,7 @@
 // Mouse: drag to turn, right-drag (or shift-drag) to pan, wheel to zoom;
 // keys: v / V the next / previous view, space resets the view, p plays or
 // pauses. URL options (for tests): ?t=<time> the time, ?view=<n> the view,
-// ?paused. window.vkfReady is true once the page has drawn with its models.
+// ?camera=<eye,center,up> its camera, ?paused. window.vkfReady is true once the page has drawn with its models.
 
 import * as THREE from 'three';
 
@@ -437,6 +437,7 @@ function buildSphere(item) {
     });
     if ((item.shininess || 0) <= 0) material.specular = new THREE.Color(0, 0, 0);
     const mesh = new THREE.Mesh(sphereGeometry, material);
+    mesh.userData.body = true;                  // (hides the labels behind it: placeLabels)
     mesh.scale.fromArray(item.radii);
     mesh.position.fromArray(item.center);
     mesh.quaternion.fromArray(item.q);
@@ -496,8 +497,8 @@ function buildItem(item) {
 
 // ---------------------------------------------------------------- frames
 
-const labels = [];          // { el, object, offset (local) }
-function addLabel(text, object, offset, rgba, size, alignment) {
+const labels = [];          // { el, object, offset (local), onTop }
+function addLabel(text, object, offset, rgba, size, alignment, onTop = false) {
     if (!text) return;
     const el = document.createElement('div');
     el.className = 'vkf-label';
@@ -506,7 +507,7 @@ function addLabel(text, object, offset, rgba, size, alignment) {
     el.style.fontSize = `${size}px`;
     el.style.transform = alignTransform(alignment);
     labelLayer.appendChild(el);
-    labels.push({ el, object, offset: new THREE.Vector3().fromArray(offset) });
+    labels.push({ el, object, offset: new THREE.Vector3().fromArray(offset), onTop });
 }
 
 // vkframes' ALIGN_* (the point of the text at the anchor) as a CSS translation
@@ -540,7 +541,7 @@ function buildAxes(f, node) {
             addLabel(f.axis_names[k], node, at.toArray(), rgba, f.label_size, f.label_alignment);
         }
     }
-    if (f.name_label) addLabel(f.name, node, [0, 0, 0], rgba, f.label_size, f.label_alignment);
+    if (f.name_label) addLabel(f.name, node, [0, 0, 0], rgba, f.label_size, f.label_alignment, !!f.name_on_top);
 }
 
 const frames = S.frames.map((f) => ({ data: f, instances: [], items: null, track: null }));
@@ -636,6 +637,14 @@ const views = (S.views && S.views.length ? S.views : [{ frame: 0, lookat: -1, fr
              up: new THREE.Vector3(c[6], c[7], c[8]).normalize() };
 });
 let current = Math.min(views.length - 1, Math.max(0, Number(params.get('view') ?? S.view ?? 0)));
+if (params.has('camera')) {     // ?camera=eye,center,up (9 numbers, in the view's frame)
+    const c = params.get('camera').split(',').map(Number);
+    if (c.length === 9 && c.every(Number.isFinite)) {
+        views[current].eye.set(c[0], c[1], c[2]);
+        views[current].center.set(c[3], c[4], c[5]);
+        views[current].up.set(c[6], c[7], c[8]).normalize();
+    }
+}
 
 function resetView(v) {
     const h = v.data.home;
@@ -908,13 +917,52 @@ function buildLinesFromArray(p, rgba, width) {
 
 const size = new THREE.Vector2();
 const projected = new THREE.Vector3();
+const anchor = new THREE.Vector3(), eye = new THREE.Vector3(), a = new THREE.Vector3(), d = new THREE.Vector3();
+
+// The bodies (spheres' ellipsoids), which hide labels behind them as the
+// depth test hides vkframes' labels: each shown, with its transform from the
+// root frame to its unit sphere's coordinates.
+let bodies = null;
+function shownInScene(o) {
+    for (; o; o = o.parent) if (!o.visible) return false;
+    return true;
+}
+function visibleBodies() {
+    if (!bodies) {
+        bodies = [];
+        scene.traverse((o) => { if (o.userData.body) bodies.push({ mesh: o, inverse: new THREE.Matrix4() }); });
+    }
+    const shown = bodies.filter((b) => shownInScene(b.mesh));
+    for (const b of shown) b.inverse.copy(b.mesh.matrixWorld).invert();
+    return shown;
+}
+
+// Whether the segment from the eye to a point (root coordinates) enters a
+// body, or the point is inside one.
+function hidden(point, shown) {
+    for (const b of shown) {
+        a.copy(eye).applyMatrix4(b.inverse);
+        d.copy(point).applyMatrix4(b.inverse).sub(a);       // (the unit sphere's coordinates)
+        const qa = d.lengthSq(), qb = 2 * a.dot(d), qc = a.lengthSq() - 1;
+        if (qa + qb + qc < 0) return true;                  // (the point inside the body)
+        const disc = qb * qb - 4 * qa * qc;
+        if (disc < 0 || qa === 0) continue;
+        const s = (-qb - Math.sqrt(disc)) / (2 * qa);       // (where the segment enters the body)
+        if (s > 0 && s < 1) return true;
+    }
+    return false;
+}
+
 function placeLabels(cam) {
     const w = window.innerWidth, h = window.innerHeight;
+    const shown = visibleBodies();
+    eye.setFromMatrixPosition(cam.matrixWorld);
     for (const l of labels) {
-        let visible = l.object.visible;
-        for (let o = l.object.parent; o && visible; o = o.parent) visible = o.visible;
-        projected.copy(l.offset).applyMatrix4(l.object.matrixWorld).project(cam);
-        if (!visible || projected.z > 1 || projected.z < -1 || Math.abs(projected.x) > 1.2 || Math.abs(projected.y) > 1.2) {
+        const visible = shownInScene(l.object);
+        anchor.copy(l.offset).applyMatrix4(l.object.matrixWorld);
+        projected.copy(anchor).project(cam);
+        if (!visible || projected.z > 1 || projected.z < -1 || Math.abs(projected.x) > 1.2 || Math.abs(projected.y) > 1.2 ||
+            (!l.onTop && hidden(anchor, shown))) {
             l.el.style.display = 'none';
             continue;
         }
