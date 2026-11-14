@@ -40,6 +40,7 @@ module vkf_sky
                          vkf_transform_create, vkf_switch_create, vkf_switch_set, vkf_node_add_child, &
                          vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_transform_set_matrix, &
                          vkf_label_set_at_infinity, vkf_sky_lines_create
+    use vkf_web_writer, only: WebWriter
 
     implicit none
 
@@ -121,6 +122,7 @@ module vkf_sky
         procedure :: set_draw_mode, draw_mode
         procedure :: set_attitude, attitude
         procedure :: node
+        procedure :: export_web => sky_export_web
     end type SkySphere
 
 contains
@@ -858,5 +860,44 @@ contains
         end if
         rgb = max(0.0_wp, min(255.0_wp, rgb)) / 255.0_wp
     end subroutine star_to_point
+
+    !> The sky for the web page (its "sky" object): the attitude, the texture
+    !> (inlined), the stars drawn (directions, sizes and colors) and the
+    !> constellations' lines, as the draw mode says (the star names aren't
+    !> drawn by the page).
+    subroutine sky_export_web(self, w)
+        class(SkySphere), intent(inout) :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        character(len=:), allocatable :: path
+        integer :: id, n
+        call w%begin_object('sky')
+        call w%put('q', self%attitude_)
+        id = -1
+        if (iand(self%mode, SKY_TEXTURE) /= 0 .and. allocated(self%texture_file)) then
+            path = find_data_file(self%texture_file)
+            if (len(path) > 0) id = w%add_asset(path)
+        end if
+        call w%put('texture', id)
+        n = 0
+        if (iand(self%mode, SKY_STARS) /= 0) n = self%n_stars
+        if (n > 0) then
+            call w%begin_object('stars')
+            call w%put_f32('d', reshape(real(self%stars(1:3, 1:n), wp), [3 * n]))
+            call w%put_f32('s', real(self%stars(4, 1:n), wp))
+            call w%put_f32('c', reshape(real(self%stars(5:7, 1:n), wp), [3 * n]))
+            call w%end_object()
+        end if
+        n = 0
+        if (self%lines_shown) n = self%n_lines
+        if (n > 0) then
+            call w%begin_object('lines')
+            call w%put_f32('a', reshape(real(self%lines(1:3, 1:n), wp), [3 * n]))
+            call w%put_f32('b', reshape(real(self%lines(5:7, 1:n), wp), [3 * n]))
+            call w%put('color', self%lines_rgba)
+            call w%put('width', self%lines_width)
+            call w%end_object()
+        end if
+        call w%end_object()
+    end subroutine sky_export_web
 
 end module vkf_sky

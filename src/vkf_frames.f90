@@ -57,6 +57,7 @@ module vkf_frames
     use vkf_pick, only: PickCamera, point_pick, ray, ray_ellipsoid, wants
     use vkf_trajectory, only: Trajectory
     use vkf_follower, only: TrajectoryFollower, FOLLOW_LOOP, FOLLOW_POSITION, FOLLOW_ATTITUDE, next_motion_stamp
+    use vkf_web_writer, only: WebWriter
 
     implicit none
 
@@ -159,6 +160,11 @@ module vkf_frames
         type(c_ptr) :: axis_text(3) = c_null_ptr            !! the axes labels (in axis_label_node)
         type(c_ptr) :: name_label_node = c_null_ptr         !! the name label's switch
         type(c_ptr) :: name_text = c_null_ptr               !! the name label (in name_label_node)
+        ! poses recorded for the web (WindowProxy%start_web_recording; not for frames following trajectories)
+        integer :: rec_n = 0                                !! poses recorded
+        real(wp), allocatable :: rec_t(:)                   !! their times
+        real(wp), allocatable :: rec_pose(:,:)              !! (7, :): position, attitude [x, y, z, w]
+        real(wp) :: rec_seen = -huge(1.0_wp)                !! the time last seen while recording
     contains
         procedure :: set_name, name
         procedure :: set_color, color
@@ -189,7 +195,18 @@ module vkf_frames
         procedure :: realize, build_contents, sync, node
         procedure :: bound, pick, set_pickable, pickable
         procedure :: move_x_axis, move_y_axis, move_z_axis, reposition_axes
+        ! export to the web (WindowProxy%export_web)
+        procedure :: export_web, data_time_range, record_web_pose, clear_web_poses
     end type ReferenceFrame
+
+    !> The frames of a tree, each once (a frame with several parents too),
+    !> numbered from 0 (the root) as the web page's frames.
+    type, public :: WebFrameList
+        type(FramePointer), allocatable :: f(:)             !! the frames (1:n)
+        integer :: n = 0                                    !! the number of frames
+    end type WebFrameList
+
+    public :: collect_web_frames, web_frame_index, write_web_frames, web_time_range, widen_time_range
 
     !> The ReferenceFrame constructor: `ReferenceFrame(...)` makes one (see [[new_reference_frame]] for its
     !> arguments).
@@ -1318,5 +1335,316 @@ contains
         list(n)%p => null()
         n = n - 1
     end function remove
+
+    ! ==================================================================
+    ! export to the web (WindowProxy%export_web; vkf_web_writer)
+
+    !> Write what this frame draws as the web page's items (into the open
+    !> "items" array; see vkf_web_writer's item writers). ReferenceFrame draws
+    !> nothing itself (its decorations are written with the frame); extensions
+    !> override this. An extension that doesn't is exported as a plain frame,
+    !> with a warning (once for each frame).
+    subroutine export_web(self, w)
+        class(ReferenceFrame), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w                 !! the page being written
+        type(ReferenceFrame) :: plain
+        if (.not. same_type_as(self, plain)) &
+            call w%warn_once('type:'//self%name(), 'frame "'//self%name()//'": its contents are not exported (a type '// &
+                             'the web page does not draw yet)')
+    end subroutine export_web
+
+    !> The time range of the data that move or draw this frame (followed
+    !> trajectories; extensions add what they draw), widening [t0, t1];
+    !> `found` set if there are any.
+    subroutine data_time_range(self, t0, t1, found)
+        class(ReferenceFrame), intent(in) :: self
+        real(wp), intent(inout) :: t0                       !! the range's start so far (widened)
+        real(wp), intent(inout) :: t1                       !! its end so far (widened)
+        logical, intent(inout) :: found                     !! set if this frame has data with times
+        type(Trajectory), pointer :: traj
+        integer :: k
+        if (.not. self%following) return
+        do k = 1, self%follower_%num_trajectories()
+            traj => self%follower_%followed(k)
+            if (associated(traj)) call widen_time_range(traj, t0, t1, found)
+        end do
+    end subroutine data_time_range
+
+    !> Widen [t0, t1] to a trajectory's times (`found` set if it has any).
+    subroutine widen_time_range(traj, t0, t1, found)
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        real(wp), intent(inout) :: t0                       !! the range's start (widened)
+        real(wp), intent(inout) :: t1                       !! its end (widened)
+        logical, intent(inout) :: found                     !! [t0, t1] holds a range (set if the trajectory has times)
+        real(wp) :: a, b
+        if (.not. traj%time_range(a, b)) return
+        if (found) then
+            t0 = min(t0, a)
+            t1 = max(t1, b)
+        else
+            t0 = a
+            t1 = b
+            found = .true.
+        end if
+    end subroutine widen_time_range
+
+    !> Record the pose of this frame and its descendants at time t, for an
+    !> animated web page (WindowProxy%start_web_recording): of each frame not
+    !> following trajectories, only when it changed (with the pose it held
+    !> until then, so that the page holds it too).
+    recursive subroutine record_web_pose(self, t)
+        class(ReferenceFrame), intent(inout) :: self
+        real(wp), intent(in) :: t                           !! the frame's time
+        real(wp) :: pose(7)
+        integer :: k
+        do k = 1, self%n_children
+            call self%children(k)%p%record_web_pose(t)
+        end do
+        if (self%following) return
+        if (self%rec_n > 0) then
+            if (t <= self%rec_t(self%rec_n)) return         ! (time going back: ignored)
+        end if
+        pose = [self%position_, self%attitude_]
+        if (self%rec_n == 0) then
+            call add_pose(t, pose)
+        else if (any(pose /= self%rec_pose(:, self%rec_n))) then
+            if (self%rec_seen > self%rec_t(self%rec_n)) call add_pose(self%rec_seen, self%rec_pose(:, self%rec_n))
+            call add_pose(t, pose)
+        end if
+        self%rec_seen = t
+    contains
+        !> Append a pose to the frame's recorded ones (growing the arrays).
+        subroutine add_pose(tt, pp)
+            real(wp), intent(in) :: tt                      !! its time
+            real(wp), intent(in) :: pp(7)                   !! position, attitude [x, y, z, w]
+            real(wp), allocatable :: t2(:), p2(:,:)
+            if (.not. allocated(self%rec_t)) allocate(self%rec_t(64), self%rec_pose(7, 64))
+            if (self%rec_n == size(self%rec_t)) then
+                allocate(t2(2 * self%rec_n), p2(7, 2 * self%rec_n))
+                t2(1:self%rec_n) = self%rec_t(1:self%rec_n)
+                p2(:, 1:self%rec_n) = self%rec_pose(:, 1:self%rec_n)
+                call move_alloc(t2, self%rec_t)
+                call move_alloc(p2, self%rec_pose)
+            end if
+            self%rec_n = self%rec_n + 1
+            self%rec_t(self%rec_n) = tt
+            self%rec_pose(:, self%rec_n) = pp
+        end subroutine add_pose
+    end subroutine record_web_pose
+
+    !> Forget the poses recorded (this frame and its descendants).
+    recursive subroutine clear_web_poses(self)
+        class(ReferenceFrame), intent(inout) :: self
+        integer :: k
+        self%rec_n = 0
+        self%rec_seen = -huge(1.0_wp)
+        if (allocated(self%rec_t)) deallocate(self%rec_t, self%rec_pose)
+        do k = 1, self%n_children
+            call self%children(k)%p%clear_web_poses()
+        end do
+    end subroutine clear_web_poses
+
+    !> The frames of the tree of `root`, each once, the root first.
+    subroutine collect_web_frames(root, list)
+        class(ReferenceFrame), intent(in), target :: root   !! the tree's root
+        type(WebFrameList), intent(out) :: list             !! the frames
+        call visit(root)
+    contains
+        !> Add a frame, if not already there, and then its children.
+        recursive subroutine visit(f)
+            class(ReferenceFrame), intent(in), target :: f  !! the frame
+            integer :: k
+            if (find(list%f, list%n, f) > 0) return
+            call append(list%f, list%n, f)
+            do k = 1, f%n_children
+                call visit(f%children(k)%p)
+            end do
+        end subroutine visit
+    end subroutine collect_web_frames
+
+    !> A frame's number in the page (0: the root), or -1 if it isn't in the list.
+    integer function web_frame_index(list, frame) result(id)
+        type(WebFrameList), intent(in) :: list              !! the page's frames
+        class(ReferenceFrame), intent(in), target :: frame  !! the frame
+        id = find(list%f, list%n, frame) - 1
+    end function web_frame_index
+
+    !> The time range of all the data in the frames' tree (followed and drawn
+    !> trajectories); false if there are none.
+    logical function web_time_range(list, t0, t1) result(found)
+        type(WebFrameList), intent(in) :: list              !! the page's frames
+        real(wp), intent(out) :: t0                         !! the range's start (0 if none)
+        real(wp), intent(out) :: t1                         !! its end (0 if none)
+        integer :: k
+        found = .false.
+        t0 = 0.0_wp
+        t1 = 0.0_wp
+        do k = 1, list%n
+            call list%f(k)%p%data_time_range(t0, t1, found)
+        end do
+    end function web_time_range
+
+    !> Write the frames (the page's "frames" array): each frame's pose (now),
+    !> children, decorations, light source, its motion over the animation's
+    !> time range (if animated: followed frames sampled at their data's times
+    !> and evenly, by [[local_matrix_at]]; other frames, the poses recorded),
+    !> and what it draws ([[export_web]]).
+    subroutine write_web_frames(list, w)
+        type(WebFrameList), intent(inout) :: list           !! the page's frames
+        type(WebWriter), intent(inout) :: w                 !! the page being written
+        class(ReferenceFrame), pointer :: f
+        integer, allocatable :: kids(:)
+        real(wp) :: geom(7, 3), len, head, rb, rh
+        character(len=256) :: names(3)
+        integer :: k, j
+        call w%begin_array('frames')
+        do k = 1, list%n
+            f => list%f(k)%p
+            call w%begin_object()
+            call w%put('name', f%name())
+            call w%put('color', f%color_)
+            call w%put('p', f%position_)
+            call w%put('q', f%attitude_)
+            allocate(kids(f%n_children))
+            do j = 1, f%n_children
+                kids(j) = web_frame_index(list, f%children(j)%p)
+            end do
+            call w%put('children', kids)
+            deallocate(kids)
+            call w%put('contents', f%contents)
+            ! decorations: the axes' arrows (base, length, head ratio, radii) and labels
+            if (.not. f%axes_moved) call f%reposition_axes()
+            do j = 1, 3
+                len = f%axis_len(j)
+                head = f%axis_head_ratio(j)
+                if (head <= 0.0_wp .or. head >= 1.0_wp) head = 0.3_wp
+                rb = f%axis_body_radius(j)
+                if (rb <= 0.0_wp) rb = 0.05_wp * len
+                rh = f%axis_head_radius(j)
+                if (rh <= 0.0_wp) rh = 0.1_wp * len
+                geom(:, j) = [f%axis_base(:, j), len, head, rb, rh]
+            end do
+            call w%put('axes', f%axes)
+            call w%put('axes_labels', f%axes_labels)
+            call w%put('axes_geometry', reshape(geom, [21]))
+            names(1) = f%axis_label(X_AXIS)
+            names(2) = f%axis_label(Y_AXIS)
+            names(3) = f%axis_label(Z_AXIS)
+            call w%put('axis_names', names)
+            call w%put('name_label', f%name_label)
+            call w%put('name_on_top', f%name_on_top)
+            call w%put('label_size', f%label_size_)
+            call w%put('label_alignment', f%label_alignment_)
+            if (f%light_source) then
+                call w%begin_object('light')
+                call w%put('ambient', f%light_ambient_)
+                call w%put('diffuse', f%light_diffuse_)
+                call w%put('specular', f%light_specular_)
+                call w%end_object()
+            end if
+            if (w%animate) call write_track(f, w)
+            call w%begin_array('items')
+            call f%export_web(w)
+            call w%end_array()
+            call w%end_object()
+        end do
+        call w%end_array()
+    end subroutine write_web_frames
+
+    !> A frame's motion over the animation's range ("track": times, positions
+    !> (double precision) and attitudes), if it moves.
+    subroutine write_track(f, w)
+        class(ReferenceFrame), intent(in) :: f              !! the frame
+        type(WebWriter), intent(inout) :: w                 !! the page being written
+        type(Trajectory), pointer :: traj
+        real(wp), pointer :: tt(:)
+        real(wp), allocatable :: times(:), p(:,:), q(:,:)
+        real(wp) :: m(4,4)
+        integer, parameter :: max_samples = 50000
+        integer :: k, n, i, ns
+        if (f%following) then
+            ns = max(2, w%samples)
+            allocate(times(ns))
+            do i = 1, ns
+                times(i) = w%t_start + (w%t_end - w%t_start) * real(i - 1, wp) / real(ns - 1, wp)
+            end do
+            n = ns
+            do k = 1, f%follower_%num_trajectories()              ! the data's own times in the range
+                traj => f%follower_%followed(k)
+                if (.not. associated(traj)) cycle
+                call traj%times(tt)
+                if (.not. associated(tt)) cycle
+                times = [times(1:n), pack(tt, tt > w%t_start .and. tt < w%t_end)]
+                n = size(times)
+            end do
+            call sort_unique(times, n)
+            if (n > max_samples) then
+                times = [times(1:n:(n + max_samples - 1) / max_samples), times(n)]
+                n = size(times)
+                call sort_unique(times, n)
+            end if
+            allocate(p(3, n), q(4, n))
+            do i = 1, n
+                m = f%local_matrix_at(times(i))
+                p(:, i) = m(1:3, 4)
+                q(:, i) = quat_from_matrix(m(1:3, 1:3))
+            end do
+        else if (f%rec_n >= 2) then
+            n = f%rec_n
+            times = f%rec_t(1:n)
+            p = f%rec_pose(1:3, 1:n)
+            q = f%rec_pose(4:7, 1:n)
+        else
+            return
+        end if
+        call w%begin_object('track')
+        call w%put_f64('t', times(1:n) - w%t_ref)
+        call w%put_f64('p', reshape(p, [3 * n]))
+        call w%put_f32('q', reshape(q, [4 * n]))
+        call w%end_object()
+    end subroutine write_track
+
+    !> Sort a(1:n) and remove repeated values (n: the values left).
+    subroutine sort_unique(a, n)
+        real(wp), intent(inout) :: a(:)                     !! the values (1:n used)
+        integer, intent(inout) :: n                         !! the number of values
+        integer :: i, m
+        call quicksort(a(1:n))
+        m = min(n, 1)
+        do i = 2, n
+            if (a(i) /= a(m)) then
+                m = m + 1
+                a(m) = a(i)
+            end if
+        end do
+        n = m
+    end subroutine sort_unique
+
+    !> Sort values in increasing order (in place).
+    recursive subroutine quicksort(a)
+        real(wp), intent(inout) :: a(:)                     !! the values
+        real(wp) :: pivot, tmp
+        integer :: i, j
+        if (size(a) < 2) return
+        pivot = a((size(a) + 1) / 2)
+        i = 1
+        j = size(a)
+        do
+            do while (a(i) < pivot)
+                i = i + 1
+            end do
+            do while (a(j) > pivot)
+                j = j - 1
+            end do
+            if (i >= j) exit
+            tmp = a(i)
+            a(i) = a(j)
+            a(j) = tmp
+            i = i + 1
+            j = j - 1
+        end do
+        call quicksort(a(1:j))
+        call quicksort(a(j+1:))
+    end subroutine quicksort
 
 end module vkf_frames

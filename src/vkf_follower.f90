@@ -60,7 +60,7 @@ module vkf_follower
         integer :: stamp_ = 0                       !! motion stamp of the last change of settings (next_motion_stamp)
     contains
         procedure :: set_trajectory, add_trajectory, remove_trajectory, remove_all
-        procedure :: num_trajectories
+        procedure :: num_trajectories, followed
         procedure :: set_follow_type, follow_mode, follow_data
         procedure :: set_x_data, set_y_data, set_z_data, data_sources
         procedure :: set_default_data, using_default_data, data_valid
@@ -130,6 +130,15 @@ contains
         if (self%default_data) call self%set_default_data()
         self%stamp_ = next_motion_stamp()
     end subroutine add_trajectory
+
+    !> The i-th trajectory followed (null if there isn't one).
+    function followed(self, i) result(traj)
+        class(TrajectoryFollower), intent(in) :: self
+        integer, intent(in) :: i                            !! 1 to num_trajectories
+        type(Trajectory), pointer :: traj
+        traj => null()
+        if (i >= 1 .and. i <= self%n) traj => self%trajs(i)%p
+    end function followed
 
     !> Stop following `traj`.
     subroutine remove_trajectory(self, traj)

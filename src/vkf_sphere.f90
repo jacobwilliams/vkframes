@@ -55,6 +55,7 @@ module vkf_sphere
                          vkf_sphere_lod_create, vkf_sphere_lod_add, vkf_sphere_lod_requested
     use vkf_geometry, only: ellipsoid_create
     use vkf_files, only: find_data_file
+    use vkf_web_writer, only: WebWriter
 
     implicit none
 
@@ -113,6 +114,7 @@ module vkf_sphere
         procedure :: build_contents => sphere_build_contents
         procedure :: update => sphere_update
         procedure :: num_lod_meshes
+        procedure :: export_web => sphere_export_web
     end type Sphere
 
     !> The Sphere constructor: `Sphere(...)` makes one (see [[new_sphere]] for its
@@ -502,5 +504,34 @@ contains
                                                                     self%radii() / self%built_radii)) /= 0) &
             write(*, '(a)') 'vkframes: Sphere '//self%name()//': transform failed'
     end subroutine update_sphere_transform
+
+    !> The web page's item: the ellipsoid, its pose in the frame, its material
+    !> and its texture (inlined; the night texture and the twilight aren't
+    !> drawn by the page).
+    subroutine sphere_export_web(self, w)
+        class(Sphere), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w                 !! the page being written
+        character(len=:), allocatable :: path
+        integer :: id
+        call w%begin_object()
+        call w%put('type', 'sphere')
+        call w%put('radii', self%radii())
+        call w%put('center', self%sphere_position_)
+        call w%put('q', self%sphere_attitude_)
+        call w%put('color', self%color())
+        call w%put('ambient', self%ambient_)
+        call w%put('diffuse', self%diffuse_)
+        call w%put('specular', self%specular_)
+        call w%put('emission', self%emission_)
+        call w%put('shininess', self%shininess_)
+        call w%put('opacity', self%opacity_)
+        id = -1
+        if (allocated(self%texture)) then
+            path = find_data_file(self%texture)
+            if (len(path) > 0) id = w%add_asset(path)
+        end if
+        call w%put('texture', id)
+        call w%end_object()
+    end subroutine sphere_export_web
 
 end module vkf_sphere

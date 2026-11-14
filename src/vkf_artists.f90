@@ -88,7 +88,8 @@ module vkf_artists
     use vkf_math, only: wp, set_rgba, rigid_inverse
     use vkf_trajectory, only: Trajectory, DataSource, position_sources, SOURCE_ZERO, SOURCE_POSOPT, &
                               TIME_OUT_OF_RANGE, TIME_NOT_FOUND
-    use vkf_frames, only: ReferenceFrame, PickHit, add_pick_hit, PICK_CURVE, PICK_SEGMENT, PICK_MARKER
+    use vkf_frames, only: ReferenceFrame, PickHit, add_pick_hit, PICK_CURVE, PICK_SEGMENT, PICK_MARKER, widen_time_range
+    use vkf_web_writer, only: WebWriter
     use vkf_pick, only: PickCamera, point_pick, segment_pick, sphere_near, wants
     use vkf_layer, only: check_status, vkf_line_create, vkf_line_create_colored, vkf_line_colors, vkf_line_points_changed, &
                          vkf_ribbon_create, &
@@ -525,6 +526,8 @@ module vkf_artists
         procedure :: build_contents => drawable_build_contents
         procedure :: update => drawable_update
         procedure :: pick => drawable_pick
+        procedure :: export_web => drawable_export_web
+        procedure :: data_time_range => drawable_data_time_range
     end type DrawableTrajectory
 
     !> The DrawableTrajectory constructor: `DrawableTrajectory(...)` makes one (see [[new_drawable_trajectory]] for its
@@ -3495,5 +3498,255 @@ contains
         call check_status(vkf_node_add_child(self%contents_group, group), 'trajectory artists')
         self%artists(k)%group = group
     end subroutine build_artist
+
+    ! ==================================================================
+    ! export to the web (WindowProxy%export_web)
+
+    !> Write the artists' drawings as the web page's items: each point where
+    !> it is drawn (in this frame's coordinates, data in another frame
+    !> transformed), with its time for trace mode and trails, which the page
+    !> animates.
+    subroutine drawable_export_web(self, w)
+        class(DrawableTrajectory), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w                 !! the page being written
+        integer :: k
+        call attach_frames(self)
+        do k = 1, self%n_artists
+            if (.not. associated(self%artists(k)%p%traj)) cycle
+            select type (a => self%artists(k)%p)
+            type is (CurveArtist)
+                call export_curve(a, w)
+            type is (SegmentArtist)
+                call export_segments(a, w)
+            type is (MarkerArtist)
+                call export_markers(a, w)
+            type is (RibbonArtist)
+                call export_ribbon(a, w)
+            class default
+                call w%warn_once('artist:'//self%name(), 'trajectory "'//self%name()//'": an artist type not exported')
+            end select
+        end do
+    end subroutine drawable_export_web
+
+    !> The time range of the trajectories drawn (and followed), widening [t0, t1].
+    subroutine drawable_data_time_range(self, t0, t1, found)
+        class(DrawableTrajectory), intent(in) :: self
+        real(wp), intent(inout) :: t0                       !! the range's start, widened
+        real(wp), intent(inout) :: t1                       !! its end, widened
+        logical, intent(inout) :: found                     !! set if a trajectory has data
+        integer :: k
+        call self%ReferenceFrame%data_time_range(t0, t1, found)
+        do k = 1, self%n_artists
+            if (associated(self%artists(k)%p%traj)) call widen_time_range(self%artists(k)%p%traj, t0, t1, found)
+        end do
+    end subroutine drawable_data_time_range
+
+    !> The points 1 .. n to write (all, or about w%max_points of them, the
+    !> last included).
+    function web_indices(n, max_points) result(idx)
+        integer, intent(in) :: n                            !! the curve's points
+        integer, intent(in) :: max_points                   !! the most to write (0 or 1: all)
+        integer, allocatable :: idx(:)                      !! the points to write, in order
+        integer :: stride, i
+        if (max_points <= 1 .or. n <= max_points) then
+            idx = [(i, i = 1, n)]
+        else
+            stride = (n + max_points - 1) / max_points
+            idx = [(i, i = 1, n, stride)]
+            if (idx(size(idx)) /= n) idx = [idx, n]
+        end if
+    end function web_indices
+
+    !> Each point's color (4, n) for points idx: the trajectory's, the
+    !> artist's own (`own`) where it has none.
+    function web_colors(traj, idx, own) result(c)
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        integer, intent(in) :: idx(:)                       !! its points
+        real(wp), intent(in) :: own(4)                      !! the artist's color [r, g, b, a]
+        real(wp) :: c(4, size(idx))                         !! the points' colors
+        real(c_float), dimension(:,:), pointer :: col
+        integer :: k, m
+        call traj%colors(col)
+        m = traj%num_colors()
+        do k = 1, size(idx)
+            if (idx(k) <= m) then
+                c(:, k) = real(col(:, idx(k)), wp)
+            else
+                c(:, k) = own
+            end if
+        end do
+    end function web_colors
+
+    !> The times of points idx.
+    function web_times(traj, idx) result(t)
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        integer, intent(in) :: idx(:)                       !! its points
+        real(wp) :: t(size(idx))                            !! their times
+        integer :: k
+        do k = 1, size(idx)
+            t(k) = traj%time(idx(k))
+        end do
+    end function web_times
+
+    !> A curve: a strip of its points, with their times (for trace mode and
+    !> trails) and colors (point colors).
+    subroutine export_curve(a, w)
+        type(CurveArtist), intent(inout) :: a               !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
+        real(wp), allocatable :: v(:,:)
+        integer, allocatable :: idx(:)
+        integer :: n
+        logical :: timed, colored
+        n = a%points()
+        if (n < 2) return
+        allocate(v(3, n))
+        call art_points(a, 1, n, a%sources_, v)
+        idx = web_indices(n, w%max_points)
+        timed = a%trace .or. a%trail_%on
+        colored = a%point_colors_ .and. a%traj%num_colors() > 0
+        if (timed .and. colored) then
+            call w%begin_line_item(v(:, idx), a%color_, a%width_, .false., times=web_times(a%traj, idx), &
+                                   colors=web_colors(a%traj, idx, a%color_))
+        else if (timed) then
+            call w%begin_line_item(v(:, idx), a%color_, a%width_, .false., times=web_times(a%traj, idx))
+        else if (colored) then
+            call w%begin_line_item(v(:, idx), a%color_, a%width_, .false., colors=web_colors(a%traj, idx, a%color_))
+        else
+            call w%begin_line_item(v(:, idx), a%color_, a%width_, .false.)
+        end if
+        call w%put('trace', a%trace)
+        call w%put('pattern', a%pattern_)
+        call w%put('factor', a%pattern_factor)
+        if (a%trail_%on) then
+            call w%begin_object('trail')
+            call w%put('past', a%trail_%past)
+            call w%put('future', a%trail_%future)
+            call w%put('fade', a%trail_%fade)
+            call w%put('colors', reshape(a%trail_%color, [8]))
+            call w%put('replace', merge(1, 0, a%trail_%replace))
+            call w%put('opacity', a%trail_%opacity)
+            call w%end_object()
+        end if
+        if (a%highlight_%mode /= HIGHLIGHT_NONE) then
+            call w%begin_object('highlight')
+            call w%put('mode', a%highlight_%mode)
+            call w%put('color', a%highlight_%color)
+            call w%put('period', a%highlight_%pulse_period)
+            call w%end_object()
+        end if
+        call w%end_object()
+    end subroutine export_curve
+
+    !> Segments: pairs of points, both with the segment's point's time.
+    subroutine export_segments(a, w)
+        type(SegmentArtist), intent(inout) :: a             !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
+        real(wp), allocatable :: v(:,:), e(:,:), xyz(:,:), t(:)
+        integer :: m, ib, k
+        m = segment_count(a)
+        if (m < 1) return
+        ib = 1 + (m - 1) * a%stride_
+        allocate(v(3, m), e(3, m), xyz(3, 2 * m), t(2 * m))
+        call a%traj%points(1, ib, a%start_, v, a%stride_)
+        call a%traj%points(1, ib, a%end_, e, a%stride_)
+        if (a%end_relative_) e = v + e
+        call to_shown_at(a, 1, v, a%stride_)
+        call to_shown_at(a, 1, e, a%stride_)
+        xyz(:, 1::2) = v
+        xyz(:, 2::2) = e
+        do k = 1, m
+            t(2*k-1:2*k) = a%traj%time(1 + (k - 1) * a%stride_)
+        end do
+        call w%begin_line_item(xyz, a%color_, a%width_, .true., times=t)
+        call w%put('trace', a%trace)
+        call w%put('pattern', a%pattern_)
+        call w%put('factor', a%pattern_factor)
+        call w%end_object()
+    end subroutine export_segments
+
+    !> Markers: the start, the end and the intermediate ones, each with its time.
+    subroutine export_markers(a, w)
+        type(MarkerArtist), intent(inout) :: a              !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
+        real(wp) :: atten, rgba(4)
+        logical :: zero
+        integer :: n
+        if (a%shape_ == MARKER_IMAGE) call w%warn_once('marker image', 'image markers are drawn as disks')
+        zero = all(a%sources_%src == SOURCE_ZERO)
+        if (zero) then
+            n = 1
+        else
+            n = source_points(a%traj, a%sources_)
+        end if
+        if (n < 1) return
+        atten = 0.0_wp
+        if (a%attenuate) atten = a%radius
+        if (iand(a%markers_, MARKER_START) /= 0) then
+            rgba = end_rgba(a, 1, a%start_color)
+            call one_marker(1, rgba)
+        end if
+        if (iand(a%markers_, MARKER_END) /= 0 .and. n > 1) then
+            rgba = end_rgba(a, n, a%end_color)
+            call one_marker(n, rgba)
+        end if
+        if (iand(a%markers_, MARKER_INTERMEDIATE) /= 0 .and. a%n_inter > 0) then
+            if (allocated(a%inter_rgba) .and. a%point_colors_) then
+                call w%begin_point_item(a%inter_xyz(:, 1:a%n_inter), a%intermediate_color, a%size_, a%shape_, atten, &
+                                        times=a%inter_t(1:a%n_inter), colors=a%inter_rgba(:, 1:a%n_inter))
+            else
+                call w%begin_point_item(a%inter_xyz(:, 1:a%n_inter), a%intermediate_color, a%size_, a%shape_, atten, &
+                                        times=a%inter_t(1:a%n_inter))
+            end if
+            call w%put('trace', a%trace)
+            call w%end_object()
+        end if
+    contains
+        !> One marker item: the start's or the end's.
+        subroutine one_marker(i, color)
+            integer, intent(in) :: i                        !! its point (1 or n)
+            real(wp), intent(in) :: color(4)                !! [r, g, b, a]
+            real(wp) :: p(3, 1)
+            p(:, 1) = marker_point(a, i, zero)
+            call w%begin_point_item(p, color, a%size_, a%shape_, atten, times=[a%traj%time(i)])
+            call w%put('trace', a%trace .and. .not. zero)
+            call w%end_object()
+        end subroutine one_marker
+    end subroutine export_markers
+
+    !> A ribbon: a mesh of quads between each point's pair and the next's,
+    !> each vertex with its point's time (trace mode) and color.
+    subroutine export_ribbon(a, w)
+        type(RibbonArtist), intent(inout) :: a              !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
+        real(wp), allocatable :: v(:,:), e(:,:), xyz(:,:), t(:), c(:,:), cp(:,:)
+        integer, allocatable :: tri(:,:), idx(:)
+        integer :: n, k
+        n = a%points()
+        if (n < 2) return
+        allocate(v(3, n), e(3, n))
+        call art_points(a, 1, n, a%start_, v)
+        call art_points(a, 1, n, a%end_, e)
+        allocate(xyz(3, 2 * n), t(2 * n), tri(3, 2 * (n - 1)))
+        xyz(:, 1::2) = v
+        xyz(:, 2::2) = e
+        idx = [(k, k = 1, n)]
+        t(1::2) = web_times(a%traj, idx)
+        t(2::2) = t(1::2)
+        do k = 1, n - 1
+            tri(:, 2*k-1) = [2*k-1, 2*k, 2*k+1]
+            tri(:, 2*k) = [2*k, 2*k+2, 2*k+1]
+        end do
+        if (a%point_colors_ .and. a%traj%num_colors() > 0) then
+            cp = web_colors(a%traj, idx, [a%color_(1:3), 1.0_wp])
+            allocate(c(4, 2 * n))
+            c(:, 1::2) = cp
+            c(:, 2::2) = cp
+            call w%begin_mesh_item(xyz, tri, [1.0_wp, 1.0_wp, 1.0_wp, a%color_(4)], colors=c, times=t)
+        else
+            call w%begin_mesh_item(xyz, tri, a%color_, times=t)
+        end if
+        call w%put('trace', a%trace)
+        call w%end_object()
+    end subroutine export_ribbon
 
 end module vkf_artists

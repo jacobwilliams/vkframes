@@ -49,6 +49,8 @@ jobs:
           xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example orbit -- 30 "$PWD/captures/orbit.png"
           xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example precision -- 10 "$PWD/captures/precision.png"
           xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example spinning_model -- 30 "$PWD/captures/spinning_model.png"
+          xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example web_export -- 30 "$PWD/captures"
+          pixi run python tools/check_web_page.py captures/web_export*.html
           xvfb-run -a -s "-screen 0 1280x1024x24" pixi run test test_record
           xvfb-run -a -s "-screen 0 1280x1024x24" pixi run example record_video -- "$PWD/captures/record_video.mp4" 2
 
@@ -60,6 +62,8 @@ jobs:
           pixi run example orbit -- 30 "$PWD/captures/orbit.png"
           pixi run example precision -- 10 "$PWD/captures/precision.png"
           pixi run example spinning_model -- 30 "$PWD/captures/spinning_model.png"
+          pixi run example web_export -- 30 "$PWD/captures"
+          pixi run python tools/check_web_page.py captures/web_export*.html
           pixi run test test_record
           pixi run example record_video -- "$PWD/captures/record_video.mp4" 2
 
@@ -152,6 +156,19 @@ jobs:
         if: runner.os == 'macOS'
         continue-on-error: true
         run: pixi run -e qt frames-demo --frame-test --capture "$PWD/captures/frames_demo.png" --capture-frame 40 --quit-after 60
+
+      # The Artemis I demo (qt-fortran; NASA's trajectory from JPL Horizons, downloaded
+      # by the run; --export writes the mission to a web page, checked).
+      - name: Build the Artemis I demo
+        continue-on-error: ${{ runner.os == 'Windows' }}
+        run: pixi run -e qt artemis-build
+
+      - name: Run the Artemis I demo (macOS)
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        run: |
+          pixi run -e qt artemis-demo --export "$PWD/captures/artemis1.html" --capture "$PWD/captures/artemis_demo.png" --capture-frame 40 --quit-after 20
+          pixi run python tools/check_web_page.py captures/artemis1.html
 
       # The PySide6 demo (separate fpm project, a shared library driven by a
       # Python GUI through ctypes).

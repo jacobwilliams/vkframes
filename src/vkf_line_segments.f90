@@ -24,6 +24,7 @@ module vkf_line_segments
     use, intrinsic :: iso_c_binding, only: c_ptr, c_associated, c_float
     use vkf_math, only: wp
     use vkf_frames, only: ReferenceFrame
+    use vkf_web_writer, only: WebWriter
     use vkf_line_chain, only: LineChain, CHAIN_SEGMENTS, split_points
 
     implicit none
@@ -62,6 +63,7 @@ module vkf_line_segments
         procedure :: bound => segments_bound
         procedure :: build_contents => segments_build_contents
         procedure :: late_update => segments_late_update
+        procedure :: export_web => segments_export_web
     end type CustomLineSegments
 
     abstract interface
@@ -362,5 +364,30 @@ contains
         call self%chain%written(1, n)
         call self%chain%draw(n)
     end subroutine write_segments
+
+    !> The web page's item: the segments as they are now (a callback's
+    !> segments are not animated by the page).
+    subroutine segments_export_web(self, w)
+        class(CustomLineSegments), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        real(wp), allocatable :: xyz(:,:), c(:,:)
+        if (self%n < 1) return
+        if (associated(self%callback)) &
+            call w%warn_once('segments:'//self%name(), 'line segments "'//self%name()//'": drawn as they are now')
+        allocate(xyz(3, 2 * self%n))
+        xyz(:, 1::2) = self%a(:, 1:self%n)
+        xyz(:, 2::2) = self%b(:, 1:self%n)
+        if (allocated(self%color_a)) then
+            allocate(c(4, 2 * self%n))
+            c(:, 1::2) = real(self%color_a(:, 1:self%n), wp)
+            c(:, 2::2) = real(self%color_b(:, 1:self%n), wp)
+            call w%begin_line_item(xyz, self%color(), self%width_, .true., colors=c)
+        else
+            call w%begin_line_item(xyz, self%color(), self%width_, .true.)
+        end if
+        call w%put('pattern', self%pattern_)
+        call w%put('factor', self%pattern_factor)
+        call w%end_object()
+    end subroutine segments_export_web
 
 end module vkf_line_segments
