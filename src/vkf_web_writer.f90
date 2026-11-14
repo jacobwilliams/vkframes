@@ -35,13 +35,13 @@ module vkf_web_writer
     !> The scene being written (see the module documentation).
     type, public :: WebWriter
         character(len=:), allocatable :: json           !! the JSON so far (1:nj used)
-        integer(int64) :: nj = 0
+        integer(int64) :: nj = 0                        !! characters of `json` used
         logical :: first(0:max_depth) = .true.         !! nothing written yet at each depth
-        integer :: depth = 0
+        integer :: depth = 0                            !! the current nesting (0: the top level)
         integer(int8), allocatable :: bin(:)            !! the binary buffer (1:nb used)
-        integer(int64) :: nb = 0
+        integer(int64) :: nb = 0                        !! bytes of `bin` used
         type(WebAsset), allocatable :: assets(:)        !! the assets (1:n_assets)
-        integer :: n_assets = 0
+        integer :: n_assets = 0                         !! assets added
         character(len=:), allocatable :: warned         !! the warnings given ('|key|key|')
         ! the export's times
         real(wp) :: t_ref = 0.0_wp                      !! times are written relative to it
@@ -70,7 +70,7 @@ contains
     !> Append text to the JSON.
     subroutine emit(self, s)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: s
+        character(len=*), intent(in) :: s                   !! the text
         character(len=:), allocatable :: tmp
         integer(int64) :: need, cap
         if (.not. allocated(self%json)) allocate(character(len=65536) :: self%json)
@@ -88,7 +88,7 @@ contains
     !> A separator if something came before at this depth, and the key.
     subroutine start_value(self, key)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in), optional :: key
+        character(len=*), intent(in), optional :: key      !! the value's key (absent: in an array, or the top level)
         if (.not. self%first(self%depth)) call emit(self, ',')
         self%first(self%depth) = .false.
         if (present(key)) call emit(self, quoted(key)//':')
@@ -104,6 +104,7 @@ contains
         self%first(self%depth) = .true.
     end subroutine begin_object
 
+    !> End the object begun last.
     subroutine end_object(self)
         class(WebWriter), intent(inout) :: self
         call emit(self, '}')
@@ -113,48 +114,54 @@ contains
     !> Begin an array (a value of `key`, or in an array).
     subroutine begin_array(self, key)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in), optional :: key
+        character(len=*), intent(in), optional :: key      !! (absent: in an array, or the top level)
         call start_value(self, key)
         call emit(self, '[')
         self%depth = min(self%depth + 1, max_depth)
         self%first(self%depth) = .true.
     end subroutine begin_array
 
+    !> End the array begun last.
     subroutine end_array(self)
         class(WebWriter), intent(inout) :: self
         call emit(self, ']')
         self%depth = max(self%depth - 1, 0)
     end subroutine end_array
 
+    !> A string value (quoted and escaped).
     subroutine put_string(self, key, value)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key, value
+        character(len=*), intent(in) :: key                 !! its key
+        character(len=*), intent(in) :: value               !! the string
         call start_value(self, key)
         call emit(self, quoted(value))
     end subroutine put_string
 
+    !> A number (see [[json_number]]).
     subroutine put_real(self, key, value)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        real(wp), intent(in) :: value
+        character(len=*), intent(in) :: key                 !! its key
+        real(wp), intent(in) :: value                       !! the number
         call start_value(self, key)
         call emit(self, json_number(value))
     end subroutine put_real
 
+    !> A whole number.
     subroutine put_int(self, key, value)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        integer, intent(in) :: value
+        character(len=*), intent(in) :: key                 !! its key
+        integer, intent(in) :: value                        !! the number
         character(len=24) :: s
         call start_value(self, key)
         write(s, '(i0)') value
         call emit(self, trim(s))
     end subroutine put_int
 
+    !> A boolean (true or false).
     subroutine put_logical(self, key, value)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        logical, intent(in) :: value
+        character(len=*), intent(in) :: key                 !! its key
+        logical, intent(in) :: value                        !! the value
         call start_value(self, key)
         if (value) then
             call emit(self, 'true')
@@ -166,8 +173,8 @@ contains
     !> A small array of numbers, inline (large ones: put_f32, put_f64).
     subroutine put_reals(self, key, values)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        real(wp), intent(in) :: values(:)
+        character(len=*), intent(in) :: key                 !! its key
+        real(wp), intent(in) :: values(:)                   !! the numbers
         integer :: k
         call start_value(self, key)
         call emit(self, '[')
@@ -178,10 +185,11 @@ contains
         call emit(self, ']')
     end subroutine put_reals
 
+    !> A small array of whole numbers, inline (large ones: put_u32).
     subroutine put_ints(self, key, values)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        integer, intent(in) :: values(:)
+        character(len=*), intent(in) :: key                 !! its key
+        integer, intent(in) :: values(:)                    !! the numbers
         character(len=24) :: s
         integer :: k
         call start_value(self, key)
@@ -194,10 +202,11 @@ contains
         call emit(self, ']')
     end subroutine put_ints
 
+    !> An array of strings (each without its trailing blanks).
     subroutine put_strings(self, key, values)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        character(len=*), intent(in) :: values(:)
+        character(len=*), intent(in) :: key                 !! its key
+        character(len=*), intent(in) :: values(:)           !! the strings
         integer :: k
         call start_value(self, key)
         call emit(self, '[')
@@ -212,8 +221,8 @@ contains
     !> fraction; beyond +-1e30, +-1e30, as the viewer's shaders are single
     !> precision).
     function json_number(x) result(s)
-        real(wp), intent(in) :: x
-        character(len=:), allocatable :: s
+        real(wp), intent(in) :: x                           !! the number
+        character(len=:), allocatable :: s                  !! its JSON text
         character(len=32) :: buf
         real(wp) :: y
         y = x
@@ -229,8 +238,8 @@ contains
 
     !> A JSON string (quoted, escaped; '<' as <, so no '</script>' in the page).
     function quoted(s) result(q)
-        character(len=*), intent(in) :: s
-        character(len=:), allocatable :: q
+        character(len=*), intent(in) :: s                   !! the text
+        character(len=:), allocatable :: q                  !! the JSON string
         character(len=6) :: u
         integer :: k, c
         q = '"'
@@ -276,8 +285,8 @@ contains
     !> Room for n more bytes, after padding to `align`; the offset where they go.
     integer(int64) function reserve(self, n, align) result(offset)
         class(WebWriter), intent(inout) :: self
-        integer(int64), intent(in) :: n
-        integer, intent(in) :: align
+        integer(int64), intent(in) :: n                     !! bytes needed
+        integer, intent(in) :: align                        !! the offset's alignment (bytes)
         integer(int8), allocatable :: tmp(:)
         integer(int64) :: need
         integer(int64) :: start
@@ -301,9 +310,9 @@ contains
     !> The reference to an array in the buffer: [byte offset, count].
     subroutine put_ref(self, key, offset, count)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        integer(int64), intent(in) :: offset
-        integer, intent(in) :: count
+        character(len=*), intent(in) :: key                 !! its key
+        integer(int64), intent(in) :: offset                !! the array's byte offset in the buffer (0-based)
+        integer, intent(in) :: count                        !! its number of values
         character(len=48) :: s
         call start_value(self, key)
         write(s, '(a,i0,a,i0,a)') '[', offset, ',', count, ']'
@@ -313,8 +322,8 @@ contains
     !> Values as float32 in the buffer (the JSON: [byte offset, count]).
     subroutine put_f32(self, key, values)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        real(wp), intent(in) :: values(:)
+        character(len=*), intent(in) :: key                 !! its key
+        real(wp), intent(in) :: values(:)                   !! the values (rounded to single precision)
         integer(int64) :: off, nbytes
         nbytes = 4_int64 * size(values)
         off = reserve(self, nbytes, 8)
@@ -325,8 +334,8 @@ contains
     !> Values as float64 in the buffer.
     subroutine put_f64(self, key, values)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        real(wp), intent(in) :: values(:)
+        character(len=*), intent(in) :: key                 !! its key
+        real(wp), intent(in) :: values(:)                   !! the values
         integer(int64) :: off, nbytes
         nbytes = 8_int64 * size(values)
         off = reserve(self, nbytes, 8)
@@ -337,8 +346,8 @@ contains
     !> Values as uint32 in the buffer.
     subroutine put_u32(self, key, values)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key
-        integer, intent(in) :: values(:)
+        character(len=*), intent(in) :: key                 !! its key
+        integer, intent(in) :: values(:)                    !! the values (0 or more)
         integer(int64) :: off, nbytes
         nbytes = 4_int64 * size(values)
         off = reserve(self, nbytes, 8)
@@ -353,7 +362,7 @@ contains
     !> chunk's origin ("o", double precision) and the points ("p", float32).
     subroutine put_chunk_points(self, xyz)
         class(WebWriter), intent(inout) :: self
-        real(wp), intent(in) :: xyz(:,:)
+        real(wp), intent(in) :: xyz(:,:)                    !! (3, n) the points
         real(wp) :: o(3)
         integer :: k
         o = 0.0_wp
@@ -369,9 +378,11 @@ contains
     !> One chunk of points lo .. hi, with their times and colors if given.
     subroutine put_chunk(self, xyz, lo, hi, times, colors)
         class(WebWriter), intent(inout) :: self
-        real(wp), intent(in) :: xyz(:,:)
-        integer, intent(in) :: lo, hi
-        real(wp), intent(in), optional :: times(:), colors(:,:)
+        real(wp), intent(in) :: xyz(:,:)                    !! (3, n) all the points
+        integer, intent(in) :: lo                           !! the chunk's first point
+        integer, intent(in) :: hi                           !! its last point
+        real(wp), intent(in), optional :: times(:)          !! (n) the points' times
+        real(wp), intent(in), optional :: colors(:,:)       !! (4, n) their colors
         call self%begin_object()
         call put_chunk_points(self, xyz(:, lo:hi))
         if (present(times)) call self%put_f32('t', times(lo:hi) - self%t_ref)
@@ -421,10 +432,13 @@ contains
     !> the camera (0: never), with times and colors if given.
     subroutine begin_point_item(self, xyz, rgba, size, shape, attenuation, times, colors)
         class(WebWriter), intent(inout) :: self
-        real(wp), intent(in) :: xyz(:,:)
-        real(wp), intent(in) :: rgba(4), size, attenuation
-        integer, intent(in) :: shape
-        real(wp), intent(in), optional :: times(:), colors(:,:)
+        real(wp), intent(in) :: xyz(:,:)                    !! (3, n) the points
+        real(wp), intent(in) :: rgba(4)                     !! [r, g, b, a]
+        real(wp), intent(in) :: size                        !! window units
+        integer, intent(in) :: shape                        !! MARKER_*
+        real(wp), intent(in) :: attenuation                 !! the distance beyond which markers shrink (0: never)
+        real(wp), intent(in), optional :: times(:)          !! (n)
+        real(wp), intent(in), optional :: colors(:,:)       !! (4, n)
         integer :: n, lo, hi
         n = size_of(xyz)
         call self%begin_object()
@@ -442,8 +456,9 @@ contains
         end do
         call self%end_array()
     contains
+        !> The number of columns of `a` (`size` is an argument here).
         pure integer function size_of(a)
-            real(wp), intent(in) :: a(:,:)
+            real(wp), intent(in) :: a(:,:)                  !! (3, n)
             size_of = ubound(a, 2) - lbound(a, 2) + 1
         end function size_of
     end subroutine begin_point_item
@@ -453,11 +468,13 @@ contains
     !> sides, no depth written); per-vertex colors (4, n) and times if given.
     subroutine begin_mesh_item(self, xyz, idx, rgba, normals, colors, times, two_sided)
         class(WebWriter), intent(inout) :: self
-        real(wp), intent(in) :: xyz(:,:)
-        integer, intent(in) :: idx(:,:)
-        real(wp), intent(in) :: rgba(4)
-        real(wp), intent(in), optional :: normals(:,:), colors(:,:), times(:)
-        logical, intent(in), optional :: two_sided
+        real(wp), intent(in) :: xyz(:,:)                    !! (3, n) the vertices
+        integer, intent(in) :: idx(:,:)                     !! (3, m) the triangles' vertices (1-based)
+        real(wp), intent(in) :: rgba(4)                     !! [r, g, b, a]
+        real(wp), intent(in), optional :: normals(:,:)      !! (3, n) (present: lit)
+        real(wp), intent(in), optional :: colors(:,:)       !! (4, n)
+        real(wp), intent(in), optional :: times(:)          !! (n)
+        logical, intent(in), optional :: two_sided          !! a lit mesh's both sides drawn (default false)
         logical :: both
         both = .false.
         if (present(two_sided)) both = two_sided
@@ -512,8 +529,9 @@ contains
 
     !> A media type from a file's extension.
     function mime_of(path) result(mime)
-        character(len=*), intent(in) :: path
-        character(len=:), allocatable :: mime, ext
+        character(len=*), intent(in) :: path                !! the file
+        character(len=:), allocatable :: mime               !! e.g. image/png
+        character(len=:), allocatable :: ext
         integer :: k
         k = index(path, '.', back=.true.)
         ext = ''
@@ -534,9 +552,10 @@ contains
         end select
     end function mime_of
 
+    !> Text in lower case (ASCII).
     pure function lower(s) result(t)
-        character(len=*), intent(in) :: s
-        character(len=len(s)) :: t
+        character(len=*), intent(in) :: s                   !! the text
+        character(len=len(s)) :: t                          !! in lower case
         integer :: k
         t = s
         do k = 1, len(s)
@@ -547,7 +566,8 @@ contains
     !> Print a warning once for each key (e.g. a frame type not exported).
     subroutine warn_once(self, key, message)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: key, message
+        character(len=*), intent(in) :: key                 !! the warning's key
+        character(len=*), intent(in) :: message             !! printed the first time
         if (.not. allocated(self%warned)) self%warned = '|'
         if (index(self%warned, '|'//key//'|') > 0) return
         self%warned = self%warned//key//'|'
@@ -564,7 +584,10 @@ contains
     !> read or written.
     logical function write_html(self, file, title, viewer, three_version) result(ok)
         class(WebWriter), intent(inout) :: self
-        character(len=*), intent(in) :: file, title, viewer, three_version
+        character(len=*), intent(in) :: file                !! the page (.html)
+        character(len=*), intent(in) :: title               !! its title
+        character(len=*), intent(in) :: viewer              !! the viewer script's file
+        character(len=*), intent(in) :: three_version       !! the Three.js version, e.g. 0.170.0
         integer(int8), allocatable :: bytes(:)
         character(len=:), allocatable :: cdn
         character(len=24) :: id
@@ -612,9 +635,10 @@ contains
         ok = .true.
     end function write_html
 
+    !> Text for HTML (<, > and & escaped).
     pure function escape_html(s) result(t)
-        character(len=*), intent(in) :: s
-        character(len=:), allocatable :: t
+        character(len=*), intent(in) :: s                   !! the text
+        character(len=:), allocatable :: t                  !! the text escaped
         integer :: k
         t = ''
         do k = 1, len(s)
@@ -633,8 +657,8 @@ contains
 
     !> A file's bytes; false if it can't be read.
     logical function read_bytes(path, bytes) result(ok)
-        character(len=*), intent(in) :: path
-        integer(int8), allocatable, intent(out) :: bytes(:)
+        character(len=*), intent(in) :: path                !! the file
+        integer(int8), allocatable, intent(out) :: bytes(:) !! its contents
         integer :: u, status
         integer(int64) :: n
         ok = .false.
@@ -649,8 +673,8 @@ contains
 
     !> Write bytes to a stream unit as base64.
     subroutine write_base64(u, bytes)
-        integer, intent(in) :: u
-        integer(int8), intent(in) :: bytes(:)
+        integer, intent(in) :: u                            !! the unit (open for stream output)
+        integer(int8), intent(in) :: bytes(:)               !! the bytes
         integer(int64), parameter :: block = 3 * 65536
         integer(int64) :: i, n
         n = size(bytes, kind=int64)
@@ -663,8 +687,8 @@ contains
 
     !> Bytes as base64 (RFC 4648, with padding).
     function base64_encode(bytes) result(s)
-        integer(int8), intent(in) :: bytes(:)
-        character(len=:), allocatable :: s
+        integer(int8), intent(in) :: bytes(:)               !! the bytes
+        character(len=:), allocatable :: s                  !! their base64 text
         character(len=64), parameter :: abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
         integer(int64) :: n, i, j
         integer :: b0, b1, b2
@@ -695,8 +719,8 @@ contains
 
     !> Base64 text as bytes (the inverse of base64_encode; for tests).
     function base64_decode(s) result(bytes)
-        character(len=*), intent(in) :: s
-        integer(int8), allocatable :: bytes(:)
+        character(len=*), intent(in) :: s                   !! base64 text
+        integer(int8), allocatable :: bytes(:)              !! the bytes
         character(len=64), parameter :: abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
         integer :: v(4), i, j, k, n, pad
         n = len(s) / 4
@@ -719,6 +743,7 @@ contains
             j = j + 3
         end do
     contains
+        !> A byte from its unsigned value.
         pure integer(int8) function to_byte(x)
             integer, intent(in) :: x                        !! 0 to 255
             if (x > 127) then

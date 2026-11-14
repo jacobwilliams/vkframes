@@ -3531,8 +3531,9 @@ contains
     !> The time range of the trajectories drawn (and followed), widening [t0, t1].
     subroutine drawable_data_time_range(self, t0, t1, found)
         class(DrawableTrajectory), intent(in) :: self
-        real(wp), intent(inout) :: t0, t1
-        logical, intent(inout) :: found
+        real(wp), intent(inout) :: t0                       !! the range's start, widened
+        real(wp), intent(inout) :: t1                       !! its end, widened
+        logical, intent(inout) :: found                     !! set if a trajectory has data
         integer :: k
         call self%ReferenceFrame%data_time_range(t0, t1, found)
         do k = 1, self%n_artists
@@ -3543,8 +3544,9 @@ contains
     !> The points 1 .. n to write (all, or about w%max_points of them, the
     !> last included).
     function web_indices(n, max_points) result(idx)
-        integer, intent(in) :: n, max_points
-        integer, allocatable :: idx(:)
+        integer, intent(in) :: n                            !! the curve's points
+        integer, intent(in) :: max_points                   !! the most to write (0 or 1: all)
+        integer, allocatable :: idx(:)                      !! the points to write, in order
         integer :: stride, i
         if (max_points <= 1 .or. n <= max_points) then
             idx = [(i, i = 1, n)]
@@ -3558,10 +3560,10 @@ contains
     !> Each point's color (4, n) for points idx: the trajectory's, the
     !> artist's own (`own`) where it has none.
     function web_colors(traj, idx, own) result(c)
-        type(Trajectory), intent(in) :: traj
-        integer, intent(in) :: idx(:)
-        real(wp), intent(in) :: own(4)
-        real(wp) :: c(4, size(idx))
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        integer, intent(in) :: idx(:)                       !! its points
+        real(wp), intent(in) :: own(4)                      !! the artist's color [r, g, b, a]
+        real(wp) :: c(4, size(idx))                         !! the points' colors
         real(c_float), dimension(:,:), pointer :: col
         integer :: k, m
         call traj%colors(col)
@@ -3577,9 +3579,9 @@ contains
 
     !> The times of points idx.
     function web_times(traj, idx) result(t)
-        type(Trajectory), intent(in) :: traj
-        integer, intent(in) :: idx(:)
-        real(wp) :: t(size(idx))
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        integer, intent(in) :: idx(:)                       !! its points
+        real(wp) :: t(size(idx))                            !! their times
         integer :: k
         do k = 1, size(idx)
             t(k) = traj%time(idx(k))
@@ -3589,8 +3591,8 @@ contains
     !> A curve: a strip of its points, with their times (for trace mode and
     !> trails) and colors (point colors).
     subroutine export_curve(a, w)
-        type(CurveArtist), intent(inout) :: a
-        type(WebWriter), intent(inout) :: w
+        type(CurveArtist), intent(inout) :: a               !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
         real(wp), allocatable :: v(:,:)
         integer, allocatable :: idx(:)
         integer :: n
@@ -3637,8 +3639,8 @@ contains
 
     !> Segments: pairs of points, both with the segment's point's time.
     subroutine export_segments(a, w)
-        type(SegmentArtist), intent(inout) :: a
-        type(WebWriter), intent(inout) :: w
+        type(SegmentArtist), intent(inout) :: a             !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
         real(wp), allocatable :: v(:,:), e(:,:), xyz(:,:), t(:)
         integer :: m, ib, k
         m = segment_count(a)
@@ -3664,8 +3666,8 @@ contains
 
     !> Markers: the start, the end and the intermediate ones, each with its time.
     subroutine export_markers(a, w)
-        type(MarkerArtist), intent(inout) :: a
-        type(WebWriter), intent(inout) :: w
+        type(MarkerArtist), intent(inout) :: a              !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
         real(wp) :: atten, rgba(4)
         logical :: zero
         integer :: n
@@ -3699,9 +3701,10 @@ contains
             call w%end_object()
         end if
     contains
+        !> One marker item: the start's or the end's.
         subroutine one_marker(i, color)
-            integer, intent(in) :: i
-            real(wp), intent(in) :: color(4)
+            integer, intent(in) :: i                        !! its point (1 or n)
+            real(wp), intent(in) :: color(4)                !! [r, g, b, a]
             real(wp) :: p(3, 1)
             p(:, 1) = marker_point(a, i, zero)
             call w%begin_point_item(p, color, a%size_, a%shape_, atten, times=[a%traj%time(i)])
@@ -3713,8 +3716,8 @@ contains
     !> A ribbon: a mesh of quads between each point's pair and the next's,
     !> each vertex with its point's time (trace mode) and color.
     subroutine export_ribbon(a, w)
-        type(RibbonArtist), intent(inout) :: a
-        type(WebWriter), intent(inout) :: w
+        type(RibbonArtist), intent(inout) :: a              !! the artist
+        type(WebWriter), intent(inout) :: w                 !! the page being written
         real(wp), allocatable :: v(:,:), e(:,:), xyz(:,:), t(:), c(:,:), cp(:,:)
         integer, allocatable :: tri(:,:), idx(:)
         integer :: n, k

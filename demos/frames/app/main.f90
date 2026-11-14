@@ -702,7 +702,7 @@ contains
 
     !> The scene written to the web page `path` (WindowProxy%export_web), animated.
     subroutine export_page(path)
-        character(len=*), intent(in) :: path
+        character(len=*), intent(in) :: path                !! the HTML file
         if (app%proxy%export_web(path, animate=.true., title='vkframes: '//trim(frame_names(app%frame_choice% &
                                  currentIndex() + 1)), samples=2000)) then
             call app%export_status%setText('Wrote '//path)

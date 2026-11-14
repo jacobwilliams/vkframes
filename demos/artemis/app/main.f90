@@ -144,9 +144,10 @@ contains
     !> them): times (s from the epoch) and states (6, n); its epoch (julian
     !> date, TDB).
     subroutine read_states(name, t, s, epoch)
-        character(len=*), intent(in) :: name
-        real(wp), allocatable, intent(out) :: t(:), s(:,:)
-        real(wp), intent(out) :: epoch
+        character(len=*), intent(in) :: name                !! the file, e.g. orion.txt
+        real(wp), allocatable, intent(out) :: t(:)          !! (n) the times (s from the epoch)
+        real(wp), allocatable, intent(out) :: s(:,:)        !! (6, n) the states: position (km), velocity (km/s), ECI
+        real(wp), intent(out) :: epoch                      !! the julian date (TDB) of time 0
         character(len=:), allocatable :: path
         character(len=512) :: line
         integer :: u, status, n, k
@@ -214,7 +215,7 @@ contains
 
     !> The time of the first event whose text has `word` (huge if none).
     real(wp) function event_time(word) result(t)
-        character(len=*), intent(in) :: word
+        character(len=*), intent(in) :: word                !! a word of its text
         integer :: k
         t = huge(1.0_wp)
         do k = 1, size(app%events)
@@ -277,6 +278,8 @@ contains
     ! ==================================================================
     ! the scene
 
+    !> The scene: the data read, the frames (the Earth, the Moon, the Sun,
+    !> Orion, the five frames to draw in), the trajectories and the events.
     subroutine build_model()
         integer :: k
         logical :: ok
@@ -424,7 +427,7 @@ contains
 
     !> Orion's position at time t (ECI; linear between the minutes).
     function orion_at(t) result(p)
-        real(wp), intent(in) :: t
+        real(wp), intent(in) :: t                           !! s from the epoch
         real(wp) :: p(3)
         integer :: i
         i = max(1, min(size(app%ot) - 1, int(t / (app%ot(2) - app%ot(1))) + 1))
@@ -440,7 +443,7 @@ contains
 
     !> Trails (the last two days), or the whole mission.
     subroutine apply_trails(on)
-        logical, intent(in) :: on
+        logical, intent(in) :: on                           !! trails (else the whole mission drawn)
         if (on) then
             call app%orion_curve%set_trail(trail_days * 86400.0_wp, 0.0_wp, fade=0.6_wp)
             call app%moon_curve%set_trail(trail_days * 86400.0_wp, 0.0_wp, fade=0.6_wp)
@@ -453,7 +456,7 @@ contains
     !> Events' labels shown or hidden (their markers stay; the small
     !> trajectory correction burns' never labeled, to keep the picture clear).
     subroutine apply_labels(on)
-        logical, intent(in) :: on
+        logical, intent(in) :: on                           !! the labels shown
         integer :: k
         do k = 1, size(app%events)
             call app%events(k)%frame%show_name_label(on .and. index(app%events(k)%text, 'correction') == 0)
@@ -463,10 +466,12 @@ contains
     ! ==================================================================
     ! the frames
 
+    !> Before each frame: the time looped back to the start at the end of
+    !> the data.
     subroutine artemis_before_update(self, window, t)
         class(ArtemisHandler), intent(inout) :: self
-        class(WindowProxy), intent(inout) :: window
-        real(wp), intent(in) :: t
+        class(WindowProxy), intent(inout) :: window         !! the window drawn
+        real(wp), intent(in) :: t                           !! its time (s from the epoch)
         if (t >= app%span .or. t < 0.0_wp) call window%set_time(0.0_wp)
     end subroutine artemis_before_update
 
@@ -534,6 +539,8 @@ contains
         app%setting_slider = .false.
     end subroutine follow_time
 
+    !> The views (one for each frame), the HUD text, and the Qt window with
+    !> its events.
     subroutine build_window()
         integer :: k
         do k = 1, n_frames
@@ -560,6 +567,8 @@ contains
         call connect_view(app%view_link, app%events_filter, app%proxy, app%window)
     end subroutine build_window
 
+    !> Open the view in the Qt window and, the first time, give it the scene,
+    !> the sky, the views (the frame chosen shown), the HUD text and the time.
     subroutine open_view()
         integer :: k
         if (.not. app%proxy%open(app%window%width(), app%window%height(), 'vkframes artemis', &
@@ -585,15 +594,18 @@ contains
         call app%proxy%pause_time(app%paused)
     end subroutine open_view
 
+    !> The window shown: the view opened (the first time).
     subroutine on_expose(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         if (app%proxy%is_open() .or. .not. app%window%isExposed()) return
         call open_view()
         if (app%proxy%is_open()) call app%window%requestUpdate()
     end subroutine on_expose
 
+    !> Render a frame (resized if the pixel ratio changed), the HUD updated;
+    !> with --export, the page written at the 20th frame. Ask for the next one.
     subroutine on_update(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         if (app%window%devicePixelRatio() /= app%proxy%pixel_ratio()) &
             call app%proxy%resize(nint(app%window%width() * app%window%devicePixelRatio()), &
                                   nint(app%window%height() * app%window%devicePixelRatio()), &
@@ -609,9 +621,10 @@ contains
     ! ==================================================================
     ! controls
 
+    !> A frame chosen: the scene drawn in it, its view shown.
     subroutine on_frame(index, data)
-        integer, intent(in) :: index
-        class(*), intent(inout), optional :: data
+        integer, intent(in) :: index                        !! 0-based
+        class(*), intent(inout), optional :: data           !! unused
         call apply_frame(index + 1)
         if (app%proxy%is_open()) call app%proxy%select_view(index + 1)
     end subroutine on_frame
@@ -619,55 +632,63 @@ contains
     !> An event chosen: the time set to an hour before it.
     subroutine on_event(index, data)
         integer, intent(in) :: index                        !! 0: the prompt; then the events
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         if (index < 1 .or. index > size(app%events)) return
         if (app%proxy%is_open()) call app%proxy%set_time(max(0.0_wp, app%events(index)%t - 3600.0_wp))
     end subroutine on_event
 
+    !> Trails turned on or off.
     subroutine on_trails(checked, data)
-        logical, intent(in) :: checked
-        class(*), intent(inout), optional :: data
+        logical, intent(in) :: checked                      !! on
+        class(*), intent(inout), optional :: data           !! unused
         call apply_trails(checked)
     end subroutine on_trails
 
+    !> The events' labels shown or hidden.
     subroutine on_labels(checked, data)
-        logical, intent(in) :: checked
-        class(*), intent(inout), optional :: data
+        logical, intent(in) :: checked                      !! shown
+        class(*), intent(inout), optional :: data           !! unused
         call apply_labels(checked)
     end subroutine on_labels
 
+    !> The slider moved: the time set.
     subroutine on_slider(value, data)
         integer, intent(in) :: value                        !! 10-minute steps
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         if (app%setting_slider) return
         if (app%proxy%is_open()) call app%proxy%set_time(600.0_wp * value)
     end subroutine on_slider
 
+    !> The slider held: the program stops moving it.
     subroutine on_slider_pressed(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         app%holding_slider = .true.
     end subroutine on_slider_pressed
 
+    !> The slider let go: the program moves it again.
     subroutine on_slider_released(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         app%holding_slider = .false.
     end subroutine on_slider_released
 
+    !> The time scale changed.
     subroutine on_time_scale(value, data)
-        real(c_double), intent(in) :: value
-        class(*), intent(inout), optional :: data
+        real(c_double), intent(in) :: value                 !! seconds of the mission for each second
+        class(*), intent(inout), optional :: data           !! unused
         if (app%proxy%is_open()) call app%proxy%set_time_scale(real(value, wp))
     end subroutine on_time_scale
 
+    !> Pause or resume the time.
     subroutine on_pause(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         app%paused = .not. app%paused
         if (app%proxy%is_open()) call app%proxy%pause_time(app%paused)
         call app%pause%setText(trim(merge('Resume', 'Pause ', app%paused)))
     end subroutine on_pause
 
+    !> The current view's camera reset.
     subroutine on_reset_view(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         type(View), pointer :: v
         v => app%proxy%current_view()
         call v%reset_view()
@@ -676,7 +697,7 @@ contains
     !> Export a web page: a file chosen, the mission written to it (the 25
     !> days animated, the frame chosen).
     subroutine on_export(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         character(len=:), allocatable :: path
         path = QFileDialog_getSaveFileName('Export a web page', 'artemis1.html', 'Web pages (*.html)', app%main)
         if (len_trim(path) == 0) return
@@ -684,8 +705,10 @@ contains
         call export_page(trim(path))
     end subroutine on_export
 
+    !> Write the web page (animated over the mission), the HUD text that is
+    !> true only now hidden meanwhile; the result shown in the panel.
     subroutine export_page(path)
-        character(len=*), intent(in) :: path
+        character(len=*), intent(in) :: path                !! the HTML file
         logical :: ok
         ! (the date and the last event: true only now; the page has its own clock)
         call app%hud_state%show(.false.)
@@ -701,12 +724,14 @@ contains
         end if
     end subroutine export_page
 
+    !> The window closed: the view closed.
     subroutine on_close(event, data)
-        type(QCloseEvent), intent(in) :: event
-        class(*), intent(inout), optional :: data
+        type(QCloseEvent), intent(in) :: event              !! the close event
+        class(*), intent(inout), optional :: data           !! unused
         call app%proxy%close()
     end subroutine on_close
 
+    !> The main window: the view, and the panel of controls beside it.
     subroutine build_ui()
         type(QDockWidget) :: dock
         type(QWidget) :: panel

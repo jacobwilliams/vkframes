@@ -2070,7 +2070,8 @@ contains
         character(len=*), intent(in) :: file                !! the HTML file
         real(wp), intent(in), optional :: time              !! a snapshot's time (default: the window's)
         logical, intent(in), optional :: animate            !! animated (default false, or true with t_start or t_end)
-        real(wp), intent(in), optional :: t_start, t_end    !! the animation's time range (default: the data's)
+        real(wp), intent(in), optional :: t_start           !! the animation's start (default: the data's first time)
+        real(wp), intent(in), optional :: t_end             !! its end (default: the data's last time)
         character(len=*), intent(in), optional :: title     !! the page's title (default: the root frame's name)
         integer, intent(in), optional :: max_points         !! the most points written for a curve (default: all)
         integer, intent(in), optional :: samples            !! evenly spaced poses of followed frames (default 600)
@@ -2122,7 +2123,8 @@ contains
         class(WindowProxy), intent(inout) :: self
         character(len=*), intent(in) :: file                !! the HTML file (written when stopped)
         character(len=*), intent(in), optional :: title     !! (as export_web's)
-        integer, intent(in), optional :: max_points, samples !! (as export_web's)
+        integer, intent(in), optional :: max_points         !! the most points written for a curve (as export_web's)
+        integer, intent(in), optional :: samples            !! evenly spaced poses of followed frames (as export_web's)
         class(ReferenceFrame), pointer :: root
         ok = .false.
         if (.not. self%is_open() .or. self%web_recording_ .or. .not. associated(self%scene)) return
@@ -2186,10 +2188,10 @@ contains
     !> the views, the sky and the HUD text.
     logical function write_web_page(self, w, list, file, title) result(ok)
         type(WindowProxy), intent(inout) :: self
-        type(WebWriter), intent(inout) :: w
-        type(WebFrameList), intent(inout) :: list
-        character(len=*), intent(in) :: file
-        character(len=*), intent(in), optional :: title
+        type(WebWriter), intent(inout) :: w                 !! the page being written (its times set)
+        type(WebFrameList), intent(inout) :: list           !! the scene's frames
+        character(len=*), intent(in) :: file                !! the HTML file
+        character(len=*), intent(in), optional :: title     !! the page's title (default: the root frame's name)
         character(len=*), parameter :: three_version = '0.170.0'
         class(ReferenceFrame), pointer :: root
         character(len=:), allocatable :: name, viewer
@@ -2260,10 +2262,10 @@ contains
     !> here) and, for the view shown, the camera now.
     subroutine write_web_view(self, w, list, v, shown)
         type(WindowProxy), intent(inout) :: self
-        type(WebWriter), intent(inout) :: w
-        type(WebFrameList), intent(in) :: list
-        type(View), intent(in), target :: v
-        logical, intent(in) :: shown
+        type(WebWriter), intent(inout) :: w                 !! the page being written
+        type(WebFrameList), intent(in) :: list              !! the page's frames
+        type(View), intent(in), target :: v                 !! the view
+        logical, intent(in) :: shown                        !! the window's current view (its camera written)
         class(ReferenceFrame), pointer :: f, root
         real(wp) :: eye(3), center(3), up(3)
         character(len=:), allocatable :: name

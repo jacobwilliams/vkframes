@@ -988,7 +988,7 @@ contains
     !> Export the main window's scene to a web page chosen
     !> (WindowProxy%export_web), animated over the data's time range.
     subroutine on_export_web(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         character(len=:), allocatable :: file
         file = QFileDialog_getSaveFileName('Export a web page', 'vkframes.html', 'Web pages (*.html)', app%main)
         if (len(file) == 0) return
@@ -1000,7 +1000,7 @@ contains
     !> (WindowProxy%start_web_recording: what the program moves too), or stop
     !> and write it.
     subroutine on_record_web(data)
-        class(*), intent(inout), optional :: data
+        class(*), intent(inout), optional :: data           !! unused
         character(len=:), allocatable :: file
         if (app%windows(1)%proxy%is_web_recording()) then
             if (.not. app%windows(1)%proxy%stop_web_recording()) write(*, '(a)') 'vkframes: the web page was not written'

@@ -203,7 +203,7 @@ module vkf_frames
     !> numbered from 0 (the root) as the web page's frames.
     type, public :: WebFrameList
         type(FramePointer), allocatable :: f(:)             !! the frames (1:n)
-        integer :: n = 0
+        integer :: n = 0                                    !! the number of frames
     end type WebFrameList
 
     public :: collect_web_frames, web_frame_index, write_web_frames, web_time_range, widen_time_range
@@ -1358,7 +1358,8 @@ contains
     !> `found` set if there are any.
     subroutine data_time_range(self, t0, t1, found)
         class(ReferenceFrame), intent(in) :: self
-        real(wp), intent(inout) :: t0, t1                   !! the range so far (widened)
+        real(wp), intent(inout) :: t0                       !! the range's start so far (widened)
+        real(wp), intent(inout) :: t1                       !! its end so far (widened)
         logical, intent(inout) :: found                     !! set if this frame has data with times
         type(Trajectory), pointer :: traj
         integer :: k
@@ -1371,9 +1372,10 @@ contains
 
     !> Widen [t0, t1] to a trajectory's times (`found` set if it has any).
     subroutine widen_time_range(traj, t0, t1, found)
-        type(Trajectory), intent(in) :: traj
-        real(wp), intent(inout) :: t0, t1
-        logical, intent(inout) :: found
+        type(Trajectory), intent(in) :: traj                !! the trajectory
+        real(wp), intent(inout) :: t0                       !! the range's start (widened)
+        real(wp), intent(inout) :: t1                       !! its end (widened)
+        logical, intent(inout) :: found                     !! [t0, t1] holds a range (set if the trajectory has times)
         real(wp) :: a, b
         if (.not. traj%time_range(a, b)) return
         if (found) then
@@ -1411,8 +1413,10 @@ contains
         end if
         self%rec_seen = t
     contains
+        !> Append a pose to the frame's recorded ones (growing the arrays).
         subroutine add_pose(tt, pp)
-            real(wp), intent(in) :: tt, pp(7)
+            real(wp), intent(in) :: tt                      !! its time
+            real(wp), intent(in) :: pp(7)                   !! position, attitude [x, y, z, w]
             real(wp), allocatable :: t2(:), p2(:,:)
             if (.not. allocated(self%rec_t)) allocate(self%rec_t(64), self%rec_pose(7, 64))
             if (self%rec_n == size(self%rec_t)) then
@@ -1443,11 +1447,12 @@ contains
     !> The frames of the tree of `root`, each once, the root first.
     subroutine collect_web_frames(root, list)
         class(ReferenceFrame), intent(in), target :: root   !! the tree's root
-        type(WebFrameList), intent(out) :: list
+        type(WebFrameList), intent(out) :: list             !! the frames
         call visit(root)
     contains
+        !> Add a frame, if not already there, and then its children.
         recursive subroutine visit(f)
-            class(ReferenceFrame), intent(in), target :: f
+            class(ReferenceFrame), intent(in), target :: f  !! the frame
             integer :: k
             if (find(list%f, list%n, f) > 0) return
             call append(list%f, list%n, f)
@@ -1459,16 +1464,17 @@ contains
 
     !> A frame's number in the page (0: the root), or -1 if it isn't in the list.
     integer function web_frame_index(list, frame) result(id)
-        type(WebFrameList), intent(in) :: list
-        class(ReferenceFrame), intent(in), target :: frame
+        type(WebFrameList), intent(in) :: list              !! the page's frames
+        class(ReferenceFrame), intent(in), target :: frame  !! the frame
         id = find(list%f, list%n, frame) - 1
     end function web_frame_index
 
     !> The time range of all the data in the frames' tree (followed and drawn
     !> trajectories); false if there are none.
     logical function web_time_range(list, t0, t1) result(found)
-        type(WebFrameList), intent(in) :: list
-        real(wp), intent(out) :: t0, t1
+        type(WebFrameList), intent(in) :: list              !! the page's frames
+        real(wp), intent(out) :: t0                         !! the range's start (0 if none)
+        real(wp), intent(out) :: t1                         !! its end (0 if none)
         integer :: k
         found = .false.
         t0 = 0.0_wp
@@ -1484,8 +1490,8 @@ contains
     !> and evenly, by [[local_matrix_at]]; other frames, the poses recorded),
     !> and what it draws ([[export_web]]).
     subroutine write_web_frames(list, w)
-        type(WebFrameList), intent(inout) :: list
-        type(WebWriter), intent(inout) :: w
+        type(WebFrameList), intent(inout) :: list           !! the page's frames
+        type(WebWriter), intent(inout) :: w                 !! the page being written
         class(ReferenceFrame), pointer :: f
         integer, allocatable :: kids(:)
         real(wp) :: geom(7, 3), len, head, rb, rh
@@ -1548,8 +1554,8 @@ contains
     !> A frame's motion over the animation's range ("track": times, positions
     !> (double precision) and attitudes), if it moves.
     subroutine write_track(f, w)
-        class(ReferenceFrame), intent(in) :: f
-        type(WebWriter), intent(inout) :: w
+        class(ReferenceFrame), intent(in) :: f              !! the frame
+        type(WebWriter), intent(inout) :: w                 !! the page being written
         type(Trajectory), pointer :: traj
         real(wp), pointer :: tt(:)
         real(wp), allocatable :: times(:), p(:,:), q(:,:)
@@ -1600,8 +1606,8 @@ contains
 
     !> Sort a(1:n) and remove repeated values (n: the values left).
     subroutine sort_unique(a, n)
-        real(wp), intent(inout) :: a(:)
-        integer, intent(inout) :: n
+        real(wp), intent(inout) :: a(:)                     !! the values (1:n used)
+        integer, intent(inout) :: n                         !! the number of values
         integer :: i, m
         call quicksort(a(1:n))
         m = min(n, 1)
@@ -1614,8 +1620,9 @@ contains
         n = m
     end subroutine sort_unique
 
+    !> Sort values in increasing order (in place).
     recursive subroutine quicksort(a)
-        real(wp), intent(inout) :: a(:)
+        real(wp), intent(inout) :: a(:)                     !! the values
         real(wp) :: pivot, tmp
         integer :: i, j
         if (size(a) < 2) return

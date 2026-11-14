@@ -110,6 +110,8 @@ def read(name):
 
 
 def write(name, epoch, jd, states, comment):
+    """Write states to data/artemis1/<name> for the demo: a header (`comment`, the source, the epoch),
+    then each time (s from `epoch`, a julian date TDB; `jd` are julian dates) and state (km, km/s)."""
     with open(os.path.join(OUT, name), "w") as f:
         f.write(f"# {comment}\n")
         f.write("# JPL Horizons (https://ssd.jpl.nasa.gov/horizons/), Earth-centered, ICRF; km, km/s\n")
@@ -156,6 +158,7 @@ def gravity(r, moon, sun):
 
 
 def earth_altitude(state):
+    """The height (km) above the Earth's equatorial radius of a state's position (km)."""
     return math.sqrt(sum(c * c for c in state[:3])) - RE
 
 
@@ -229,6 +232,7 @@ def find_events(t, orion, tm, moon, tsun, sun, epoch):
 
 
 def main():
+    """Download the data (unless there, or --force), find the events, and write events.txt."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--force", action="store_true", help="download again")
     args = parser.parse_args()

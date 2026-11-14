@@ -217,8 +217,14 @@ contains
     !> Position and velocity on an orbit (semi-major axis a, eccentricity e,
     !> inclination i, node raan, argument of periapsis w) at time t (periapsis at 0).
     subroutine kepler(a, e, i, raan, w, t, r, v)
-        real(wp), intent(in) :: a, e, i, raan, w, t
-        real(wp), intent(out) :: r(3), v(3)
+        real(wp), intent(in) :: a                           !! semi-major axis (km)
+        real(wp), intent(in) :: e                           !! eccentricity (below 1)
+        real(wp), intent(in) :: i                           !! inclination (rad)
+        real(wp), intent(in) :: raan                        !! right ascension of the ascending node (rad)
+        real(wp), intent(in) :: w                           !! argument of periapsis (rad)
+        real(wp), intent(in) :: t                           !! time since periapsis (s)
+        real(wp), intent(out) :: r(3)                       !! position (km)
+        real(wp), intent(out) :: v(3)                       !! velocity (km/s)
         real(wp) :: n, m, ea, p(3), dp(3), rot(3,3), edot
         integer :: k
         n = sqrt(mu / a**3)
@@ -235,23 +241,27 @@ contains
         v = matmul(rot, dp)
     end subroutine kepler
 
+    !> The rotation matrix by angle `a` about z.
     pure function rot_z(a) result(m)
-        real(wp), intent(in) :: a
-        real(wp) :: m(3,3)
+        real(wp), intent(in) :: a                           !! the angle (rad)
+        real(wp) :: m(3,3)                                  !! the matrix
         m = reshape([cos(a), sin(a), 0.0_wp, -sin(a), cos(a), 0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp], [3, 3])
     end function rot_z
 
+    !> The rotation matrix by angle `a` about x.
     pure function rot_x(a) result(m)
-        real(wp), intent(in) :: a
-        real(wp) :: m(3,3)
+        real(wp), intent(in) :: a                           !! the angle (rad)
+        real(wp) :: m(3,3)                                  !! the matrix
         m = reshape([1.0_wp, 0.0_wp, 0.0_wp, 0.0_wp, cos(a), sin(a), 0.0_wp, -sin(a), cos(a)], [3, 3])
     end function rot_x
 
     !> The spacecraft's attitude: x along the track, z up (away from the
     !> Earth), so its sensor (along -z) looks down.
     function pointing(r, v) result(q)
-        real(wp), intent(in) :: r(3), v(3)
-        real(wp) :: q(4), x(3), y(3), z(3)
+        real(wp), intent(in) :: r(3)                        !! position
+        real(wp), intent(in) :: v(3)                        !! velocity
+        real(wp) :: q(4)                                    !! the attitude [x, y, z, w]
+        real(wp) :: x(3), y(3), z(3)
         z = r / norm2(r)
         x = v - dot_product(v, z) * z
         x = x / norm2(x)

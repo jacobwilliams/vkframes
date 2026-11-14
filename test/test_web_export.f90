@@ -164,14 +164,16 @@ program test_web_export
 
 contains
 
+    !> The time of point i of the test's trajectories.
     pure real(wp) function time_of(i)
-        integer, intent(in) :: i
+        integer, intent(in) :: i                            !! the point (from 1)
         time_of = (i - 1) * dt
     end function time_of
 
+    !> Text as bytes (for base64_encode).
     function bytes_of(s) result(b)
-        character(len=*), intent(in) :: s
-        integer(int8) :: b(len(s))
+        character(len=*), intent(in) :: s                   !! the text
+        integer(int8) :: b(len(s))                          !! its bytes
         integer :: j
         do j = 1, len(s)
             b(j) = int(iachar(s(j:j)), int8)
@@ -180,8 +182,8 @@ contains
 
     !> The numbers of the inline array after `key`, from pos (pos moved past it).
     function numbers_at(key) result(v)
-        character(len=*), intent(in) :: key
-        real(wp), allocatable :: v(:)
+        character(len=*), intent(in) :: key                 !! e.g. '"o":'
+        real(wp), allocatable :: v(:)                       !! the numbers
         integer :: a, b, c, j
         a = pos + index(json(pos:), key) - 1 + len(key)
         b = a + index(json(a:), ']') - 1
@@ -197,9 +199,9 @@ contains
     !> The array in the buffer referred to after `key` ([offset, count]), from
     !> pos: float64 (bytes 8) or float32 (4).
     function array_at(key, bytes_each) result(v)
-        character(len=*), intent(in) :: key
-        integer, intent(in) :: bytes_each
-        real(wp), allocatable :: v(:)
+        character(len=*), intent(in) :: key                 !! e.g. '"p":'
+        integer, intent(in) :: bytes_each                   !! 8 (float64) or 4 (float32)
+        real(wp), allocatable :: v(:)                       !! the values
         real(wp), allocatable :: r(:)
         r = numbers_at(key)
         ref = nint(r(1:2))

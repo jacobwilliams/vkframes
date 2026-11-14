@@ -30,6 +30,7 @@ def refs(node, path=""):
 
 
 def check(file):
+    """Check one page: print its summary and return None if it's good, else the problems found."""
     text = open(file, encoding="utf-8").read()
     scene = re.search(r'<script type="application/json" id="vkf-scene">(.*?)</script>', text, re.S)
     data = re.search(r'<script type="application/octet-stream" id="vkf-data">(.*?)</script>', text, re.S)
@@ -63,6 +64,7 @@ def check(file):
 
 
 def main():
+    """Check the pages named on the command line; exit 1 if any fails (or none is named)."""
     failed = [r for r in (check(f) for f in sys.argv[1:]) if r]
     for r in failed:
         print(r)
