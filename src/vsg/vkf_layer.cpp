@@ -32,9 +32,7 @@ using vkf::to_string;
 #include "vkf_cache.h"
 #if defined(_WIN32)
 #    include <process.h>    // _getpid
-#    include <ole2.h>
 #    include <vsg/platform/win32/Win32_Window.h>
-#    pragma comment(lib, "ole32.lib")   // RevokeDragDrop
 #endif
 
 #include <algorithm>
@@ -1699,21 +1697,19 @@ namespace
     // VSG's Win32 window, for a host's window (native_window in
     // vkf_viewer_create). VSG's own pumps all of the thread's messages each
     // frame (the host's too, so its handlers would run inside a frame) and
-    // destroys the window when deleted; the host owns both.
+    // destroys the window when deleted; the host owns both. VSG registers the
+    // window as a drop target (for files), which would take every drag over
+    // it from the host's (e.g. Qt's, on its top-level window): unregistered.
     class HostWin32Window : public vsg::Inherit<vsgWin32::Win32_Window, HostWin32Window>
     {
     public:
         explicit HostWin32Window(vsg::ref_ptr<vsg::WindowTraits> traits) :
-            Inherit(traits) {}
+            Inherit(traits) { _shutdownDrop(); }
 
         bool pollEvents(vsg::UIEvents& events) override { return vsg::Window::pollEvents(events); }
 
     protected:
-        ~HostWin32Window() override
-        {
-            if (_window) RevokeDragDrop(_window);   // (VSG registered it for file drops)
-            releaseWindow();
-        }
+        ~HostWin32Window() override { releaseWindow(); }
     };
 #endif
 
