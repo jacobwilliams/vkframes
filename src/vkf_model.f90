@@ -13,6 +13,7 @@ module vkf_model
     use vkf_pick, only: PickCamera
     use vkf_layer, only: vkf_model_read, vkf_node_bound, vkf_transform_create, vkf_transform_set_matrix, &
                          vkf_node_add_child
+    use vkf_web_writer, only: WebWriter
 
     implicit none
 
@@ -40,6 +41,7 @@ module vkf_model
         procedure :: bound => model_frame_bound
         procedure :: pick => model_pick
         procedure :: build_contents => model_build_contents
+        procedure :: export_web => model_export_web
     end type Model
 
     !> The Model constructor: `Model(...)` makes one (see [[new_model]] for its
@@ -228,5 +230,30 @@ contains
         end if
         call self%ReferenceFrame%pick(cam, to_root, hits, n)
     end subroutine model_pick
+
+    !> The web page's item: the model file (glTF binary, .glb, or glTF with
+    !> its data embedded, inlined) and its transform in the frame; other
+    !> formats (.3ds, .obj, OSG) as their bounding sphere's box, with a warning.
+    subroutine model_export_web(self, w)
+        class(Model), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w                 !! the page being written
+        character(len=:), allocatable :: ext
+        integer :: k, id
+        if (.not. allocated(self%file)) return
+        k = index(self%file, '.', back=.true.)
+        ext = ''
+        if (k > 0) ext = self%file(k+1:)
+        id = -1
+        if (ext == 'glb' .or. ext == 'GLB' .or. ext == 'gltf' .or. ext == 'GLTF') id = w%add_asset(self%file)
+        if (id < 0) call w%warn_once('model:'//self%file, 'model '//self%file//' is not glTF: drawn as its bounding box')
+        call w%begin_object()
+        call w%put('type', 'model')
+        call w%put('model', id)
+        call w%put('matrix', reshape(frame_matrix(self%model_position_, self%model_attitude_, self%scale_, self%pivot_), &
+                                     [16]))
+        call w%put('bound', [self%bound_center, self%bound_radius])
+        call w%put('color', self%color())
+        call w%end_object()
+    end subroutine model_export_web
 
 end module vkf_model

@@ -41,6 +41,7 @@ module vkf_terrain
                          vkf_rocky_add_image, vkf_rocky_add_elevation, vkf_rocky_elevation, vkf_node_add_child, &
                          vkf_node_remove_child, vkf_node_delete, vkf_compile_node, vkf_viewer_any
     use vkf_files, only: find_data_file
+    use vkf_web_writer, only: WebWriter
 
     implicit none
 
@@ -88,6 +89,7 @@ module vkf_terrain
         procedure :: pick => terrain_pick
         procedure :: build_contents => terrain_build_contents
         procedure :: update => terrain_update
+        procedure :: export_web => terrain_export_web
     end type TerrainBody
 
     !> The TerrainBody constructor: `TerrainBody(...)` makes one (see [[new_terrain_body]] for its
@@ -357,5 +359,21 @@ contains
         end if
         call self%ReferenceFrame%pick(cam, to_root, hits, n)
     end subroutine terrain_pick
+
+    !> The web page's item: the body's sphere, untextured (the page draws no
+    !> map tiles).
+    subroutine terrain_export_web(self, w)
+        class(TerrainBody), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        call w%warn_once('terrain:'//self%name(), 'terrain "'//self%name()//'": drawn as a plain sphere')
+        call w%begin_object()
+        call w%put('type', 'sphere')
+        call w%put('radii', [1.0_wp, 1.0_wp, 1.0_wp] * self%body_radius())
+        call w%put('center', [0.0_wp, 0.0_wp, 0.0_wp])
+        call w%put('q', [0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp])
+        call w%put('color', [0.55_wp, 0.55_wp, 0.55_wp, 1.0_wp])
+        call w%put('texture', -1)
+        call w%end_object()
+    end subroutine terrain_export_web
 
 end module vkf_terrain

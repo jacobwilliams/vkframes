@@ -79,6 +79,23 @@
 !> video by ffmpeg (`watermark`). The video's size is its first frame's (a window
 !> resized while recording is cropped or padded).
 !>
+!> Export to the web (not in OpenFrames): [[export_web]] writes the scene to
+!> one self-contained web page (HTML, with the scene's data inlined and
+!> vkframes' Three.js viewer, data/web/vkf_viewer.js) that shows it in a
+!> browser, to turn, pan and zoom, with the window's views in a menu, its
+!> sky, background, light and HUD text. Either a snapshot at a time, or
+!> animated (`animate`, or a time range) with the page's own clock (play,
+!> pause, a time slider, the speed): frames following trajectories move as
+!> here (their poses sampled at their data's times and evenly), trace mode,
+!> trails and markers run with the clock. [[start_web_recording]] ...
+!> [[stop_web_recording]] records an animated page as the window runs, with
+!> the poses the program sets each frame (those that change), as
+!> start_recording records a video. The page holds the data, not pixels
+!> (see vkf_web_writer and each frame type's export_web): what it doesn't
+!> draw yet (picking, shadows, lens flares, map tiles, dash patterns,
+!> highlights, night textures, star names) is left out, with a warning for
+!> a frame type not exported.
+!>
 !> The mouse's sensitivity: [[set_zoom_speed]] (the zoom per wheel or trackpad
 !> step and per right drag; default 1, VSG's) and [[set_camera_throw]] (the
 !> camera keeps moving after a drag released while moving; default on).
@@ -111,7 +128,10 @@ module vkf_window
     use, intrinsic :: iso_c_binding, only: c_ptr, c_null_ptr, c_associated, c_int, c_long_long, c_double, c_float, c_char
     use, intrinsic :: iso_fortran_env, only: int64
     use vkf_math, only: wp, rigid_inverse, identity_matrix
-    use vkf_frames, only: ReferenceFrame, PickHit, PICK_HANDLE
+    use vkf_frames, only: ReferenceFrame, PickHit, PICK_HANDLE, WebFrameList, collect_web_frames, web_frame_index, &
+                          write_web_frames, web_time_range
+    use vkf_web_writer, only: WebWriter
+    use vkf_files, only: find_data_file
     use vkf_pick, only: PickCamera, pick_camera, project, ray
     use vkf_handles, only: DragHandle, handles_shown
     use vkf_clock, only: SimulationClock, wall_time
@@ -256,6 +276,11 @@ module vkf_window
         real(wp) :: record_fps = 30.0_wp                    !! the video's frames per second
         real(wp) :: record_wall = 0.0_wp                    !! the wall time at the start (s)
         integer(int64) :: record_frames = 0_int64           !! frames drawn while recording
+        ! web page recording (start_web_recording)
+        logical :: web_recording_ = .false.                 !! recording
+        character(len=:), allocatable :: web_file, web_title  !! the page's file and title ('': the default)
+        integer :: web_max_points = 0, web_samples = 600    !! (export_web's options)
+        real(wp) :: web_t0 = 0.0_wp, web_t1 = 0.0_wp        !! the times recorded: first and last
         ! diagnostics (render_stats)
         real(wp) :: rate_start = -1.0_wp                    !! the wall time the frames are counted from (s; -1: none)
         integer :: rate_frames = 0                          !! frames since then
@@ -269,6 +294,8 @@ module vkf_window
         procedure :: capture
         ! video recording (see the module documentation)
         procedure :: start_recording, stop_recording, is_recording, recorded_frames
+        ! export to the web (see the module documentation)
+        procedure :: export_web, start_web_recording, stop_web_recording, is_web_recording
         ! diagnostics (vkf_diagnostics)
         procedure :: render_stats, device_info, scene_counts
         procedure :: set_background_color, background_color
@@ -419,6 +446,7 @@ contains
         logical :: ok
         integer :: k
         if (self%recording_) ok = self%stop_recording()
+        if (self%web_recording_) ok = self%stop_web_recording()
         call forget_handles(self)
         if (c_associated(self%viewer_)) call vkf_viewer_delete(self%viewer_)
         self%viewer_ = c_null_ptr
@@ -500,6 +528,10 @@ contains
         if (self%running .and. self%is_open()) then
             call update_huds(self)
             self%running = vkf_viewer_frame_draw(self%viewer_) == 1
+        end if
+        if (self%web_recording_ .and. self%running .and. associated(root)) then   ! (the poses as drawn)
+            call root%record_web_pose(t)
+            self%web_t1 = max(self%web_t1, t)
         end if
         if (self%recording_ .and. self%running) then
             frames = vkf_viewer_record_frames(self%viewer_)                 ! (frames not drawn don't count)
@@ -2012,5 +2044,255 @@ contains
         if (vkf_viewer_size(self%viewer_, width, height) /= 0) return
         if (width > 0 .and. height > 0) aspect_ratio = real(width, wp) / real(height, wp)
     end function aspect_ratio
+
+    ! ==================================================================
+    ! export to the web (see the module documentation)
+
+    !> Write the scene to the web page `file` (one self-contained HTML file;
+    !> see the module documentation and vkf_web_writer): a snapshot of the
+    !> scene at the window's time (or at `time`, the scene updated to it
+    !> first), or, with `animate` (or a time range given), animated over
+    !> [`t_start`, `t_end`] (default: the time range of all the scene's data),
+    !> with a clock, a time slider, play/pause and the window's time scale.
+    !> The page shows the window's views (a menu; the camera in each as
+    !> here), its sky, background, light and HUD text. `title` (default the
+    !> root frame's name) is the page's title; `max_points` (default all)
+    !> thins curves of more points; `samples` (default 600) is the number of
+    !> evenly spaced poses written for each frame that follows trajectories
+    !> (besides their data's own times). False if the page can't be written.
+    !>
+    !> ```fortran
+    !> if (.not. window%export_web('orbit.html')) write(*, '(a)') 'could not export'
+    !> if (.not. window%export_web('orbit_animated.html', animate=.true.)) write(*, '(a)') 'could not export'
+    !> ```
+    logical function export_web(self, file, time, animate, t_start, t_end, title, max_points, samples) result(ok)
+        class(WindowProxy), intent(inout) :: self
+        character(len=*), intent(in) :: file                !! the HTML file
+        real(wp), intent(in), optional :: time              !! a snapshot's time (default: the window's)
+        logical, intent(in), optional :: animate            !! animated (default false, or true with t_start or t_end)
+        real(wp), intent(in), optional :: t_start, t_end    !! the animation's time range (default: the data's)
+        character(len=*), intent(in), optional :: title     !! the page's title (default: the root frame's name)
+        integer, intent(in), optional :: max_points         !! the most points written for a curve (default: all)
+        integer, intent(in), optional :: samples            !! evenly spaced poses of followed frames (default 600)
+        class(ReferenceFrame), pointer :: root
+        type(WebWriter) :: w
+        type(WebFrameList) :: list
+        real(wp) :: t0, t1
+        logical :: found
+        ok = .false.
+        if (.not. associated(self%scene)) return
+        root => self%scene%frame()
+        if (.not. associated(root)) return
+        w%now = self%time()
+        if (present(time)) then
+            w%now = time
+            call root%update(time)
+            call root%late_update(time)
+        end if
+        w%animate = present(t_start) .or. present(t_end)
+        if (present(animate)) w%animate = animate .or. w%animate
+        call collect_web_frames(root, list)
+        if (w%animate) then
+            found = web_time_range(list, t0, t1)
+            if (present(t_start)) t0 = t_start
+            if (present(t_end)) t1 = t_end
+            if (.not. (found .or. (present(t_start) .and. present(t_end))) .or. t1 <= t0) then
+                write(*, '(a)') 'vkframes: export_web: no time range to animate (a snapshot is written)'
+                w%animate = .false.
+            else
+                w%t_start = t0
+                w%t_end = t1
+            end if
+        end if
+        w%t_ref = w%now
+        if (w%animate) w%t_ref = w%t_start
+        if (present(max_points)) w%max_points = max_points
+        if (present(samples)) w%samples = samples
+        ok = write_web_page(self, w, list, file, title)
+    end function export_web
+
+    !> Start recording an animated web page of what the program moves (the
+    !> poses of the frames it sets each frame, e.g. a model turned by the
+    !> program), written by [[stop_web_recording]] to `file`: the scene over
+    !> the times drawn meanwhile, frames following trajectories from their
+    !> data (as [[export_web]]'s `animate`), the others as recorded (only the
+    !> frames that move, at the frames in which they did). Options as
+    !> export_web's. False if not open, or already recording.
+    logical function start_web_recording(self, file, title, max_points, samples) result(ok)
+        class(WindowProxy), intent(inout) :: self
+        character(len=*), intent(in) :: file                !! the HTML file (written when stopped)
+        character(len=*), intent(in), optional :: title     !! (as export_web's)
+        integer, intent(in), optional :: max_points, samples !! (as export_web's)
+        class(ReferenceFrame), pointer :: root
+        ok = .false.
+        if (.not. self%is_open() .or. self%web_recording_ .or. .not. associated(self%scene)) return
+        root => self%scene%frame()
+        if (.not. associated(root)) return
+        call root%clear_web_poses()
+        self%web_file = file
+        self%web_title = ''
+        if (present(title)) self%web_title = title
+        self%web_max_points = 0
+        if (present(max_points)) self%web_max_points = max_points
+        self%web_samples = 600
+        if (present(samples)) self%web_samples = samples
+        self%web_t0 = self%time()
+        self%web_t1 = self%web_t0
+        self%web_recording_ = .true.
+        ok = .true.
+    end function start_web_recording
+
+    !> Stop recording the web page ([[start_web_recording]]) and write it;
+    !> false if not recording, if nothing was recorded (no time passed), or if
+    !> the page can't be written.
+    logical function stop_web_recording(self) result(ok)
+        class(WindowProxy), intent(inout) :: self
+        class(ReferenceFrame), pointer :: root
+        type(WebWriter) :: w
+        type(WebFrameList) :: list
+        ok = .false.
+        if (.not. self%web_recording_) return
+        self%web_recording_ = .false.
+        if (.not. associated(self%scene)) return
+        root => self%scene%frame()
+        if (.not. associated(root)) return
+        if (self%web_t1 > self%web_t0) then
+            call collect_web_frames(root, list)
+            w%now = self%web_t0
+            w%animate = .true.
+            w%t_start = self%web_t0
+            w%t_end = self%web_t1
+            w%t_ref = self%web_t0
+            w%max_points = self%web_max_points
+            w%samples = self%web_samples
+            if (len(self%web_title) > 0) then
+                ok = write_web_page(self, w, list, self%web_file, self%web_title)
+            else
+                ok = write_web_page(self, w, list, self%web_file)
+            end if
+        else
+            write(*, '(a)') 'vkframes: stop_web_recording: no time recorded'
+        end if
+        call root%clear_web_poses()
+    end function stop_web_recording
+
+    !> Whether a web page is being recorded ([[start_web_recording]]).
+    pure logical function is_web_recording(self)
+        class(WindowProxy), intent(in) :: self
+        is_web_recording = self%web_recording_
+    end function is_web_recording
+
+    !> Write the page: the window (size, background, light, time), the frames,
+    !> the views, the sky and the HUD text.
+    logical function write_web_page(self, w, list, file, title) result(ok)
+        type(WindowProxy), intent(inout) :: self
+        type(WebWriter), intent(inout) :: w
+        type(WebFrameList), intent(inout) :: list
+        character(len=*), intent(in) :: file
+        character(len=*), intent(in), optional :: title
+        character(len=*), parameter :: three_version = '0.170.0'
+        class(ReferenceFrame), pointer :: root
+        character(len=:), allocatable :: name, viewer
+        integer :: k, n
+        ok = .false.
+        root => self%scene%frame()
+        viewer = find_data_file('web/vkf_viewer.js')
+        if (len(viewer) == 0) then
+            write(*, '(a)') 'vkframes: export_web: no viewer script web/vkf_viewer.js (on VKFRAMES_DATA_PATH)'
+            return
+        end if
+        name = root%name()
+        if (present(title)) name = title
+        if (len(name) == 0) name = 'vkframes'
+        call w%begin_object()
+        call w%put('version', 1)
+        call w%put('title', name)
+        call w%put('size', [self%width_, self%height_])
+        call w%put('background', self%background)
+        call w%begin_object('time')
+        call w%put('ref', w%t_ref)
+        call w%put('now', w%now)
+        call w%put('start', w%t_start)
+        call w%put('end', w%t_end)
+        call w%put('animate', w%animate)
+        call w%put('scale', self%time_scale())
+        call w%put('paused', self%is_time_paused())
+        call w%end_object()
+        call w%begin_object('light')
+        call w%put('headlight', .not. root%has_light_source())
+        call w%put('ambient', self%light_ambient_)
+        call w%put('diffuse', self%light_diffuse_)
+        call w%put('specular', self%light_specular_)
+        call w%end_object()
+        call write_web_frames(list, w)
+        ! the views, each with its default camera and, the one shown, the camera now
+        call w%begin_array('views')
+        n = self%n_views
+        if (n == 0) then
+            call write_web_view(self, w, list, self%default_view, .true.)
+        else
+            do k = 1, n
+                call write_web_view(self, w, list, self%views(k)%p, k == self%current)
+            end do
+        end if
+        call w%end_array()
+        call w%put('view', max(0, self%current - 1))
+        if (associated(self%sky_)) call self%sky_%export_web(w)
+        call w%begin_array('hud')
+        do k = 1, self%n_huds
+            if (.not. self%huds(k)%p%is_shown()) cycle
+            call w%begin_object()
+            call w%put('text', self%huds(k)%p%text())
+            call w%put('position', self%huds(k)%p%position())
+            call w%put('alignment', self%huds(k)%p%alignment())
+            call w%put('size', self%huds(k)%p%size())
+            call w%put('color', self%huds(k)%p%color())
+            call w%end_object()
+        end do
+        call w%end_array()
+        call w%end_object()
+        ok = w%write_html(file, name, viewer, three_version)
+        if (ok) write(*, '(a,i0,a,i0,a)') 'vkframes: wrote '//file//' (', list%n, ' frames, ', &
+                                          w%num_bytes() / 1024, ' KiB of arrays, assets aside)'
+    end function write_web_page
+
+    !> A view for the page: its frames, projection, default camera (as reset
+    !> here) and, for the view shown, the camera now.
+    subroutine write_web_view(self, w, list, v, shown)
+        type(WindowProxy), intent(inout) :: self
+        type(WebWriter), intent(inout) :: w
+        type(WebFrameList), intent(in) :: list
+        type(View), intent(in), target :: v
+        logical, intent(in) :: shown
+        class(ReferenceFrame), pointer :: f, root
+        real(wp) :: eye(3), center(3), up(3)
+        character(len=:), allocatable :: name
+        root => self%scene%frame()
+        f => v%view_frame()
+        if (.not. associated(f)) f => root
+        name = f%name()
+        call w%begin_object()
+        call w%put('frame', max(0, web_frame_index(list, f)))
+        if (associated(v%lookat_frame())) then
+            f => v%lookat_frame()
+            name = name//' to '//f%name()
+            call w%put('lookat', web_frame_index(list, f))
+        else
+            call w%put('lookat', -1)
+        end if
+        call w%put('name', name)
+        call w%put('frame_type', v%view_frame_type())
+        call w%put('rotation', v%view_rotation_type())
+        call w%put('projection', v%projection_type())
+        call w%put('fovy', v%field_of_view())
+        call w%put('ortho', v%orthographic_bounds())
+        call v%home(real(self%width_, wp) / real(self%height_, wp), eye, center, up)
+        call w%put('home', [eye, center, up])
+        if (shown .and. associated(self%shown, v)) then
+            call self%get_camera(eye, center, up)
+            if (norm2(up) > 0.0_wp) call w%put('camera', [eye, center, up])
+        end if
+        call w%end_object()
+    end subroutine write_web_view
 
 end module vkf_window

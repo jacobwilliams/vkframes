@@ -1679,128 +1679,171 @@ Running without a screen:
       video recording.
 
 Sharing:
-- [ ] Export to the web: a scene written out as a web page (Three.js) to
+- [x] Export to the web: a scene written out as a web page (Three.js) to
       view and turn in a browser, at a chosen time or animated, as video
       recording is to a movie. No picking at first.
       - **What is exported: the data, not the pixels.** The exporter walks
         the scene in Fortran and writes what each frame draws: the frame
         tree with its poses, the geometry, the trajectories' points, colors,
         widths and textures. A small JavaScript viewer that ships with
-        vkframes rebuilds the scene in Three.js. glTF alone was considered
-        and turned down. It can hold the frame tree and keyframed node
-        motion, but not wide or fading lines, traces, markers in window
-        units, labels, stars or a HUD. Models already in glTF or glb are
-        embedded as they are, and loaded with GLTFLoader.
-      - **Output:** one self-contained `.html` file (the viewer, the scene
-        JSON and base64 binary arrays inlined). It opens from `file://`
-        with no server, and is easy to mail or attach. An option writes a
-        folder instead (`index.html`, `scene.json`, `.bin` files, textures)
-        for large scenes or a web server. Three.js is pinned to one version:
-        from a CDN by an import map by default, or inlined with
-        `offline=.true.` (MIT licensed; vendored under `data/web/`).
+        vkframes (`data/web/vkf_viewer.js`) rebuilds the scene in Three.js.
+        glTF alone was considered and turned down. It can hold the frame
+        tree and keyframed node motion, but not wide or fading lines,
+        traces, markers in window units, labels, stars or a HUD. Models
+        already in glTF or glb are embedded as they are, and loaded with
+        GLTFLoader.
+      - **Output:** one self-contained `.html` file. The viewer, the scene
+        JSON, and the binary arrays and assets as base64 are all inlined.
+        It opens from `file://` with no server, and is easy to mail or
+        attach. Three.js 0.170.0 is pinned, loaded from jsDelivr by an
+        import map.
       - **API** (on the window, like `capture` and `start_recording`: it
         knows the views, the sky, the background and the HUD):
-        - `window%export_web(file, [time], [animate, t_start, t_end],
-          [offline], [folder], [max_points])`;
-        - `window%start_web_recording(file)` ...
-          `window%stop_web_recording()` (stage 3).
+        - `window%export_web(file, [time], [animate], [t_start, t_end],
+          [title], [max_points], [samples])`;
+        - `window%start_web_recording(file, ...)` ...
+          `window%stop_web_recording()`, and `is_web_recording()`.
         - Each frame type writes itself through an overridable
-          `ReferenceFrame%export_web(writer)`, as each picks itself
-          (`pick`). An unknown type writes its frame (axes, labels) and
-          children, and the exporter warns once for each type.
-      - **Thin C++ layer:** nothing new in C++. The geometry is already
-        made in Fortran (the shapes' mesh arrays, the spheres' grids, the
-        trajectories' points), and `vkf_web.f90` writes JSON and base64.
-        Textures and models are copied from their files. A model in
-        another format (`.3ds`, `.obj`, OSG) is shown as its bounding box,
-        with a warning. Converting it (assimp's glTF export) is left for
-        later.
-      - **Precision:** Three.js computes model-view matrices in JS doubles
-        and uploads float32. So each frame stays a Three.js object with its
-        own pose, the data are written in float32 in the frame's own
-        coordinates, and large curves are cut into chunks with local
-        origins (as the LineChain does). Close-ups then don't jitter, as in
-        vkframes.
-      - **Large trajectories:** typed arrays, not JSON numbers. A curve's
-        positions are stored once, and its markers and segments refer to
-        them by index. `max_points` thins very long curves on export, and
-        the exporter reports the file size.
-      - **Stage 1, a snapshot at one time.**
-        - Frame tree with poses; axes and name labels (CSS2D labels).
-        - Spheres (ellipsoid, texture; night lights and specular light
-          approximated by a MeshPhongMaterial), Models (glb), shapes
-          (CoordinateAxes, LatLonGrid, RadialPlane, cones, Polyhedron:
-          their mesh and line arrays).
-        - Trajectory artists as drawn at that time: curves (Line2 wide
-          lines, per-point colors, trace tail), segments, markers (Points
-          with sprites, sizes in pixels), ribbons. Points drawn in another
-          frame (`set_data_frame`) are written as drawn, already
-          transformed.
-        - SkySphere stars (Points, magnitude to size and alpha) and
-          constellation lines; the background color; the light.
-        - The window's views as a camera menu (each View's frame and
-          default eye, center and up). Controls: OrbitControls, or
-          TrackballControls to match vkframes' trackball.
+          `ReferenceFrame%export_web(w)`, as each picks itself: Sphere,
+          Model, DrawableTrajectory (each artist), the shapes,
+          CustomLineSegments, and TerrainBody (as a plain sphere). Any other
+          type is written as a plain frame (axes, labels, children), with a
+          warning once for each.
+        - The shapes are written by running their own drawing code with the
+          page as the target: `line_node`, `marker_node` and `surface_node`
+          write items instead of making nodes. So shapes need no separate
+          export code.
+      - **Thin C++ layer:** nothing new in C++. `vkf_web_writer.f90` writes
+        the JSON, the arrays (float32, float64, uint32; each referred to by
+        [byte offset, count]), base64 and the page.
+      - **Precision:** each frame is its own Three.js object with its pose,
+        and Three.js composes transforms in JS doubles. Points are float32
+        relative to a chunk's origin (8192 points per chunk; a strip's
+        chunks share their ends). Frames' tracks are float64 positions with
+        float32 attitudes. Times are float32 relative to the export's
+        reference time.
+      - **Large trajectories:** typed arrays, not JSON numbers. Times and
+        colors are written only when used (trace mode, trails, point
+        colors). `max_points` thins very long curves. The window prints the
+        size of the arrays.
+      - [x] **Stage 1, a snapshot at one time.**
+        - Frame tree with poses. Frames with several parents are drawn
+          under each, as here.
+        - Axes as 3D arrows; axis and name labels as HTML overlays.
+        - Spheres: the ellipsoid and texture, with a Phong material
+          (diffuse, specular, emission, opacity).
+        - Models: glb inlined; other formats as a wireframe box.
+        - Shapes: CoordinateAxes, LatLonGrid, RadialPlane, cones and
+          Polyhedron, lit or not.
+        - Trajectory artists as drawn at that time:
+          - curves: a wide-line shader with per-point colors;
+          - segments, including relative ends;
+          - markers: disk, circle, square, plus, x, target and the two
+            pulses, sized in pixels with attenuation;
+          - ribbons.
+          Points drawn in another frame (`set_data_frame`) are written
+          already transformed.
+        - SkySphere: stars, constellation lines and texture, in a sky pass
+          that only rotates with the camera. Also the background color and
+          the light: the window's headlight, or a frame's point light.
+        - The window's views as a menu, with each View's frame,
+          ABSOLUTE/RELATIVE type, between-frames rotation, projection and
+          default camera, starting where the window's camera is. Controls
+          are a trackball in the view frame: drag to turn, right-drag or
+          shift-drag to pan, wheel to zoom. Keys: `v`/`V` cycle the views,
+          space resets the view, `p` plays or pauses.
         - HUD text as HTML overlays.
-        - `example/web_export.f90`, writing the earth_moon_frames scene to a
-          page.
-      - **Stage 2, animated by the data:** the page has its own clock (play
-        and pause, speed, a time slider, the time shown), like the frames
-        demo.
-        - Frames that follow trajectories are exported with their follow
-          settings (position or attitude, offset, FOLLOW_LOOP or
-          FOLLOW_LIMIT) and the followed data, by index into the shared
-          arrays. The viewer interpolates as `TrajectoryFollower%state_at`
-          does: linear and slerp, with the same time mapping. The page then
-          moves as the program would, with no samples per frame.
-        - Trace mode and trails draw by range up to the current time, plus
-          the interpolated tail point. Markers at the current time.
-        - Views that follow a frame (View's frame and look-at frame) track
-          it.
-        - A frame whose children are drawn in a moving data frame:
-          positions written as drawn (already transformed at each point's
-          time), so the viewer needs no frame algebra.
-        - Check: the viewer's interpolated pose against `world_matrix_at(t)`
-          at a few times, with a JS test run by node (node in pixi.toml).
-      - **Stage 3, recorded motion** (`start_web_recording` ...
-        `stop_web_recording`, as start_recording is for video): for motion
-        that the program makes, e.g. spinning_model setting an attitude
-        every frame.
-        - At each `window%frame()` while recording, the local pose of each
-          frame whose `motion_key` changed is stored as a keyframe at the
-          window's time. Frames that don't move cost nothing. Followed
-          frames are still exported as data, as in stage 2.
-        - Trajectories that grow while recording: only their final data,
-          with traces up to the current time, show the growth.
-        - Settings changed while recording (colors, shown or hidden):
-          recorded as events at their time (later, if needed).
-      - **Not in the first version:**
-        - picking, and the event handlers;
-        - shadows, lens flares, terrain (TerrainBody: a plain textured
-          sphere at first);
-        - custom shaders, e.g. the line shaders' depth tricks;
-        - CustomLineSegments callbacks (their segments at the exported time
-          only);
-        - several windows (one page per window, or the windows' views in one
-          menu);
-        - video and image overlays.
-      - **Demos:** an "Export to web" button in the Qt demo (a file dialog,
-        then `export_web` with the current time and the animation's range),
-        and in the frames demo.
+        - `example/web_export.f90`.
+      - [x] **Stage 2, animated by the data:** the page has its own clock:
+        play and pause, the speed (× the program's time scale), a time
+        slider and the time shown. Looping over the range.
+        - **Changed from the plan:** frames that follow trajectories are
+          exported as tracks of poses, sampled by `local_matrix_at`. The
+          samples are at their data's times in the range plus `samples`
+          (default 600) even steps, at most 50000. The plan was to export
+          the follow settings and data and repeat the follower's
+          interpolation in JS. Sampling reproduces everything followers do
+          exactly at the samples: data frames, loop/limit, offsets, several
+          trajectories. The viewer only interpolates (linear, slerp), and
+          tracks share their format with stage 3.
+        - Trace mode and trails are cut by time in the line shader: the
+          segment at the current time is clipped there, so the tail needs no
+          upload. Trails fade by time over their `fade` fraction, with each
+          part's color and opacity. Markers and ribbons go by time too: a
+          marker shows once its time has passed, and a ribbon is discarded
+          by fragment.
+        - Views that follow a frame (and look at one) track it from the
+          frames' world matrices each frame (vkf_view's world_to_view).
+        - URL options for tests: `?t=`, `?view=`, `?paused`.
+          `window.vkfReady` is set once drawn with the models loaded.
+      - [x] **Stage 3, recorded motion** (`start_web_recording` ...
+        `stop_web_recording`): for motion that the program makes, e.g.
+        spinning_model setting an attitude every frame.
+        - At each `window%frame()` while recording, each frame that doesn't
+          follow trajectories records its pose (`record_web_pose`) only
+          when it changes. The pose it held until then is recorded first,
+          so a frame that stops and starts again holds still between. Frames
+          that don't move cost nothing.
+        - Followed frames are still exported as data, as in stage 2. The
+          range is the window times recorded.
+        - Not done: trajectories that grow while recording are exported
+          with their final data (traces up to the current time show the
+          growth). Settings changed while recording (colors, shown or
+          hidden) aren't recorded.
+      - **Demos:**
+        - the Qt demo: "Export web page..." (animated) and "Record web
+          page..." (start/stop);
+        - the frames demo: "Export web page..." (the frame and mode chosen,
+          animated over the three days), or `--export file.html`.
       - **Tests:**
-        - `test_web_export` (no window needed if export can run from a
-          FrameManager): the JSON parses; counts of frames, points and
-          vertices; the positions read back against the drawn ones.
-        - A node script that loads the page's data and runs the viewer's
-          interpolation.
-        - Later: a headless browser (Playwright) taking a screenshot in CI.
-      - **Risks:**
-        - Line2's wide lines differ slightly from vkframes' lines (joins,
-          caps).
-        - Base64 grows files by a third: use the folder output for big
-          scenes.
-        - CDN availability for the default (non-offline) page.
-        - Large star catalogs: limit to the magnitude shown.
+        - `test/test_web_export.f90` (no window):
+          - base64 and JSON numbers;
+          - the frame list;
+          - the data's time range;
+          - the Moon's track against `local_matrix_at`;
+          - a curve drawn from inertial data in the Moon's frame, read back
+            from the arrays (chunk origins plus float32 offsets, across
+            several chunks) against the points drawn, and its times;
+          - a RadialPlane and a lit Polyhedron through the shapes' capture;
+          - a page written;
+          - recorded poses kept only when they change.
+        - Checked by hand: screenshots of the example's three pages and the
+          frames demo's page in headless Chrome (SwiftShader WebGL),
+          including the model, the sensor cone, the trail, the traced
+          ribbon, segments and markers, the views and the slider. Not
+          checked: the interactive trackball, in a browser with a mouse.
+        - CI runs the example (Linux under xvfb, macOS) and checks the
+          pages' JSON with Python.
+      - [ ] **Not done (later):**
+        - picking, and the event handlers;
+        - shadows (ShadowCones are skipped with a warning), lens flares;
+        - map tiles: TerrainBody is drawn as a plain sphere;
+        - the Earth's night texture and twilight;
+        - star names, image markers (drawn as disks), rose and spiral
+          marker shapes, dash patterns (exported, not drawn), and
+          highlights (exported, not drawn);
+        - CustomLineSegments callbacks: their segments at the export time
+          only;
+        - VectorHandle and TimeHandle (warned);
+        - several windows in one page (one page per window now);
+        - video overlays;
+        - an offline page: Three.js inlined (ES modules from `file://`
+          need care: GLTFLoader's relative imports);
+        - a folder output for very large scenes (fetch from `file://` is
+          blocked in Chrome, so it would need a server);
+        - a node test of the viewer's interpolation (no node in pixi yet);
+          a Playwright screenshot in CI.
+      - **Risks seen:**
+        - The wide lines differ slightly from vkframes' at joins (ends
+          extended by half the width).
+        - Base64 grows the arrays by a third. The frames demo's page
+          (three days at 10 s, sampled tracks) is 12 MB.
+        - The default page needs the CDN.
+        - A gfortran problem was found: an array constructor with a type
+          spec, `[character(len=256) :: f%axis_label(...), ...]`, over
+          deferred-length function results wrote past its memory (seen as a
+          crash later, on Metal's thread). The values are now assigned one
+          at a time.
 
 Looks:
 - [ ] An atmosphere's limb glow and a cloud layer (a second, slightly larger

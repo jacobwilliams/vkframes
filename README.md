@@ -190,6 +190,19 @@ hidden global state. Vkframes is built on [VulkanSceneGraph](https://github.com/
     recording, each frame advances the simulation time, camera flights and
     animations by exactly one frame's time, so the video is smooth at its
     own speed however long a frame takes to draw or encode.
+  - Export to the web (not in OpenFrames): `export_web('scene.html')`
+    writes the scene to one self-contained web page that shows it in a
+    browser with [Three.js](https://threejs.org), to turn, pan and zoom,
+    with the window's views in a menu, its sky, HUD text and labels. It can
+    be a snapshot at a time, or animated over the data's times with play
+    and pause, a time slider and the speed (`animate=.true.`). Frames
+    following trajectories move as in the program, and trace mode, trails
+    and markers run with the page's clock. `start_web_recording` ...
+    `stop_web_recording` records the poses the program sets each frame
+    too, as video recording records frames. The page holds the data, not
+    pixels: wide lines in each point's color, markers, meshes, textured
+    bodies and glTF models, in double precision where it matters. It needs
+    no server, and loads Three.js from a CDN.
   - Callouts: HUD text and frames' labels can change while shown (text,
     color, position, size, alignment, font). A frame's name label can be
     drawn on top of the scene, so a frame moved to a picked point makes a
@@ -353,6 +366,7 @@ of its own (no GUI toolkit). Each shows one part of the API:
 | `pick_trajectories` | <img src="media/screenshots/examples/pick_trajectories.jpg" width="160" alt="pick_trajectories"> | Picking and callouts: three orbits with markers; the orbit under the pointer is drawn thicker, a click selects an orbit or marker (a ring and a readout at the point: the time there and the altitude) or the Earth (latitude and longitude), a GUI panel follows the selected orbit's spacecraft (its altitude, trace mode, line width, go to the time picked), a Controls panel sets the time scale and pause, and `g` goes to the time selected. |
 | `highlight_trajectory` | <img src="media/screenshots/examples/highlight_trajectory.jpg" width="160" alt="highlight_trajectory"> | Highlighting a selected trajectory: four Earth orbits (parking, transfer, geostationary, Molniya); the program selects the next every few seconds and a click selects the one under the pointer. The selected orbit pulses, with arrows moving along it from its initial time to its final in a translucent band (`set_highlight`, animated by the GPU); `m` changes the highlight's mode. |
 | `record_video` | <img src="media/screenshots/examples/record_video.jpg" width="160" alt="record_video"> | Recording a video: a spacecraft on a highlighted orbit with a pulsing marker, the Earth spinning with its axes and a latitude/longitude grid, and a camera flight half way, recorded to a video file by ffmpeg (`start_recording`, `stop_recording`), with the vkframes logo as a translucent watermark; the simulation time, the flight and the animations advance by exactly one frame's time per frame, so the video is smooth however fast the window draws. |
+| `web_export` | <img src="media/screenshots/examples/web_export.jpg" width="160" alt="web_export, the page in a browser"> | Exporting a scene to the web (`export_web`, `start_web_recording`): the Earth turning, with a grid and ticked axes; a spacecraft (the pepper model) in a low orbit with its attitude, a sensor cone and a fading trail; an elliptical orbit traced with its plane filled, radial lines and time markers; the stars and three views. Writes three pages to open in a browser: a snapshot, the data's four hours animated, and a recording in which the program scans the sensor. |
 | `camera_tour` | <img src="media/screenshots/examples/camera_tour.jpg" width="160" alt="camera_tour"> | The camera from a program: a scripted tour that flies between an Earth view and one following a spacecraft (a view transition), and to cameras given in the root frame (`set_camera` with a duration), printing where the camera is (`get_camera`). |
 | `earth_moon_frames` | <img src="media/screenshots/examples/earth_moon_frames_1.jpg" width="78" alt="earth_moon_frames, window 1"><img src="media/screenshots/examples/earth_moon_frames_2.jpg" width="78" alt="earth_moon_frames, window 2"> | One trajectory in two frames at once: a free-return lunar flyby computed in inertial coordinates, drawn as it is and in the Moon's body-fixed frame (`set_data_frame`: each point by the Moon's pose at its time, no second copy), in one scene shown in two windows, one seen from the Earth and one riding with the Moon. |
 | `live_changes` | <img src="media/screenshots/examples/live_changes.jpg" width="160" alt="live_changes"> | Changing a scene while it's shown: a Moon added and removed, the Earth's axes moved, HUD text, a starry sky, star names and constellations added. |
@@ -380,6 +394,7 @@ pixi run example camera_tour
 pixi run example pick_trajectories
 pixi run example highlight_trajectory
 pixi run example record_video -- orbit.mp4 8          # an 8 s video
+pixi run example web_export                           # web_export*.html: open them in a browser
 pixi run example trace_directions
 pixi run example fading_trails
 pixi run example live_changes
@@ -756,9 +771,13 @@ vkframes builds no frames of its own.
 - Trails (the last orbit; the Moon's last day), or all three days, the
   time scale, and Pause / Resume. A time slider under the scene follows the
   time; drag it, or click along it, to go to any minute of the three days.
+- "Export web page..." writes the scene, from the frame and in the mode
+  chosen, to a web page animated over the three days (`export_web`), to open
+  in a browser (or `--export file.html`, at the 20th frame).
 
 ```sh
 pixi run -e qt frames-demo
+pixi run -e qt frames-demo --frame 3 --export orbiter.html --quit-after 5   # a web page, then quit
 ```
 
 #### PySide6 demo

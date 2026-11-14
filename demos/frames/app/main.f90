@@ -57,7 +57,10 @@
 !> modes, each spacecraft's distance from its curve (the curve's point at the
 !> current time, as drawn, against the spacecraft's frame) printed; then
 !> Pause and Resume clicked, the time stopped and running again; the slider
-!> moved (the time set there) and following the time.
+!> moved (the time set there) and following the time; `--export file.html`:
+!> the scene written to a web page at the 20th frame (as the "Export web
+!> page..." button does: WindowProxy%export_web, animated over the three
+!> days, the frame and mode chosen; open it in a browser).
 module frames_demo
 
     use qt
@@ -158,6 +161,8 @@ module frames_demo
         integer :: start_frame = 1, start_mode = 1
         type(DemoOptions) :: options                        !! --capture, --capture-frame, --quit-after
         logical :: frame_test = .false.
+        character(len=:), allocatable :: export_file        !! --export FILE: a web page written at frame 20
+        type(QLabel) :: export_status                       !! the last web page written
     end type app_t
 
     type(app_t), target, save :: app
@@ -529,6 +534,7 @@ contains
         app%frame = app%frame + 1
         call follow_time()
         if (app%frame_test) call frame_test_step()
+        if (allocated(app%export_file) .and. app%frame == 20) call export_page(app%export_file)
         if (app%options%after_frame(app%proxy, app%window, app%frame)) return   ! (a capture; --recreate-surface)
         call app%window%requestUpdate()
     end subroutine on_update
@@ -683,6 +689,28 @@ contains
         call v%reset_view()
     end subroutine on_reset_view
 
+    !> Export a web page: a file chosen, the scene written to it animated
+    !> over the data's three days (the frame and mode chosen now).
+    subroutine on_export(data)
+        class(*), intent(inout), optional :: data           !! the connection's data (unused)
+        character(len=:), allocatable :: path
+        path = QFileDialog_getSaveFileName('Export a web page', 'frames_demo.html', 'Web pages (*.html)', app%main)
+        if (len_trim(path) == 0) return
+        if (index(path, '.htm', back=.true.) == 0) path = trim(path)//'.html'
+        call export_page(trim(path))
+    end subroutine on_export
+
+    !> The scene written to the web page `path` (WindowProxy%export_web), animated.
+    subroutine export_page(path)
+        character(len=*), intent(in) :: path
+        if (app%proxy%export_web(path, animate=.true., title='vkframes: '//trim(frame_names(app%frame_choice% &
+                                 currentIndex() + 1)), samples=2000)) then
+            call app%export_status%setText('Wrote '//path)
+        else
+            call app%export_status%setText('Could not write '//path)
+        end if
+    end subroutine export_page
+
     !> The main window closes: close the view (waiting for the GPU) first.
     subroutine on_close(event, data)
         type(QCloseEvent), intent(in) :: event              !! the close (accepted)
@@ -696,7 +724,7 @@ contains
         type(QDockWidget) :: dock
         type(QWidget) :: panel
         type(QFormLayout) :: form
-        type(QPushButton) :: reset_view
+        type(QPushButton) :: reset_view, export
         type(QHBoxLayout) :: buttons, bar
         type(QVBoxLayout) :: column
         type(QLabel) :: help
@@ -757,6 +785,12 @@ contains
         call buttons%addWidget(app%pause)
         call buttons%addWidget(reset_view)
         call form%addRow('', buttons)
+        export = QPushButton('Export web page...')
+        call export%clicked%connect(on_export)
+        call form%addRow('', export)
+        app%export_status = QLabel('')
+        call app%export_status%setWordWrap(.true.)
+        call form%addRow('', app%export_status)
         help = QLabel('<small>The camera rides with the frame chosen (turning with it). "Drawn in ' // &
                       'this frame": each trajectory is drawn where its points are in that frame at their ' // &
                       'own times (in the Earth-fixed frame the orbiter''s orbit becomes its ground ' // &
@@ -805,6 +839,10 @@ program vkframes_frames_demo
             i = i + 1
         case ('--frame-test')
             app%frame_test = .true.
+        case ('--export')
+            call get_command_argument(i + 1, arg)
+            app%export_file = trim(arg)
+            i = i + 1
         end select
         i = i + 1
     end do

@@ -23,6 +23,7 @@ module vkf_shapes
     use vkf_frames, only: ReferenceFrame, X_AXIS, Y_AXIS, Z_AXIS, ALL_AXES
     use vkf_artists, only: MARKER_DISK, MARKER_IMAGE
     use vkf_files, only: find_data_file
+    use vkf_web_writer, only: WebWriter
     use vkf_layer, only: check_status, vkf_line_create, vkf_marker_create, vkf_mesh_create, vkf_switch_create, &
                          vkf_mesh_array, vkf_mesh_set_bound, &
                          vkf_node_add_child, vkf_node_remove_child, vkf_node_delete, vkf_compile_node, &
@@ -40,6 +41,11 @@ module vkf_shapes
     !> What a Polyhedron draws (combine with ior).
     integer, parameter, public :: POLY_NONE = 0, POLY_FACES = 1, POLY_EDGES = 2, POLY_VERTICES = 4
     integer, parameter, public :: POLY_ALL = 7              !! POLY_FACES + POLY_EDGES + POLY_VERTICES
+
+    !> While a shape is exported to the web (its export_web): the page being
+    !> written, which line_node, marker_node and surface_node write to instead
+    !> of making nodes.
+    type(WebWriter), pointer :: capture => null()
 
     !> A shape's nodes: made under the frame's contents, replaced when the
     !> shape changes.
@@ -84,6 +90,7 @@ module vkf_shapes
         procedure :: frame_info => axes_frame_info
         procedure :: bound => axes_bound
         procedure :: build_contents => axes_build_contents
+        procedure :: export_web => axes_export_web
     end type CoordinateAxes
 
     !> The CoordinateAxes constructor: `CoordinateAxes(...)` makes one (see [[new_coordinate_axes]] for its
@@ -111,6 +118,7 @@ module vkf_shapes
         procedure :: frame_info => grid_frame_info
         procedure :: bound => grid_bound
         procedure :: build_contents => grid_build_contents
+        procedure :: export_web => grid_export_web
     end type LatLonGrid
 
     !> The LatLonGrid constructor: `LatLonGrid(...)` makes one (see [[new_lat_lon_grid]] for its
@@ -137,6 +145,7 @@ module vkf_shapes
         procedure :: frame_info => plane_frame_info
         procedure :: bound => plane_bound
         procedure :: build_contents => plane_build_contents
+        procedure :: export_web => plane_export_web
     end type RadialPlane
 
     !> The RadialPlane constructor: `RadialPlane(...)` makes one (see [[new_radial_plane]] for its
@@ -171,6 +180,7 @@ module vkf_shapes
         procedure :: frame_info => cone_frame_info
         procedure :: bound => cone_bound
         procedure :: build_contents => cone_build_contents
+        procedure :: export_web => cone_export_web
     end type PolyhedralCone
 
     !> The PolyhedralCone constructor: `PolyhedralCone(...)` makes one (see [[new_polyhedral_cone]] for its
@@ -265,6 +275,7 @@ module vkf_shapes
         procedure :: frame_info => poly_frame_info
         procedure :: bound => poly_bound
         procedure :: build_contents => poly_build_contents
+        procedure :: export_web => poly_export_web
     end type Polyhedron
 
     !> The Polyhedron constructor: `Polyhedron(...)` makes one (see [[new_polyhedron]] for its
@@ -283,7 +294,8 @@ contains
     subroutine replace(self, new)
         class(ShapeNodes), intent(inout) :: self
         type(c_ptr), intent(in) :: new                      !! a switch made by the shape (null: none)
-        if (.not. c_associated(self%contents)) then          ! not shown yet
+        if (.not. c_associated(self%contents) .or. associated(capture)) then   ! not shown yet, or exported
+
             if (c_associated(new)) call vkf_node_delete(new)
             return
         end if
@@ -315,6 +327,11 @@ contains
         type(c_ptr) :: node
         node = c_null_ptr
         if (size(xyz, 2) < 2) return
+        if (associated(capture)) then
+            call capture%begin_line_item(xyz, rgba, width, segments)
+            call capture%end_object()
+            return
+        end if
         node = vkf_line_create(int(size(xyz, 2), c_int))
         if (.not. c_associated(node)) return
         if (segments) call check_status(line_set_segments(node, .true.), 'shapes')
@@ -334,6 +351,11 @@ contains
         type(c_ptr) :: node
         node = c_null_ptr
         if (size(xyz, 2) < 1) return
+        if (associated(capture)) then
+            call capture%begin_point_item(xyz, rgba, px, shape, radius)
+            call capture%end_object()
+            return
+        end if
         node = vkf_marker_create(int(size(xyz, 2), c_int), image, 0_c_int)
         if (.not. c_associated(node)) return
         call check_status(marker_set_style(node, real(rgba, c_float), real(px, c_float), shape, real(radius, c_float)), 'shapes')
@@ -364,6 +386,11 @@ contains
         nv = size(xyz, 2)
         ni = size(idx)
         if (nv < 3 .or. ni < 3) return
+        if (associated(capture)) then
+            call capture%begin_mesh_item(xyz, idx, rgba, normals=normals, colors=colors, two_sided=two_sided)
+            call capture%end_object()
+            return
+        end if
         lit = present(normals)
         flags = 1
         if (lit) then
@@ -625,7 +652,7 @@ contains
         real(wp) :: e(3), mark, f
         type(c_ptr) :: group
         integer :: k, i
-        if (.not. c_associated(self%nodes%contents)) return
+        if (.not. (c_associated(self%nodes%contents) .or. associated(capture))) return
         allocate(lines(3, 0), major(3, 0), minor(3, 0))
         do k = 1, 3
             if (iand(self%drawn, 2**(k-1)) == 0) cycle
@@ -778,7 +805,7 @@ contains
         real(wp) :: circle(3, n_around), meridian(3, n_meridian + 1), lat, lon
         type(c_ptr) :: group
         integer :: i, k, sgn
-        if (.not. c_associated(self%nodes%contents)) return
+        if (.not. (c_associated(self%nodes%contents) .or. associated(capture))) return
         allocate(grid(3, 0), main(3, 0))
         if (self%lat_spacing > 0.0_wp) then                    ! the equator, then pairs north and south
             k = 0
@@ -922,7 +949,7 @@ contains
         integer :: idx(3, n), i, k
         real(wp), allocatable :: lines(:,:), main(:,:)
         type(c_ptr) :: group
-        if (.not. c_associated(self%nodes%contents)) return
+        if (.not. (c_associated(self%nodes%contents) .or. associated(capture))) return
         ! the disk: a fan around the center
         disk(:, n + 1) = 0.0_wp
         do i = 1, n
@@ -1167,7 +1194,7 @@ contains
         integer, allocatable :: idx(:,:)
         type(c_ptr) :: group
         integer :: i, n
-        if (.not. c_associated(self%nodes%contents)) return
+        if (.not. (c_associated(self%nodes%contents) .or. associated(capture))) return
         n = size(self%clock)
         allocate(v(3, n + 1), idx(3, n), edges(3, 2 * n))
         v(:, n + 1) = 0.0_wp                                    ! the apex
@@ -1700,7 +1727,7 @@ contains
         real(wp), allocatable :: v(:,:), normals(:,:), colors(:,:), segments(:,:)
         integer, allocatable :: idx(:,:)
         integer :: i, k, m
-        if (.not. c_associated(self%nodes%contents)) return
+        if (.not. (c_associated(self%nodes%contents) .or. associated(capture))) return
         group = vkf_switch_create()
         if (iand(self%mode, POLY_FACES) /= 0 .and. size(self%tri, 2) > 0) then
             rgba = self%face_color_
@@ -1863,5 +1890,53 @@ contains
             radius = max(radius, norm2(v(:, i) - center))
         end do
     end subroutine vertices_sphere
+
+    ! ==================================================================
+    ! export to the web: each shape made as it is drawn, written to the page
+
+    !> The web page's items: the axes' lines and tick marks.
+    subroutine axes_export_web(self, w)
+        class(CoordinateAxes), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        capture => w
+        call make_axes(self)
+        capture => null()
+    end subroutine axes_export_web
+
+    !> The web page's items: the grid's lines.
+    subroutine grid_export_web(self, w)
+        class(LatLonGrid), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        capture => w
+        call make_grid(self)
+        capture => null()
+    end subroutine grid_export_web
+
+    !> The web page's items: the plane's surface and lines.
+    subroutine plane_export_web(self, w)
+        class(RadialPlane), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        capture => w
+        call make_plane(self)
+        capture => null()
+    end subroutine plane_export_web
+
+    !> The web page's items: the cone's sides and lines.
+    subroutine cone_export_web(self, w)
+        class(PolyhedralCone), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        capture => w
+        call make_cone(self)
+        capture => null()
+    end subroutine cone_export_web
+
+    !> The web page's items: the polyhedron's faces, edges and vertices.
+    subroutine poly_export_web(self, w)
+        class(Polyhedron), intent(inout), target :: self
+        type(WebWriter), intent(inout), target :: w         !! the page being written
+        capture => w
+        call make_polyhedron(self)
+        capture => null()
+    end subroutine poly_export_web
 
 end module vkf_shapes

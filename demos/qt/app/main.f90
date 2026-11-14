@@ -73,7 +73,10 @@
 !> (vkf_gui: Dear ImGui, kept there each frame in the handler's before_draw),
 !> with buttons to go to the time there and to close it. "Record video..."
 !> records the main window to a video file (frames piped to ffmpeg), at the
-!> video's pace. An orbit picked is
+!> video's pace; "Export web page..." writes the scene to a web page
+!> (WindowProxy%export_web: Three.js, to turn and zoom in a browser, animated
+!> over the data's times), and "Record web page..." records one as the demo
+!> runs (start_web_recording). An orbit picked is
 !> highlighted (DrawableTrajectory%set_highlight: it pulses, with arrows
 !> moving along it), until the next click.
 !>
@@ -194,6 +197,7 @@ module vkdemo
         type(QDoubleSpinBox) :: view_transition                !! seconds to fly between views (0: a cut)
         type(QCheckBox) :: pause_time
         type(QPushButton) :: record                            !! records the main window to a video, or stops
+        type(QPushButton) :: record_web                        !! records the main window to a web page, or stops
         type(QDoubleSpinBox) :: line_width
         type(QComboBox) :: follow_mode
         type(QCheckBox) :: show_axes, show_labels, show_hud, trace_orbit, show_radius, attenuate, altitude_colors, show_plane_swept
@@ -981,6 +985,34 @@ contains
         if (app%windows(1)%proxy%start_recording(file, fps=60.0_wp)) call app%record%setText('Stop recording')
     end subroutine on_record
 
+    !> Export the main window's scene to a web page chosen
+    !> (WindowProxy%export_web), animated over the data's time range.
+    subroutine on_export_web(data)
+        class(*), intent(inout), optional :: data
+        character(len=:), allocatable :: file
+        file = QFileDialog_getSaveFileName('Export a web page', 'vkframes.html', 'Web pages (*.html)', app%main)
+        if (len(file) == 0) return
+        if (.not. app%windows(1)%proxy%export_web(file, animate=.true., title='vkframes: Qt demo')) &
+            write(*, '(a)') 'vkframes: the web page was not written'
+    end subroutine on_export_web
+
+    !> Record the main window's scene to a web page chosen, as it runs
+    !> (WindowProxy%start_web_recording: what the program moves too), or stop
+    !> and write it.
+    subroutine on_record_web(data)
+        class(*), intent(inout), optional :: data
+        character(len=:), allocatable :: file
+        if (app%windows(1)%proxy%is_web_recording()) then
+            if (.not. app%windows(1)%proxy%stop_web_recording()) write(*, '(a)') 'vkframes: the web page was not written'
+            call app%record_web%setText('Record web page...')
+            return
+        end if
+        file = QFileDialog_getSaveFileName('Record a web page', 'vkframes_recorded.html', 'Web pages (*.html)', app%main)
+        if (len(file) == 0) return
+        if (app%windows(1)%proxy%start_web_recording(file, title='vkframes: Qt demo (recorded)')) &
+            call app%record_web%setText('Stop recording the web page')
+    end subroutine on_record_web
+
     !> The time slider moved (dragged, clicked or with the keys): set the time.
     !> (Not when the demo moves it to follow the time.)
     subroutine on_time_slider(value, data)
@@ -1478,7 +1510,7 @@ contains
         type(QScrollArea) :: scroll
         type(QWidget) :: panel
         type(QFormLayout) :: form
-        type(QPushButton) :: reset, reset_view, new_win
+        type(QPushButton) :: reset, reset_view, new_win, export_web
 
         app%main = QMainWindow()
         call app%main%setWindowTitle('vkframes in qt-fortran')
@@ -1527,6 +1559,12 @@ contains
         app%record = QPushButton('Record video...')
         call app%record%clicked%connect(on_record)
         call form%addRow('', app%record)
+        export_web = QPushButton('Export web page...')
+        call export_web%clicked%connect(on_export_web)
+        call form%addRow('', export_web)
+        app%record_web = QPushButton('Record web page...')
+        call app%record_web%clicked%connect(on_record_web)
+        call form%addRow('', app%record_web)
         app%follow_mode = QComboBox()
         call app%follow_mode%addItems([character(len=23) :: 'Loop the orbit', 'Stop at the end (limit)'])
         call app%follow_mode%currentIndexChanged%connect(on_follow_mode)
