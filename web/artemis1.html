@@ -32,6 +32,7 @@
 // Three.js composes the transforms in double precision.
 //
 // Mouse: drag to turn, right-drag (or shift-drag) to pan, wheel to zoom;
+// touch: drag to turn, pinch to zoom, two fingers to pan;
 // keys: v / V the next / previous view, space resets the view, p plays or
 // pauses. URL options (for tests): ?t=<time> the time, ?view=<n> the view,
 // ?camera=<eye,center,up> its camera, ?paused. window.vkfReady is true once the page has drawn with its models.
@@ -741,45 +742,99 @@ function placeCamera() {
 
 // ---------------------------------------------------------------- the trackball
 
-const canvas = renderer.domElement;
-let drag = null;
-canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-canvas.addEventListener('pointerdown', (e) => {
-    canvas.setPointerCapture(e.pointerId);
-    drag = { x: e.clientX, y: e.clientY, pan: e.button === 2 || e.button === 1 || e.shiftKey };
-});
-canvas.addEventListener('pointerup', () => { drag = null; });
-canvas.addEventListener('pointercancel', () => { drag = null; });
-canvas.addEventListener('pointermove', (e) => {
-    if (!drag) return;
-    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-    drag.x = e.clientX;
-    drag.y = e.clientY;
+// Turn the current view's camera about its center by a drag of (dx, dy) pixels.
+function turnBy(dx, dy) {
     const v = views[current];
     const offset = v.eye.clone().sub(v.center);
     const forward = offset.clone().negate().normalize();
     const right = forward.clone().cross(v.up).normalize();
     const up = right.clone().cross(forward).normalize();
-    if (drag.pan) {
-        const k = 2 * Math.tan(0.5 * (v.data.fovy || 45) * Math.PI / 180) * offset.length() / window.innerHeight;
-        const move = right.multiplyScalar(-dx * k).addScaledVector(up, dy * k);
-        v.eye.add(move);
-        v.center.add(move);
-    } else {
-        const k = 2 * Math.PI / Math.max(300, window.innerHeight);
-        const q = new THREE.Quaternion().setFromAxisAngle(up, -dx * k)
-            .multiply(new THREE.Quaternion().setFromAxisAngle(right, -dy * k));
-        offset.applyQuaternion(q);
-        v.up.copy(up).applyQuaternion(q).normalize();
-        v.eye.copy(v.center).add(offset);
+    const k = 2 * Math.PI / Math.max(300, window.innerHeight);
+    const q = new THREE.Quaternion().setFromAxisAngle(up, -dx * k)
+        .multiply(new THREE.Quaternion().setFromAxisAngle(right, -dy * k));
+    offset.applyQuaternion(q);
+    v.up.copy(up).applyQuaternion(q).normalize();
+    v.eye.copy(v.center).add(offset);
+}
+
+// Move the current view's camera and center sideways with a drag of (dx, dy) pixels.
+function panBy(dx, dy) {
+    const v = views[current];
+    const offset = v.eye.clone().sub(v.center);
+    const forward = offset.clone().negate().normalize();
+    const right = forward.clone().cross(v.up).normalize();
+    const up = right.clone().cross(forward).normalize();
+    const k = 2 * Math.tan(0.5 * (v.data.fovy || 45) * Math.PI / 180) * offset.length() / window.innerHeight;
+    const move = right.multiplyScalar(-dx * k).addScaledVector(up, dy * k);
+    v.eye.add(move);
+    v.center.add(move);
+}
+
+// Scale the current view's distance from its center (below 1: closer).
+function zoomBy(factor) {
+    const v = views[current];
+    const offset = v.eye.clone().sub(v.center).multiplyScalar(factor);
+    v.eye.copy(v.center).add(offset);
+}
+
+// Pointers down on the canvas (mouse, pen, each finger): one turns (or pans,
+// with the right button or shift); two fingers pinch to zoom and move to pan.
+const canvas = renderer.domElement;
+const pointers = new Map();          // pointerId -> {x, y}
+let drag = null;                     // one pointer: {x, y, pan}
+let pinch = null;                    // two: {d, x, y} (the distance between, the midpoint)
+function twoPointers() {
+    const [a, b] = [...pointers.values()];
+    return { d: Math.hypot(a.x - b.x, a.y - b.y), x: 0.5 * (a.x + b.x), y: 0.5 * (a.y + b.y) };
+}
+function regrip(pan) {               // (the gesture restarted from the pointers down now: no jump)
+    drag = null;
+    pinch = null;
+    if (pointers.size === 1) {
+        const p = pointers.values().next().value;
+        drag = { x: p.x, y: p.y, pan };
+    } else if (pointers.size >= 2) {
+        pinch = twoPointers();
+    }
+}
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+canvas.addEventListener('pointerdown', (e) => {
+    try { canvas.setPointerCapture(e.pointerId); } catch { /* (not a live pointer) */ }
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    regrip(e.button === 2 || e.button === 1 || e.shiftKey);
+});
+function release(e) {
+    if (!pointers.delete(e.pointerId)) return;
+    regrip(false);
+}
+canvas.addEventListener('pointerup', release);
+canvas.addEventListener('pointercancel', release);
+canvas.addEventListener('pointermove', (e) => {
+    const p = pointers.get(e.pointerId);
+    if (!p) return;
+    p.x = e.clientX;
+    p.y = e.clientY;
+    if (pinch && pointers.size >= 2) {
+        const now2 = twoPointers();
+        if (now2.d > 0 && pinch.d > 0) zoomBy(pinch.d / now2.d);
+        panBy(now2.x - pinch.x, now2.y - pinch.y);
+        pinch = now2;
+    } else if (drag) {
+        const dx = p.x - drag.x, dy = p.y - drag.y;
+        drag.x = p.x;
+        drag.y = p.y;
+        if (drag.pan) panBy(dx, dy);
+        else turnBy(dx, dy);
     }
 });
 canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
-    const v = views[current];
-    const offset = v.eye.clone().sub(v.center).multiplyScalar(Math.exp(0.0015 * e.deltaY));
-    v.eye.copy(v.center).add(offset);
+    if (e.ctrlKey) zoomBy(Math.exp(0.01 * e.deltaY));     // (a trackpad's pinch, as the browser sends it)
+    else zoomBy(Math.exp(0.0015 * e.deltaY));
 }, { passive: false });
+// (Safari's own pinch gestures: the page isn't zoomed instead of the scene)
+for (const type of ['gesturestart', 'gesturechange', 'gestureend'])
+    document.addEventListener(type, (e) => e.preventDefault());
 window.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
     if (e.key === 'v') selectView((current + 1) % views.length);
@@ -841,7 +896,9 @@ function placeHud() { hudLayer.style.bottom = `${bar.offsetHeight + 16}px`; }
 window.addEventListener('resize', placeHud);
 const help = document.createElement('span');
 help.id = 'vkf-help';
-help.textContent = 'drag: turn · right-drag: pan · wheel: zoom · v: next view';
+help.textContent = window.matchMedia('(pointer: coarse)').matches
+    ? 'drag: turn · pinch: zoom · two fingers: pan'
+    : 'drag: turn · right-drag: pan · wheel: zoom · v: next view';
 bar.append(reset, help);
 placeHud();
 
