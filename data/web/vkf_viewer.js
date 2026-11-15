@@ -812,9 +812,17 @@ canvas.addEventListener('wheel', (e) => {
     if (e.ctrlKey) zoomBy(Math.exp(0.01 * e.deltaY));     // (a trackpad's pinch, as the browser sends it)
     else zoomBy(Math.exp(0.0015 * e.deltaY));
 }, { passive: false });
-// (Safari's own pinch gestures: the page isn't zoomed instead of the scene)
-for (const type of ['gesturestart', 'gesturechange', 'gestureend'])
-    document.addEventListener(type, (e) => e.preventDefault());
+// Safari's pinch gestures (e.scale: the spread since the start), never zooming
+// the page instead: on a Mac's trackpad they zoom the scene (Chrome and
+// Firefox send ctrl+wheel instead); on iOS the touches already do (pointers).
+let gestureScale = 1;
+document.addEventListener('gesturestart', (e) => { e.preventDefault(); gestureScale = 1; });
+document.addEventListener('gesturechange', (e) => {
+    e.preventDefault();
+    if (pointers.size === 0 && e.scale > 0) zoomBy(gestureScale / e.scale);
+    gestureScale = e.scale;
+});
+document.addEventListener('gestureend', (e) => e.preventDefault());
 window.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
     if (e.key === 'v') selectView((current + 1) % views.length);
