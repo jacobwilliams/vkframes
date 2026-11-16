@@ -1682,6 +1682,7 @@ Sharing:
 - [x] Export to the web: a scene written out as a web page (Three.js) to
       view and turn in a browser, at a chosen time or animated, as video
       recording is to a movie. No picking at first.
+      What's left is in [web-export.md](web-export.md).
       - **What is exported: the data, not the pixels.** The exporter walks
         the scene in Fortran and writes what each frame draws: the frame
         tree with its poses, the geometry, the trajectories' points, colors,
