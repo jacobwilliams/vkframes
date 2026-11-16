@@ -1,0 +1,3665 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_view &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_view
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.2% of total for modules and submodules.">329 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_view.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_view.f90.html'>vkf_view.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_view</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_view.html#variable-absolute_frame">ABSOLUTE_FRAME</a>
+            <a class="list-group-item" href="../module/vkf_view.html#variable-orthographic">ORTHOGRAPHIC</a>
+            <a class="list-group-item" href="../module/vkf_view.html#variable-perspective">PERSPECTIVE</a>
+            <a class="list-group-item" href="../module/vkf_view.html#variable-relative_frame">RELATIVE_FRAME</a>
+            <a class="list-group-item" href="../module/vkf_view.html#variable-view_azel">VIEW_AZEL</a>
+            <a class="list-group-item" href="../module/vkf_view.html#variable-view_direct">VIEW_DIRECT</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_view.html#interface-view">View</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_view.html#type-view">View</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_view.html#proc-camera_between">camera_between</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-default_view_distance">default_view_distance</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-field_of_view">field_of_view</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-frame_to_root">frame_to_root</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-is_valid~2">is_valid</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-lookat_frame">lookat_frame</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-new_view">new_view</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-orthographic_bounds">orthographic_bounds</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-projection_type">projection_type</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-rotated">rotated</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-saved_state">saved_state</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-take_camera">take_camera</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-take_reset">take_reset</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-transform_camera">transform_camera</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-view_frame">view_frame</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-view_frame_type">view_frame_type</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-view_root">view_root</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-view_rotation_type">view_rotation_type</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-world_to_view">world_to_view</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_view.html#proc-camera_orientation">camera_orientation</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-clear_default_view_parameters">clear_default_view_parameters</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-default_view_parameters">default_view_parameters</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-home">home</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-reset_view">reset_view</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-save_state">save_state</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-set_default_view_distance">set_default_view_distance</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-set_default_view_parameters">set_default_view_parameters</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-set_orthographic">set_orthographic</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-set_perspective">set_perspective</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-set_view_between_frames">set_view_between_frames</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-set_view_frame">set_view_frame</a>
+            <a class="list-group-item" href="../module/vkf_view.html#proc-view_set_camera">view_set_camera</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Camera views: where the camera looks from, as OpenFrames' View.</p>
+<p>A view follows a frame: the camera's trackball (eye, center, up, which the
+mouse moves) is kept in the view frame's coordinates, so the camera moves
+with the frame. The view frame is
+* RELATIVE_FRAME (the default): the viewed frame itself (a body-fixed view);
+* ABSOLUTE_FRAME: the root frame's axes, at the viewed frame's origin (an
+  inertial view that follows the frame as it moves).
+A view between frames (<a href="../proc/set_view_between_frames.html">set_view_between_frames</a>) looks from one frame at
+another: the view frame is turned so that its +y axis (the trackball's
+initial viewing direction) points at the second frame, in one direct rotation
+(VIEW_DIRECT) or first in azimuth, then elevation (VIEW_AZEL, the default,
+which keeps z up).</p>
+<p>The default camera (<a href="../proc/reset_view.html">reset_view</a>) looks along +y at the frame's bound from the
+distance at which it fills the field of view (or from <a href="../proc/default_view_distance.html">default_view_distance</a>,
+or from <a href="../proc/set_default_view_parameters.html">set_default_view_parameters</a>). Views are not owned by windows: a
+view, and the frames it refers to, must stay alive while used.</p>
+<p>The camera (OpenFrames' trackball get/setTransformation): a window's
+<a href="../proc/get_camera.html">get_camera</a> / <a href="../type/view.html#boundprocedure-set_camera~2">set_camera</a> for the view it shows (and smooth transitions,
+see vkf_window), or <a href="../type/view.html#boundprocedure-set_camera~2">set_camera</a> for a view's camera when it is next
+shown. <a href="../proc/camera_between.html">camera_between</a> interpolates between two cameras (each eye, center,
+up): the center along a straight line, the distance geometrically, the
+orientation by the shortest rotation.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_frames.html'>vkf_frames</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_view~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_viewUsesGraph" width="641pt" height="325pt"
+ viewBox="0.00 0.00 641.00 325.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_view~~UsesGraph" class="graph" transform="scale(0.963736 0.963736) rotate(0) translate(4 333.49)">
+<title>module~~vkf_view~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-333.49 661.12,-333.49 661.12,4 -4,4"/>
+<!-- module~vkf_view -->
+<g id="module~~vkf_view~~UsesGraph_node1" class="node">
+<title>module~vkf_view</title>
+<polygon fill="none" stroke="black" points="657.12,-267.49 600.6,-267.49 600.6,-243.22 657.12,-243.22 657.12,-267.49"/>
+<text xml:space="preserve" text-anchor="middle" x="628.86" y="-251.76" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_view</text>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_view~~UsesGraph_node2" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_view~~UsesGraph_node2"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="564.6,-187.49 494.58,-187.49 494.58,-163.22 564.6,-163.22 564.6,-187.49"/>
+<text xml:space="preserve" text-anchor="middle" x="529.59" y="-171.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_view~~UsesGraph_edge1" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.66,-242.86C597.1,-230.06 572.69,-209.98 554.53,-195.05"/>
+<polygon fill="#000000" stroke="#000000" points="556.8,-192.38 546.85,-188.73 552.35,-197.79 556.8,-192.38"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_node3" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_view~~UsesGraph_node3"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-267.49 140.52,-267.49 140.52,-243.22 200.79,-243.22 200.79,-267.49"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-251.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge2" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.39,-267.48C567.46,-281.3 510.23,-303.04 458.58,-311.36 421.6,-317.31 411.01,-318.82 374.31,-311.36 336.4,-303.65 332.85,-276.3 294.17,-277.36"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge7" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.96,-187.73C512.81,-208.84 489.58,-252.07 458.58,-278.36 443.22,-291.38 435.9,-289.3 417.44,-297.36"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M415.44,-297.36C365.38,-319.21 348.78,-275.86 294.17,-277.36"/>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_view~~UsesGraph_node4" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_view~~UsesGraph_node4"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-147.49 129.27,-147.49 129.27,-123.22 212.04,-123.22 212.04,-147.49"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-131.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_view~~UsesGraph_edge3" class="edge">
+<title>module~vkf_frames&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M526.82,-163.07C521.96,-134.42 505.5,-63.45 458.58,-34.36 379.05,14.95 331.82,7.32 248.04,-34.36 215.44,-50.58 193.05,-88.09 181.3,-112.55"/>
+<polygon fill="#000000" stroke="#000000" points="178.24,-110.82 177.28,-121.37 184.61,-113.72 178.24,-110.82"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_view~~UsesGraph_node6" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_view~~UsesGraph_node6"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="454.08,-227.49 378.81,-227.49 378.81,-203.22 454.08,-203.22 454.08,-227.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-211.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_view~~UsesGraph_edge4" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.34,-187.69C484.49,-191.23 473.59,-195.15 463.17,-198.9"/>
+<polygon fill="#000000" stroke="#000000" points="462.19,-195.53 453.97,-202.21 464.56,-202.12 462.19,-195.53"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_view~~UsesGraph_node7" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_view~~UsesGraph_node7"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="458.58,-147.49 374.31,-147.49 374.31,-123.22 458.58,-123.22 458.58,-147.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-131.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_view~~UsesGraph_edge5" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.34,-163.03C484.49,-159.49 473.59,-155.56 463.17,-151.81"/>
+<polygon fill="#000000" stroke="#000000" points="464.56,-148.6 453.97,-148.5 462.19,-155.18 464.56,-148.6"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_view~~UsesGraph_node8" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_view~~UsesGraph_node8"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="322.93,-147.49 263.41,-147.49 263.41,-123.22 322.93,-123.22 322.93,-147.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-131.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_view~~UsesGraph_edge6" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M519.1,-162.85C506.96,-148 484.4,-124.03 458.58,-114.36 418.03,-99.17 368.34,-109.09 334.27,-119.86"/>
+<polygon fill="#000000" stroke="#000000" points="333.16,-116.54 324.79,-123.02 335.38,-123.18 333.16,-116.54"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_view~~UsesGraph_node9" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_view~~UsesGraph_node9"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="443.58,-269.49 389.31,-269.49 389.31,-245.22 443.58,-245.22 443.58,-269.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-253.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_view~~UsesGraph_edge8" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.45,-187.59C503.06,-200.68 480.48,-221.55 458.58,-236.36 456.98,-237.44 455.32,-238.5 453.62,-239.54"/>
+<polygon fill="#000000" stroke="#000000" points="451.96,-236.46 444.99,-244.44 455.41,-242.55 451.96,-236.46"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_view~~UsesGraph_node10" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_view~~UsesGraph_node10"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="443.44,-67.49 389.44,-67.49 389.44,-43.22 443.44,-43.22 443.44,-67.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-51.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_view~~UsesGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M521.42,-162.96C509.94,-143.82 485.9,-106.66 458.58,-81.36 455.85,-78.83 452.85,-76.41 449.74,-74.12"/>
+<polygon fill="#000000" stroke="#000000" points="451.79,-71.28 441.55,-68.57 447.87,-77.08 451.79,-71.28"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_view~~UsesGraph_node11" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_view~~UsesGraph_node11"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="335.31,-227.49 251.04,-227.49 251.04,-203.22 335.31,-203.22 335.31,-227.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-211.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_view~~UsesGraph_edge10" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.37,-178.25C462.98,-181.21 415.26,-186.51 374.31,-194.36 365.27,-196.09 355.75,-198.27 346.54,-200.56"/>
+<polygon fill="#000000" stroke="#000000" points="345.8,-197.14 336.99,-203.02 347.55,-203.92 345.8,-197.14"/>
+</g>
+<!-- module~vkf_web_writer -->
+<g id="module~~vkf_view~~UsesGraph_node12" class="node">
+<title>module~vkf_web_writer</title>
+<g id="a_module~~vkf_view~~UsesGraph_node12"><a xlink:href="../module/vkf_web_writer.html" xlink:title="vkf_web_writer">
+<polygon fill="#337ab7" stroke="#337ab7" points="338.31,-329.49 248.04,-329.49 248.04,-305.22 338.31,-305.22 338.31,-329.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-313.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_web_writer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_view~~UsesGraph_edge11" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M415.44,-297.36C395.07,-306.25 371.18,-311.22 350.03,-313.98"/>
+<polygon fill="#000000" stroke="#000000" points="349.63,-310.5 340.1,-315.13 350.43,-317.46 349.63,-310.5"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_view~~UsesGraph_node5" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_view~~UsesGraph_node5"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-267.49 0,-267.49 0,-243.22 93.27,-243.22 93.27,-267.49"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-251.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_view~~UsesGraph_edge12" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-255.36C129.53,-255.36 117.21,-255.36 105.08,-255.36"/>
+<polygon fill="#000000" stroke="#000000" points="105.08,-251.86 95.08,-255.36 105.08,-258.86 105.08,-251.86"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge13" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391.08,-227.79C385.57,-230.61 379.74,-233.58 374.31,-236.36 338.69,-254.56 334.17,-276.26 294.17,-277.36"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_view~~UsesGraph_edge14" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M378.4,-215.36C368.48,-215.36 357.55,-215.36 346.96,-215.36"/>
+<polygon fill="#000000" stroke="#000000" points="347.16,-211.86 337.16,-215.36 347.16,-218.86 347.16,-211.86"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge17" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M407.05,-147.7C393.51,-167.27 365.6,-206.3 338.31,-236.36 320.31,-256.18 320.94,-276.62 294.17,-277.36"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M292.17,-277.36C265.13,-278.1 235.21,-272.67 211.95,-267.03"/>
+<polygon fill="#000000" stroke="#000000" points="213.13,-263.71 202.57,-264.64 211.4,-270.5 213.13,-263.71"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_view~~UsesGraph_edge15" class="edge">
+<title>module~vkf_geometry&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.01,-147.98C364.78,-151.41 351.1,-154.65 338.31,-156.36 298.54,-161.67 287.8,-161.72 248.04,-156.36 239.13,-155.15 229.78,-153.2 220.81,-150.95"/>
+<polygon fill="#000000" stroke="#000000" points="221.73,-147.57 211.17,-148.37 219.92,-154.33 221.73,-147.57"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_view~~UsesGraph_edge16" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M374.05,-135.36C361.23,-135.36 347.13,-135.36 334.4,-135.36"/>
+<polygon fill="#000000" stroke="#000000" points="334.67,-131.86 324.67,-135.36 334.67,-138.86 334.67,-131.86"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_view~~UsesGraph_edge18" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M263,-135.36C251.14,-135.36 237.06,-135.36 223.55,-135.36"/>
+<polygon fill="#000000" stroke="#000000" points="223.91,-131.86 213.91,-135.36 223.91,-138.86 223.91,-131.86"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge19" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.15,-263.82C364.72,-269.31 327.24,-276.45 294.17,-277.36"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge23" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M292.17,-95.36C273.42,-105.58 263.8,-99.95 248.04,-114.36 211.94,-147.35 189.41,-201.46 178.83,-232.17"/>
+<polygon fill="#000000" stroke="#000000" points="175.52,-231.03 175.72,-241.62 182.17,-233.22 175.52,-231.03"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_view~~UsesGraph_edge20" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.18,-62.81C358.77,-71.66 310.72,-86.34 294.17,-95.36"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M292.17,-95.36C279.88,-102.06 250.13,-111.96 223.26,-120.23"/>
+<polygon fill="#000000" stroke="#000000" points="222.36,-116.84 213.82,-123.1 224.4,-123.54 222.36,-116.84"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_view~~UsesGraph_edge22" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M394.68,-67.93C388.08,-72.07 380.81,-76.79 374.31,-81.36 357.72,-93.01 355.08,-97.97 338.31,-109.36 334.42,-112 330.25,-114.66 326.09,-117.22"/>
+<polygon fill="#000000" stroke="#000000" points="324.61,-114.03 317.82,-122.17 328.2,-120.04 324.61,-114.03"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_view~~UsesGraph_node13" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_view~~UsesGraph_node13"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="320.31,-67.49 266.04,-67.49 266.04,-43.22 320.31,-43.22 320.31,-67.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-51.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_view~~UsesGraph_edge21" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.13,-55.36C372.37,-55.36 350.38,-55.36 331.79,-55.36"/>
+<polygon fill="#000000" stroke="#000000" points="331.95,-51.86 321.95,-55.36 331.95,-58.86 331.95,-51.86"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge26" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.37,-227.9C240.75,-232.42 225.35,-237.54 211.56,-242.11"/>
+<polygon fill="#000000" stroke="#000000" points="210.73,-238.7 202.35,-245.17 212.94,-245.34 210.73,-238.7"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_view~~UsesGraph_edge24" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M269.96,-202.75C262.88,-198.61 255.06,-193.9 248.04,-189.36 230.81,-178.22 211.98,-164.92 197.33,-154.31"/>
+<polygon fill="#000000" stroke="#000000" points="199.73,-151.73 189.59,-148.67 195.61,-157.39 199.73,-151.73"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_view~~UsesGraph_edge25" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M250.77,-218.62C217.7,-221.61 170.28,-226.73 129.27,-234.36 120.67,-235.96 111.64,-237.95 102.84,-240.08"/>
+<polygon fill="#000000" stroke="#000000" points="102.2,-236.63 93.35,-242.44 103.9,-243.42 102.2,-236.63"/>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_view~~UsesGraph_edge28" class="edge">
+<title>module~vkf_web_writer&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M267.79,-304.81C250.06,-295.69 225.83,-283.23 206.13,-273.09"/>
+<polygon fill="#000000" stroke="#000000" points="207.85,-270.04 197.35,-268.58 204.64,-276.26 207.85,-270.04"/>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_view~~UsesGraph_edge27" class="edge">
+<title>module~vkf_web_writer&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.56,-306.2C214.81,-297.99 169.26,-286.53 129.27,-276.36 121.18,-274.3 112.65,-272.12 104.27,-269.97"/>
+<polygon fill="#000000" stroke="#000000" points="105.41,-266.65 94.86,-267.55 103.67,-273.43 105.41,-266.65"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_viewUsesGraph = svgPanZoom('#modulevkf_viewUsesGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_view~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_viewUsedByGraph" width="270pt" height="52pt"
+ viewBox="0.00 0.00 270.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_view~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_view~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 265.81,-48.27 265.81,4 -4,4"/>
+<!-- module~vkf_view -->
+<g id="module~~vkf_view~~UsedByGraph_node1" class="node">
+<title>module~vkf_view</title>
+<polygon fill="none" stroke="black" points="56.52,-44.27 0,-44.27 0,-20 56.52,-20 56.52,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="28.26" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_view</text>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_view~~UsedByGraph_node2" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_view~~UsedByGraph_node2"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="164.79,-24.27 92.52,-24.27 92.52,0 164.79,0 164.79,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="128.66" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_view~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M92.13,-19.36C84.37,-20.93 76.1,-22.61 68.21,-24.22"/>
+<polygon fill="#000000" stroke="#000000" points="67.6,-20.77 58.5,-26.19 68.99,-27.63 67.6,-20.77"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_view~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_view~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="261.81,-44.27 200.79,-44.27 200.79,-20 261.81,-20 261.81,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="231.3" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_view~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M200.3,-32.69C189.15,-32.87 176.39,-33.05 164.79,-33.13 132.67,-33.38 124.64,-33.39 92.52,-33.13 84.7,-33.07 76.33,-32.97 68.33,-32.85"/>
+<polygon fill="#000000" stroke="#000000" points="68.54,-29.35 58.49,-32.69 68.43,-36.35 68.54,-29.35"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_view~~UsedByGraph_edge3" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M200.38,-26.19C192.73,-24.67 184.32,-23 176.06,-21.36"/>
+<polygon fill="#000000" stroke="#000000" points="176.94,-17.96 166.45,-19.45 175.57,-24.83 176.94,-17.96"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-absolute_frame"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ABSOLUTE_FRAME</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>the base frame of the trackball (OpenFrames' ViewFrameType)
+the root frame's axes, at the viewed frame's origin</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-orthographic"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>ORTHOGRAPHIC</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>projections (OpenFrames' ProjectionType)
+orthographic projection</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-perspective"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>PERSPECTIVE</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>perspective projection</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-relative_frame"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>RELATIVE_FRAME</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>the viewed frame itself</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-view_azel"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VIEW_AZEL</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>azimuth, then elevation (keeps z up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-view_direct"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>VIEW_DIRECT</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+                <p>how a view between frames turns toward the look-at frame (OpenFrames' ViewRotationType)
+one direct rotation</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-view"></span>
+      <h3>public        interface <a href='../interface/view.html'>View</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The View constructor: <code>View(...)</code> makes one (see <a href="../proc/new_view.html">new_view</a> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_view.html'>new_view</a>(root, frame, lookat, frame_type, rotation_type) result(v)  
+
+    </h3>
+    
+  <p>A view of <code>frame</code> (in the tree of <code>root</code>), with base <code>frame_type</code>
+(default RELATIVE_FRAME); with <code>lookat</code>, a view from <code>frame</code> at <code>lookat</code>,
+turned by <code>rotation_type</code> (default VIEW_AZEL). Without frames, the view
+looks at the root frame's origin. The frames must stay alive while the
+view is used.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-root~17"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>root</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~19"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lookat~2"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>lookat</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame_type~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frame_type</strong></td>
+            <td>
+<p>ABSOLUTE_FRAME or RELATIVE_FRAME</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rotation_type~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rotation_type</strong></td>
+            <td>
+<p>VIEW_DIRECT or VIEW_AZEL</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/view.html'>View</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-view"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/view.html'>View</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A view (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-camera_pending"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>camera_pending</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>true if <code>pending</code> is to be applied when shown</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~24"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>kept center</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_center"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>default_center</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>camera center after a reset (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_distance"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>default_distance</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>radius framed on reset (&lt;= 0: the frame's bound)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_eye"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>default_eye</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>camera eye after a reset (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-default_up"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>default_up</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>camera up after a reset (zero: no default camera)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~8"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>kept eye</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fovy~2"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fovy</strong></td>
+<td> =</td>
+                <td>45.0_wp</td>
+            <td>
+<p>vertical field of view (degrees)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~18"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>the viewed frame (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame_type"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frame_type</strong></td>
+<td> =</td>
+                <td>RELATIVE_FRAME</td>
+            <td>
+<p>ABSOLUTE_FRAME or RELATIVE_FRAME</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-has_state"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>has_state</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>true if eye, center, up are kept</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lookat"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>lookat</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>the frame looked at (view between frames; not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ortho"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ortho</strong>(4)</td>
+<td> =</td>
+                <td>[-1.0_wp, 1.0_wp, -1.0_wp, 1.0_wp]</td>
+            <td>
+<p>left, right, bottom, top</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pending"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pending</strong>(3,3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>a camera set (eye, center, up), for when it is shown</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-projection"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>projection</strong></td>
+<td> =</td>
+                <td>PERSPECTIVE</td>
+            <td>
+<p>ORTHOGRAPHIC or PERSPECTIVE</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-reset_pending"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>reset_pending</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>true if the camera is to be reset when shown</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-root~16"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>root</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>the root of the frames' tree (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rotation_type"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rotation_type</strong></td>
+<td> =</td>
+                <td>VIEW_AZEL</td>
+            <td>
+<p>VIEW_DIRECT or VIEW_AZEL</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~9"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>kept up direction</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The View constructor: <code>View(...)</code> makes one (see <a href="../proc/new_view.html">new_view</a> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_view.html'>new_view</a></strong>
+                    (root, frame, lookat, frame_type, rotation_type)
+                  </td>
+                  <td><p>A view of <code>frame</code> (in the tree of <code>root</code>), with base <code>frame_type</code>
+(default RELATIVE_FRAME); with <code>lookat</code>, a view from <code>frame</code> at <code>lookat</code>,
+turned by <code>rotation_type</code> (default VIEW_AZEL). Without frames, the view
+looks at the root frame's origin. The frames must stay alive while the
+view is used.</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-clear_default_view_parameters'>clear_default_view_parameters</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-default_view_distance'>default_view_distance</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-default_view_parameters'>default_view_parameters</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-field_of_view'>field_of_view</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-home'>home</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-is_valid~3'>is_valid</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-lookat_frame'>lookat_frame</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-orthographic_bounds'>orthographic_bounds</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-projection_type'>projection_type</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-reset_view'>reset_view</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-save_state'>save_state</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-saved_state'>saved_state</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-set_camera~2'>set_camera</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/view_set_camera.html'>view_set_camera</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-set_default_view_distance'>set_default_view_distance</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-set_default_view_parameters'>set_default_view_parameters</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-set_orthographic'>set_orthographic</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-set_perspective'>set_perspective</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-set_view_between_frames'>set_view_between_frames</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-set_view_frame'>set_view_frame</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-take_camera'>take_camera</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-take_reset'>take_reset</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-view_frame'>view_frame</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-view_frame_type'>view_frame_type</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-view_root'>view_root</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-view_rotation_type'>view_rotation_type</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/view.html#boundprocedure-world_to_view'>world_to_view</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-camera_between"></span> <h3>public pure function <a href='../proc/camera_between.html'>camera_between</a>(s, from, to) result(cam)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The camera a fraction <code>s</code> (0 to 1) of the way from camera <code>from</code> to
+camera <code>to</code> (columns: eye, center, up; in one frame's coordinates): the
+center moved along a straight line, the distance to it changed by the
+same factor at each step (so far-to-near flights don't rush the near
+part), and the orientation turned by the shortest rotation.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~50"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>fraction of the way (0: <code>from</code>, 1: <code>to</code>)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-from~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>from</strong>(3,3)</td>
+            <td>
+<p>(columns: eye, center, up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-to~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>to</strong>(3,3)</td>
+            <td>
+<p>(columns: eye, center, up)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3,3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-default_view_distance"></span> <h3>private pure function <a href='../proc/default_view_distance.html'>default_view_distance</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The radius framed when the view is reset (&lt;= 0: the viewed frame's bound).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~850"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-field_of_view"></span> <h3>private pure function <a href='../proc/field_of_view.html'>field_of_view</a>(self) result(fovy)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The vertical field of view (degrees) of the perspective projection.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~845"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-frame_to_root"></span> <h3>private  function <a href='../proc/frame_to_root.html'>frame_to_root</a>(self, f) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The transform from <code>f</code> to the view's root frame (the tree root if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~862"></span>
+              type(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-f~24"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>f</strong></td>
+            <td>
+<p>a frame of the view's tree</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4,4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_valid~2"></span> <h3>private  function <a href='../proc/is_valid~2.html'>is_valid</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if the view has a frame to view.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~843"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-lookat_frame"></span> <h3>private  function <a href='../proc/lookat_frame.html'>lookat_frame</a>(self) result(f)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The frame looked at, for a view between frames (null if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~840"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>class(<a href='../type/referenceframe.html'>ReferenceFrame</a>), pointer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_view"></span> <h3>private  function <a href='../proc/new_view.html'>new_view</a>(root, frame, lookat, frame_type, rotation_type) result(v)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A view of <code>frame</code> (in the tree of <code>root</code>), with base <code>frame_type</code>
+(default RELATIVE_FRAME); with <code>lookat</code>, a view from <code>frame</code> at <code>lookat</code>,
+turned by <code>rotation_type</code> (default VIEW_AZEL). Without frames, the view
+looks at the root frame's origin. The frames must stay alive while the
+view is used.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-root~17"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>root</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~19"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lookat~2"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>lookat</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame_type~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frame_type</strong></td>
+            <td>
+<p>ABSOLUTE_FRAME or RELATIVE_FRAME</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rotation_type~2"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rotation_type</strong></td>
+            <td>
+<p>VIEW_DIRECT or VIEW_AZEL</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/view.html'>View</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-orthographic_bounds"></span> <h3>private pure function <a href='../proc/orthographic_bounds.html'>orthographic_bounds</a>(self) result(bounds)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The bounds [left, right, bottom, top] of the orthographic projection.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~847"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-projection_type"></span> <h3>private pure function <a href='../proc/projection_type.html'>projection_type</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The projection: ORTHOGRAPHIC or PERSPECTIVE.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~848"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-rotated"></span> <h3>private pure function <a href='../proc/rotated.html'>rotated</a>(r, m) result(rm)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>rotate(r) * m, for a rotation r (3x3).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r~16"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r</strong>(3,3)</td>
+            <td>
+<p>rotation (3x3); transform (4x4)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~61"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>m</strong>(4,4)</td>
+            <td>
+<p>rotation (3x3); transform (4x4)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4,4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-saved_state"></span> <h3>private  function <a href='../proc/saved_state.html'>saved_state</a>(self, eye, center, up)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The kept trackball state; false if there is none.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~858"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~13"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+            <td>
+<p>the kept trackball state (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~29"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the kept trackball state (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~14"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+            <td>
+<p>the kept trackball state (view-frame coordinates)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-take_camera"></span> <h3>private  function <a href='../proc/take_camera.html'>take_camera</a>(self, cam)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True (once) if a camera was set (<a href="../type/view.html#boundprocedure-set_camera~2">set_camera</a>), and that camera.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~860"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~19"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong>(3,3)</td>
+            <td>
+<p>(columns: eye, center, up (view-frame coordinates))</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-take_reset"></span> <h3>private  function <a href='../proc/take_reset.html'>take_reset</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True (once) if a reset is pending.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~861"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-transform_camera"></span> <h3>public pure function <a href='../proc/transform_camera.html'>transform_camera</a>(m, cam) result(out)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A camera (columns: eye, center, up) in the coordinates a rigid
+transform <code>m</code> (4x4) takes it to: the points moved, the up direction turned.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~59"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>m</strong>(4,4)</td>
+            <td>
+<p>rigid transform</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~22"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong>(3,3)</td>
+            <td>
+<p>(columns: eye, center, up)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3,3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-view_frame"></span> <h3>private  function <a href='../proc/view_frame.html'>view_frame</a>(self) result(f)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The viewed frame (null if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~839"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>class(<a href='../type/referenceframe.html'>ReferenceFrame</a>), pointer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-view_frame_type"></span> <h3>private pure function <a href='../proc/view_frame_type.html'>view_frame_type</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The base of the trackball: ABSOLUTE_FRAME or RELATIVE_FRAME.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~841"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-view_root"></span> <h3>private  function <a href='../proc/view_root.html'>view_root</a>(self) result(f)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The root of the viewed frames' tree (null if none).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~838"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>class(<a href='../type/referenceframe.html'>ReferenceFrame</a>), pointer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-view_rotation_type"></span> <h3>private pure function <a href='../proc/view_rotation_type.html'>view_rotation_type</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>How a view between frames turns: VIEW_DIRECT or VIEW_AZEL.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~842"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-world_to_view"></span> <h3>private  function <a href='../proc/world_to_view.html'>world_to_view</a>(self) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The transform from the root frame to the view frame (4x4), from the
+frames' current positions and attitudes.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~855"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4,4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-camera_orientation"></span> <h3>private pure subroutine <a href='../proc/camera_orientation.html'>camera_orientation</a>(cam, q, d)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A camera's orientation (columns: right, up, back, as a quaternion) and
+its distance from eye to center (at least a tiny one).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-cam~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>cam</strong>(3,3)</td>
+            <td>
+<p>(columns: eye, center, up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~31"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>orientation quaternion [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-d~16"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>d</strong></td>
+            <td>
+<p>distance from eye to center</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-clear_default_view_parameters"></span> <h3>private  subroutine <a href='../proc/clear_default_view_parameters.html'>clear_default_view_parameters</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Forget the camera set by <a href="../proc/set_default_view_parameters.html">set_default_view_parameters</a> (back to the default view distance).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~853"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-default_view_parameters"></span> <h3>private pure subroutine <a href='../proc/default_view_parameters.html'>default_view_parameters</a>(self, eye, center, up)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The camera after a reset (view-frame coordinates; all zero if none is set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~852"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~10"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates; zero if not set)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~26"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates; zero if not set)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~11"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates; zero if not set)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-home"></span> <h3>private  subroutine <a href='../proc/home.html'>home</a>(self, aspect, eye, center, up)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The default camera (eye, center, up in view-frame coordinates) for a
+viewport of aspect ratio <code>aspect</code> (width / height): OpenFrames' resetView.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~856"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-aspect"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>aspect</strong></td>
+            <td>
+<p>viewport width / height</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~11"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+            <td>
+<p>the default camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~27"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the default camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+            <td>
+<p>the default camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-reset_view"></span> <h3>private  subroutine <a href='../proc/reset_view.html'>reset_view</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Put the camera back at the default position (applied at the next frame
+in which the view is shown).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~854"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-save_state"></span> <h3>private  subroutine <a href='../proc/save_state.html'>save_state</a>(self, eye, center, up)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Keep the trackball state while another view is shown.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~857"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+            <td>
+<p>the trackball state (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~28"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the trackball state (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~13"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+            <td>
+<p>the trackball state (view-frame coordinates)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_default_view_distance"></span> <h3>private  subroutine <a href='../proc/set_default_view_distance.html'>set_default_view_distance</a>(self, distance)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The radius to frame when the view is reset (&lt;= 0: the viewed frame's
+bound, the default), as OpenFrames' default view distance.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~849"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-distance~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>distance</strong></td>
+            <td>
+<p>radius (&lt;= 0: the frame's bound)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_default_view_parameters"></span> <h3>private  subroutine <a href='../proc/set_default_view_parameters.html'>set_default_view_parameters</a>(self, eye, center, up)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The camera after a reset, in view-frame coordinates (overrides the
+default view distance).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~851"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~25"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~10"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_orthographic"></span> <h3>private  subroutine <a href='../proc/set_orthographic.html'>set_orthographic</a>(self, left, right, bottom, top)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>An orthographic projection with the given bounds (in view units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~846"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-left~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>left</strong></td>
+            <td>
+<p>bounds (view units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-right~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>right</strong></td>
+            <td>
+<p>bounds (view units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bottom~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bottom</strong></td>
+            <td>
+<p>bounds (view units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-top~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>top</strong></td>
+            <td>
+<p>bounds (view units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_perspective"></span> <h3>private  subroutine <a href='../proc/set_perspective.html'>set_perspective</a>(self, fovy)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A perspective projection with vertical field of view <code>fovy</code> (degrees; default 45).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~844"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-fovy~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>fovy</strong></td>
+            <td>
+<p>vertical field of view (degrees)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_view_between_frames"></span> <h3>private  subroutine <a href='../proc/set_view_between_frames.html'>set_view_between_frames</a>(self, root, frame, lookat, frame_type, rotation_type)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Look from <code>frame</code> at <code>lookat</code> (both in the tree of <code>root</code>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~837"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-root~19"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>root</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~21"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lookat~3"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>lookat</strong></td>
+            <td>
+<p>the tree's root, viewed and looked-at frames</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame_type~4"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frame_type</strong></td>
+            <td>
+<p>ABSOLUTE_FRAME or RELATIVE_FRAME (default)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rotation_type~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rotation_type</strong></td>
+            <td>
+<p>VIEW_DIRECT or VIEW_AZEL (default)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_view_frame"></span> <h3>private  subroutine <a href='../proc/set_view_frame.html'>set_view_frame</a>(self, root, frame, frame_type)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>View <code>frame</code> (in the tree of <code>root</code>) with base <code>frame_type</code> (default RELATIVE_FRAME).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~836"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-root~18"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>root</strong></td>
+            <td>
+<p>the tree's root; the viewed frame (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~20"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+            <td>
+<p>the tree's root; the viewed frame (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame_type~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frame_type</strong></td>
+            <td>
+<p>ABSOLUTE_FRAME or RELATIVE_FRAME</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-view_set_camera"></span> <h3>private  subroutine <a href='../proc/view_set_camera.html'>view_set_camera</a>(self, eye, center, up)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The camera (view-frame coordinates) to show the next time the view is
+drawn (at once if it is shown: the window's <a href="../type/view.html#boundprocedure-set_camera~2">set_camera</a> can also fly
+there). It replaces a pending reset.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~859"></span>
+              class(<a href='../type/view.html'>View</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~14"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~30"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~15"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>up</strong>(3)</td>
+            <td>
+<p>the camera (view-frame coordinates)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

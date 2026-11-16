@@ -1,0 +1,1292 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkframes.f90 &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkframes.f90
+      <small>Source File</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.2% of total for source files.">26 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkframes.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+            <li class="breadcrumb-item active" aria-current="page">vkframes.f90</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#mods-0"
+         aria-expanded="false" aria-controls="mods-0">
+         <h4 class="card-header bg-primary text-white">Modules</h4>
+      </a>
+      <div id="mods-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkframes.html">vkframes</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../sourcefile/vkframes.f90.html#src">vkframes.f90</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">This file depends on</h3>
+          </div>
+          <div class="card-body">
+            <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: sourcefile~~vkframes.f90~~EfferentGraph Pages: 1 -->
+<svg id="sourcefilevkframesf90EfferentGraph" width="641pt" height="829pt"
+ viewBox="0.00 0.00 641.00 829.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~vkframes.f90~~EfferentGraph" class="graph" transform="scale(0.603345 0.603345) rotate(0) translate(4 1370.7)">
+<title>sourcefile~~vkframes.f90~~EfferentGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-1370.7 1058.41,-1370.7 1058.41,4 -4,4"/>
+<!-- sourcefile~vkframes.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node1" class="node">
+<title>sourcefile~vkframes.f90</title>
+<polygon fill="none" stroke="black" points="1054.41,-751.6 973.14,-751.6 973.14,-727.33 1054.41,-727.33 1054.41,-751.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1013.77" y="-735.87" font-family="Helvetica,sans-Serif" font-size="10.50">vkframes.f90</text>
+</g>
+<!-- sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node2" class="node">
+<title>sourcefile~vkf_artists.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node2"><a xlink:href="../sourcefile/vkf_artists.f90.html" xlink:title="vkf_artists.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="656.47,-975.6 571.45,-975.6 571.45,-951.33 656.47,-951.33 656.47,-975.6"/>
+<text xml:space="preserve" text-anchor="middle" x="613.96" y="-959.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge1" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-739.47C792.35,-733.24 867.86,-1094.71 809.37,-1173.47 795.53,-1192.1 785.06,-1190.3 762.98,-1197.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-1197.47C738.91,-1204.64 729.57,-1191.21 714.6,-1173.47 680.61,-1133.18 701.27,-1108.05 678.6,-1060.47 665.47,-1032.9 645.58,-1003.98 631.54,-984.96"/>
+<polygon fill="#000000" stroke="#000000" points="634.51,-983.09 625.7,-977.19 628.91,-987.29 634.51,-983.09"/>
+</g>
+<!-- sourcefile~vkf_cache.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node3" class="node">
+<title>sourcefile~vkf_cache.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node3"><a xlink:href="../sourcefile/vkf_cache.f90.html" xlink:title="vkf_cache.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="933.76,-1019.6 848.74,-1019.6 848.74,-995.33 933.76,-995.33 933.76,-1019.6"/>
+<text xml:space="preserve" text-anchor="middle" x="891.25" y="-1003.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_cache.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_cache.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge2" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_cache.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1007.12,-752.03C988.22,-794.06 927.04,-930.12 902.54,-984.6"/>
+<polygon fill="#000000" stroke="#000000" points="899.42,-982.99 898.51,-993.55 905.81,-985.86 899.42,-982.99"/>
+</g>
+<!-- sourcefile~vkf_clock.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node4" class="node">
+<title>sourcefile~vkf_clock.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node4"><a xlink:href="../sourcefile/vkf_clock.f90.html" xlink:title="vkf_clock.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="802.24,-1329.6 721.72,-1329.6 721.72,-1305.33 802.24,-1305.33 802.24,-1329.6"/>
+<text xml:space="preserve" text-anchor="middle" x="761.98" y="-1313.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_clock.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_clock.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge3" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_clock.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-1317.47C869.24,-1334.49 839.23,-1335.24 813.63,-1331.38"/>
+<polygon fill="#000000" stroke="#000000" points="814.55,-1327.99 804.09,-1329.67 813.31,-1334.88 814.55,-1327.99"/>
+</g>
+<!-- sourcefile~vkf_diagnostics.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node5" class="node">
+<title>sourcefile~vkf_diagnostics.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node5"><a xlink:href="../sourcefile/vkf_diagnostics.f90.html" xlink:title="vkf_diagnostics.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="513.33,-1291.6 400.56,-1291.6 400.56,-1267.33 513.33,-1267.33 513.33,-1291.6"/>
+<text xml:space="preserve" text-anchor="middle" x="456.94" y="-1275.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_diagnostics.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_diagnostics.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge4" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_diagnostics.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1012.22,-752.03C1008.51,-829.62 984.54,-1242.69 892.25,-1317.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-1317.47C861.4,-1340.85 846.21,-1301.17 809.37,-1296.47 767.59,-1291.13 756.45,-1291.7 714.6,-1296.47 669.45,-1301.61 660.28,-1316.07 614.96,-1319.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-1319.47C572.87,-1320.27 528.73,-1307.46 497.84,-1296.13"/>
+<polygon fill="#000000" stroke="#000000" points="499.1,-1292.86 488.5,-1292.59 496.61,-1299.41 499.1,-1292.86"/>
+</g>
+<!-- sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node6" class="node">
+<title>sourcefile~vkf_files.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node6"><a xlink:href="../sourcefile/vkf_files.f90.html" xlink:title="vkf_files.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="205.29,-171.6 130.77,-171.6 130.77,-147.33 205.29,-147.33 205.29,-171.6"/>
+<text xml:space="preserve" text-anchor="middle" x="168.03" y="-155.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge5" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1011.57,-727C1004.33,-654.25 964.4,-284.92 892.25,-201.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-201.47C793.03,-89 754.83,38.92 614.96,-11.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-11.47C530.55,-30.03 540.01,-141.51 457.94,-121.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-121.47C371.74,-100.91 270.74,-125.31 213.82,-143.41"/>
+<polygon fill="#000000" stroke="#000000" points="212.89,-140.03 204.48,-146.47 215.07,-146.69 212.89,-140.03"/>
+</g>
+<!-- sourcefile~vkf_follower.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node7" class="node">
+<title>sourcefile~vkf_follower.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node7"><a xlink:href="../sourcefile/vkf_follower.f90.html" xlink:title="vkf_follower.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="357.06,-1171.6 263.04,-1171.6 263.04,-1147.33 357.06,-1147.33 357.06,-1171.6"/>
+<text xml:space="preserve" text-anchor="middle" x="310.05" y="-1155.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_follower.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge6" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_follower.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-1319.47C432.44,-1308.31 418.71,-1319.12 400.56,-1300.47 363.21,-1262.09 399.51,-1226.05 364.56,-1185.47 362.27,-1182.81 359.66,-1180.41 356.83,-1178.23"/>
+<polygon fill="#000000" stroke="#000000" points="358.84,-1175.36 348.54,-1172.85 355.02,-1181.23 358.84,-1175.36"/>
+</g>
+<!-- sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node8" class="node">
+<title>sourcefile~vkf_frames.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node8"><a xlink:href="../sourcefile/vkf_frames.f90.html" xlink:title="vkf_frames.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="502.08,-595.6 411.81,-595.6 411.81,-571.33 502.08,-571.33 502.08,-595.6"/>
+<text xml:space="preserve" text-anchor="middle" x="456.94" y="-579.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge7" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-739.47C833.8,-735.88 819.42,-743.26 762.98,-739.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-739.47C756.79,-739.18 618.41,-701.88 614.96,-699.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-699.47C588.2,-682.14 574.7,-691.9 549.33,-675.47 519.31,-656.03 491.36,-625.29 474.47,-604.76"/>
+<polygon fill="#000000" stroke="#000000" points="477.26,-602.64 468.26,-597.04 471.8,-607.03 477.26,-602.64"/>
+</g>
+<!-- sourcefile~vkf_gui.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node9" class="node">
+<title>sourcefile~vkf_gui.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node9"><a xlink:href="../sourcefile/vkf_gui.f90.html" xlink:title="vkf_gui.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="491.58,-1211.6 422.31,-1211.6 422.31,-1187.33 491.58,-1187.33 491.58,-1211.6"/>
+<text xml:space="preserve" text-anchor="middle" x="456.94" y="-1195.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_gui.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_gui.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge8" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_gui.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-1197.47C699.26,-1217.52 679.7,-1192.91 614.96,-1197.47"/>
+</g>
+<!-- sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node10" class="node">
+<title>sourcefile~vkf_handles.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node10"><a xlink:href="../sourcefile/vkf_handles.f90.html" xlink:title="vkf_handles.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="809.37,-867.6 714.6,-867.6 714.6,-843.33 809.37,-843.33 809.37,-867.6"/>
+<text xml:space="preserve" text-anchor="middle" x="761.98" y="-851.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge9" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_handles.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-739.47C836.58,-736.06 851.36,-795.87 809.37,-829.47 806.08,-832.1 802.48,-834.62 798.8,-836.99"/>
+<polygon fill="#000000" stroke="#000000" points="797.07,-833.95 790.28,-842.08 800.66,-839.96 797.07,-833.95"/>
+</g>
+<!-- sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node11" class="node">
+<title>sourcefile~vkf_hud.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node11"><a xlink:href="../sourcefile/vkf_hud.f90.html" xlink:title="vkf_hud.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="650.47,-253.6 577.45,-253.6 577.45,-229.33 650.47,-229.33 650.47,-253.6"/>
+<text xml:space="preserve" text-anchor="middle" x="613.96" y="-237.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge10" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_hud.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-201.47C853.26,-158.67 817.82,-187.6 762.98,-201.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-201.47C727.69,-209.89 690.35,-220.13 661.76,-228.15"/>
+<polygon fill="#000000" stroke="#000000" points="661,-224.72 652.32,-230.8 662.9,-231.46 661,-224.72"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node12" class="node">
+<title>sourcefile~vkf_line_segments.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node12"><a xlink:href="../sourcefile/vkf_line_segments.f90.html" xlink:title="vkf_line_segments.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="678.6,-1093.6 549.33,-1093.6 549.33,-1069.33 678.6,-1069.33 678.6,-1093.6"/>
+<text xml:space="preserve" text-anchor="middle" x="613.96" y="-1077.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_line_segments.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge11" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_line_segments.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-1197.47C702.16,-1216.58 649.81,-1142.57 627.04,-1103.78"/>
+<polygon fill="#000000" stroke="#000000" points="630.14,-1102.16 622.16,-1095.19 624.06,-1105.62 630.14,-1102.16"/>
+</g>
+<!-- sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node13" class="node">
+<title>sourcefile~vkf_math.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node13"><a xlink:href="../sourcefile/vkf_math.f90.html" xlink:title="vkf_math.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="80.52,-748.6 0,-748.6 0,-724.33 80.52,-724.33 80.52,-748.6"/>
+<text xml:space="preserve" text-anchor="middle" x="40.26" y="-732.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge12" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-1317.47C847.21,-1353.94 666.68,-1355.23 614.96,-1357.47"/>
+</g>
+<!-- sourcefile~vkf_model.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node14" class="node">
+<title>sourcefile~vkf_model.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node14"><a xlink:href="../sourcefile/vkf_model.f90.html" xlink:title="vkf_model.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="657.22,-751.6 570.7,-751.6 570.7,-727.33 657.22,-727.33 657.22,-751.6"/>
+<text xml:space="preserve" text-anchor="middle" x="613.96" y="-735.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_model.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge13" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_model.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-739.47C730.55,-737.42 696.47,-737.3 668.9,-737.74"/>
+<polygon fill="#000000" stroke="#000000" points="668.95,-734.24 659.02,-737.93 669.09,-741.24 668.95,-734.24"/>
+</g>
+<!-- sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node15" class="node">
+<title>sourcefile~vkf_pick.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node15"><a xlink:href="../sourcefile/vkf_pick.f90.html" xlink:title="vkf_pick.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="347.31,-519.6 272.79,-519.6 272.79,-495.33 347.31,-495.33 347.31,-519.6"/>
+<text xml:space="preserve" text-anchor="middle" x="310.05" y="-503.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge14" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-543.47C730.74,-517.08 440.5,-523.47 400.56,-519.47 386.91,-518.1 372.13,-516.26 358.6,-514.44"/>
+<polygon fill="#000000" stroke="#000000" points="359.45,-511.03 349.07,-513.13 358.5,-517.96 359.45,-511.03"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node16" class="node">
+<title>sourcefile~vkf_shadow.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node16"><a xlink:href="../sourcefile/vkf_shadow.f90.html" xlink:title="vkf_shadow.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="808.24,-692.6 715.72,-692.6 715.72,-668.33 808.24,-668.33 808.24,-692.6"/>
+<text xml:space="preserve" text-anchor="middle" x="761.98" y="-676.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shadow.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge15" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shadow.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-739.47C852.44,-737.06 813.59,-715.79 788.92,-699.47"/>
+<polygon fill="#000000" stroke="#000000" points="791.05,-696.69 780.82,-693.93 787.1,-702.47 791.05,-696.69"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node17" class="node">
+<title>sourcefile~vkf_shapes.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node17"><a xlink:href="../sourcefile/vkf_shapes.f90.html" xlink:title="vkf_shapes.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="807.12,-333.6 716.85,-333.6 716.85,-309.33 807.12,-309.33 807.12,-333.6"/>
+<text xml:space="preserve" text-anchor="middle" x="761.98" y="-317.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shapes.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge16" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_shapes.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M972.84,-740.74C949.35,-741.17 919.09,-741.17 892.25,-739.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-739.47C868.64,-738.09 858.96,-737.33 845.37,-720.47 791.16,-653.21 826.77,-614.08 809.37,-529.47 795.58,-462.43 777.5,-383.67 768.53,-345.13"/>
+<polygon fill="#000000" stroke="#000000" points="771.98,-344.51 766.3,-335.57 765.16,-346.11 771.98,-344.51"/>
+</g>
+<!-- sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node18" class="node">
+<title>sourcefile~vkf_sky.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node18"><a xlink:href="../sourcefile/vkf_sky.f90.html" xlink:title="vkf_sky.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="491.2,-173.6 422.68,-173.6 422.68,-149.33 491.2,-149.33 491.2,-173.6"/>
+<text xml:space="preserve" text-anchor="middle" x="456.94" y="-157.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge17" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sky.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-11.47C546.45,-35.43 568.9,-91.76 513.33,-135.47 509.57,-138.42 505.42,-141.14 501.14,-143.62"/>
+<polygon fill="#000000" stroke="#000000" points="499.57,-140.49 492.35,-148.24 502.83,-146.68 499.57,-140.49"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node19" class="node">
+<title>sourcefile~vkf_sphere.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node19"><a xlink:href="../sourcefile/vkf_sphere.f90.html" xlink:title="vkf_sphere.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="658.35,-413.6 569.58,-413.6 569.58,-389.33 658.35,-389.33 658.35,-413.6"/>
+<text xml:space="preserve" text-anchor="middle" x="613.96" y="-397.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge18" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_sphere.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-739.47C786.6,-732.88 841.24,-611.76 762.98,-543.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-543.47C713.9,-502.38 662.24,-450.35 634.76,-422.07"/>
+<polygon fill="#000000" stroke="#000000" points="637.56,-419.93 628.09,-415.18 632.53,-424.8 637.56,-419.93"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node20" class="node">
+<title>sourcefile~vkf_terrain.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node20"><a xlink:href="../sourcefile/vkf_terrain.f90.html" xlink:title="vkf_terrain.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="658.35,-333.6 569.58,-333.6 569.58,-309.33 658.35,-309.33 658.35,-333.6"/>
+<text xml:space="preserve" text-anchor="middle" x="613.96" y="-317.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge19" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_terrain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-201.47C739.39,-206.93 730.81,-205.18 714.6,-220.47 687.7,-245.83 705.51,-270.11 678.6,-295.47 675.51,-298.38 672.05,-300.99 668.38,-303.31"/>
+<polygon fill="#000000" stroke="#000000" points="666.7,-300.24 659.62,-308.12 670.07,-306.38 666.7,-300.24"/>
+</g>
+<!-- sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node21" class="node">
+<title>sourcefile~vkf_trajectory.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node21"><a xlink:href="../sourcefile/vkf_trajectory.f90.html" xlink:title="vkf_trajectory.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="219.54,-1093.6 116.52,-1093.6 116.52,-1069.33 219.54,-1069.33 219.54,-1093.6"/>
+<text xml:space="preserve" text-anchor="middle" x="168.03" y="-1077.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge20" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-1319.47C544.08,-1320.84 520.19,-1349.01 457.94,-1319.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-1319.47C432.44,-1308.31 417.9,-1319.87 400.56,-1300.47 351.4,-1245.48 414.99,-1192.29 364.56,-1138.47 330.38,-1101.99 274.33,-1088.42 230.98,-1083.58"/>
+<polygon fill="#000000" stroke="#000000" points="231.48,-1080.11 221.19,-1082.63 230.8,-1087.08 231.48,-1080.11"/>
+</g>
+<!-- sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node22" class="node">
+<title>sourcefile~vkf_view.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node22"><a xlink:href="../sourcefile/vkf_view.f90.html" xlink:title="vkf_view.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="799.99,-253.6 723.97,-253.6 723.97,-229.33 799.99,-229.33 799.99,-253.6"/>
+<text xml:space="preserve" text-anchor="middle" x="761.98" y="-237.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge21" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_view.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M890.25,-201.47C877.92,-187.2 829.76,-207.28 796.36,-223.77"/>
+<polygon fill="#000000" stroke="#000000" points="794.8,-220.64 787.45,-228.27 797.95,-226.89 794.8,-220.64"/>
+</g>
+<!-- sourcefile~vkf_window.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node23" class="node">
+<title>sourcefile~vkf_window.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node23"><a xlink:href="../sourcefile/vkf_window.f90.html" xlink:title="vkf_window.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="937.14,-711.6 845.37,-711.6 845.37,-687.33 937.14,-687.33 937.14,-711.6"/>
+<text xml:space="preserve" text-anchor="middle" x="891.25" y="-695.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_window.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge22" class="edge">
+<title>sourcefile~vkframes.f90&#45;&gt;sourcefile~vkf_window.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M974.97,-726.92C964.09,-723.31 952.07,-719.32 940.64,-715.53"/>
+<polygon fill="#000000" stroke="#000000" points="941.95,-712.27 931.36,-712.45 939.75,-718.92 941.95,-712.27"/>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge23" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M609.1,-951.15C590.87,-893.08 514.32,-649.24 513.33,-647.47 504.33,-631.36 490.84,-615.66 479.43,-603.84"/>
+<polygon fill="#000000" stroke="#000000" points="482.19,-601.65 472.65,-597.05 477.23,-606.6 482.19,-601.65"/>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge26" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M604.77,-975.79C583.19,-1008.07 525.66,-1093.29 513.33,-1102.47 492.45,-1118 481.46,-1110.31 457.94,-1121.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-1121.47C431.71,-1132.97 422.85,-1130.54 400.56,-1145.47 382.02,-1157.88 383.51,-1168.68 364.56,-1180.47 343.13,-1193.79 336.13,-1196.68 311.05,-1199.47"/>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge27" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-889.47C356.83,-777.96 431.38,-699.86 364.56,-566.47 357.23,-551.83 345.24,-538.12 334.46,-527.6"/>
+<polygon fill="#000000" stroke="#000000" points="337.01,-525.19 327.3,-520.93 332.23,-530.31 337.01,-525.19"/>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge28" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M594.81,-976.03C575.52,-988.71 543.69,-1007.75 513.33,-1017.47 427.06,-1045.09 392.03,-1001.87 311.05,-1042.47"/>
+</g>
+<!-- sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node25" class="node">
+<title>sourcefile~vkf_layer.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node25"><a xlink:href="../sourcefile/vkf_layer.f90.html" xlink:title="vkf_layer.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="207.16,-539.6 128.89,-539.6 128.89,-515.33 207.16,-515.33 207.16,-539.6"/>
+<text xml:space="preserve" text-anchor="middle" x="168.03" y="-523.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge24" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M581.47,-975.99C543.09,-990.49 480.56,-1011.41 457.94,-1003.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-1003.47C367.89,-972.53 380.24,-914.11 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_line_chain.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node26" class="node">
+<title>sourcefile~vkf_line_chain.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node26"><a xlink:href="../sourcefile/vkf_line_chain.f90.html" xlink:title="vkf_line_chain.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="510.33,-1093.6 403.56,-1093.6 403.56,-1069.33 510.33,-1069.33 510.33,-1093.6"/>
+<text xml:space="preserve" text-anchor="middle" x="456.94" y="-1077.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_chain.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_line_chain.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge25" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_line_chain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M601.71,-976.09C584.24,-995.14 548.88,-1031.55 513.33,-1055.47 508.88,-1058.46 504.04,-1061.28 499.12,-1063.89"/>
+<polygon fill="#000000" stroke="#000000" points="497.78,-1060.64 490.39,-1068.23 500.91,-1066.91 497.78,-1060.64"/>
+</g>
+<!-- sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node28" class="node">
+<title>sourcefile~vkf_web_writer.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node28"><a xlink:href="../sourcefile/vkf_web_writer.f90.html" xlink:title="vkf_web_writer.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="364.56,-405.6 255.54,-405.6 255.54,-381.33 364.56,-381.33 364.56,-405.6"/>
+<text xml:space="preserve" text-anchor="middle" x="310.05" y="-389.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_web_writer.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge29" class="edge">
+<title>sourcefile~vkf_artists.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M571.22,-953.32C536.42,-942.82 487.86,-923.12 457.94,-889.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-889.47C324.41,-741.49 449.7,-632.21 364.56,-453.47 357.46,-438.55 345.48,-424.6 334.66,-413.92"/>
+<polygon fill="#000000" stroke="#000000" points="337.13,-411.43 327.45,-407.12 332.33,-416.53 337.13,-411.43"/>
+</g>
+<!-- sourcefile~vkf_cache.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge30" class="edge">
+<title>sourcefile~vkf_cache.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M889.74,-1019.88C887.45,-1056.65 875.18,-1165.29 809.37,-1211.47 734.99,-1263.66 470.48,-1278.5 400.56,-1220.47 333.75,-1165.02 385.15,-1112.81 364.56,-1028.47 345.07,-948.63 370.94,-907.75 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_clock.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge31" class="edge">
+<title>sourcefile~vkf_clock.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M729.43,-1330.06C700.28,-1340.74 655.48,-1354.74 614.96,-1357.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-1357.47C518.18,-1363.84 481.69,-1382.9 400.56,-1333.47 339.4,-1296.2 382.23,-1191.57 311.05,-1199.47"/>
+</g>
+<!-- sourcefile~vkf_diagnostics.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge33" class="edge">
+<title>sourcefile~vkf_diagnostics.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M427.77,-1266.93C418.96,-1262.83 409.27,-1258.12 400.56,-1253.47 359.58,-1231.57 357.13,-1193.52 311.05,-1199.47"/>
+</g>
+<!-- sourcefile~vkf_diagnostics.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge32" class="edge">
+<title>sourcefile~vkf_diagnostics.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M417.32,-1266.89C411,-1263.38 405.06,-1258.98 400.56,-1253.47 357.72,-1201.05 386.66,-1169.46 364.56,-1105.47 326.32,-994.73 294.44,-975.98 255.54,-865.47 214.96,-750.2 184.61,-606.7 173.57,-551.05"/>
+<polygon fill="#000000" stroke="#000000" points="177.05,-550.6 171.69,-541.46 170.18,-551.95 177.05,-550.6"/>
+</g>
+<!-- sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge34" class="edge">
+<title>sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M282.62,-1172.05C247.51,-1187.92 187.74,-1211.74 169.03,-1199.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M167.03,-1199.47C91.03,-1149.59 53.2,-848.2 43.7,-760.43"/>
+<polygon fill="#000000" stroke="#000000" points="47.19,-760.17 42.66,-750.59 40.23,-760.9 47.19,-760.17"/>
+</g>
+<!-- sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge35" class="edge">
+<title>sourcefile~vkf_follower.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M281.87,-1146.84C273.36,-1142.73 263.98,-1138.04 255.54,-1133.47 236.15,-1122.95 214.91,-1110.21 198.33,-1099.97"/>
+<polygon fill="#000000" stroke="#000000" points="200.29,-1097.06 189.95,-1094.75 196.6,-1103.01 200.29,-1097.06"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_follower.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge36" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_follower.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M440.78,-595.93C427.63,-607.7 409.38,-626.63 400.56,-647.47 329.4,-815.5 415.6,-881.27 364.56,-1056.47 355.87,-1086.29 338.25,-1117.54 325.6,-1137.68"/>
+<polygon fill="#000000" stroke="#000000" points="322.8,-1135.57 320.33,-1145.87 328.69,-1139.36 322.8,-1135.57"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge39" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M411.75,-575.71C360.28,-565.94 279.27,-548.04 255.54,-528.47 188.61,-473.26 242.79,-307.79 169.03,-353.47"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge40" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M427.07,-570.9C418.41,-566.87 408.98,-562.21 400.56,-557.47 383.81,-548.02 381.25,-543.02 364.56,-533.47 359.54,-530.59 354.15,-527.72 348.79,-525.01"/>
+<polygon fill="#000000" stroke="#000000" points="350.52,-521.95 340,-520.66 347.41,-528.23 350.52,-521.95"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge42" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M441.15,-596.09C428.26,-607.98 410.17,-626.98 400.56,-647.47 324.13,-810.44 471.97,-961.8 311.05,-1042.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-1042.47C284.79,-1054.63 256.21,-1063.45 231.21,-1069.6"/>
+<polygon fill="#000000" stroke="#000000" points="230.41,-1066.19 221.48,-1071.89 232.02,-1073.01 230.41,-1066.19"/>
+</g>
+<!-- sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node24" class="node">
+<title>sourcefile~vkf_geometry.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node24"><a xlink:href="../sourcefile/vkf_geometry.f90.html" xlink:title="vkf_geometry.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="361.56,-599.6 258.54,-599.6 258.54,-575.33 361.56,-575.33 361.56,-599.6"/>
+<text xml:space="preserve" text-anchor="middle" x="310.05" y="-583.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge37" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_geometry.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M411.68,-584.69C399.52,-585.02 386.1,-585.4 373.13,-585.75"/>
+<polygon fill="#000000" stroke="#000000" points="373.3,-582.25 363.4,-586.02 373.5,-589.24 373.3,-582.25"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge38" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M418.69,-596.03C412.01,-599.57 405.59,-603.99 400.56,-609.47 322.97,-693.91 396.99,-927.4 311.05,-851.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-851.47C214.95,-768.32 181.78,-610.68 172.29,-551.08"/>
+<polygon fill="#000000" stroke="#000000" points="175.78,-550.78 170.84,-541.41 168.86,-551.82 175.78,-550.78"/>
+</g>
+<!-- sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_node27" class="node">
+<title>sourcefile~vkf_text.f90</title>
+<g id="a_sourcefile~~vkframes.f90~~EfferentGraph_node27"><a xlink:href="../sourcefile/vkf_text.f90.html" xlink:title="vkf_text.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="346.18,-211.6 273.91,-211.6 273.91,-187.33 346.18,-187.33 346.18,-211.6"/>
+<text xml:space="preserve" text-anchor="middle" x="310.05" y="-195.87" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge41" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M440.94,-570.93C427.92,-559.11 409.74,-540.15 400.56,-519.47 347.17,-399.14 441.07,-332.59 364.56,-225.47 362.14,-222.07 359.15,-219.1 355.83,-216.51"/>
+<polygon fill="#000000" stroke="#000000" points="358.02,-213.76 347.72,-211.3 354.24,-219.65 358.02,-213.76"/>
+</g>
+<!-- sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge43" class="edge">
+<title>sourcefile~vkf_frames.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M443.63,-570.9C431.79,-558.45 413.79,-538.54 400.56,-519.47 381.52,-492.01 383.81,-480.78 364.56,-453.47 354.79,-439.6 342.24,-425.38 331.75,-414.27"/>
+<polygon fill="#000000" stroke="#000000" points="334.38,-411.95 324.92,-407.17 329.33,-416.8 334.38,-411.95"/>
+</g>
+<!-- sourcefile~vkf_gui.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge45" class="edge">
+<title>sourcefile~vkf_gui.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M421.83,-1197.01C392.36,-1195.48 348.72,-1194.6 311.05,-1199.47"/>
+</g>
+<!-- sourcefile~vkf_gui.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge44" class="edge">
+<title>sourcefile~vkf_gui.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M421.92,-1189.23C413.95,-1185.41 406.16,-1180.28 400.56,-1173.47 358.42,-1122.16 382.17,-1092.49 364.56,-1028.47 342.76,-949.23 372.64,-905.88 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge46" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M743.95,-868.07C718.56,-886.85 670.6,-922.32 640.86,-944.32"/>
+<polygon fill="#000000" stroke="#000000" points="639.07,-941.29 633.11,-950.05 643.23,-946.91 639.07,-941.29"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge47" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.04,-843.15C747.82,-816.33 722.24,-752.32 678.6,-718.47 655.28,-700.38 639.15,-716.39 614.96,-699.47"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge50" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-1159.47C389.59,-1151.72 377.45,-1192.1 311.05,-1199.47"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge51" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M732.05,-842.9C682.45,-821.28 583.26,-777.72 549.33,-760.47 481.45,-725.95 448.76,-734.42 400.56,-675.47 368.27,-635.97 390.26,-610.54 364.56,-566.47 356.21,-552.14 343.94,-538.29 333.25,-527.61"/>
+<polygon fill="#000000" stroke="#000000" points="335.85,-525.25 326.22,-520.83 330.99,-530.29 335.85,-525.25"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_trajectory.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge52" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_trajectory.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M759.14,-868.06C751.61,-917.8 721.45,-1099.63 678.6,-1135.47 602.93,-1198.75 555.78,-1172.08 457.94,-1159.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-1159.47C373.73,-1149.87 384.55,-1004.4 311.05,-1042.47"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge48" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_geometry.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M714.28,-853.26C640.13,-847.48 494.29,-826.65 400.56,-751.47 354.19,-714.27 328.33,-646.27 317.39,-610.64"/>
+<polygon fill="#000000" stroke="#000000" points="320.84,-609.96 314.67,-601.35 314.12,-611.93 320.84,-609.96"/>
+</g>
+<!-- sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge49" class="edge">
+<title>sourcefile~vkf_handles.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.28,-867.73C748.53,-894.33 723.84,-957.09 678.6,-984.47 594.39,-1035.43 550.81,-1036.1 457.94,-1003.47"/>
+</g>
+<!-- sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge53" class="edge">
+<title>sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M593.58,-254.05C578.97,-264.63 559.74,-281.09 549.33,-300.47 502.64,-387.36 555.18,-430.14 513.33,-519.47 505.6,-535.96 492.38,-551.48 480.79,-563.11"/>
+<polygon fill="#000000" stroke="#000000" points="478.62,-560.34 473.83,-569.79 483.47,-565.39 478.62,-560.34"/>
+</g>
+<!-- sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge54" class="edge">
+<title>sourcefile~vkf_hud.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M577.24,-232.43C518.85,-219.54 400.51,-201.38 311.05,-239.47"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge55" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M601.96,-1069.05C587.16,-1051.55 561.34,-1018.03 549.33,-984.47 498.6,-842.64 573.36,-785.62 513.33,-647.47 506.07,-630.77 492.86,-615.24 481.17,-603.66"/>
+<polygon fill="#000000" stroke="#000000" points="483.79,-601.33 474.12,-597.01 478.99,-606.42 483.79,-601.33"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge57" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M554.77,-1094.07C518.33,-1102.42 475.15,-1113.31 457.94,-1121.47"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_line_chain.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge56" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_line_chain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M549.02,-1081.47C539.99,-1081.47 530.7,-1081.47 521.68,-1081.47"/>
+<polygon fill="#000000" stroke="#000000" points="521.93,-1077.97 511.93,-1081.47 521.93,-1084.97 521.93,-1077.97"/>
+</g>
+<!-- sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge58" class="edge">
+<title>sourcefile~vkf_line_segments.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.1,-1068.86C581.46,-1050.75 545.6,-1016.57 513.33,-989.47 465.06,-948.93 430.75,-958.8 400.56,-903.47 304.45,-727.35 443.44,-637.95 364.56,-453.47 358.07,-438.28 346.14,-424.31 335.19,-413.68"/>
+<polygon fill="#000000" stroke="#000000" points="337.59,-411.13 327.86,-406.93 332.85,-416.28 337.59,-411.13"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge59" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M570.53,-726.9C562.92,-723.38 555.47,-718.96 549.33,-713.47 524.42,-691.19 532.37,-674.92 513.33,-647.47 502.68,-632.12 488.95,-616.23 477.82,-604.12"/>
+<polygon fill="#000000" stroke="#000000" points="480.68,-602.05 471.3,-597.14 475.57,-606.84 480.68,-602.05"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge61" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M602.59,-752.1C568.89,-793.66 461.21,-930.96 400.56,-1060.47 376.94,-1110.89 402.94,-1140.13 364.56,-1180.47 347.16,-1198.75 336.08,-1196.24 311.05,-1199.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-1199.47C247.2,-1206.33 221.06,-1233.61 169.03,-1199.47"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge62" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-661.47C429.2,-638.39 424.85,-630.12 400.56,-604.47 375.83,-578.35 347.78,-547.79 329.77,-528.06"/>
+<polygon fill="#000000" stroke="#000000" points="332.6,-525.96 323.27,-520.93 327.42,-530.68 332.6,-525.96"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge60" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M586.9,-752.07C517.64,-785.16 332.78,-870.67 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge63" class="edge">
+<title>sourcefile~vkf_model.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M576.13,-726.87C542.67,-714.13 493.3,-691.97 457.94,-661.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-661.47C429.2,-638.39 417.57,-635.42 400.56,-604.47 367.33,-544 396.49,-514.63 364.56,-453.47 356.81,-438.63 344.58,-424.52 333.76,-413.72"/>
+<polygon fill="#000000" stroke="#000000" points="336.24,-411.25 326.6,-406.86 331.4,-416.31 336.24,-411.25"/>
+</g>
+<!-- sourcefile~vkf_pick.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge64" class="edge">
+<title>sourcefile~vkf_pick.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M301.8,-495.03C278.02,-454.97 201.98,-333.06 169.03,-353.47"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge65" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M715.28,-674.47C686.5,-670.7 648.56,-665.76 614.96,-661.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-661.47C562.76,-655.05 511.68,-623.46 482.5,-602.5"/>
+<polygon fill="#000000" stroke="#000000" points="484.83,-599.87 474.7,-596.75 480.67,-605.5 484.83,-599.87"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge67" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M742.93,-692.89C732.78,-700.92 720.92,-712.32 714.6,-725.47 678.15,-801.33 738.39,-1043.24 678.6,-1102.47 608.68,-1171.74 546.87,-1079.27 457.94,-1121.47"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_sphere.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge68" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_sphere.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M754.52,-668.12C731.91,-624.91 656.13,-480.12 626.75,-423.98"/>
+<polygon fill="#000000" stroke="#000000" points="629.96,-422.57 622.22,-415.33 623.76,-425.81 629.96,-422.57"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_terrain.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge69" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_terrain.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M755.57,-668.12C746.14,-646.2 726.55,-598.91 714.6,-557.47 692.37,-480.33 717.92,-450.45 678.6,-380.47 669.87,-364.93 655.62,-351.15 642.82,-340.83"/>
+<polygon fill="#000000" stroke="#000000" points="645.11,-338.18 635.05,-334.87 640.85,-343.73 645.11,-338.18"/>
+</g>
+<!-- sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge66" class="edge">
+<title>sourcefile~vkf_shadow.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-661.47C504.54,-647.6 491.88,-725.39 400.56,-785.47 359.27,-812.63 347.69,-884.64 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_artists.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge70" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_artists.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M757.87,-334.07C749.96,-366.39 728.7,-454.94 714.6,-529.47 695.28,-631.56 702.21,-659.28 678.6,-760.47 663.08,-827 636.76,-903.37 623.36,-940.63"/>
+<polygon fill="#000000" stroke="#000000" points="620.13,-939.27 620,-949.86 626.71,-941.66 620.13,-939.27"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge71" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-163.47C553.82,-123.5 527.84,-135.95 457.94,-121.47"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge72" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M758.87,-333.86C750.51,-378.35 715.19,-530.15 614.96,-581.47"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge74" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M732.04,-308.85C725.76,-305.18 719.53,-300.72 714.6,-295.47 689.3,-268.51 700.8,-250.04 678.6,-220.47 655.81,-190.1 646.42,-184.73 614.96,-163.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-163.47C548.73,-120.06 534.82,-93.57 457.94,-83.47"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge73" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M758.97,-334.03C750.88,-382.84 719.25,-558.96 678.6,-595.47 585.07,-679.47 499.01,-569.29 400.56,-647.47 323.02,-709.04 383.61,-918.83 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge75" class="edge">
+<title>sourcefile~vkf_shapes.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M728.85,-308.91C699.67,-298.43 655.18,-284.69 614.96,-281.47"/>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge76" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M422.35,-155.36C392.46,-151.24 347.9,-148.36 311.05,-159.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-159.47C279.32,-168.43 244.39,-168.45 216.86,-166.22"/>
+<polygon fill="#000000" stroke="#000000" points="217.34,-162.75 207.05,-165.28 216.68,-169.71 217.34,-162.75"/>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge78" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-159.47C284.89,-166.75 274.41,-161.7 255.54,-178.47 190.68,-236.1 242.79,-307.78 169.03,-353.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M167.03,-353.47C103.2,-393 58.02,-635.3 45.06,-712.71"/>
+<polygon fill="#000000" stroke="#000000" points="41.61,-712.12 43.45,-722.55 48.52,-713.25 41.61,-712.12"/>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge77" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M422.47,-173.04C414.67,-176.8 406.83,-181.57 400.56,-187.47 376.23,-210.37 383.99,-226.28 364.56,-253.47 322.85,-311.82 297.53,-314.31 255.54,-372.47 223.57,-416.75 194.4,-474.01 179.48,-505.05"/>
+<polygon fill="#000000" stroke="#000000" points="176.42,-503.33 175.3,-513.86 182.75,-506.33 176.42,-503.33"/>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge79" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M422.34,-170.28C403.06,-175.34 378.58,-181.76 357.49,-187.29"/>
+<polygon fill="#000000" stroke="#000000" points="356.74,-183.86 347.96,-189.79 358.52,-190.64 356.74,-183.86"/>
+</g>
+<!-- sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge80" class="edge">
+<title>sourcefile~vkf_sky.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M422.28,-171.26C414.11,-175.11 406.13,-180.36 400.56,-187.47 350.24,-251.68 414.45,-302.91 364.56,-367.47 362.55,-370.07 360.21,-372.43 357.65,-374.57"/>
+<polygon fill="#000000" stroke="#000000" points="355.8,-371.59 349.54,-380.13 359.76,-377.36 355.8,-371.59"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge81" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M593.65,-388.84C579.09,-378.25 559.87,-361.77 549.33,-342.47 505.63,-262.43 572.66,-209.72 513.33,-140.47 496.4,-120.7 483.43,-126.75 457.94,-121.47"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge82" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M602.54,-413.91C584.46,-435.47 546.08,-481.15 513.33,-519.47 500.88,-534.03 486.75,-550.35 475.88,-562.87"/>
+<polygon fill="#000000" stroke="#000000" points="473.52,-560.25 469.6,-570.09 478.8,-564.84 473.52,-560.25"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge85" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M571.24,-388.85C513.24,-372.69 404.8,-347.43 311.05,-353.47"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge86" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-505.47C425.04,-516.56 387.98,-516.86 359.08,-514.49"/>
+<polygon fill="#000000" stroke="#000000" points="359.44,-511.01 349.15,-513.53 358.76,-517.97 359.44,-511.01"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_geometry.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge83" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_geometry.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-505.47C412.09,-521.2 366.01,-549.64 337.9,-568.54"/>
+<polygon fill="#000000" stroke="#000000" points="335.93,-565.64 329.64,-574.17 339.87,-571.42 335.93,-565.64"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge84" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M599.96,-413.83C581.71,-430.71 546.95,-461.19 513.33,-481.47 490.36,-495.32 483.2,-496.41 457.94,-505.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-505.47C393.28,-527.95 377.01,-458.47 311.05,-467.47"/>
+</g>
+<!-- sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge87" class="edge">
+<title>sourcefile~vkf_sphere.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M569.39,-400.31C518.71,-398.97 434.57,-396.74 376.14,-395.19"/>
+<polygon fill="#000000" stroke="#000000" points="376.42,-391.7 366.33,-394.93 376.23,-398.7 376.42,-391.7"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge88" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M594.82,-308.94C580.51,-298.18 561.08,-281.42 549.33,-262.47 519.54,-214.42 552.43,-181.3 513.33,-140.47 495.33,-121.67 483.43,-126.75 457.94,-121.47"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge89" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M594.65,-333.89C580.24,-344.59 560.76,-361.32 549.33,-380.47 516.61,-435.26 542.99,-462.96 513.33,-519.47 504.76,-535.8 491.27,-551.5 479.76,-563.27"/>
+<polygon fill="#000000" stroke="#000000" points="477.56,-560.52 472.9,-570.03 482.48,-565.5 477.56,-560.52"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge91" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M569.28,-312.44C537.71,-307.66 494.38,-304.76 457.94,-315.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-315.47C392.07,-334.24 377.56,-350.48 311.05,-353.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-353.47C246.88,-356.26 221.93,-320.7 169.03,-353.47"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge92" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-315.47C420.5,-325.89 419.28,-345.61 400.56,-377.47 375.78,-419.64 397.03,-444.88 364.56,-481.47 362.13,-484.21 359.34,-486.69 356.34,-488.93"/>
+<polygon fill="#000000" stroke="#000000" points="354.71,-485.82 348.15,-494.14 358.46,-491.73 354.71,-485.82"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge90" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M596.83,-333.91C553.57,-366.19 430.18,-451.22 311.05,-467.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-467.47C270.17,-476.27 228.53,-495.51 200.86,-509.84"/>
+<polygon fill="#000000" stroke="#000000" points="199.52,-506.59 192.31,-514.36 202.79,-512.78 199.52,-506.59"/>
+</g>
+<!-- sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge93" class="edge">
+<title>sourcefile~vkf_terrain.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-315.47C411.11,-328.65 405.91,-345.69 364.56,-367.47 359.19,-370.29 353.47,-373.19 347.84,-375.98"/>
+<polygon fill="#000000" stroke="#000000" points="346.7,-372.64 339.25,-380.18 349.78,-378.93 346.7,-372.64"/>
+</g>
+<!-- sourcefile~vkf_trajectory.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge94" class="edge">
+<title>sourcefile~vkf_trajectory.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M162.55,-1069.19C144.14,-1018.68 74.08,-826.5 49.69,-759.6"/>
+<polygon fill="#000000" stroke="#000000" points="53.05,-758.58 46.33,-750.38 46.47,-760.98 53.05,-758.58"/>
+</g>
+<!-- sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge95" class="edge">
+<title>sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M730.21,-253.92C724.31,-257.53 718.7,-262 714.6,-267.47 626.69,-384.55 745.29,-514.74 614.96,-581.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-581.47C582.67,-596.98 544.47,-597.65 513.57,-594.36"/>
+<polygon fill="#000000" stroke="#000000" points="514.41,-590.94 504.05,-593.18 513.54,-597.89 514.41,-590.94"/>
+</g>
+<!-- sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge96" class="edge">
+<title>sourcefile~vkf_view.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M731.26,-228.84C725.15,-225.21 719.2,-220.77 714.6,-215.47 685.55,-181.99 712.83,-150.62 678.6,-122.47 601.68,-59.21 556.68,-96.44 457.94,-83.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-83.47C304.93,-60.04 219.37,-25.44 116.52,-138.47 38.18,-224.56 39.16,-612.68 40.76,-712.83"/>
+<polygon fill="#000000" stroke="#000000" points="37.26,-712.6 40.94,-722.54 44.26,-712.48 37.26,-712.6"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_clock.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge97" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_clock.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M859.39,-711.96C853.89,-715.53 848.83,-719.98 845.37,-725.47 792.07,-809.93 828.81,-1075.5 809.37,-1173.47 800.69,-1217.2 783.13,-1266.25 772.28,-1294.34"/>
+<polygon fill="#000000" stroke="#000000" points="769.04,-1293.02 768.64,-1303.61 775.55,-1295.58 769.04,-1293.02"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_diagnostics.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge98" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_diagnostics.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-1159.47C746.3,-1177.44 734.15,-1170.96 714.6,-1183.47 697.53,-1194.39 696.58,-1202.11 678.6,-1211.47 629.76,-1236.89 569.81,-1254.61 524.72,-1265.57"/>
+<polygon fill="#000000" stroke="#000000" points="523.99,-1262.15 515.07,-1267.86 525.61,-1268.96 523.99,-1262.15"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge99" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M889.39,-686.92C884.59,-619.76 859.53,-302.74 809.37,-220.47 771.56,-158.45 747.45,-145.58 678.6,-122.47 585.63,-91.26 553.97,-141.37 457.94,-121.47"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_frames.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge100" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_frames.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M878.46,-686.89C839.84,-647.28 714.01,-530.75 614.96,-581.47"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_gui.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge101" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_gui.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M860.3,-711.96C854.6,-715.56 849.22,-720.03 845.37,-725.47 788.6,-805.55 825.11,-1083.46 762.98,-1159.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-1159.47C739.77,-1185.43 648.41,-1195.12 614.96,-1197.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-1197.47C576.06,-1200.06 534.1,-1200.45 503.15,-1200.25"/>
+<polygon fill="#000000" stroke="#000000" points="503.41,-1196.75 493.37,-1200.16 503.34,-1203.75 503.41,-1196.75"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_handles.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge102" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_handles.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M861.81,-711.84C855.75,-715.52 849.84,-720.05 845.37,-725.47 814.25,-763.21 840.75,-791.95 809.37,-829.47 807.26,-831.99 804.84,-834.31 802.23,-836.45"/>
+<polygon fill="#000000" stroke="#000000" points="800.31,-833.52 794.1,-842.1 804.31,-839.27 800.31,-833.52"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_hud.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge103" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_hud.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-281.47C753.66,-274.43 701.92,-261.31 662.09,-252.01"/>
+<polygon fill="#000000" stroke="#000000" points="662.97,-248.62 652.43,-249.78 661.39,-255.44 662.97,-248.62"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge105" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-201.47C439.94,-202.2 325.79,-232.58 311.05,-239.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.05,-239.47C286.78,-249.87 276.41,-240.48 255.54,-253.47 205.65,-284.52 218.99,-322.52 169.03,-353.47"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_pick.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge106" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_pick.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-281.47C744.79,-266.17 732.66,-287.42 714.6,-300.47 694.67,-314.86 699.24,-329.12 678.6,-342.47 628.31,-374.99 604.65,-357.53 549.33,-380.47 462.88,-416.31 447.73,-438.56 364.56,-481.47 359.11,-484.28 353.31,-487.18 347.61,-489.99"/>
+<polygon fill="#000000" stroke="#000000" points="346.39,-486.69 338.94,-494.23 349.46,-492.98 346.39,-486.69"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_sky.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge107" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_sky.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M889.28,-686.85C884.34,-625.86 860.27,-362.01 809.37,-300.47 795.17,-283.3 779.06,-296.89 762.98,-281.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-281.47C744.91,-266.04 729.71,-278.84 714.6,-262.47 678.86,-223.73 721.15,-180.57 678.6,-149.47 626.16,-111.14 546.57,-128.76 498.68,-145.08"/>
+<polygon fill="#000000" stroke="#000000" points="497.76,-141.69 489.52,-148.34 500.11,-148.29 497.76,-141.69"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_view.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge109" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_view.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M889.35,-687.22C884.52,-624.33 859.98,-337.98 809.37,-267.47 807.67,-265.1 805.69,-262.93 803.52,-260.93"/>
+<polygon fill="#000000" stroke="#000000" points="805.73,-258.21 795.63,-254.99 801.52,-263.8 805.73,-258.21"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge104" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M864.76,-711.94C763.98,-760.4 394.81,-929.71 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_text.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge108" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_text.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-281.47C744.79,-266.17 732.66,-275.51 714.6,-262.47 694.67,-248.07 700.47,-231.69 678.6,-220.47 591.02,-175.54 556.19,-195.47 457.94,-201.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M455.94,-201.47C423.14,-202.98 386.13,-202.43 357.72,-201.53"/>
+<polygon fill="#000000" stroke="#000000" points="358.13,-198.04 348.01,-201.19 357.89,-205.03 358.13,-198.04"/>
+</g>
+<!-- sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_web_writer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge110" class="edge">
+<title>sourcefile~vkf_window.f90&#45;&gt;sourcefile~vkf_web_writer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M760.98,-281.47C713.81,-236.9 679.66,-286.65 614.96,-281.47"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M612.96,-281.47C518.45,-273.9 479.73,-249.29 400.56,-301.47 372.66,-319.85 388.74,-344.4 364.56,-367.47 361.58,-370.31 358.24,-372.89 354.71,-375.24"/>
+<polygon fill="#000000" stroke="#000000" points="353.24,-372.04 346.37,-380.11 356.77,-378.08 353.24,-372.04"/>
+</g>
+<!-- sourcefile~vkf_geometry.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge112" class="edge">
+<title>sourcefile~vkf_geometry.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M273.77,-574.86C267.11,-571.3 260.64,-566.88 255.54,-561.47 186.83,-488.64 254.15,-300.76 169.03,-353.47"/>
+</g>
+<!-- sourcefile~vkf_geometry.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge111" class="edge">
+<title>sourcefile~vkf_geometry.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M279.7,-574.89C259.07,-566.05 231.23,-554.12 208.63,-544.44"/>
+<polygon fill="#000000" stroke="#000000" points="210.31,-541.35 199.74,-540.62 207.55,-547.78 210.31,-541.35"/>
+</g>
+<!-- sourcefile~vkf_line_chain.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge114" class="edge">
+<title>sourcefile~vkf_line_chain.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M419.99,-1094.01C412.98,-1097.59 406.1,-1102.04 400.56,-1107.47 374.74,-1132.8 391.59,-1156.43 364.56,-1180.47 345.7,-1197.24 336.08,-1196.24 311.05,-1199.47"/>
+</g>
+<!-- sourcefile~vkf_line_chain.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge113" class="edge">
+<title>sourcefile~vkf_line_chain.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M443.61,-1068.91C431.75,-1056.48 413.74,-1036.58 400.56,-1017.47 352.96,-948.47 373.86,-906.97 311.05,-851.47"/>
+</g>
+<!-- sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_files.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge115" class="edge">
+<title>sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_files.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M273.72,-189.37C256.33,-184.41 235.12,-178.35 216.35,-172.98"/>
+<polygon fill="#000000" stroke="#000000" points="217.36,-169.63 206.78,-170.25 215.44,-176.36 217.36,-169.63"/>
+</g>
+<!-- sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge117" class="edge">
+<title>sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M276.24,-212.04C268.97,-215.71 261.63,-220.19 255.54,-225.47 203.66,-270.45 227.41,-317.32 169.03,-353.47"/>
+</g>
+<!-- sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_layer.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge116" class="edge">
+<title>sourcefile~vkf_text.f90&#45;&gt;sourcefile~vkf_layer.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M299.74,-211.86C288.22,-227.63 268.53,-255.99 255.54,-282.47 235.55,-323.22 193.51,-451.34 176.46,-504.26"/>
+<polygon fill="#000000" stroke="#000000" points="173.23,-502.87 173.5,-513.46 179.89,-505.01 173.23,-502.87"/>
+</g>
+<!-- sourcefile~vkf_web_writer.f90&#45;&gt;sourcefile~vkf_math.f90 -->
+<g id="sourcefile~~vkframes.f90~~EfferentGraph_edge118" class="edge">
+<title>sourcefile~vkf_web_writer.f90&#45;&gt;sourcefile~vkf_math.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M282.41,-380.89C247.37,-365.19 188,-341.72 169.03,-353.47"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var pansourcefilevkframesf90EfferentGraph = svgPanZoom('#sourcefilevkframesf90EfferentGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#EfferentGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="EfferentGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="200pt" height="32pt"
+ viewBox="0.00 0.00 200.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 195.52,-28.27 195.52,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="191.52,-24.27 87.75,-24.27 87.75,0 191.52,0 191.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="139.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a file to a file which it depends on. A file
+is dependent upon another if the latter must be compiled before the former
+can be.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+          </div>
+        </div>
+<br>
+      <section>
+        <h2><span class="anchor" id="src"></span>Source Code</h2>
+        <div class="hl codehilite"><pre><span></span><a id="ln-1" name="ln-1" href="#ln-1"></a><span class="c">!&gt; The vkframes library, a modern Fortran library for visualizing spacecraft trajectories,</span>
+<a id="ln-2" name="ln-2" href="#ln-2"></a><span class="c">!&gt; rendering with VulkanSceneGraph. `use vkframes` gives the whole public API.</span>
+<a id="ln-3" name="ln-3" href="#ln-3"></a><span class="c">!&gt;</span>
+<a id="ln-4" name="ln-4" href="#ln-4"></a><span class="c">!&gt; This umbrella module only re-exports the public types, procedures and</span>
+<a id="ln-5" name="ln-5" href="#ln-5"></a><span class="c">!&gt; constants of the vkf_* modules (math, trajectories and followers, the</span>
+<a id="ln-6" name="ln-6" href="#ln-6"></a><span class="c">!&gt; clock, reference frames and what extends them, windows and views, handles</span>
+<a id="ln-7" name="ln-7" href="#ln-7"></a><span class="c">!&gt; and the cursor&#39;s ray, HUD text and GUI panels, the sky, shapes, artists,</span>
+<a id="ln-8" name="ln-8" href="#ln-8"></a><span class="c">!&gt; line segments, shadows, terrain, file search, the cache, diagnostics); see each module</span>
+<a id="ln-9" name="ln-9" href="#ln-9"></a><span class="c">!&gt; for its documentation.</span>
+<a id="ln-10" name="ln-10" href="#ln-10"></a><span class="k">module </span><span class="n">vkframes</span><span class="w"></span>
+<a id="ln-11" name="ln-11" href="#ln-11"></a>
+<a id="ln-12" name="ln-12" href="#ln-12"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_math</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">wp</span><span class="p">,</span><span class="w"> </span><span class="n">pi</span><span class="p">,</span><span class="w"> </span><span class="n">quat_identity</span><span class="p">,</span><span class="w"> </span><span class="n">quat_from_axis_angle</span><span class="p">,</span><span class="w"> </span><span class="n">quat_multiply</span><span class="p">,</span><span class="w"> </span><span class="n">quat_conjugate</span><span class="p">,</span><span class="w"> </span><span class="n">quat_from_matrix</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-13" name="ln-13" href="#ln-13"></a><span class="w">                        </span><span class="n">quat_normalize</span><span class="p">,</span><span class="w"> </span><span class="n">quat_rotate</span><span class="p">,</span><span class="w"> </span><span class="n">quat_to_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">quat_slerp</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-14" name="ln-14" href="#ln-14"></a><span class="w">                        </span><span class="n">quat_from_vectors</span><span class="p">,</span><span class="w"> </span><span class="n">identity_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">translation_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">frame_matrix</span><span class="p">,</span><span class="w"> </span><span class="n">rigid_inverse</span><span class="w"></span>
+<a id="ln-15" name="ln-15" href="#ln-15"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_trajectory</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">Trajectory</span><span class="p">,</span><span class="w"> </span><span class="n">DataSource</span><span class="p">,</span><span class="w"> </span><span class="n">position_sources</span><span class="p">,</span><span class="w"> </span><span class="n">optional_sources</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-16" name="ln-16" href="#ln-16"></a><span class="w">                              </span><span class="n">SOURCE_ZERO</span><span class="p">,</span><span class="w"> </span><span class="n">SOURCE_TIME</span><span class="p">,</span><span class="w"> </span><span class="n">SOURCE_POSOPT</span><span class="p">,</span><span class="w"> </span><span class="n">SOURCE_ATTITUDE</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-17" name="ln-17" href="#ln-17"></a><span class="w">                              </span><span class="n">TIME_NOT_FOUND</span><span class="p">,</span><span class="w"> </span><span class="n">TIME_OUT_OF_RANGE</span><span class="p">,</span><span class="w"> </span><span class="n">TIME_AT_BOUND</span><span class="w"></span>
+<a id="ln-18" name="ln-18" href="#ln-18"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_follower</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">TrajectoryFollower</span><span class="p">,</span><span class="w"> </span><span class="n">FOLLOW_LOOP</span><span class="p">,</span><span class="w"> </span><span class="n">FOLLOW_LIMIT</span><span class="p">,</span><span class="w"> </span><span class="n">FOLLOW_POSITION</span><span class="p">,</span><span class="w"> </span><span class="n">FOLLOW_ATTITUDE</span><span class="w"></span>
+<a id="ln-19" name="ln-19" href="#ln-19"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_clock</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">SimulationClock</span><span class="p">,</span><span class="w"> </span><span class="n">wall_time</span><span class="w"></span>
+<a id="ln-20" name="ln-20" href="#ln-20"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_frames</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">ReferenceFrame</span><span class="p">,</span><span class="w"> </span><span class="n">FramePointer</span><span class="p">,</span><span class="w"> </span><span class="n">NO_AXES</span><span class="p">,</span><span class="w"> </span><span class="n">X_AXIS</span><span class="p">,</span><span class="w"> </span><span class="n">Y_AXIS</span><span class="p">,</span><span class="w"> </span><span class="n">Z_AXIS</span><span class="p">,</span><span class="w"> </span><span class="n">ALL_AXES</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-21" name="ln-21" href="#ln-21"></a><span class="w">                          </span><span class="n">PickHit</span><span class="p">,</span><span class="w"> </span><span class="n">PICK_FRAME</span><span class="p">,</span><span class="w"> </span><span class="n">PICK_BODY</span><span class="p">,</span><span class="w"> </span><span class="n">PICK_CURVE</span><span class="p">,</span><span class="w"> </span><span class="n">PICK_SEGMENT</span><span class="p">,</span><span class="w"> </span><span class="n">PICK_MARKER</span><span class="p">,</span><span class="w"> </span><span class="n">PICK_HANDLE</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-22" name="ln-22" href="#ln-22"></a><span class="w">                          </span><span class="n">ALIGN_LEFT_TOP</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_LEFT_CENTER</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_LEFT_BOTTOM</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-23" name="ln-23" href="#ln-23"></a><span class="w">                          </span><span class="n">ALIGN_CENTER_TOP</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_CENTER_CENTER</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_CENTER_BOTTOM</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-24" name="ln-24" href="#ln-24"></a><span class="w">                          </span><span class="n">ALIGN_RIGHT_TOP</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_RIGHT_CENTER</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_RIGHT_BOTTOM</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-25" name="ln-25" href="#ln-25"></a><span class="w">                          </span><span class="n">ALIGN_LEFT_BASE_LINE</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_CENTER_BASE_LINE</span><span class="p">,</span><span class="w"> </span><span class="n">ALIGN_RIGHT_BASE_LINE</span><span class="w"></span>
+<a id="ln-26" name="ln-26" href="#ln-26"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_sphere</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">Sphere</span><span class="w"></span>
+<a id="ln-27" name="ln-27" href="#ln-27"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_model</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">Model</span><span class="w"></span>
+<a id="ln-28" name="ln-28" href="#ln-28"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_window</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">FrameManager</span><span class="p">,</span><span class="w"> </span><span class="n">WindowProxy</span><span class="p">,</span><span class="w"> </span><span class="n">MOUSE_MOVE</span><span class="p">,</span><span class="w"> </span><span class="n">MOUSE_PRESS</span><span class="p">,</span><span class="w"> </span><span class="n">MOUSE_RELEASE</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-29" name="ln-29" href="#ln-29"></a><span class="w">                          </span><span class="n">WindowEventHandler</span><span class="p">,</span><span class="w"> </span><span class="n">MOUSE_LEFT</span><span class="p">,</span><span class="w"> </span><span class="n">MOUSE_MIDDLE</span><span class="p">,</span><span class="w"> </span><span class="n">MOUSE_RIGHT</span><span class="p">,</span><span class="w"> </span><span class="n">DRAG_START</span><span class="p">,</span><span class="w"> </span><span class="n">DRAG_MOVE</span><span class="p">,</span><span class="w"> </span><span class="n">DRAG_END</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-30" name="ln-30" href="#ln-30"></a><span class="w">                          </span><span class="n">KEY_SPACE</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_BACKSPACE</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_TAB</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_RETURN</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_ESCAPE</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_DELETE</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_HOME</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-31" name="ln-31" href="#ln-31"></a><span class="w">                          </span><span class="n">KEY_LEFT</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_UP</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_RIGHT</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_DOWN</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_PAGE_UP</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_PAGE_DOWN</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_END</span><span class="p">,</span><span class="w"> </span><span class="n">KEY_INSERT</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-32" name="ln-32" href="#ln-32"></a><span class="w">                          </span><span class="n">KEY_F1</span><span class="p">,</span><span class="w"> </span><span class="n">MOD_SHIFT</span><span class="p">,</span><span class="w"> </span><span class="n">MOD_CAPS_LOCK</span><span class="p">,</span><span class="w"> </span><span class="n">MOD_CONTROL</span><span class="p">,</span><span class="w"> </span><span class="n">MOD_ALT</span><span class="p">,</span><span class="w"> </span><span class="n">MOD_NUM_LOCK</span><span class="p">,</span><span class="w"> </span><span class="n">MOD_META</span><span class="w"></span>
+<a id="ln-33" name="ln-33" href="#ln-33"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_handles</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">DragHandle</span><span class="p">,</span><span class="w"> </span><span class="n">VectorHandle</span><span class="p">,</span><span class="w"> </span><span class="n">TimeHandle</span><span class="p">,</span><span class="w"> </span><span class="n">TimePath</span><span class="p">,</span><span class="w"> </span><span class="n">TrajectoryPath</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-34" name="ln-34" href="#ln-34"></a><span class="w">                           </span><span class="n">HANDLE_FREE</span><span class="p">,</span><span class="w"> </span><span class="n">HANDLE_PLANE</span><span class="p">,</span><span class="w"> </span><span class="n">HANDLE_LINE</span><span class="p">,</span><span class="w"> </span><span class="n">HANDLE_RADIAL</span><span class="p">,</span><span class="w"> </span><span class="n">HANDLE_SPHERE</span><span class="w"></span>
+<a id="ln-35" name="ln-35" href="#ln-35"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_pick</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">ray_plane</span><span class="p">,</span><span class="w"> </span><span class="n">ray_sphere</span><span class="p">,</span><span class="w"> </span><span class="n">ray_line</span><span class="w"></span>
+<a id="ln-36" name="ln-36" href="#ln-36"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_hud</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">HUDText</span><span class="w"></span>
+<a id="ln-37" name="ln-37" href="#ln-37"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_gui</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">Gui</span><span class="w"></span>
+<a id="ln-38" name="ln-38" href="#ln-38"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_sky</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">SkySphere</span><span class="p">,</span><span class="w"> </span><span class="n">SKY_NONE</span><span class="p">,</span><span class="w"> </span><span class="n">SKY_TEXTURE</span><span class="p">,</span><span class="w"> </span><span class="n">SKY_STARS</span><span class="w"></span>
+<a id="ln-39" name="ln-39" href="#ln-39"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_shapes</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">CoordinateAxes</span><span class="p">,</span><span class="w"> </span><span class="n">LatLonGrid</span><span class="p">,</span><span class="w"> </span><span class="n">RadialPlane</span><span class="p">,</span><span class="w"> </span><span class="n">PolyhedralCone</span><span class="p">,</span><span class="w"> </span><span class="n">EllipticCone</span><span class="p">,</span><span class="w"> </span><span class="n">RectangularCone</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-40" name="ln-40" href="#ln-40"></a><span class="w">                          </span><span class="n">CONE_NONE</span><span class="p">,</span><span class="w"> </span><span class="n">CONE_SIDES</span><span class="p">,</span><span class="w"> </span><span class="n">CONE_EDGES</span><span class="p">,</span><span class="w"> </span><span class="n">CONE_BASE_OUTLINE</span><span class="p">,</span><span class="w"> </span><span class="n">CONE_ALL</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-41" name="ln-41" href="#ln-41"></a><span class="w">                          </span><span class="n">Polyhedron</span><span class="p">,</span><span class="w"> </span><span class="n">POLY_NONE</span><span class="p">,</span><span class="w"> </span><span class="n">POLY_FACES</span><span class="p">,</span><span class="w"> </span><span class="n">POLY_EDGES</span><span class="p">,</span><span class="w"> </span><span class="n">POLY_VERTICES</span><span class="p">,</span><span class="w"> </span><span class="n">POLY_ALL</span><span class="w"></span>
+<a id="ln-42" name="ln-42" href="#ln-42"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_files</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">find_data_file</span><span class="w"></span>
+<a id="ln-43" name="ln-43" href="#ln-43"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_cache</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">cache_directory</span><span class="p">,</span><span class="w"> </span><span class="n">clear_cache</span><span class="w"></span>
+<a id="ln-44" name="ln-44" href="#ln-44"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_diagnostics</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">LibraryVersions</span><span class="p">,</span><span class="w"> </span><span class="n">DeviceInfo</span><span class="p">,</span><span class="w"> </span><span class="n">RenderStats</span><span class="p">,</span><span class="w"> </span><span class="n">SceneCounts</span><span class="p">,</span><span class="w"> </span><span class="n">library_versions</span><span class="p">,</span><span class="w"> </span><span class="n">vkframes_version</span><span class="w"></span>
+<a id="ln-45" name="ln-45" href="#ln-45"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_artists</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">TrajectoryArtist</span><span class="p">,</span><span class="w"> </span><span class="n">CurveArtist</span><span class="p">,</span><span class="w"> </span><span class="n">SegmentArtist</span><span class="p">,</span><span class="w"> </span><span class="n">MarkerArtist</span><span class="p">,</span><span class="w"> </span><span class="n">RibbonArtist</span><span class="p">,</span><span class="w"> </span><span class="n">DrawableTrajectory</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-46" name="ln-46" href="#ln-46"></a><span class="w">                           </span><span class="n">MARKER_START</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_INTERMEDIATE</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_END</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-47" name="ln-47" href="#ln-47"></a><span class="w">                           </span><span class="n">INTERMEDIATE_TIME</span><span class="p">,</span><span class="w"> </span><span class="n">INTERMEDIATE_DISTANCE</span><span class="p">,</span><span class="w"> </span><span class="n">INTERMEDIATE_DATA</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-48" name="ln-48" href="#ln-48"></a><span class="w">                           </span><span class="n">MARKER_DISK</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_CIRCLE</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_SQUARE</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_PLUS</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_X</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_TARGET</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-49" name="ln-49" href="#ln-49"></a><span class="w">                           </span><span class="n">MARKER_ROSE</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_CIRCLE_PULSE</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_DISK_PULSE</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_SPIRAL</span><span class="p">,</span><span class="w"> </span><span class="n">MARKER_IMAGE</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-50" name="ln-50" href="#ln-50"></a><span class="w">                           </span><span class="n">HIGHLIGHT_NONE</span><span class="p">,</span><span class="w"> </span><span class="n">HIGHLIGHT_PULSE</span><span class="p">,</span><span class="w"> </span><span class="n">HIGHLIGHT_ARROWS</span><span class="p">,</span><span class="w"> </span><span class="n">TRAIL_PAST</span><span class="p">,</span><span class="w"> </span><span class="n">TRAIL_FUTURE</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-51" name="ln-51" href="#ln-51"></a><span class="w">                           </span><span class="n">DASH_SCENE</span><span class="p">,</span><span class="w"> </span><span class="n">DASH_SCREEN</span><span class="p">,</span><span class="w"> </span><span class="n">DASH_FIXED</span><span class="w"></span>
+<a id="ln-52" name="ln-52" href="#ln-52"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_line_segments</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">CustomLineSegments</span><span class="p">,</span><span class="w"> </span><span class="n">LineSegmentsCallback</span><span class="w"></span>
+<a id="ln-53" name="ln-53" href="#ln-53"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_shadow</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">ShadowCones</span><span class="p">,</span><span class="w"> </span><span class="n">SHADOW_UMBRA</span><span class="p">,</span><span class="w"> </span><span class="n">SHADOW_PENUMBRA</span><span class="p">,</span><span class="w"> </span><span class="n">SHADOW_ANTUMBRA</span><span class="p">,</span><span class="w"> </span><span class="n">SHADOW_ALL</span><span class="w"></span>
+<a id="ln-54" name="ln-54" href="#ln-54"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_view</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">View</span><span class="p">,</span><span class="w"> </span><span class="n">ABSOLUTE_FRAME</span><span class="p">,</span><span class="w"> </span><span class="n">RELATIVE_FRAME</span><span class="p">,</span><span class="w"> </span><span class="n">VIEW_DIRECT</span><span class="p">,</span><span class="w"> </span><span class="n">VIEW_AZEL</span><span class="p">,</span><span class="w"> </span><span class="n">ORTHOGRAPHIC</span><span class="p">,</span><span class="w"> </span><span class="n">PERSPECTIVE</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-55" name="ln-55" href="#ln-55"></a><span class="w">                        </span><span class="n">camera_between</span><span class="p">,</span><span class="w"> </span><span class="n">transform_camera</span><span class="w"></span>
+<a id="ln-56" name="ln-56" href="#ln-56"></a><span class="w">    </span><span class="k">use </span><span class="n">vkf_terrain</span><span class="p">,</span><span class="w"> </span><span class="k">only</span><span class="p">:</span><span class="w"> </span><span class="n">TerrainBody</span><span class="p">,</span><span class="w"> </span><span class="n">rocky_available</span><span class="p">,</span><span class="w"> </span><span class="n">LAYER_TMS</span><span class="p">,</span><span class="w"> </span><span class="n">LAYER_GDAL</span><span class="p">,</span><span class="w"> </span><span class="n">LAYER_GEODETIC</span><span class="p">,</span><span class="w"> </span><span class="n">LAYER_MERCATOR</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<a id="ln-57" name="ln-57" href="#ln-57"></a><span class="w">                           </span><span class="n">ELEVATION_HEIGHTS</span><span class="p">,</span><span class="w"> </span><span class="n">ELEVATION_MAPBOX</span><span class="p">,</span><span class="w"> </span><span class="n">ELEVATION_TERRARIUM</span><span class="w"></span>
+<a id="ln-58" name="ln-58" href="#ln-58"></a>
+<a id="ln-59" name="ln-59" href="#ln-59"></a><span class="w">    </span><span class="k">implicit none</span>
+<a id="ln-60" name="ln-60" href="#ln-60"></a>
+<a id="ln-61" name="ln-61" href="#ln-61"></a><span class="k">    public</span>
+<a id="ln-62" name="ln-62" href="#ln-62"></a>
+<a id="ln-63" name="ln-63" href="#ln-63"></a><span class="k">end module </span><span class="n">vkframes</span><span class="w"></span>
+</pre></div>
+
+      </section>
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

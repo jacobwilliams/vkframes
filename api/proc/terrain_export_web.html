@@ -1,0 +1,753 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>terrain_export_web &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>terrain_export_web
+      <small>Subroutine</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">13 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_terrain.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_terrain.f90.html'>vkf_terrain.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_terrain.html'>vkf_terrain</a></li>
+            <li class="breadcrumb-item active" aria-current="page">terrain_export_web</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/terrain_export_web.html#src">terrain_export_web</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>private  subroutine terrain_export_web(self, w)  
+</h2>
+    
+
+    <p>The web page's item: the body's sphere, untextured (the page draws no
+map tiles).</p>
+
+    <h3>Type Bound</h3>
+    <p><a href='../type/terrainbody.html'>TerrainBody</a></p>
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~916"></span>
+              class(<a href='../type/terrainbody.html'>TerrainBody</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-w~31"></span>
+              type(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>w</strong></td>
+            <td>
+                <p>the page being written</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Calls</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~terrain_export_web~~CallsGraph Pages: 1 -->
+<svg id="procterrain_export_webCallsGraph" width="641pt" height="398pt"
+ viewBox="0.00 0.00 641.00 398.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~terrain_export_web~~CallsGraph" class="graph" transform="scale(0.779019 0.779019) rotate(0) translate(4 507.11)">
+<title>proc~~terrain_export_web~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-507.11 818.83,-507.11 818.83,4 -4,4"/>
+<!-- proc~terrain_export_web -->
+<g id="proc~~terrain_export_web~~CallsGraph_node1" class="node">
+<title>proc~terrain_export_web</title>
+<polygon fill="none" stroke="black" points="187.02,-126.27 0,-126.27 0,-102 187.02,-102 187.02,-126.27"/>
+<text xml:space="preserve" text-anchor="middle" x="93.51" y="-110.54" font-family="Helvetica,sans-Serif" font-size="10.50">TerrainBody%terrain_export_web</text>
+</g>
+<!-- none~put~2 -->
+<g id="proc~~terrain_export_web~~CallsGraph_node2" class="node">
+<title>none~put~2</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node2"><a xlink:href="../type/webwriter.html#boundprocedure-put~2" xlink:title="WebWriter%put">
+<polygon fill="#a7506f" stroke="#a7506f" points="344.79,-293.27 250.77,-293.27 250.77,-269 344.79,-269 344.79,-293.27"/>
+<text xml:space="preserve" text-anchor="middle" x="297.78" y="-277.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_export_web&#45;&gt;none~put~2 -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge1" class="edge">
+<title>proc~terrain_export_web&#45;&gt;none~put~2</title>
+<path fill="none" stroke="#000000" d="M109.71,-126.69C144.65,-155.53 230.87,-226.72 272.93,-261.45"/>
+<polygon fill="#000000" stroke="#000000" points="270.57,-264.03 280.51,-267.7 275.03,-258.64 270.57,-264.03"/>
+</g>
+<!-- proc~begin_object -->
+<g id="proc~~terrain_export_web~~CallsGraph_node3" class="node">
+<title>proc~begin_object</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node3"><a xlink:href="../proc/begin_object.html" xlink:title="WebWriter%begin_object">
+<polygon fill="#d9534f" stroke="#d9534f" points="553.56,-230.27 408.54,-230.27 408.54,-206 553.56,-206 553.56,-230.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-214.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%begin_object</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_export_web&#45;&gt;proc~begin_object -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge2" class="edge">
+<title>proc~terrain_export_web&#45;&gt;proc~begin_object</title>
+<path fill="none" stroke="#000000" d="M131.7,-126.74C157.25,-135.22 192.03,-146.4 223.02,-155.13 286.98,-173.15 360.72,-190.92 412.76,-202.97"/>
+<polygon fill="#000000" stroke="#000000" points="411.85,-206.35 422.38,-205.19 413.42,-199.53 411.85,-206.35"/>
+</g>
+<!-- proc~body_radius~2 -->
+<g id="proc~~terrain_export_web~~CallsGraph_node4" class="node">
+<title>proc~body_radius~2</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node4"><a xlink:href="../proc/body_radius~2.html" xlink:title="TerrainBody%body_radius">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="372.54,-146.27 223.02,-146.27 223.02,-122 372.54,-122 372.54,-146.27"/>
+<text xml:space="preserve" text-anchor="middle" x="297.78" y="-130.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TerrainBody%body_radius</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_export_web&#45;&gt;proc~body_radius~2 -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge3" class="edge">
+<title>proc~terrain_export_web&#45;&gt;proc~body_radius~2</title>
+<path fill="none" stroke="#000000" d="M187.36,-123.32C195.31,-124.1 203.34,-124.9 211.23,-125.68"/>
+<polygon fill="#000000" stroke="#000000" points="210.88,-129.16 221.17,-126.66 211.56,-122.19 210.88,-129.16"/>
+</g>
+<!-- proc~end_object -->
+<g id="proc~~terrain_export_web~~CallsGraph_node5" class="node">
+<title>proc~end_object</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node5"><a xlink:href="../proc/end_object.html" xlink:title="WebWriter%end_object">
+<polygon fill="#d9534f" stroke="#d9534f" points="724.83,-66.27 589.56,-66.27 589.56,-42 724.83,-42 724.83,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="657.19" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%end_object</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_export_web&#45;&gt;proc~end_object -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge4" class="edge">
+<title>proc~terrain_export_web&#45;&gt;proc~end_object</title>
+<path fill="none" stroke="#000000" d="M187.26,-104.23C296.43,-92.57 475.78,-73.41 578.14,-62.47"/>
+<polygon fill="#000000" stroke="#000000" points="578.24,-65.98 587.81,-61.44 577.5,-59.02 578.24,-65.98"/>
+</g>
+<!-- proc~name -->
+<g id="proc~~terrain_export_web~~CallsGraph_node6" class="node">
+<title>proc~name</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node6"><a xlink:href="../proc/name.html" xlink:title="ReferenceFrame%name">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="367.66,-66.27 227.89,-66.27 227.89,-42 367.66,-42 367.66,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="297.78" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%name</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_export_web&#45;&gt;proc~name -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge5" class="edge">
+<title>proc~terrain_export_web&#45;&gt;proc~name</title>
+<path fill="none" stroke="#000000" d="M136.91,-101.56C167.93,-92.36 210.22,-79.81 243.52,-69.93"/>
+<polygon fill="#000000" stroke="#000000" points="244.39,-73.33 252.98,-67.13 242.4,-66.62 244.39,-73.33"/>
+</g>
+<!-- proc~warn_once -->
+<g id="proc~~terrain_export_web~~CallsGraph_node7" class="node">
+<title>proc~warn_once</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node7"><a xlink:href="../proc/warn_once.html" xlink:title="WebWriter%warn_once">
+<polygon fill="#d9534f" stroke="#d9534f" points="365.04,-24.27 230.52,-24.27 230.52,0 365.04,0 365.04,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="297.78" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%warn_once</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_export_web&#45;&gt;proc~warn_once -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge6" class="edge">
+<title>proc~terrain_export_web&#45;&gt;proc~warn_once</title>
+<path fill="none" stroke="#000000" d="M110.7,-101.78C134.26,-84.31 179.91,-52.38 223.02,-33.14 226.77,-31.46 230.68,-29.89 234.66,-28.41"/>
+<polygon fill="#000000" stroke="#000000" points="235.57,-31.8 243.89,-25.23 233.29,-25.18 235.57,-31.8"/>
+</g>
+<!-- proc~put_int -->
+<g id="proc~~terrain_export_web~~CallsGraph_node9" class="node">
+<title>proc~put_int</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node9"><a xlink:href="../proc/put_int.html" xlink:title="WebWriter%put_int">
+<polygon fill="#d9534f" stroke="#d9534f" points="537.43,-314.27 424.66,-314.27 424.66,-290 537.43,-290 537.43,-314.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-298.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put_int</text>
+</a>
+</g>
+</g>
+<!-- none~put~2&#45;&gt;proc~put_int -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge7" class="edge">
+<title>none~put~2&#45;&gt;proc~put_int</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M344.99,-286.49C365.63,-288.88 390.35,-291.74 412.97,-294.36"/>
+<polygon fill="#000000" stroke="#000000" points="412.38,-297.82 422.72,-295.49 413.19,-290.87 412.38,-297.82"/>
+</g>
+<!-- proc~put_ints -->
+<g id="proc~~terrain_export_web~~CallsGraph_node10" class="node">
+<title>proc~put_ints</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node10"><a xlink:href="../proc/put_ints.html" xlink:title="WebWriter%put_ints">
+<polygon fill="#d9534f" stroke="#d9534f" points="540.06,-272.27 422.04,-272.27 422.04,-248 540.06,-248 540.06,-272.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-256.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put_ints</text>
+</a>
+</g>
+</g>
+<!-- none~put~2&#45;&gt;proc~put_ints -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge8" class="edge">
+<title>none~put~2&#45;&gt;proc~put_ints</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M344.99,-275.78C364.82,-273.48 388.42,-270.75 410.3,-268.22"/>
+<polygon fill="#000000" stroke="#000000" points="410.52,-271.71 420.06,-267.09 409.72,-264.76 410.52,-271.71"/>
+</g>
+<!-- proc~put_logical -->
+<g id="proc~~terrain_export_web~~CallsGraph_node11" class="node">
+<title>proc~put_logical</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node11"><a xlink:href="../proc/put_logical.html" xlink:title="WebWriter%put_logical">
+<polygon fill="#d9534f" stroke="#d9534f" points="548.31,-356.27 413.79,-356.27 413.79,-332 548.31,-332 548.31,-356.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-340.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put_logical</text>
+</a>
+</g>
+</g>
+<!-- none~put~2&#45;&gt;proc~put_logical -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge9" class="edge">
+<title>none~put~2&#45;&gt;proc~put_logical</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M329.77,-293.75C351.62,-302.46 381.67,-314.06 408.54,-323.13 413.64,-324.85 418.96,-326.57 424.31,-328.24"/>
+<polygon fill="#000000" stroke="#000000" points="423.21,-331.56 433.8,-331.13 425.26,-324.87 423.21,-331.56"/>
+</g>
+<!-- proc~put_real -->
+<g id="proc~~terrain_export_web~~CallsGraph_node12" class="node">
+<title>proc~put_real</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node12"><a xlink:href="../proc/put_real.html" xlink:title="WebWriter%put_real">
+<polygon fill="#d9534f" stroke="#d9534f" points="540.81,-146.27 421.29,-146.27 421.29,-122 540.81,-122 540.81,-146.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-130.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put_real</text>
+</a>
+</g>
+</g>
+<!-- none~put~2&#45;&gt;proc~put_real -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge10" class="edge">
+<title>none~put~2&#45;&gt;proc~put_real</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M306.15,-268.67C321.76,-243.37 360.67,-185.81 408.54,-155.13 410.54,-153.85 412.62,-152.65 414.76,-151.51"/>
+<polygon fill="#000000" stroke="#000000" points="416.15,-154.73 423.75,-147.35 413.21,-148.38 416.15,-154.73"/>
+</g>
+<!-- proc~put_reals -->
+<g id="proc~~terrain_export_web~~CallsGraph_node13" class="node">
+<title>proc~put_reals</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node13"><a xlink:href="../proc/put_reals.html" xlink:title="WebWriter%put_reals">
+<polygon fill="#d9534f" stroke="#d9534f" points="543.43,-188.27 418.66,-188.27 418.66,-164 543.43,-164 543.43,-188.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-172.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put_reals</text>
+</a>
+</g>
+</g>
+<!-- none~put~2&#45;&gt;proc~put_reals -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge11" class="edge">
+<title>none~put~2&#45;&gt;proc~put_reals</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M311.55,-268.79C330.98,-250.64 369.81,-216.78 408.54,-197.13 411.61,-195.58 414.82,-194.11 418.11,-192.74"/>
+<polygon fill="#000000" stroke="#000000" points="419.25,-196.06 427.35,-189.23 416.76,-189.51 419.25,-196.06"/>
+</g>
+<!-- proc~put_string -->
+<g id="proc~~terrain_export_web~~CallsGraph_node14" class="node">
+<title>proc~put_string</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node14"><a xlink:href="../proc/put_string.html" xlink:title="WebWriter%put_string">
+<polygon fill="#d9534f" stroke="#d9534f" points="545.68,-452.27 416.41,-452.27 416.41,-428 545.68,-428 545.68,-452.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-436.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put_string</text>
+</a>
+</g>
+</g>
+<!-- none~put~2&#45;&gt;proc~put_string -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge12" class="edge">
+<title>none~put~2&#45;&gt;proc~put_string</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M305.62,-293.4C320.77,-319.51 359.75,-381 408.54,-415.13 412.71,-418.06 417.26,-420.66 421.98,-422.99"/>
+<polygon fill="#000000" stroke="#000000" points="420.53,-426.18 431.09,-427.02 423.36,-419.78 420.53,-426.18"/>
+</g>
+<!-- proc~put_strings -->
+<g id="proc~~terrain_export_web~~CallsGraph_node15" class="node">
+<title>proc~put_strings</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node15"><a xlink:href="../proc/put_strings.html" xlink:title="WebWriter%put_strings">
+<polygon fill="#d9534f" stroke="#d9534f" points="548.31,-406.27 413.79,-406.27 413.79,-382 548.31,-382 548.31,-406.27"/>
+<text xml:space="preserve" text-anchor="middle" x="481.05" y="-390.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WebWriter%put_strings</text>
+</a>
+</g>
+</g>
+<!-- none~put~2&#45;&gt;proc~put_strings -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge13" class="edge">
+<title>none~put~2&#45;&gt;proc~put_strings</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M312.48,-293.58C332.44,-311.25 371.25,-343.82 408.54,-365.13 416.23,-369.53 424.71,-373.59 433.07,-377.19"/>
+<polygon fill="#000000" stroke="#000000" points="431.54,-380.35 442.12,-380.92 434.21,-373.87 431.54,-380.35"/>
+</g>
+<!-- proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_node8" class="node">
+<title>proc~emit</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node8"><a xlink:href="../proc/emit.html" xlink:title="emit">
+<polygon fill="#d9534f" stroke="#d9534f" points="814.83,-282.27 760.83,-282.27 760.83,-258 814.83,-258 814.83,-282.27"/>
+<text xml:space="preserve" text-anchor="middle" x="787.83" y="-266.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">emit</text>
+</a>
+</g>
+</g>
+<!-- proc~begin_object&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge14" class="edge">
+<title>proc~begin_object&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M553.89,-230.39C615.19,-240.85 700.88,-255.47 749.41,-263.75"/>
+<polygon fill="#000000" stroke="#000000" points="748.69,-267.18 759.13,-265.41 749.86,-260.28 748.69,-267.18"/>
+</g>
+<!-- proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_node16" class="node">
+<title>proc~start_value</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node16"><a xlink:href="../proc/start_value.html" xlink:title="start_value">
+<polygon fill="#d9534f" stroke="#d9534f" points="692.2,-302.27 622.18,-302.27 622.18,-278 692.2,-278 692.2,-302.27"/>
+<text xml:space="preserve" text-anchor="middle" x="657.19" y="-286.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">start_value</text>
+</a>
+</g>
+</g>
+<!-- proc~begin_object&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge15" class="edge">
+<title>proc~begin_object&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M529.38,-230.76C537.52,-233.29 545.85,-236.11 553.56,-239.13 577.74,-248.61 603.95,-261.68 623.83,-272.22"/>
+<polygon fill="#000000" stroke="#000000" points="622.09,-275.26 632.55,-276.91 625.4,-269.09 622.09,-275.26"/>
+</g>
+<!-- proc~end_object&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge16" class="edge">
+<title>proc~end_object&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M705.89,-66.66C712.91,-70.13 719.54,-74.54 724.83,-80.14 769.34,-127.24 781.91,-206.76 785.45,-246.31"/>
+<polygon fill="#000000" stroke="#000000" points="781.95,-246.44 786.19,-256.15 788.93,-245.91 781.95,-246.44"/>
+</g>
+<!-- proc~put_int&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge17" class="edge">
+<title>proc~put_int&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M537.83,-314.28C587.89,-322.83 662.83,-329.78 724.83,-311.13 739.17,-306.82 753.24,-298 764.35,-289.64"/>
+<polygon fill="#000000" stroke="#000000" points="766.45,-292.44 772.09,-283.48 762.09,-286.96 766.45,-292.44"/>
+</g>
+<!-- proc~put_int&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge18" class="edge">
+<title>proc~put_int&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M537.63,-298.31C561.19,-296.68 588.32,-294.81 610.67,-293.27"/>
+<polygon fill="#000000" stroke="#000000" points="610.63,-296.78 620.37,-292.6 610.15,-289.8 610.63,-296.78"/>
+</g>
+<!-- proc~put_ints&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge19" class="edge">
+<title>proc~put_ints&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M540.45,-262.05C601.87,-264.07 696.7,-267.18 748.99,-268.89"/>
+<polygon fill="#000000" stroke="#000000" points="748.78,-272.39 758.89,-269.22 749.01,-265.39 748.78,-272.39"/>
+</g>
+<!-- proc~put_ints&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge20" class="edge">
+<title>proc~put_ints&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M540.52,-270.21C563.39,-274.15 589.21,-278.6 610.65,-282.29"/>
+<polygon fill="#000000" stroke="#000000" points="609.8,-285.69 620.25,-283.94 610.99,-278.8 609.8,-285.69"/>
+</g>
+<!-- proc~put_logical&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge21" class="edge">
+<title>proc~put_logical&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M548.6,-352.91C599.11,-356.71 669.12,-355.71 724.83,-331.13 743.91,-322.72 760.45,-305.63 771.64,-291.67"/>
+<polygon fill="#000000" stroke="#000000" points="774.31,-293.94 777.58,-283.86 768.74,-289.7 774.31,-293.94"/>
+</g>
+<!-- proc~put_logical&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge22" class="edge">
+<title>proc~put_logical&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M525.59,-331.54C534.84,-328.81 544.53,-325.91 553.56,-323.13 572.52,-317.3 593.38,-310.64 611.31,-304.84"/>
+<polygon fill="#000000" stroke="#000000" points="612.18,-308.24 620.61,-301.82 610.02,-301.58 612.18,-308.24"/>
+</g>
+<!-- proc~put_real&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge23" class="edge">
+<title>proc~put_real&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M536.87,-121.54C598.93,-108.62 695.27,-93.03 724.83,-113.14 769.26,-143.36 781.85,-210.84 785.42,-246.7"/>
+<polygon fill="#000000" stroke="#000000" points="781.91,-246.76 786.22,-256.44 788.89,-246.19 781.91,-246.76"/>
+</g>
+<!-- proc~put_real&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge25" class="edge">
+<title>proc~put_real&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M537.94,-146.68C543.45,-149.04 548.76,-151.83 553.56,-155.13 596.32,-184.59 628.87,-237.52 644.99,-267.61"/>
+<polygon fill="#000000" stroke="#000000" points="641.75,-268.98 649.47,-276.24 647.96,-265.75 641.75,-268.98"/>
+</g>
+<!-- proc~json_number -->
+<g id="proc~~terrain_export_web~~CallsGraph_node17" class="node">
+<title>proc~json_number</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node17"><a xlink:href="../proc/json_number.html" xlink:title="json_number">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="697.45,-146.27 616.93,-146.27 616.93,-122 697.45,-122 697.45,-146.27"/>
+<text xml:space="preserve" text-anchor="middle" x="657.19" y="-130.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">json_number</text>
+</a>
+</g>
+</g>
+<!-- proc~put_real&#45;&gt;proc~json_number -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge24" class="edge">
+<title>proc~put_real&#45;&gt;proc~json_number</title>
+<path fill="none" stroke="#000000" d="M541.01,-134.13C561.79,-134.13 584.97,-134.13 605.06,-134.13"/>
+<polygon fill="#000000" stroke="#000000" points="604.97,-137.64 614.97,-134.14 604.97,-130.64 604.97,-137.64"/>
+</g>
+<!-- proc~put_reals&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge26" class="edge">
+<title>proc~put_reals&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M543.93,-185.77C593.92,-194.77 665.48,-210.41 724.83,-234.13 736.45,-238.78 748.5,-245.32 758.85,-251.56"/>
+<polygon fill="#000000" stroke="#000000" points="756.94,-254.5 767.28,-256.82 760.64,-248.56 756.94,-254.5"/>
+</g>
+<!-- proc~put_reals&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge28" class="edge">
+<title>proc~put_reals&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M535.1,-188.76C541.5,-191.13 547.8,-193.91 553.56,-197.13 587.36,-216.08 619.28,-248.03 638.29,-269.1"/>
+<polygon fill="#000000" stroke="#000000" points="635.6,-271.34 644.84,-276.53 640.85,-266.71 635.6,-271.34"/>
+</g>
+<!-- proc~put_reals&#45;&gt;proc~json_number -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge27" class="edge">
+<title>proc~put_reals&#45;&gt;proc~json_number</title>
+<path fill="none" stroke="#000000" d="M534.3,-163.53C556.84,-158.1 583.11,-151.76 605.48,-146.37"/>
+<polygon fill="#000000" stroke="#000000" points="606.07,-149.82 614.97,-144.08 604.43,-143.02 606.07,-149.82"/>
+</g>
+<!-- proc~put_string&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge29" class="edge">
+<title>proc~put_string&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M545.99,-441.57C598.87,-439.59 673.38,-429.12 724.83,-390.13 756.58,-366.08 773.49,-321.11 781.28,-293.58"/>
+<polygon fill="#000000" stroke="#000000" points="784.62,-294.65 783.77,-284.09 777.85,-292.87 784.62,-294.65"/>
+</g>
+<!-- proc~put_string&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge31" class="edge">
+<title>proc~put_string&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M529.62,-427.63C538,-424.3 546.34,-420.18 553.56,-415.13 593.36,-387.33 626.22,-340.06 643.36,-312.3"/>
+<polygon fill="#000000" stroke="#000000" points="646.2,-314.37 648.35,-304 640.2,-310.76 646.2,-314.37"/>
+</g>
+<!-- proc~quoted -->
+<g id="proc~~terrain_export_web~~CallsGraph_node18" class="node">
+<title>proc~quoted</title>
+<g id="a_proc~~terrain_export_web~~CallsGraph_node18"><a xlink:href="../proc/quoted.html" xlink:title="quoted">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="814.83,-494.27 760.83,-494.27 760.83,-470 814.83,-470 814.83,-494.27"/>
+<text xml:space="preserve" text-anchor="middle" x="787.83" y="-478.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quoted</text>
+</a>
+</g>
+</g>
+<!-- proc~put_string&#45;&gt;proc~quoted -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge30" class="edge">
+<title>proc~put_string&#45;&gt;proc~quoted</title>
+<path fill="none" stroke="#000000" d="M499.62,-452.7C520.07,-466.49 555.42,-487.78 589.56,-496.13 644.04,-509.47 709.33,-500.09 749.44,-491.55"/>
+<polygon fill="#000000" stroke="#000000" points="750.07,-494.99 759.07,-489.39 748.55,-488.16 750.07,-494.99"/>
+</g>
+<!-- proc~put_strings&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge32" class="edge">
+<title>proc~put_strings&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M548.63,-397.58C600.3,-397.2 671.81,-389.75 724.83,-357.13 749.36,-342.05 766.94,-313.26 776.98,-292.94"/>
+<polygon fill="#000000" stroke="#000000" points="780.08,-294.58 781.13,-284.04 773.73,-291.62 780.08,-294.58"/>
+</g>
+<!-- proc~put_strings&#45;&gt;proc~start_value -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge34" class="edge">
+<title>proc~put_strings&#45;&gt;proc~start_value</title>
+<path fill="none" stroke="#000000" d="M517.77,-381.64C529.46,-377.04 542.32,-371.39 553.56,-365.13 582.52,-349 612.83,-325.98 632.94,-309.71"/>
+<polygon fill="#000000" stroke="#000000" points="634.99,-312.55 640.51,-303.5 630.55,-307.14 634.99,-312.55"/>
+</g>
+<!-- proc~put_strings&#45;&gt;proc~quoted -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge33" class="edge">
+<title>proc~put_strings&#45;&gt;proc~quoted</title>
+<path fill="none" stroke="#000000" d="M525.72,-406.74C585.77,-424.08 692.84,-455 749.41,-471.33"/>
+<polygon fill="#000000" stroke="#000000" points="748.32,-474.66 758.9,-474.07 750.26,-467.93 748.32,-474.66"/>
+</g>
+<!-- proc~start_value&#45;&gt;proc~emit -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge35" class="edge">
+<title>proc~start_value&#45;&gt;proc~emit</title>
+<path fill="none" stroke="#000000" d="M692.67,-284.78C710.13,-282.06 731.36,-278.76 749.24,-275.98"/>
+<polygon fill="#000000" stroke="#000000" points="749.59,-279.47 758.93,-274.47 748.51,-272.55 749.59,-279.47"/>
+</g>
+<!-- proc~start_value&#45;&gt;proc~quoted -->
+<g id="proc~~terrain_export_web~~CallsGraph_edge36" class="edge">
+<title>proc~start_value&#45;&gt;proc~quoted</title>
+<path fill="none" stroke="#000000" d="M666.64,-302.73C688.13,-334.81 745.13,-419.9 772.19,-460.28"/>
+<polygon fill="#000000" stroke="#000000" points="769.21,-462.12 777.68,-468.48 775.03,-458.23 769.21,-462.12"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocterrain_export_webCallsGraph = svgPanZoom('#procterrain_export_webCallsGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CallsGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CallsGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">subroutine </span><span class="n">terrain_export_web</span><span class="p">(</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">class</span><span class="p">(</span><span class="n">TerrainBody</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">self</span><span class="w"></span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="n">WebWriter</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">),</span><span class="w"> </span><span class="k">target</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">w</span><span class="w">         </span><span class="c">!! the page being written</span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">warn_once</span><span class="p">(</span><span class="s1">&#39;terrain:&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">(),</span><span class="w"> </span><span class="s1">&#39;terrain &quot;&#39;</span><span class="o">//</span><span class="n">self</span><span class="p">%</span><span class="n">name</span><span class="p">()</span><span class="o">//</span><span class="s1">&#39;&quot;: drawn as a plain sphere&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">begin_object</span><span class="p">()</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;sphere&#39;</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;radii&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">self</span><span class="p">%</span><span class="n">body_radius</span><span class="p">())</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;center&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">])</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;q&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">])</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="mf">0.55_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.55_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">0.55_wp</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="p">])</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">put</span><span class="p">(</span><span class="s1">&#39;texture&#39;</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="k">call </span><span class="n">w</span><span class="p">%</span><span class="n">end_object</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="k">end subroutine </span><span class="n">terrain_export_web</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

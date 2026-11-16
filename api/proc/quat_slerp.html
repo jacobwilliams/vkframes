@@ -1,0 +1,1238 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>quat_slerp &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>quat_slerp
+      <small>Function</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.0% of total for procedures.">24 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_math.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_math.f90.html'>vkf_math.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_math.html'>vkf_math</a></li>
+            <li class="breadcrumb-item active" aria-current="page">quat_slerp</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+    <div class="card card-primary">
+      <div class="card-header text-left"><h3 class="card-title">Source Code</h3></div>
+      <div class="list-group">
+        <a class="list-group-item" href="../proc/quat_slerp.html#src">quat_slerp</a>
+      </div>
+    </div>
+
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>public pure function quat_slerp(t, a, b) result(q)  
+</h2>
+    
+
+    <p>Spherical linear interpolation from <code>a</code> (t = 0) to <code>b</code> (t = 1), along the
+shorter arc; linear when the two are nearly equal. As OpenSceneGraph's
+osg::Quat::slerp, which OpenFrames' TrajectoryFollower uses, except that
+the linear case is normalized (OSG's isn't: a quaternion a little short of
+unit length, its rotation matrix then also scaling, by a millionth for
+attitudes 0.25 deg apart, a kilometre at the Moon's distance).</p>
+
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~61"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+                <p>the fraction of the way (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~47"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(4)</td>
+            <td>
+                <p>unit quaternions [x, y, z, w] at t = 0 and t = 1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(4)</td>
+            <td>
+                <p>unit quaternions [x, y, z, w] at t = 0 and t = 1</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <h3>Return Value
+        <small>
+          <span class="anchor" id="variable-q~27"></span>
+          real(kind=wp), (4)
+        </small>
+      </h3>
+      
+    <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: proc~~quat_slerp~~CalledByGraph Pages: 1 -->
+<svg id="procquat_slerpCalledByGraph" width="641pt" height="168pt"
+ viewBox="0.00 0.00 641.00 168.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~quat_slerp~~CalledByGraph" class="graph" transform="scale(0.312805 0.312805) rotate(0) translate(4 532.27)">
+<title>proc~~quat_slerp~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-532.27 2045.2,-532.27 2045.2,4 -4,4"/>
+<!-- proc~quat_slerp -->
+<g id="proc~~quat_slerp~~CalledByGraph_node1" class="node">
+<title>proc~quat_slerp</title>
+<polygon fill="none" stroke="black" points="2041.2,-389.27 1974.18,-389.27 1974.18,-365 2041.2,-365 2041.2,-389.27"/>
+<text xml:space="preserve" text-anchor="middle" x="2007.69" y="-373.53" font-family="Helvetica,sans-Serif" font-size="10.50">quat_slerp</text>
+</g>
+<!-- proc~camera_between -->
+<g id="proc~~quat_slerp~~CalledByGraph_node2" class="node">
+<title>proc~camera_between</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node2"><a xlink:href="../proc/camera_between.html" xlink:title="camera_between">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1895.06,-410.27 1791.29,-410.27 1791.29,-386 1895.06,-386 1895.06,-410.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1843.17" y="-394.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">camera_between</text>
+</a>
+</g>
+</g>
+<!-- proc~camera_between&#45;&gt;proc~quat_slerp -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge1" class="edge">
+<title>proc~camera_between&#45;&gt;proc~quat_slerp</title>
+<path fill="none" stroke="#000000" d="M1895.15,-391.55C1916.72,-388.76 1941.63,-385.54 1962.42,-382.86"/>
+<polygon fill="#000000" stroke="#000000" points="1962.85,-386.33 1972.32,-381.58 1961.95,-379.39 1962.85,-386.33"/>
+</g>
+<!-- proc~interpolate_attitude -->
+<g id="proc~~quat_slerp~~CalledByGraph_node3" class="node">
+<title>proc~interpolate_attitude</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node3"><a xlink:href="../proc/interpolate_attitude.html" xlink:title="interpolate_attitude">
+<polygon fill="#d9534f" stroke="#d9534f" points="1901.43,-368.27 1784.91,-368.27 1784.91,-344 1901.43,-344 1901.43,-368.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1843.17" y="-352.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpolate_attitude</text>
+</a>
+</g>
+</g>
+<!-- proc~interpolate_attitude&#45;&gt;proc~quat_slerp -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge2" class="edge">
+<title>proc~interpolate_attitude&#45;&gt;proc~quat_slerp</title>
+<path fill="none" stroke="#000000" d="M1901.93,-363.6C1921.78,-366.16 1943.68,-368.99 1962.3,-371.4"/>
+<polygon fill="#000000" stroke="#000000" points="1961.85,-374.87 1972.21,-372.68 1962.75,-367.93 1961.85,-374.87"/>
+</g>
+<!-- proc~fly -->
+<g id="proc~~quat_slerp~~CalledByGraph_node4" class="node">
+<title>proc~fly</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node4"><a xlink:href="../proc/fly.html" xlink:title="fly">
+<polygon fill="#d9534f" stroke="#d9534f" points="1642.28,-429.27 1588.28,-429.27 1588.28,-405 1642.28,-405 1642.28,-429.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1615.28" y="-413.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fly</text>
+</a>
+</g>
+</g>
+<!-- proc~fly&#45;&gt;proc~camera_between -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge3" class="edge">
+<title>proc~fly&#45;&gt;proc~camera_between</title>
+<path fill="none" stroke="#000000" d="M1642.63,-414.92C1675.93,-412.12 1734.32,-407.21 1779.36,-403.42"/>
+<polygon fill="#000000" stroke="#000000" points="1779.61,-406.91 1789.28,-402.58 1779.03,-399.93 1779.61,-406.91"/>
+</g>
+<!-- proc~state_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_node5" class="node">
+<title>proc~state_at</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node5"><a xlink:href="../proc/state_at.html" xlink:title="TrajectoryFollower%state_at">
+<polygon fill="#d9534f" stroke="#d9534f" points="1695.66,-368.27 1534.89,-368.27 1534.89,-344 1695.66,-344 1695.66,-368.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1615.28" y="-352.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%state_at</text>
+</a>
+</g>
+</g>
+<!-- proc~state_at&#45;&gt;proc~interpolate_attitude -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge4" class="edge">
+<title>proc~state_at&#45;&gt;proc~interpolate_attitude</title>
+<path fill="none" stroke="#000000" d="M1695.92,-356.13C1721.14,-356.13 1748.79,-356.13 1773.2,-356.13"/>
+<polygon fill="#000000" stroke="#000000" points="1773.02,-359.64 1783.02,-356.14 1773.02,-352.64 1773.02,-359.64"/>
+</g>
+<!-- proc~followed_pose -->
+<g id="proc~~quat_slerp~~CalledByGraph_node6" class="node">
+<title>proc~followed_pose</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node6"><a xlink:href="../proc/followed_pose.html" xlink:title="followed_pose">
+<polygon fill="#d9534f" stroke="#d9534f" points="1447.89,-326.27 1360.62,-326.27 1360.62,-302 1447.89,-302 1447.89,-326.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1404.26" y="-310.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">followed_pose</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~state_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge6" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~state_at</title>
+<path fill="none" stroke="#000000" d="M1448.31,-322.79C1474.81,-328.11 1509.49,-335.08 1540.3,-341.27"/>
+<polygon fill="#000000" stroke="#000000" points="1539.47,-344.67 1549.96,-343.21 1540.85,-337.81 1539.47,-344.67"/>
+</g>
+<!-- proc~world_matrix_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_node19" class="node">
+<title>proc~world_matrix_at</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node19"><a xlink:href="../proc/world_matrix_at.html" xlink:title="ReferenceFrame%world_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1712.16,-268.27 1518.39,-268.27 1518.39,-244 1712.16,-244 1712.16,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1615.28" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%world_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~followed_pose&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge22" class="edge">
+<title>proc~followed_pose&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M1448.31,-302.19C1480.01,-293.39 1523.42,-281.35 1557.89,-271.78"/>
+<polygon fill="#000000" stroke="#000000" points="1558.58,-275.22 1567.28,-269.17 1556.71,-268.48 1558.58,-275.22"/>
+</g>
+<!-- proc~place_camera -->
+<g id="proc~~quat_slerp~~CalledByGraph_node7" class="node">
+<title>proc~place_camera</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node7"><a xlink:href="../proc/place_camera.html" xlink:title="place_camera">
+<polygon fill="#d9534f" stroke="#d9534f" points="1447.89,-448.27 1360.62,-448.27 1360.62,-424 1447.89,-424 1447.89,-448.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1404.26" y="-432.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">place_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~place_camera&#45;&gt;proc~fly -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge5" class="edge">
+<title>proc~place_camera&#45;&gt;proc~fly</title>
+<path fill="none" stroke="#000000" d="M1448.31,-432.22C1486.16,-428.78 1540.69,-423.82 1576.78,-420.54"/>
+<polygon fill="#000000" stroke="#000000" points="1576.66,-424.07 1586.3,-419.68 1576.02,-417.1 1576.66,-424.07"/>
+</g>
+<!-- proc~update~2 -->
+<g id="proc~~quat_slerp~~CalledByGraph_node8" class="node">
+<title>proc~update~2</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node8"><a xlink:href="../proc/update~2.html" xlink:title="TrajectoryFollower%update">
+<polygon fill="#d9534f" stroke="#d9534f" points="1482.39,-368.27 1326.12,-368.27 1326.12,-344 1482.39,-344 1482.39,-368.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1404.26" y="-352.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TrajectoryFollower%update</text>
+</a>
+</g>
+</g>
+<!-- proc~update~2&#45;&gt;proc~state_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge7" class="edge">
+<title>proc~update~2&#45;&gt;proc~state_at</title>
+<path fill="none" stroke="#000000" d="M1482.79,-356.13C1495.95,-356.13 1509.72,-356.13 1523.2,-356.13"/>
+<polygon fill="#000000" stroke="#000000" points="1522.91,-359.64 1532.91,-356.14 1522.91,-352.64 1522.91,-359.64"/>
+</g>
+<!-- proc~frame -->
+<g id="proc~~quat_slerp~~CalledByGraph_node9" class="node">
+<title>proc~frame</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node9"><a xlink:href="../proc/frame.html" xlink:title="WindowProxy%frame">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1278.5,-486.27 1155.23,-486.27 1155.23,-462 1278.5,-462 1278.5,-486.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1216.86" y="-470.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%frame</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~place_camera -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge10" class="edge">
+<title>proc~frame&#45;&gt;proc~place_camera</title>
+<path fill="none" stroke="#000000" d="M1278.82,-461.64C1301.47,-457 1326.99,-451.77 1349,-447.26"/>
+<polygon fill="#000000" stroke="#000000" points="1349.58,-450.71 1358.67,-445.27 1348.17,-443.85 1349.58,-450.71"/>
+</g>
+<!-- proc~local_matrix_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_node10" class="node">
+<title>proc~local_matrix_at</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node10"><a xlink:href="../proc/local_matrix_at.html" xlink:title="ReferenceFrame%local_matrix_at">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1938.18,-268.27 1748.16,-268.27 1748.16,-244 1938.18,-244 1938.18,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1843.17" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%local_matrix_at</text>
+</a>
+</g>
+</g>
+<!-- proc~local_matrix_at&#45;&gt;proc~followed_pose -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge8" class="edge">
+<title>proc~local_matrix_at&#45;&gt;proc~followed_pose</title>
+<path fill="none" stroke="#000000" d="M1807.93,-268.76C1782.01,-277.74 1745.33,-289.21 1712.16,-295.13 1624.77,-310.73 1521.42,-314.08 1459.72,-314.52"/>
+<polygon fill="#000000" stroke="#000000" points="1459.82,-311.02 1449.84,-314.56 1459.85,-318.02 1459.82,-311.02"/>
+</g>
+<!-- proc~update -->
+<g id="proc~~quat_slerp~~CalledByGraph_node11" class="node">
+<title>proc~update</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node11"><a xlink:href="../proc/update.html" xlink:title="ReferenceFrame%update">
+<polygon fill="#d9534f" stroke="#d9534f" points="1290.12,-360.27 1143.6,-360.27 1143.6,-336 1290.12,-336 1290.12,-360.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1216.86" y="-344.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReferenceFrame%update</text>
+</a>
+</g>
+</g>
+<!-- proc~update&#45;&gt;proc~followed_pose -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge9" class="edge">
+<title>proc~update&#45;&gt;proc~followed_pose</title>
+<path fill="none" stroke="#000000" d="M1286.63,-335.52C1307.22,-331.75 1329.5,-327.66 1349.01,-324.08"/>
+<polygon fill="#000000" stroke="#000000" points="1349.46,-327.56 1358.66,-322.31 1348.19,-320.67 1349.46,-327.56"/>
+</g>
+<!-- proc~update&#45;&gt;proc~update~2 -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge11" class="edge">
+<title>proc~update&#45;&gt;proc~update~2</title>
+<path fill="none" stroke="#000000" d="M1290.6,-351.27C1298.46,-351.61 1306.52,-351.96 1314.54,-352.31"/>
+<polygon fill="#000000" stroke="#000000" points="1314.18,-355.79 1324.32,-352.73 1314.48,-348.8 1314.18,-355.79"/>
+</g>
+<!-- proc~drawable_update -->
+<g id="proc~~quat_slerp~~CalledByGraph_node12" class="node">
+<title>proc~drawable_update</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node12"><a xlink:href="../proc/drawable_update.html" xlink:title="DrawableTrajectory%drawable_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="1107.6,-444.27 890.58,-444.27 890.58,-420 1107.6,-420 1107.6,-444.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-428.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DrawableTrajectory%drawable_update</text>
+</a>
+</g>
+</g>
+<!-- proc~drawable_update&#45;&gt;proc~update -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge16" class="edge">
+<title>proc~drawable_update&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M1080.47,-419.51C1089.75,-417.16 1098.97,-414.38 1107.6,-411.13 1137.29,-399.96 1168.3,-381.06 1189.49,-366.87"/>
+<polygon fill="#000000" stroke="#000000" points="1191.23,-369.92 1197.52,-361.39 1187.28,-364.14 1191.23,-369.92"/>
+</g>
+<!-- proc~export_web~2 -->
+<g id="proc~~quat_slerp~~CalledByGraph_node13" class="node">
+<title>proc~export_web~2</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node13"><a xlink:href="../proc/export_web~2.html" xlink:title="WindowProxy%export_web">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1074.97,-196.27 923.2,-196.27 923.2,-172 1074.97,-172 1074.97,-196.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-180.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%export_web</text>
+</a>
+</g>
+</g>
+<!-- proc~export_web~2&#45;&gt;proc~update -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge17" class="edge">
+<title>proc~export_web~2&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M1027.36,-196.56C1049.85,-207.4 1082.08,-224.29 1107.6,-243.13 1112.39,-246.67 1165.11,-298.27 1195.17,-327.79"/>
+<polygon fill="#000000" stroke="#000000" points="1192.68,-330.25 1202.26,-334.76 1197.58,-325.25 1192.68,-330.25"/>
+</g>
+<!-- proc~write_web_page -->
+<g id="proc~~quat_slerp~~CalledByGraph_node24" class="node">
+<title>proc~write_web_page</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node24"><a xlink:href="../proc/write_web_page.html" xlink:title="write_web_page">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1265.37,-196.27 1168.35,-196.27 1168.35,-172 1265.37,-172 1265.37,-196.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1216.86" y="-180.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_web_page</text>
+</a>
+</g>
+</g>
+<!-- proc~export_web~2&#45;&gt;proc~write_web_page -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge29" class="edge">
+<title>proc~export_web~2&#45;&gt;proc~write_web_page</title>
+<path fill="none" stroke="#000000" d="M1075.25,-184.13C1101.94,-184.13 1131.57,-184.13 1156.73,-184.13"/>
+<polygon fill="#000000" stroke="#000000" points="1156.43,-187.64 1166.43,-184.14 1156.43,-180.64 1156.43,-187.64"/>
+</g>
+<!-- proc~fm_update -->
+<g id="proc~~quat_slerp~~CalledByGraph_node14" class="node">
+<title>proc~fm_update</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node14"><a xlink:href="../proc/fm_update.html" xlink:title="FrameManager%fm_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="1078.72,-402.27 919.45,-402.27 919.45,-378 1078.72,-378 1078.72,-402.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-386.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">FrameManager%fm_update</text>
+</a>
+</g>
+</g>
+<!-- proc~fm_update&#45;&gt;proc~update -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge18" class="edge">
+<title>proc~fm_update&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M1064.83,-377.53C1088.51,-372.92 1115.51,-367.67 1140.08,-362.89"/>
+<polygon fill="#000000" stroke="#000000" points="1140.53,-366.36 1149.68,-361.02 1139.2,-359.49 1140.53,-366.36"/>
+</g>
+<!-- proc~resize -->
+<g id="proc~~quat_slerp~~CalledByGraph_node15" class="node">
+<title>proc~resize</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node15"><a xlink:href="../proc/resize.html" xlink:title="WindowProxy%resize">
+<polygon fill="#d9534f" stroke="#d9534f" points="1059.97,-528.27 938.2,-528.27 938.2,-504 1059.97,-504 1059.97,-528.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-512.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%resize</text>
+</a>
+</g>
+</g>
+<!-- proc~resize&#45;&gt;proc~frame -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge12" class="edge">
+<title>proc~resize&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M1060.19,-504.44C1086.17,-499.38 1116.77,-493.42 1143.94,-488.13"/>
+<polygon fill="#000000" stroke="#000000" points="1144.32,-491.63 1153.47,-486.28 1142.98,-484.75 1144.32,-491.63"/>
+</g>
+<!-- proc~run -->
+<g id="proc~~quat_slerp~~CalledByGraph_node16" class="node">
+<title>proc~run</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node16"><a xlink:href="../proc/run.html" xlink:title="WindowProxy%run">
+<polygon fill="#d9534f" stroke="#d9534f" points="1053.6,-486.27 944.58,-486.27 944.58,-462 1053.6,-462 1053.6,-486.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-470.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%run</text>
+</a>
+</g>
+</g>
+<!-- proc~run&#45;&gt;proc~frame -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge13" class="edge">
+<title>proc~run&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M1053.98,-474.13C1081.09,-474.13 1114.33,-474.13 1143.61,-474.13"/>
+<polygon fill="#000000" stroke="#000000" points="1143.53,-477.64 1153.53,-474.14 1143.53,-470.64 1143.53,-477.64"/>
+</g>
+<!-- proc~sphere_update -->
+<g id="proc~~quat_slerp~~CalledByGraph_node17" class="node">
+<title>proc~sphere_update</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node17"><a xlink:href="../proc/sphere_update.html" xlink:title="Sphere%sphere_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="1067.85,-360.27 930.33,-360.27 930.33,-336 1067.85,-336 1067.85,-360.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-344.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Sphere%sphere_update</text>
+</a>
+</g>
+</g>
+<!-- proc~sphere_update&#45;&gt;proc~update -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge19" class="edge">
+<title>proc~sphere_update&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M1068.06,-348.13C1088.38,-348.13 1110.89,-348.13 1132.09,-348.13"/>
+<polygon fill="#000000" stroke="#000000" points="1131.86,-351.64 1141.86,-348.14 1131.86,-344.64 1131.86,-351.64"/>
+</g>
+<!-- proc~terrain_update -->
+<g id="proc~~quat_slerp~~CalledByGraph_node18" class="node">
+<title>proc~terrain_update</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node18"><a xlink:href="../proc/terrain_update.html" xlink:title="TerrainBody%terrain_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="1080.97,-318.27 917.2,-318.27 917.2,-294 1080.97,-294 1080.97,-318.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-302.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">TerrainBody%terrain_update</text>
+</a>
+</g>
+</g>
+<!-- proc~terrain_update&#45;&gt;proc~update -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge20" class="edge">
+<title>proc~terrain_update&#45;&gt;proc~update</title>
+<path fill="none" stroke="#000000" d="M1064.83,-318.74C1088.51,-323.35 1115.51,-328.6 1140.08,-333.38"/>
+<polygon fill="#000000" stroke="#000000" points="1139.2,-336.78 1149.68,-335.25 1140.53,-329.91 1139.2,-336.78"/>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~local_matrix_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge14" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~local_matrix_at</title>
+<path fill="none" stroke="#000000" d="M1712.4,-256.13C1720.4,-256.13 1728.51,-256.13 1736.58,-256.13"/>
+<polygon fill="#000000" stroke="#000000" points="1736.41,-259.64 1746.41,-256.14 1736.41,-252.64 1736.41,-259.64"/>
+</g>
+<!-- proc~world_matrix_at&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge23" class="edge">
+<title>proc~world_matrix_at&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M1579.97,-268.52C1568.47,-277.41 1580.24,-286.27 1615.28,-286.27 1634.43,-286.27 1646.63,-283.62 1651.88,-279.76"/>
+<polygon fill="#000000" stroke="#000000" points="1655.38,-279.55 1650.75,-270.02 1648.42,-280.36 1655.38,-279.55"/>
+</g>
+<!-- proc~write_track -->
+<g id="proc~~quat_slerp~~CalledByGraph_node20" class="node">
+<title>proc~write_track</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node20"><a xlink:href="../proc/write_track.html" xlink:title="write_track">
+<polygon fill="#d9534f" stroke="#d9534f" points="1650.29,-221.27 1580.27,-221.27 1580.27,-197 1650.29,-197 1650.29,-221.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1615.28" y="-205.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_track</text>
+</a>
+</g>
+</g>
+<!-- proc~write_track&#45;&gt;proc~local_matrix_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge15" class="edge">
+<title>proc~write_track&#45;&gt;proc~local_matrix_at</title>
+<path fill="none" stroke="#000000" d="M1650.58,-216.27C1682.29,-222.87 1730.4,-232.88 1770.47,-241.22"/>
+<polygon fill="#000000" stroke="#000000" points="1769.56,-244.6 1780.06,-243.21 1770.98,-237.75 1769.56,-244.6"/>
+</g>
+<!-- proc~data_to_shown -->
+<g id="proc~~quat_slerp~~CalledByGraph_node21" class="node">
+<title>proc~data_to_shown</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node21"><a xlink:href="../proc/data_to_shown.html" xlink:title="data_to_shown">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1449.39,-268.27 1359.12,-268.27 1359.12,-244 1449.39,-244 1449.39,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1404.26" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">data_to_shown</text>
+</a>
+</g>
+</g>
+<!-- proc~data_to_shown&#45;&gt;proc~world_matrix_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge21" class="edge">
+<title>proc~data_to_shown&#45;&gt;proc~world_matrix_at</title>
+<path fill="none" stroke="#000000" d="M1449.84,-256.13C1466.65,-256.13 1486.6,-256.13 1506.69,-256.13"/>
+<polygon fill="#000000" stroke="#000000" points="1506.67,-259.64 1516.67,-256.14 1506.67,-252.64 1506.67,-259.64"/>
+</g>
+<!-- proc~write_web_frames -->
+<g id="proc~~quat_slerp~~CalledByGraph_node22" class="node">
+<title>proc~write_web_frames</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node22"><a xlink:href="../proc/write_web_frames.html" xlink:title="write_web_frames">
+<polygon fill="#d9534f" stroke="#d9534f" points="1458.02,-210.27 1350.5,-210.27 1350.5,-186 1458.02,-186 1458.02,-210.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1404.26" y="-194.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_web_frames</text>
+</a>
+</g>
+</g>
+<!-- proc~write_web_frames&#45;&gt;proc~write_track -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge24" class="edge">
+<title>proc~write_web_frames&#45;&gt;proc~write_track</title>
+<path fill="none" stroke="#000000" d="M1458.27,-200.92C1492.31,-202.72 1536.06,-205.02 1568.57,-206.73"/>
+<polygon fill="#000000" stroke="#000000" points="1568.31,-210.22 1578.48,-207.25 1568.68,-203.23 1568.31,-210.22"/>
+</g>
+<!-- proc~to_shown -->
+<g id="proc~~quat_slerp~~CalledByGraph_node23" class="node">
+<title>proc~to_shown</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node23"><a xlink:href="../proc/to_shown.html" xlink:title="to_shown">
+<polygon fill="#d9534f" stroke="#d9534f" points="1247.37,-268.27 1186.35,-268.27 1186.35,-244 1247.37,-244 1247.37,-268.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1216.86" y="-252.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">to_shown</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown&#45;&gt;proc~data_to_shown -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge25" class="edge">
+<title>proc~to_shown&#45;&gt;proc~data_to_shown</title>
+<path fill="none" stroke="#000000" d="M1247.65,-256.13C1274.47,-256.13 1314.61,-256.13 1347.4,-256.13"/>
+<polygon fill="#000000" stroke="#000000" points="1347.15,-259.64 1357.15,-256.14 1347.15,-252.64 1347.15,-259.64"/>
+</g>
+<!-- proc~write_web_page&#45;&gt;proc~write_web_frames -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge26" class="edge">
+<title>proc~write_web_page&#45;&gt;proc~write_web_frames</title>
+<path fill="none" stroke="#000000" d="M1265.6,-187.74C1287.93,-189.43 1314.83,-191.46 1338.92,-193.28"/>
+<polygon fill="#000000" stroke="#000000" points="1338.37,-196.75 1348.61,-194.01 1338.9,-189.77 1338.37,-196.75"/>
+</g>
+<!-- proc~art_point_between -->
+<g id="proc~~quat_slerp~~CalledByGraph_node25" class="node">
+<title>proc~art_point_between</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node25"><a xlink:href="../proc/art_point_between.html" xlink:title="art_point_between">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="850.08,-108.27 740.31,-108.27 740.31,-84 850.08,-84 850.08,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="795.19" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">art_point_between</text>
+</a>
+</g>
+</g>
+<!-- proc~art_point_between&#45;&gt;proc~to_shown -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge27" class="edge">
+<title>proc~art_point_between&#45;&gt;proc~to_shown</title>
+<path fill="none" stroke="#000000" d="M808.14,-108.41C820.17,-120.91 839.11,-140.97 854.58,-159.13 871.42,-178.9 868.2,-191.99 890.58,-205.13 902.76,-212.29 1090.12,-238.81 1174.83,-250.52"/>
+<polygon fill="#000000" stroke="#000000" points="1174.19,-253.96 1184.57,-251.86 1175.14,-247.03 1174.19,-253.96"/>
+</g>
+<!-- proc~stop_web_recording -->
+<g id="proc~~quat_slerp~~CalledByGraph_node26" class="node">
+<title>proc~stop_web_recording</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node26"><a xlink:href="../proc/stop_web_recording.html" xlink:title="WindowProxy%stop_web_recording">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1097.47,-110.27 900.7,-110.27 900.7,-86 1097.47,-86 1097.47,-110.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-94.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%stop_web_recording</text>
+</a>
+</g>
+</g>
+<!-- proc~stop_web_recording&#45;&gt;proc~write_web_page -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge30" class="edge">
+<title>proc~stop_web_recording&#45;&gt;proc~write_web_page</title>
+<path fill="none" stroke="#000000" d="M1031.46,-110.64C1069.02,-125.61 1132.05,-150.73 1173.8,-167.37"/>
+<polygon fill="#000000" stroke="#000000" points="1172.46,-170.6 1183.04,-171.05 1175.05,-164.1 1172.46,-170.6"/>
+</g>
+<!-- proc~to_shown_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_node27" class="node">
+<title>proc~to_shown_at</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node27"><a xlink:href="../proc/to_shown_at.html" xlink:title="to_shown_at">
+<polygon fill="#d9534f" stroke="#d9534f" points="1037.47,-276.27 960.7,-276.27 960.7,-252 1037.47,-252 1037.47,-276.27"/>
+<text xml:space="preserve" text-anchor="middle" x="999.09" y="-260.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">to_shown_at</text>
+</a>
+</g>
+</g>
+<!-- proc~to_shown_at&#45;&gt;proc~to_shown -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge28" class="edge">
+<title>proc~to_shown_at&#45;&gt;proc~to_shown</title>
+<path fill="none" stroke="#000000" d="M1037.67,-262.74C1075.94,-261.32 1135.12,-259.13 1174.65,-257.66"/>
+<polygon fill="#000000" stroke="#000000" points="1174.62,-261.17 1184.48,-257.3 1174.36,-254.17 1174.62,-261.17"/>
+</g>
+<!-- proc~art_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_node28" class="node">
+<title>proc~art_point</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node28"><a xlink:href="../proc/art_point.html" xlink:title="art_point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="824.58,-192.27 765.81,-192.27 765.81,-168 824.58,-168 824.58,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="795.19" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">art_point</text>
+</a>
+</g>
+</g>
+<!-- proc~art_point&#45;&gt;proc~to_shown_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge35" class="edge">
+<title>proc~art_point&#45;&gt;proc~to_shown_at</title>
+<path fill="none" stroke="#000000" d="M812.72,-192.53C830.91,-205.63 861.46,-226.02 890.58,-238.13 909.17,-245.87 930.56,-251.63 949.35,-255.73"/>
+<polygon fill="#000000" stroke="#000000" points="948.37,-259.1 958.88,-257.71 949.8,-252.25 948.37,-259.1"/>
+</g>
+<!-- proc~art_points -->
+<g id="proc~~quat_slerp~~CalledByGraph_node29" class="node">
+<title>proc~art_points</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node29"><a xlink:href="../proc/art_points.html" xlink:title="art_points">
+<polygon fill="#d9534f" stroke="#d9534f" points="638.68,-370.27 574.66,-370.27 574.66,-346 638.68,-346 638.68,-370.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-354.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">art_points</text>
+</a>
+</g>
+</g>
+<!-- proc~art_points&#45;&gt;proc~to_shown_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge36" class="edge">
+<title>proc~art_points&#45;&gt;proc~to_shown_at</title>
+<path fill="none" stroke="#000000" d="M639.02,-360.86C688.07,-363.7 784.58,-363.43 854.58,-326.13 875.98,-314.73 869.55,-297.22 890.58,-285.13 908.21,-275 929.87,-269.67 949.11,-266.9"/>
+<polygon fill="#000000" stroke="#000000" points="949.42,-270.39 958.92,-265.7 948.56,-263.44 949.42,-270.39"/>
+</g>
+<!-- proc~close -->
+<g id="proc~~quat_slerp~~CalledByGraph_node30" class="node">
+<title>proc~close</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node30"><a xlink:href="../proc/close.html" xlink:title="WindowProxy%close">
+<polygon fill="#d9534f" stroke="#d9534f" points="854.58,-66.27 735.81,-66.27 735.81,-42 854.58,-42 854.58,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="795.19" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%close</text>
+</a>
+</g>
+</g>
+<!-- proc~close&#45;&gt;proc~stop_web_recording -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge34" class="edge">
+<title>proc~close&#45;&gt;proc~stop_web_recording</title>
+<path fill="none" stroke="#000000" d="M854.05,-66.74C877.49,-71.85 904.75,-77.79 929.21,-83.12"/>
+<polygon fill="#000000" stroke="#000000" points="928.23,-86.49 938.75,-85.2 929.72,-79.65 928.23,-86.49"/>
+</g>
+<!-- proc~export_segments -->
+<g id="proc~~quat_slerp~~CalledByGraph_node31" class="node">
+<title>proc~export_segments</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node31"><a xlink:href="../proc/export_segments.html" xlink:title="export_segments">
+<polygon fill="#d9534f" stroke="#d9534f" points="846.33,-441.27 744.06,-441.27 744.06,-417 846.33,-417 846.33,-441.27"/>
+<text xml:space="preserve" text-anchor="middle" x="795.19" y="-425.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">export_segments</text>
+</a>
+</g>
+</g>
+<!-- proc~export_segments&#45;&gt;proc~to_shown_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge37" class="edge">
+<title>proc~export_segments&#45;&gt;proc~to_shown_at</title>
+<path fill="none" stroke="#000000" d="M808.44,-416.69C821.05,-403.43 840.76,-381.47 854.58,-360.13 874.68,-329.1 861.33,-307.75 890.58,-285.13 907.06,-272.4 929.11,-266.72 948.95,-264.38"/>
+<polygon fill="#000000" stroke="#000000" points="949.17,-267.88 958.81,-263.5 948.54,-260.9 949.17,-267.88"/>
+</g>
+<!-- proc~intermediates_by_time -->
+<g id="proc~~quat_slerp~~CalledByGraph_node32" class="node">
+<title>proc~intermediates_by_time</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node32"><a xlink:href="../proc/intermediates_by_time.html" xlink:title="intermediates_by_time">
+<polygon fill="#d9534f" stroke="#d9534f" points="673.18,-24.27 540.16,-24.27 540.16,0 673.18,0 673.18,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">intermediates_by_time</text>
+</a>
+</g>
+</g>
+<!-- proc~intermediates_by_time&#45;&gt;proc~art_point_between -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge31" class="edge">
+<title>proc~intermediates_by_time&#45;&gt;proc~art_point_between</title>
+<path fill="none" stroke="#000000" d="M673.63,-21.71C682.8,-24.58 691.8,-28.3 699.81,-33.14 720.86,-45.84 715.57,-61.18 735.81,-75.14 737.57,-76.35 739.41,-77.5 741.31,-78.6"/>
+<polygon fill="#000000" stroke="#000000" points="739.29,-81.5 749.8,-82.89 742.46,-75.25 739.29,-81.5"/>
+</g>
+<!-- proc~marker_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_node33" class="node">
+<title>proc~marker_point</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node33"><a xlink:href="../proc/marker_point.html" xlink:title="marker_point">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="648.06,-276.27 565.29,-276.27 565.29,-252 648.06,-252 648.06,-276.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-260.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">marker_point</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_point&#45;&gt;proc~to_shown_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge38" class="edge">
+<title>proc~marker_point&#45;&gt;proc~to_shown_at</title>
+<path fill="none" stroke="#000000" d="M648.35,-264.13C720.61,-264.13 871.08,-264.13 948.99,-264.13"/>
+<polygon fill="#000000" stroke="#000000" points="948.88,-267.64 958.88,-264.14 948.88,-260.64 948.88,-267.64"/>
+</g>
+<!-- proc~marker_point&#45;&gt;proc~art_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge43" class="edge">
+<title>proc~marker_point&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M648.13,-258.22C664.59,-254.97 683.53,-250.14 699.81,-243.13 725.58,-232.05 751.89,-213.8 770.16,-199.79"/>
+<polygon fill="#000000" stroke="#000000" points="772.28,-202.57 777.99,-193.65 767.96,-197.06 772.28,-202.57"/>
+</g>
+<!-- proc~update_ribbon_tail -->
+<g id="proc~~quat_slerp~~CalledByGraph_node34" class="node">
+<title>proc~update_ribbon_tail</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node34"><a xlink:href="../proc/update_ribbon_tail.html" xlink:title="RibbonArtist%update_ribbon_tail">
+<polygon fill="#d9534f" stroke="#d9534f" points="699.43,-66.27 513.91,-66.27 513.91,-42 699.43,-42 699.43,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">RibbonArtist%update_ribbon_tail</text>
+</a>
+</g>
+</g>
+<!-- proc~update_ribbon_tail&#45;&gt;proc~art_point_between -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge32" class="edge">
+<title>proc~update_ribbon_tail&#45;&gt;proc~art_point_between</title>
+<path fill="none" stroke="#000000" d="M663.64,-66.74C684.1,-71.34 707.44,-76.6 728.66,-81.38"/>
+<polygon fill="#000000" stroke="#000000" points="727.87,-84.79 738.4,-83.57 729.41,-77.96 727.87,-84.79"/>
+</g>
+<!-- proc~update_ribbon_tail&#45;&gt;proc~art_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge44" class="edge">
+<title>proc~update_ribbon_tail&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M682.24,-66.69C688.39,-69.04 694.33,-71.83 699.81,-75.14 720.86,-87.84 719.45,-98.78 735.81,-117.14 748.59,-131.47 763.28,-147.32 774.73,-159.54"/>
+<polygon fill="#000000" stroke="#000000" points="771.98,-161.72 781.38,-166.61 777.08,-156.93 771.98,-161.72"/>
+</g>
+<!-- proc~update_tail -->
+<g id="proc~~quat_slerp~~CalledByGraph_node35" class="node">
+<title>proc~update_tail</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node35"><a xlink:href="../proc/update_tail.html" xlink:title="CurveArtist%update_tail">
+<polygon fill="#d9534f" stroke="#d9534f" points="676.56,-108.27 536.79,-108.27 536.79,-84 676.56,-84 676.56,-108.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-92.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">CurveArtist%update_tail</text>
+</a>
+</g>
+</g>
+<!-- proc~update_tail&#45;&gt;proc~art_point_between -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge33" class="edge">
+<title>proc~update_tail&#45;&gt;proc~art_point_between</title>
+<path fill="none" stroke="#000000" d="M676.86,-96.14C693.79,-96.14 711.86,-96.14 728.62,-96.14"/>
+<polygon fill="#000000" stroke="#000000" points="728.47,-99.64 738.47,-96.14 728.47,-92.64 728.47,-99.64"/>
+</g>
+<!-- proc~update_tail&#45;&gt;proc~art_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge45" class="edge">
+<title>proc~update_tail&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M676,-108.75C684.17,-111.12 692.27,-113.89 699.81,-117.14 725.58,-128.22 751.89,-146.47 770.16,-160.48"/>
+<polygon fill="#000000" stroke="#000000" points="767.96,-163.21 777.99,-166.62 772.28,-157.7 767.96,-163.21"/>
+</g>
+<!-- proc~write_segments -->
+<g id="proc~~quat_slerp~~CalledByGraph_node36" class="node">
+<title>proc~write_segments</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node36"><a xlink:href="../proc/write_segments.html" xlink:title="write_segments">
+<polygon fill="#d9534f" stroke="#d9534f" points="842.58,-317.27 747.81,-317.27 747.81,-293 842.58,-293 842.58,-317.27"/>
+<text xml:space="preserve" text-anchor="middle" x="795.19" y="-301.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_segments</text>
+</a>
+</g>
+</g>
+<!-- proc~write_segments&#45;&gt;proc~to_shown_at -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge39" class="edge">
+<title>proc~write_segments&#45;&gt;proc~to_shown_at</title>
+<path fill="none" stroke="#000000" d="M842.73,-295.12C857.97,-291.88 874.99,-288.31 890.58,-285.13 909.72,-281.24 930.8,-277.09 949.19,-273.52"/>
+<polygon fill="#000000" stroke="#000000" points="949.61,-277 958.76,-271.66 948.28,-270.13 949.61,-277"/>
+</g>
+<!-- proc~add_intermediates -->
+<g id="proc~~quat_slerp~~CalledByGraph_node37" class="node">
+<title>proc~add_intermediates</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node37"><a xlink:href="../proc/add_intermediates.html" xlink:title="add_intermediates">
+<polygon fill="#d9534f" stroke="#d9534f" points="432.54,-173.27 321.27,-173.27 321.27,-149 432.54,-149 432.54,-173.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-157.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">add_intermediates</text>
+</a>
+</g>
+</g>
+<!-- proc~add_intermediates&#45;&gt;proc~intermediates_by_time -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge52" class="edge">
+<title>proc~add_intermediates&#45;&gt;proc~intermediates_by_time</title>
+<path fill="none" stroke="#000000" d="M432.96,-159.68C448.93,-156.76 465.32,-151 477.54,-140.13 515.03,-106.79 476.32,-66.79 513.54,-33.14 518.37,-28.76 523.92,-25.24 529.85,-22.42"/>
+<polygon fill="#000000" stroke="#000000" points="530.76,-25.83 538.73,-18.85 528.14,-19.33 530.76,-25.83"/>
+</g>
+<!-- proc~intermediates_by_data -->
+<g id="proc~~quat_slerp~~CalledByGraph_node43" class="node">
+<title>proc~intermediates_by_data</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node43"><a xlink:href="../proc/intermediates_by_data.html" xlink:title="intermediates_by_data">
+<polygon fill="#d9534f" stroke="#d9534f" points="673.18,-234.27 540.16,-234.27 540.16,-210 673.18,-210 673.18,-234.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-218.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">intermediates_by_data</text>
+</a>
+</g>
+</g>
+<!-- proc~add_intermediates&#45;&gt;proc~intermediates_by_data -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge61" class="edge">
+<title>proc~add_intermediates&#45;&gt;proc~intermediates_by_data</title>
+<path fill="none" stroke="#000000" d="M430.72,-173.7C445.94,-177.65 462.49,-182.26 477.54,-187.13 493.87,-192.42 497.13,-196.1 513.54,-201.13 520.13,-203.15 527.03,-205.08 533.98,-206.88"/>
+<polygon fill="#000000" stroke="#000000" points="532.86,-210.21 543.41,-209.24 534.56,-203.42 532.86,-210.21"/>
+</g>
+<!-- proc~intermediates_by_distance -->
+<g id="proc~~quat_slerp~~CalledByGraph_node44" class="node">
+<title>proc~intermediates_by_distance</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node44"><a xlink:href="../proc/intermediates_by_distance.html" xlink:title="intermediates_by_distance">
+<polygon fill="#d9534f" stroke="#d9534f" points="683.68,-192.27 529.66,-192.27 529.66,-168 683.68,-168 683.68,-192.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-176.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">intermediates_by_distance</text>
+</a>
+</g>
+</g>
+<!-- proc~add_intermediates&#45;&gt;proc~intermediates_by_distance -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge62" class="edge">
+<title>proc~add_intermediates&#45;&gt;proc~intermediates_by_distance</title>
+<path fill="none" stroke="#000000" d="M432.75,-165.71C458.32,-167.84 489.37,-170.43 518.07,-172.83"/>
+<polygon fill="#000000" stroke="#000000" points="517.59,-176.3 527.84,-173.64 518.17,-169.32 517.59,-176.3"/>
+</g>
+<!-- proc~curve_pick -->
+<g id="proc~~quat_slerp~~CalledByGraph_node38" class="node">
+<title>proc~curve_pick</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node38"><a xlink:href="../proc/curve_pick.html" xlink:title="curve_pick">
+<polygon fill="#d9534f" stroke="#d9534f" points="640.93,-150.27 572.41,-150.27 572.41,-126 640.93,-126 640.93,-150.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-134.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">curve_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~curve_pick&#45;&gt;proc~art_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge40" class="edge">
+<title>proc~curve_pick&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M641.02,-145.64C672.84,-152.81 720.8,-163.61 754.56,-171.21"/>
+<polygon fill="#000000" stroke="#000000" points="753.42,-174.54 763.94,-173.32 754.96,-167.71 753.42,-174.54"/>
+</g>
+<!-- proc~drawable_export_web -->
+<g id="proc~~quat_slerp~~CalledByGraph_node39" class="node">
+<title>proc~drawable_export_web</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node39"><a xlink:href="../proc/drawable_export_web.html" xlink:title="DrawableTrajectory%drawable_export_web">
+<polygon fill="#d9534f" stroke="#d9534f" points="240.27,-400.27 0,-400.27 0,-376 240.27,-376 240.27,-400.27"/>
+<text xml:space="preserve" text-anchor="middle" x="120.13" y="-384.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DrawableTrajectory%drawable_export_web</text>
+</a>
+</g>
+</g>
+<!-- proc~drawable_export_web&#45;&gt;proc~export_segments -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge51" class="edge">
+<title>proc~drawable_export_web&#45;&gt;proc~export_segments</title>
+<path fill="none" stroke="#000000" d="M137.64,-400.72C164.79,-420.55 221.34,-458.22 276.27,-472.13 442.26,-514.19 646.79,-470.26 741.49,-444.72"/>
+<polygon fill="#000000" stroke="#000000" points="742.3,-448.12 751.02,-442.1 740.45,-441.37 742.3,-448.12"/>
+</g>
+<!-- proc~export_curve -->
+<g id="proc~~quat_slerp~~CalledByGraph_node40" class="node">
+<title>proc~export_curve</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node40"><a xlink:href="../proc/export_curve.html" xlink:title="export_curve">
+<polygon fill="#d9534f" stroke="#d9534f" points="417.16,-379.27 336.64,-379.27 336.64,-355 417.16,-355 417.16,-379.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-363.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">export_curve</text>
+</a>
+</g>
+</g>
+<!-- proc~drawable_export_web&#45;&gt;proc~export_curve -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge58" class="edge">
+<title>proc~drawable_export_web&#45;&gt;proc~export_curve</title>
+<path fill="none" stroke="#000000" d="M240.69,-378.28C270.35,-375.84 300.59,-373.34 324.92,-371.34"/>
+<polygon fill="#000000" stroke="#000000" points="325.18,-374.83 334.85,-370.52 324.6,-367.85 325.18,-374.83"/>
+</g>
+<!-- proc~export_markers -->
+<g id="proc~~quat_slerp~~CalledByGraph_node41" class="node">
+<title>proc~export_markers</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node41"><a xlink:href="../proc/export_markers.html" xlink:title="export_markers">
+<polygon fill="#d9534f" stroke="#d9534f" points="424.29,-295.27 329.52,-295.27 329.52,-271 424.29,-271 424.29,-295.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-279.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">export_markers</text>
+</a>
+</g>
+</g>
+<!-- proc~drawable_export_web&#45;&gt;proc~export_markers -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge59" class="edge">
+<title>proc~drawable_export_web&#45;&gt;proc~export_markers</title>
+<path fill="none" stroke="#000000" d="M139.88,-375.65C168.23,-357.33 224.23,-323.25 276.27,-304.13 289.56,-299.25 304.29,-295.37 318.25,-292.34"/>
+<polygon fill="#000000" stroke="#000000" points="318.66,-295.83 327.76,-290.39 317.26,-288.97 318.66,-295.83"/>
+</g>
+<!-- proc~export_ribbon -->
+<g id="proc~~quat_slerp~~CalledByGraph_node42" class="node">
+<title>proc~export_ribbon</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node42"><a xlink:href="../proc/export_ribbon.html" xlink:title="export_ribbon">
+<polygon fill="#d9534f" stroke="#d9534f" points="419.41,-421.27 334.39,-421.27 334.39,-397 419.41,-397 419.41,-421.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-405.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">export_ribbon</text>
+</a>
+</g>
+</g>
+<!-- proc~drawable_export_web&#45;&gt;proc~export_ribbon -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge60" class="edge">
+<title>proc~drawable_export_web&#45;&gt;proc~export_ribbon</title>
+<path fill="none" stroke="#000000" d="M240.69,-397.99C269.46,-400.36 298.77,-402.78 322.72,-404.75"/>
+<polygon fill="#000000" stroke="#000000" points="322.25,-408.22 332.5,-405.56 322.83,-401.25 322.25,-408.22"/>
+</g>
+<!-- proc~export_curve&#45;&gt;proc~art_points -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge46" class="edge">
+<title>proc~export_curve&#45;&gt;proc~art_points</title>
+<path fill="none" stroke="#000000" d="M417.58,-365.57C458.27,-363.96 521.34,-361.47 563.07,-359.82"/>
+<polygon fill="#000000" stroke="#000000" points="563.13,-363.32 572.98,-359.43 562.85,-356.32 563.13,-363.32"/>
+</g>
+<!-- proc~export_markers&#45;&gt;proc~marker_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge53" class="edge">
+<title>proc~export_markers&#45;&gt;proc~marker_point</title>
+<path fill="none" stroke="#000000" d="M424.55,-279.24C462.1,-276.11 514.85,-271.71 553.74,-268.47"/>
+<polygon fill="#000000" stroke="#000000" points="553.64,-271.99 563.31,-267.67 553.06,-265.01 553.64,-271.99"/>
+</g>
+<!-- proc~export_ribbon&#45;&gt;proc~art_points -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge47" class="edge">
+<title>proc~export_ribbon&#45;&gt;proc~art_points</title>
+<path fill="none" stroke="#000000" d="M419.64,-400.55C437.49,-396.83 458.56,-392.36 477.54,-388.13 506.26,-381.75 538.51,-374.19 563.47,-368.27"/>
+<polygon fill="#000000" stroke="#000000" points="564,-371.74 572.91,-366.02 562.38,-364.93 564,-371.74"/>
+</g>
+<!-- proc~intermediates_by_data&#45;&gt;proc~art_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge41" class="edge">
+<title>proc~intermediates_by_data&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M663.64,-209.53C692.8,-202.97 727.79,-195.09 754.2,-189.14"/>
+<polygon fill="#000000" stroke="#000000" points="754.86,-192.58 763.84,-186.97 753.32,-185.75 754.86,-192.58"/>
+</g>
+<!-- proc~intermediates_by_distance&#45;&gt;proc~art_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge42" class="edge">
+<title>proc~intermediates_by_distance&#45;&gt;proc~art_point</title>
+<path fill="none" stroke="#000000" d="M684.08,-180.13C708.13,-180.13 733.73,-180.13 754.19,-180.13"/>
+<polygon fill="#000000" stroke="#000000" points="754.08,-183.64 764.08,-180.14 754.08,-176.64 754.08,-183.64"/>
+</g>
+<!-- proc~marker_update -->
+<g id="proc~~quat_slerp~~CalledByGraph_node45" class="node">
+<title>proc~marker_update</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node45"><a xlink:href="../proc/marker_update.html" xlink:title="MarkerArtist%marker_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="204.27,-213.27 36,-213.27 36,-189 204.27,-189 204.27,-213.27"/>
+<text xml:space="preserve" text-anchor="middle" x="120.13" y="-197.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">MarkerArtist%marker_update</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_update&#45;&gt;proc~marker_point -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge54" class="edge">
+<title>proc~marker_update&#45;&gt;proc~marker_point</title>
+<path fill="none" stroke="#000000" d="M204.68,-193.77C278.32,-190.02 387.58,-191.23 477.54,-220.13 495.62,-225.94 496.02,-235.81 513.54,-243.13 526.19,-248.43 540.4,-252.5 553.81,-255.59"/>
+<polygon fill="#000000" stroke="#000000" points="552.84,-258.96 563.35,-257.64 554.31,-252.12 552.84,-258.96"/>
+</g>
+<!-- proc~marker_update&#45;&gt;proc~add_intermediates -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge56" class="edge">
+<title>proc~marker_update&#45;&gt;proc~add_intermediates</title>
+<path fill="none" stroke="#000000" d="M201.4,-188.53C236.38,-183.04 276.89,-176.68 310.07,-171.47"/>
+<polygon fill="#000000" stroke="#000000" points="310.19,-175 319.53,-169.99 309.11,-168.08 310.19,-175"/>
+</g>
+<!-- proc~update_bounds -->
+<g id="proc~~quat_slerp~~CalledByGraph_node47" class="node">
+<title>proc~update_bounds</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node47"><a xlink:href="../proc/update_bounds.html" xlink:title="update_bounds">
+<polygon fill="#d9534f" stroke="#d9534f" points="423.54,-253.27 330.27,-253.27 330.27,-229 423.54,-229 423.54,-253.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-237.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">update_bounds</text>
+</a>
+</g>
+</g>
+<!-- proc~marker_update&#45;&gt;proc~update_bounds -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge63" class="edge">
+<title>proc~marker_update&#45;&gt;proc~update_bounds</title>
+<path fill="none" stroke="#000000" d="M201.4,-213.74C239.4,-219.7 283.91,-226.69 318.47,-232.12"/>
+<polygon fill="#000000" stroke="#000000" points="317.87,-235.57 328.29,-233.66 318.96,-228.65 317.87,-235.57"/>
+</g>
+<!-- proc~segment_update -->
+<g id="proc~~quat_slerp~~CalledByGraph_node46" class="node">
+<title>proc~segment_update</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node46"><a xlink:href="../proc/segment_update.html" xlink:title="SegmentArtist%segment_update">
+<polygon fill="#d9534f" stroke="#d9534f" points="699.81,-318.27 513.54,-318.27 513.54,-294 699.81,-294 699.81,-318.27"/>
+<text xml:space="preserve" text-anchor="middle" x="606.67" y="-302.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">SegmentArtist%segment_update</text>
+</a>
+</g>
+</g>
+<!-- proc~segment_update&#45;&gt;proc~write_segments -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge55" class="edge">
+<title>proc~segment_update&#45;&gt;proc~write_segments</title>
+<path fill="none" stroke="#000000" d="M700.12,-305.64C712.48,-305.57 724.87,-305.51 736.4,-305.44"/>
+<polygon fill="#000000" stroke="#000000" points="736.13,-308.95 746.11,-305.39 736.09,-301.95 736.13,-308.95"/>
+</g>
+<!-- proc~update_bounds&#45;&gt;proc~art_points -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge48" class="edge">
+<title>proc~update_bounds&#45;&gt;proc~art_points</title>
+<path fill="none" stroke="#000000" d="M423.91,-242.7C442.05,-245.28 462.19,-250.79 477.54,-262.13 504.1,-281.76 488.17,-305.99 513.54,-327.13 527.68,-338.92 546.51,-346.29 563.45,-350.87"/>
+<polygon fill="#000000" stroke="#000000" points="562.23,-354.18 572.78,-353.14 563.89,-347.38 562.23,-354.18"/>
+</g>
+<!-- proc~write_curve -->
+<g id="proc~~quat_slerp~~CalledByGraph_node48" class="node">
+<title>proc~write_curve</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node48"><a xlink:href="../proc/write_curve.html" xlink:title="CurveArtist%write_curve">
+<polygon fill="#d9534f" stroke="#d9534f" points="447.91,-337.27 305.89,-337.27 305.89,-313 447.91,-313 447.91,-337.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-321.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">CurveArtist%write_curve</text>
+</a>
+</g>
+</g>
+<!-- proc~write_curve&#45;&gt;proc~art_points -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge49" class="edge">
+<title>proc~write_curve&#45;&gt;proc~art_points</title>
+<path fill="none" stroke="#000000" d="M448.41,-335.35C486,-340.8 530.99,-347.31 563.21,-351.98"/>
+<polygon fill="#000000" stroke="#000000" points="562.56,-355.43 572.96,-353.4 563.57,-348.5 562.56,-355.43"/>
+</g>
+<!-- proc~write_ribbon -->
+<g id="proc~~quat_slerp~~CalledByGraph_node49" class="node">
+<title>proc~write_ribbon</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node49"><a xlink:href="../proc/write_ribbon.html" xlink:title="RibbonArtist%write_ribbon">
+<polygon fill="#d9534f" stroke="#d9534f" points="453.16,-463.27 300.64,-463.27 300.64,-439 453.16,-439 453.16,-463.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-447.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">RibbonArtist%write_ribbon</text>
+</a>
+</g>
+</g>
+<!-- proc~write_ribbon&#45;&gt;proc~art_points -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge50" class="edge">
+<title>proc~write_ribbon&#45;&gt;proc~art_points</title>
+<path fill="none" stroke="#000000" d="M450.49,-438.55C459.72,-436.16 468.94,-433.37 477.54,-430.13 514.06,-416.39 552.68,-393.38 577.85,-377.07"/>
+<polygon fill="#000000" stroke="#000000" points="579.75,-380.01 586.18,-371.58 575.91,-374.16 579.75,-380.01"/>
+</g>
+<!-- proc~drawable_pick -->
+<g id="proc~~quat_slerp~~CalledByGraph_node50" class="node">
+<title>proc~drawable_pick</title>
+<g id="a_proc~~quat_slerp~~CalledByGraph_node50"><a xlink:href="../proc/drawable_pick.html" xlink:title="DrawableTrajectory%drawable_pick">
+<polygon fill="#d9534f" stroke="#d9534f" points="477.54,-131.27 276.27,-131.27 276.27,-107 477.54,-107 477.54,-131.27"/>
+<text xml:space="preserve" text-anchor="middle" x="376.9" y="-115.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DrawableTrajectory%drawable_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~drawable_pick&#45;&gt;proc~curve_pick -->
+<g id="proc~~quat_slerp~~CalledByGraph_edge57" class="edge">
+<title>proc~drawable_pick&#45;&gt;proc~curve_pick</title>
+<path fill="none" stroke="#000000" d="M477.81,-127.47C506.75,-129.88 536.91,-132.4 560.66,-134.38"/>
+<polygon fill="#000000" stroke="#000000" points="560.35,-137.87 570.61,-135.21 560.94,-130.89 560.35,-137.87"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panprocquat_slerpCalledByGraph = svgPanZoom('#procquat_slerpCalledByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+
+
+    
+    
+
+    
+    
+
+
+
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl codehilite"><pre><span></span><span class="w">    </span><span class="k">pure function </span><span class="n">quat_slerp</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="k">result</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w">           </span><span class="c">!! the fraction of the way (0 to 1)</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w">  </span><span class="c">!! unit quaternions [x, y, z, w] at t = 0 and t = 1</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">q</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span><span class="w"> </span><span class="k">parameter</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="nb">epsilon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.00001_wp</span><span class="w"></span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">cos_omega</span><span class="p">,</span><span class="w"> </span><span class="n">omega</span><span class="p">,</span><span class="w"> </span><span class="n">sin_omega</span><span class="p">,</span><span class="w"> </span><span class="n">scale_a</span><span class="p">,</span><span class="w"> </span><span class="n">scale_b</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">cos_omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">dot_product</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"></span>
+<span class="w">        </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cos_omega</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0.0_wp</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">cos_omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">cos_omega</span><span class="w"></span>
+<span class="w">            </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">b</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        if</span><span class="w"> </span><span class="p">(</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">cos_omega</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nb">epsilon</span><span class="p">)</span><span class="w"> </span><span class="k">then</span>
+<span class="k">            </span><span class="n">omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">acos</span><span class="p">(</span><span class="n">cos_omega</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">sin_omega</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="n">scale_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sin</span><span class="p">((</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">omega</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sin_omega</span><span class="w"></span>
+<span class="w">            </span><span class="n">scale_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">sin</span><span class="p">(</span><span class="n">t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">omega</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sin_omega</span><span class="w"></span>
+<span class="w">        </span><span class="k">else</span><span class="w">                                </span><span class="c">! (close: linear, then normalized below)</span>
+<span class="w">            </span><span class="n">scale_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t</span><span class="w"></span>
+<span class="w">            </span><span class="n">scale_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="w"></span>
+<span class="w">        </span><span class="k">end if</span>
+<span class="k">        </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scale_a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">scale_b</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">to</span><span class="w"></span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="mf">1.0_wp</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">cos_omega</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="nb">epsilon</span><span class="p">)</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">q</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nb">norm2</span><span class="p">(</span><span class="n">q</span><span class="p">)</span><span class="w">   </span><span class="c">! (a unit quaternion: a rotation, not also a scale)</span>
+<span class="w">    </span><span class="k">end function </span><span class="n">quat_slerp</span><span class="w"></span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

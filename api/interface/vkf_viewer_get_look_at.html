@@ -1,0 +1,721 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_viewer_get_look_at &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_viewer_get_look_at
+      <small>Interface</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.8% of total for procedures.">692 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_layer.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_layer.f90.html'>vkf_layer.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/vkf_layer.html'>vkf_layer</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_viewer_get_look_at</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+    <em>None</em>
+
+  </div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      <h2>interface</h2>
+      
+      <br>
+    <div class="card">
+      <div class="card-header">
+  <h3 class="card-title">Called by</h3>
+      </div>
+      <div class="card-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: interface~~vkf_viewer_get_look_at~~CalledByGraph Pages: 1 -->
+<svg id="interfacevkf_viewer_get_look_atCalledByGraph" width="641pt" height="92pt"
+ viewBox="0.00 0.00 641.00 92.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph" class="graph" transform="scale(0.391462 0.391462) rotate(0) translate(4 232.13)">
+<title>interface~~vkf_viewer_get_look_at~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-232.13 1633.45,-232.13 1633.45,4 -4,4"/>
+<!-- interface~vkf_viewer_get_look_at -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node1" class="node">
+<title>interface~vkf_viewer_get_look_at</title>
+<polygon fill="none" stroke="black" points="1629.45,-130.27 1495.68,-130.27 1495.68,-106 1629.45,-106 1629.45,-130.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1562.56" y="-114.54" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_viewer_get_look_at</text>
+</g>
+<!-- proc~get_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node2" class="node">
+<title>proc~get_camera</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node2"><a xlink:href="../proc/get_camera.html" xlink:title="WindowProxy%get_camera">
+<polygon fill="#d9534f" stroke="#d9534f" points="1459.68,-130.27 1304.91,-130.27 1304.91,-106 1459.68,-106 1459.68,-130.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1382.29" y="-114.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%get_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~get_camera&#45;&gt;interface~vkf_viewer_get_look_at -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge1" class="edge">
+<title>proc~get_camera&#45;&gt;interface~vkf_viewer_get_look_at</title>
+<path fill="none" stroke="#000000" d="M1459.93,-118.14C1467.86,-118.14 1475.92,-118.14 1483.85,-118.14"/>
+<polygon fill="#000000" stroke="#000000" points="1483.85,-121.64 1493.85,-118.14 1483.85,-114.64 1483.85,-121.64"/>
+</g>
+<!-- proc~place_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node3" class="node">
+<title>proc~place_camera</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node3"><a xlink:href="../proc/place_camera.html" xlink:title="place_camera">
+<polygon fill="#d9534f" stroke="#d9534f" points="539.58,-220.27 452.31,-220.27 452.31,-196 539.58,-196 539.58,-220.27"/>
+<text xml:space="preserve" text-anchor="middle" x="495.94" y="-204.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">place_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~place_camera&#45;&gt;interface~vkf_viewer_get_look_at -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge2" class="edge">
+<title>proc~place_camera&#45;&gt;interface~vkf_viewer_get_look_at</title>
+<path fill="none" stroke="#000000" d="M540.01,-212.38C603.43,-218.25 725.72,-228.13 829.98,-228.13 829.98,-228.13 829.98,-228.13 1222.9,-228.13 1340.7,-228.13 1470.78,-167.19 1529.58,-136.02"/>
+<polygon fill="#000000" stroke="#000000" points="1530.9,-139.29 1538.05,-131.47 1527.59,-133.12 1530.9,-139.29"/>
+</g>
+<!-- proc~set_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node4" class="node">
+<title>proc~set_camera</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node4"><a xlink:href="../proc/set_camera.html" xlink:title="WindowProxy%set_camera">
+<polygon fill="#d9534f" stroke="#d9534f" points="1458.93,-88.27 1305.66,-88.27 1305.66,-64 1458.93,-64 1458.93,-88.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1382.29" y="-72.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%set_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~set_camera&#45;&gt;interface~vkf_viewer_get_look_at -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge3" class="edge">
+<title>proc~set_camera&#45;&gt;interface~vkf_viewer_get_look_at</title>
+<path fill="none" stroke="#000000" d="M1436.78,-88.74C1455.73,-93.2 1477.25,-98.27 1497.03,-102.93"/>
+<polygon fill="#000000" stroke="#000000" points="1496.11,-106.31 1506.64,-105.2 1497.71,-99.5 1496.11,-106.31"/>
+</g>
+<!-- proc~frame -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node5" class="node">
+<title>proc~frame</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node5"><a xlink:href="../proc/frame.html" xlink:title="WindowProxy%frame">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="281.04,-179.27 157.77,-179.27 157.77,-155 281.04,-155 281.04,-179.27"/>
+<text xml:space="preserve" text-anchor="middle" x="219.4" y="-163.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%frame</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~place_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge6" class="edge">
+<title>proc~frame&#45;&gt;proc~place_camera</title>
+<path fill="none" stroke="#000000" d="M281.33,-176.23C329.1,-183.37 394.95,-193.2 440.87,-200.06"/>
+<polygon fill="#000000" stroke="#000000" points="440.18,-203.5 450.59,-201.51 441.22,-196.57 440.18,-203.5"/>
+</g>
+<!-- proc~dispatch_events -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node22" class="node">
+<title>proc~dispatch_events</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node22"><a xlink:href="../proc/dispatch_events.html" xlink:title="dispatch_events">
+<polygon fill="#d9534f" stroke="#d9534f" points="414.06,-159.27 317.04,-159.27 317.04,-135 414.06,-135 414.06,-159.27"/>
+<text xml:space="preserve" text-anchor="middle" x="365.55" y="-143.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dispatch_events</text>
+</a>
+</g>
+</g>
+<!-- proc~frame&#45;&gt;proc~dispatch_events -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge25" class="edge">
+<title>proc~frame&#45;&gt;proc~dispatch_events</title>
+<path fill="none" stroke="#000000" d="M281.54,-158.65C289.47,-157.55 297.6,-156.42 305.5,-155.33"/>
+<polygon fill="#000000" stroke="#000000" points="305.96,-158.8 315.38,-153.96 304.99,-151.86 305.96,-158.8"/>
+</g>
+<!-- proc~view_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node6" class="node">
+<title>proc~view_camera</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node6"><a xlink:href="../proc/view_camera.html" xlink:title="view_camera">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1262.91,-130.27 1180.89,-130.27 1180.89,-106 1262.91,-106 1262.91,-130.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1221.9" y="-114.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">view_camera</text>
+</a>
+</g>
+</g>
+<!-- proc~view_camera&#45;&gt;proc~get_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge4" class="edge">
+<title>proc~view_camera&#45;&gt;proc~get_camera</title>
+<path fill="none" stroke="#000000" d="M1263.28,-118.14C1272.57,-118.14 1282.8,-118.14 1293.25,-118.14"/>
+<polygon fill="#000000" stroke="#000000" points="1293.11,-121.64 1303.11,-118.14 1293.11,-114.64 1293.11,-121.64"/>
+</g>
+<!-- proc~write_web_view -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node7" class="node">
+<title>proc~write_web_view</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node7"><a xlink:href="../proc/write_web_view.html" xlink:title="write_web_view">
+<polygon fill="#d9534f" stroke="#d9534f" points="1268.91,-67.27 1174.89,-67.27 1174.89,-43 1268.91,-43 1268.91,-67.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1221.9" y="-51.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_web_view</text>
+</a>
+</g>
+</g>
+<!-- proc~write_web_view&#45;&gt;proc~get_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge5" class="edge">
+<title>proc~write_web_view&#45;&gt;proc~get_camera</title>
+<path fill="none" stroke="#000000" d="M1244.27,-67.62C1260.5,-76.71 1283.59,-88.85 1304.91,-97.14 1309.5,-98.92 1314.31,-100.62 1319.18,-102.22"/>
+<polygon fill="#000000" stroke="#000000" points="1317.84,-105.47 1328.43,-105.11 1319.93,-98.79 1317.84,-105.47"/>
+</g>
+<!-- proc~cursor_ray -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node8" class="node">
+<title>proc~cursor_ray</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node8"><a xlink:href="../proc/cursor_ray.html" xlink:title="WindowProxy%cursor_ray">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="904.62,-170.27 757.35,-170.27 757.35,-146 904.62,-146 904.62,-170.27"/>
+<text xml:space="preserve" text-anchor="middle" x="830.98" y="-154.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%cursor_ray</text>
+</a>
+</g>
+</g>
+<!-- proc~cursor_ray&#45;&gt;proc~view_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge9" class="edge">
+<title>proc~cursor_ray&#45;&gt;proc~view_camera</title>
+<path fill="none" stroke="#000000" d="M904.96,-157.48C967.41,-156.01 1059.53,-151.64 1138.89,-139.13 1148.91,-137.56 1159.49,-135.3 1169.6,-132.85"/>
+<polygon fill="#000000" stroke="#000000" points="1170.45,-136.25 1179.29,-130.4 1168.73,-129.46 1170.45,-136.25"/>
+</g>
+<!-- proc~resize -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node9" class="node">
+<title>proc~resize</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node9"><a xlink:href="../proc/resize.html" xlink:title="WindowProxy%resize">
+<polygon fill="#d9534f" stroke="#d9534f" points="121.77,-200.27 0,-200.27 0,-176 121.77,-176 121.77,-200.27"/>
+<text xml:space="preserve" text-anchor="middle" x="60.88" y="-184.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%resize</text>
+</a>
+</g>
+</g>
+<!-- proc~resize&#45;&gt;proc~frame -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge7" class="edge">
+<title>proc~resize&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M121.95,-180.08C129.86,-179.01 138.04,-177.92 146.12,-176.83"/>
+<polygon fill="#000000" stroke="#000000" points="146.52,-180.31 155.96,-175.51 145.59,-173.37 146.52,-180.31"/>
+</g>
+<!-- proc~run -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node10" class="node">
+<title>proc~run</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node10"><a xlink:href="../proc/run.html" xlink:title="WindowProxy%run">
+<polygon fill="#d9534f" stroke="#d9534f" points="115.39,-158.27 6.37,-158.27 6.37,-134 115.39,-134 115.39,-158.27"/>
+<text xml:space="preserve" text-anchor="middle" x="60.88" y="-142.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%run</text>
+</a>
+</g>
+</g>
+<!-- proc~run&#45;&gt;proc~frame -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge8" class="edge">
+<title>proc~run&#45;&gt;proc~frame</title>
+<path fill="none" stroke="#000000" d="M115.75,-153.36C125.62,-154.69 136.07,-156.09 146.37,-157.47"/>
+<polygon fill="#000000" stroke="#000000" points="145.58,-160.9 155.96,-158.76 146.51,-153.96 145.58,-160.9"/>
+</g>
+<!-- proc~screen_position -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node11" class="node">
+<title>proc~screen_position</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node11"><a xlink:href="../proc/screen_position.html" xlink:title="WindowProxy%screen_position">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1138.89,-88.27 965.37,-88.27 965.37,-64 1138.89,-64 1138.89,-88.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1052.13" y="-72.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%screen_position</text>
+</a>
+</g>
+</g>
+<!-- proc~screen_position&#45;&gt;proc~view_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge10" class="edge">
+<title>proc~screen_position&#45;&gt;proc~view_camera</title>
+<path fill="none" stroke="#000000" d="M1104.85,-88.71C1116.08,-91.46 1127.89,-94.38 1138.89,-97.14 1148.73,-99.6 1159.23,-102.26 1169.31,-104.84"/>
+<polygon fill="#000000" stroke="#000000" points="1168.44,-108.23 1178.99,-107.31 1170.17,-101.44 1168.44,-108.23"/>
+</g>
+<!-- proc~window_pick -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node12" class="node">
+<title>proc~window_pick</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node12"><a xlink:href="../proc/window_pick.html" xlink:title="WindowProxy%window_pick">
+<polygon fill="#d9534f" stroke="#d9534f" points="1131.01,-130.27 973.24,-130.27 973.24,-106 1131.01,-106 1131.01,-130.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1052.13" y="-114.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%window_pick</text>
+</a>
+</g>
+</g>
+<!-- proc~window_pick&#45;&gt;proc~view_camera -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge11" class="edge">
+<title>proc~window_pick&#45;&gt;proc~view_camera</title>
+<path fill="none" stroke="#000000" d="M1131.12,-118.14C1144.09,-118.14 1157.25,-118.14 1169.35,-118.14"/>
+<polygon fill="#000000" stroke="#000000" points="1169.07,-121.64 1179.07,-118.14 1169.07,-114.64 1169.07,-121.64"/>
+</g>
+<!-- proc~write_web_page -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node13" class="node">
+<title>proc~write_web_page</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node13"><a xlink:href="../proc/write_web_page.html" xlink:title="write_web_page">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1100.64,-46.27 1003.62,-46.27 1003.62,-22 1100.64,-22 1100.64,-46.27"/>
+<text xml:space="preserve" text-anchor="middle" x="1052.13" y="-30.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">write_web_page</text>
+</a>
+</g>
+</g>
+<!-- proc~write_web_page&#45;&gt;proc~write_web_view -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge12" class="edge">
+<title>proc~write_web_page&#45;&gt;proc~write_web_view</title>
+<path fill="none" stroke="#000000" d="M1100.76,-40.1C1120.2,-42.53 1142.87,-45.37 1163.24,-47.92"/>
+<polygon fill="#000000" stroke="#000000" points="1162.74,-51.38 1173.1,-49.15 1163.61,-44.44 1162.74,-51.38"/>
+</g>
+<!-- proc~drag_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node14" class="node">
+<title>proc~drag_handle</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node14"><a xlink:href="../proc/drag_handle.html" xlink:title="drag_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="676.35,-200.27 598.08,-200.27 598.08,-176 676.35,-176 676.35,-200.27"/>
+<text xml:space="preserve" text-anchor="middle" x="637.21" y="-184.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">drag_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~drag_handle&#45;&gt;proc~cursor_ray -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge13" class="edge">
+<title>proc~drag_handle&#45;&gt;proc~cursor_ray</title>
+<path fill="none" stroke="#000000" d="M676.56,-182.14C696.56,-179.01 721.86,-175.05 746.12,-171.25"/>
+<polygon fill="#000000" stroke="#000000" points="746.33,-174.76 755.67,-169.76 745.25,-167.85 746.33,-174.76"/>
+</g>
+<!-- proc~export_web~2 -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node15" class="node">
+<title>proc~export_web~2</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node15"><a xlink:href="../proc/export_web~2.html" xlink:title="WindowProxy%export_web">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="906.87,-66.27 755.1,-66.27 755.1,-42 906.87,-42 906.87,-66.27"/>
+<text xml:space="preserve" text-anchor="middle" x="830.98" y="-50.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%export_web</text>
+</a>
+</g>
+</g>
+<!-- proc~export_web~2&#45;&gt;proc~write_web_page -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge16" class="edge">
+<title>proc~export_web~2&#45;&gt;proc~write_web_page</title>
+<path fill="none" stroke="#000000" d="M907.1,-47.28C934.83,-44.75 965.85,-41.92 991.98,-39.53"/>
+<polygon fill="#000000" stroke="#000000" points="992.08,-43.04 1001.72,-38.64 991.45,-36.07 992.08,-43.04"/>
+</g>
+<!-- proc~grab_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node16" class="node">
+<title>proc~grab_handle</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node16"><a xlink:href="../proc/grab_handle.html" xlink:title="grab_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="676.35,-158.27 598.08,-158.27 598.08,-134 676.35,-134 676.35,-158.27"/>
+<text xml:space="preserve" text-anchor="middle" x="637.21" y="-142.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">grab_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~grab_handle&#45;&gt;proc~cursor_ray -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge14" class="edge">
+<title>proc~grab_handle&#45;&gt;proc~cursor_ray</title>
+<path fill="none" stroke="#000000" d="M676.56,-148.53C696.47,-149.78 721.63,-151.35 745.79,-152.87"/>
+<polygon fill="#000000" stroke="#000000" points="745.46,-156.35 755.66,-153.48 745.9,-149.37 745.46,-156.35"/>
+</g>
+<!-- proc~hover_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node17" class="node">
+<title>proc~hover_handle</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node17"><a xlink:href="../proc/hover_handle.html" xlink:title="hover_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="873.12,-118.27 788.85,-118.27 788.85,-94 873.12,-94 873.12,-118.27"/>
+<text xml:space="preserve" text-anchor="middle" x="830.98" y="-102.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">hover_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~hover_handle&#45;&gt;proc~window_pick -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge15" class="edge">
+<title>proc~hover_handle&#45;&gt;proc~window_pick</title>
+<path fill="none" stroke="#000000" d="M873.46,-108.41C898.44,-109.77 931.24,-111.57 961.84,-113.25"/>
+<polygon fill="#000000" stroke="#000000" points="961.32,-116.72 971.49,-113.77 961.7,-109.73 961.32,-116.72"/>
+</g>
+<!-- proc~stop_web_recording -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node18" class="node">
+<title>proc~stop_web_recording</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node18"><a xlink:href="../proc/stop_web_recording.html" xlink:title="WindowProxy%stop_web_recording">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="929.37,-24.27 732.6,-24.27 732.6,0 929.37,0 929.37,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="830.98" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%stop_web_recording</text>
+</a>
+</g>
+</g>
+<!-- proc~stop_web_recording&#45;&gt;proc~write_web_page -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge17" class="edge">
+<title>proc~stop_web_recording&#45;&gt;proc~write_web_page</title>
+<path fill="none" stroke="#000000" d="M929.7,-21.94C950.97,-24.08 972.85,-26.28 992.07,-28.21"/>
+<polygon fill="#000000" stroke="#000000" points="991.55,-31.67 1001.85,-29.19 992.25,-24.71 991.55,-31.67"/>
+</g>
+<!-- proc~close -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node19" class="node">
+<title>proc~close</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node19"><a xlink:href="../proc/close.html" xlink:title="WindowProxy%close">
+<polygon fill="#d9534f" stroke="#d9534f" points="696.6,-24.27 577.83,-24.27 577.83,0 696.6,0 696.6,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="637.21" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">WindowProxy%close</text>
+</a>
+</g>
+</g>
+<!-- proc~close&#45;&gt;proc~stop_web_recording -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge22" class="edge">
+<title>proc~close&#45;&gt;proc~stop_web_recording</title>
+<path fill="none" stroke="#000000" d="M697.06,-12.14C704.78,-12.14 712.88,-12.14 721.11,-12.14"/>
+<polygon fill="#000000" stroke="#000000" points="720.87,-15.64 730.87,-12.14 720.87,-8.64 720.87,-15.64"/>
+</g>
+<!-- proc~dispatch_event -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node20" class="node">
+<title>proc~dispatch_event</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node20"><a xlink:href="../proc/dispatch_event.html" xlink:title="dispatch_event">
+<polygon fill="#d9534f" stroke="#d9534f" points="541.83,-158.27 450.06,-158.27 450.06,-134 541.83,-134 541.83,-158.27"/>
+<text xml:space="preserve" text-anchor="middle" x="495.94" y="-142.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dispatch_event</text>
+</a>
+</g>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~drag_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge18" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~drag_handle</title>
+<path fill="none" stroke="#000000" d="M538.73,-158.74C553.96,-163.33 571.33,-168.57 587.14,-173.33"/>
+<polygon fill="#000000" stroke="#000000" points="585.75,-176.57 596.34,-176.11 587.77,-169.87 585.75,-176.57"/>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~grab_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge19" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~grab_handle</title>
+<path fill="none" stroke="#000000" d="M542.16,-146.13C556.33,-146.13 572.03,-146.13 586.49,-146.13"/>
+<polygon fill="#000000" stroke="#000000" points="586.25,-149.64 596.25,-146.14 586.25,-142.64 586.25,-149.64"/>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~hover_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge20" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~hover_handle</title>
+<path fill="none" stroke="#000000" d="M539.46,-133.58C551.74,-130.36 565.24,-127.23 577.83,-125.14 646.13,-113.79 725.98,-109.21 777.22,-107.37"/>
+<polygon fill="#000000" stroke="#000000" points="777.27,-110.87 787.15,-107.04 777.04,-103.87 777.27,-110.87"/>
+</g>
+<!-- proc~release_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_node21" class="node">
+<title>proc~release_handle</title>
+<g id="a_interface~~vkf_viewer_get_look_at~~CalledByGraph_node21"><a xlink:href="../proc/release_handle.html" xlink:title="release_handle">
+<polygon fill="#d9534f" stroke="#d9534f" points="683.47,-78.27 590.95,-78.27 590.95,-54 683.47,-54 683.47,-78.27"/>
+<text xml:space="preserve" text-anchor="middle" x="637.21" y="-62.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">release_handle</text>
+</a>
+</g>
+</g>
+<!-- proc~dispatch_event&#45;&gt;proc~release_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge24" class="edge">
+<title>proc~dispatch_event&#45;&gt;proc~release_handle</title>
+<path fill="none" stroke="#000000" d="M513.77,-133.67C529.77,-122.12 554.76,-104.85 577.83,-92.14 583.3,-89.12 589.18,-86.18 595.03,-83.42"/>
+<polygon fill="#000000" stroke="#000000" points="596.41,-86.63 604.06,-79.3 593.51,-80.27 596.41,-86.63"/>
+</g>
+<!-- proc~release_handle&#45;&gt;proc~hover_handle -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge21" class="edge">
+<title>proc~release_handle&#45;&gt;proc~hover_handle</title>
+<path fill="none" stroke="#000000" d="M683.66,-75.61C711.85,-81.49 748.17,-89.07 777.57,-95.2"/>
+<polygon fill="#000000" stroke="#000000" points="776.48,-98.55 786.98,-97.17 777.91,-91.7 776.48,-98.55"/>
+</g>
+<!-- proc~dispatch_events&#45;&gt;proc~dispatch_event -->
+<g id="interface~~vkf_viewer_get_look_at~~CalledByGraph_edge23" class="edge">
+<title>proc~dispatch_events&#45;&gt;proc~dispatch_event</title>
+<path fill="none" stroke="#000000" d="M414.36,-146.76C422.12,-146.7 430.22,-146.64 438.17,-146.58"/>
+<polygon fill="#000000" stroke="#000000" points="438.16,-150.08 448.14,-146.5 438.11,-143.08 438.16,-150.08"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var paninterfacevkf_viewer_get_look_atCalledByGraph = svgPanZoom('#interfacevkf_viewer_get_look_atCalledByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#CalledByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="CalledByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="641pt" height="28pt"
+ viewBox="0.00 0.00 641.00 28.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(0.873868 0.873868) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 729.52,-28.27 729.52,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="69.27,-24.27 0,-24.27 0,0 69.27,0 69.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="34.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="143.89,-24.27 87.38,-24.27 87.38,0 143.89,0 143.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="115.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="221.39,-24.27 161.88,-24.27 161.88,0 221.39,0 221.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="191.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Type Bound Procedure -->
+<g id="node4" class="node">
+<title>Type Bound Procedure</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="368.27,-24.27 239,-24.27 239,0 368.27,0 368.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="303.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Type Bound Procedure</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node5" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="529.39,-24.27 385.88,-24.27 385.88,0 529.39,0 529.39,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="457.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node6" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="603.89,-24.27 547.38,-24.27 547.38,0 603.89,0 603.89,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="575.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node7" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="725.52,-24.27 621.75,-24.27 621.75,0 725.52,0 725.52,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="673.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a procedure to one which it calls. Dashed 
+arrows point from an interface to procedures which implement that interface.
+This could include the module procedures in a generic interface or the
+implementation in a submodule of an interface in a parent module.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+      <h2>public  function vkf_viewer_get_look_at(viewer, eye, center, up) bind(C, name="vkf_viewer_get_look_at")  
+</h2>
+
+    
+
+    <h3>Arguments</h3>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~27"></span>
+              type(c_ptr),
+            </td>
+<td></td>
+              <td></td>            <td>
+              value
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+                <p>viewer handle (vkf_viewer_create)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-eye~7"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(3)
+            </td>
+            <td>::</td>
+            <td><strong>eye</strong></td>
+            <td>
+                <p>view-frame coordinates</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~16"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(3)
+            </td>
+            <td>::</td>
+            <td><strong>center</strong></td>
+            <td>
+                <p>view-frame coordinates</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-up~8"></span>
+              real(kind=c_double),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              dimension(3)
+            </td>
+            <td>::</td>
+            <td><strong>up</strong></td>
+            <td>
+                <p>view-frame coordinates</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+      <h3>Return Value <span class="anchor" id="variable-vkf_viewer_get_look_at"></span><small>integer(kind=c_int)</small></h3>
+    
+    <h3>Description</h3>
+    <p>The camera's eye, center and up vectors (view-frame coordinates), as the trackball left them.
+Returns 0, or -1 on failure.</p>
+    <br>
+
+ </div>
+</div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

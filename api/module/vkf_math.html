@@ -1,0 +1,2146 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_math &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_math
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 1.3% of total for modules and submodules.">192 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_math.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_math.f90.html'>vkf_math.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_math</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_math.html#variable-pi~3">pi</a>
+            <a class="list-group-item" href="../module/vkf_math.html#variable-quat_identity">quat_identity</a>
+            <a class="list-group-item" href="../module/vkf_math.html#variable-wp">wp</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_math.html#proc-cross">cross</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-frame_matrix">frame_matrix</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-identity_matrix">identity_matrix</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_conjugate">quat_conjugate</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_from_axis_angle">quat_from_axis_angle</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_from_matrix">quat_from_matrix</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_from_vectors">quat_from_vectors</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_multiply">quat_multiply</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_normalize">quat_normalize</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_rotate">quat_rotate</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_slerp">quat_slerp</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-quat_to_matrix">quat_to_matrix</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-rigid_inverse">rigid_inverse</a>
+            <a class="list-group-item" href="../module/vkf_math.html#proc-translation_matrix">translation_matrix</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_math.html#proc-set_rgba">set_rgba</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Math for vkframes: the working precision, quaternions and 4x4 transforms.</p>
+<p>Quaternions are <code>q(4) = [x, y, z, w]</code> (vector part first, as OpenFrames and
+OpenSceneGraph store them), unit length for rotations. The rotation of q
+takes vectors in a frame to its parent frame: v_parent = rotate(q, v_local).
+Matrices are 4x4, column-major, acting on column vectors.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_math~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_mathUsesGraph" width="198pt" height="32pt"
+ viewBox="0.00 0.00 198.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_math~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>module~~vkf_math~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 193.54,-28.27 193.54,4 -4,4"/>
+<!-- module~vkf_math -->
+<g id="module~~vkf_math~~UsesGraph_node1" class="node">
+<title>module~vkf_math</title>
+<polygon fill="none" stroke="black" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_math</text>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_math~~UsesGraph_node2" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_math~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-24.27 0,-24.27 0,0 93.27,0 93.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_math~~UsesGraph_edge1" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-12.13C121.52,-12.13 113.21,-12.13 104.84,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="104.98,-8.64 94.98,-12.14 104.98,-15.64 104.98,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_math~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_mathUsedByGraph" width="641pt" height="589pt"
+ viewBox="0.00 0.00 641.00 589.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_math~~UsedByGraph" class="graph" transform="scale(0.699659 0.699659) rotate(0) translate(4 838.54)">
+<title>module~~vkf_math~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-838.54 912.16,-838.54 912.16,4 -4,4"/>
+<!-- module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_node1" class="node">
+<title>module~vkf_math</title>
+<polygon fill="none" stroke="black" points="60.27,-554.68 0,-554.68 0,-530.41 60.27,-530.41 60.27,-554.68"/>
+<text xml:space="preserve" text-anchor="middle" x="30.13" y="-538.94" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_math</text>
+</g>
+<!-- module~vkf_artists -->
+<g id="module~~vkf_math~~UsedByGraph_node2" class="node">
+<title>module~vkf_artists</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node2"><a xlink:href="../module/vkf_artists.html" xlink:title="vkf_artists">
+<polygon fill="#337ab7" stroke="#337ab7" points="552.23,-560.68 487.46,-560.68 487.46,-536.41 552.23,-536.41 552.23,-560.68"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-544.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M488.02,-561.16C480.29,-564.95 472.24,-569.47 465.33,-574.54 424.47,-604.56 433.41,-636.98 387.07,-657.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-657.54C335.35,-679.61 305.29,-691.36 262.68,-657.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.68,-657.54C145.44,-566.09 265.41,-273.6 139.41,-349.54"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_node6" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node6"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="421.08,-363.68 351.06,-363.68 351.06,-339.41 421.08,-339.41 421.08,-363.68"/>
+<text xml:space="preserve" text-anchor="middle" x="386.07" y="-347.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge34" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.07,-538.64C478.98,-534.76 470.99,-529.52 465.33,-522.54 423.53,-470.95 468.52,-431.15 429.33,-377.54 427.47,-375 425.28,-372.65 422.89,-370.5"/>
+<polygon fill="#000000" stroke="#000000" points="425.49,-368.07 415.41,-364.82 421.26,-373.65 425.49,-368.07"/>
+</g>
+<!-- module~vkf_line_chain -->
+<g id="module~~vkf_math~~UsedByGraph_node11" class="node">
+<title>module~vkf_line_chain</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node11"><a xlink:href="../module/vkf_line_chain.html" xlink:title="vkf_line_chain">
+<polygon fill="#337ab7" stroke="#337ab7" points="429.33,-747.68 342.81,-747.68 342.81,-723.41 429.33,-723.41 429.33,-747.68"/>
+<text xml:space="preserve" text-anchor="middle" x="386.07" y="-731.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_chain</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_line_chain -->
+<g id="module~~vkf_math~~UsedByGraph_edge55" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_line_chain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M509.99,-561.1C487.91,-592.44 430.16,-674.39 402.41,-713.78"/>
+<polygon fill="#000000" stroke="#000000" points="399.65,-711.61 396.75,-721.8 405.37,-715.64 399.65,-711.61"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_node14" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node14"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="288.81,-481.68 234.54,-481.68 234.54,-457.41 288.81,-457.41 288.81,-481.68"/>
+<text xml:space="preserve" text-anchor="middle" x="261.68" y="-465.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge59" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-543.54C351.51,-526.73 314.9,-503.97 290.55,-488.15"/>
+<polygon fill="#000000" stroke="#000000" points="292.77,-485.42 282.49,-482.87 288.94,-491.28 292.77,-485.42"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_math~~UsedByGraph_node21" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node21"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="180.54,-554.68 96.27,-554.68 96.27,-530.41 180.54,-530.41 180.54,-554.68"/>
+<text xml:space="preserve" text-anchor="middle" x="138.41" y="-538.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_math~~UsedByGraph_edge78" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-657.54C359.04,-669.09 286.93,-710.47 262.68,-695.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.68,-695.54C241.66,-683.84 232.65,-687.01 216.54,-671.54 184.28,-640.57 160.64,-593.25 148.54,-565.35"/>
+<polygon fill="#000000" stroke="#000000" points="151.89,-564.28 144.79,-556.42 145.43,-566.99 151.89,-564.28"/>
+</g>
+<!-- module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_node23" class="node">
+<title>module~vkf_web_writer</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node23"><a xlink:href="../module/vkf_web_writer.html" xlink:title="vkf_web_writer">
+<polygon fill="#337ab7" stroke="#337ab7" points="306.81,-321.68 216.54,-321.68 216.54,-297.41 306.81,-297.41 306.81,-321.68"/>
+<text xml:space="preserve" text-anchor="middle" x="261.68" y="-305.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_web_writer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge85" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.22,-554.38C459.34,-557.95 418.39,-559.23 387.07,-543.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-543.54C308.89,-505.39 349.98,-442 306.81,-368.54 299.09,-355.41 289,-341.72 280.42,-330.84"/>
+<polygon fill="#000000" stroke="#000000" points="283.31,-328.86 274.31,-323.27 277.86,-333.25 283.31,-328.86"/>
+</g>
+<!-- module~vkf_clock -->
+<g id="module~~vkf_math~~UsedByGraph_node3" class="node">
+<title>module~vkf_clock</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node3"><a xlink:href="../module/vkf_clock.html" xlink:title="vkf_clock">
+<polygon fill="#337ab7" stroke="#337ab7" points="686.75,-762.68 626.48,-762.68 626.48,-738.41 686.75,-738.41 686.75,-762.68"/>
+<text xml:space="preserve" text-anchor="middle" x="656.61" y="-746.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_clock</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_clock&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge2" class="edge">
+<title>module~vkf_clock&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M626.22,-744.92C598.23,-740.84 555.37,-738 520.84,-750.54"/>
+</g>
+<!-- module~vkf_diagnostics -->
+<g id="module~~vkf_math~~UsedByGraph_node4" class="node">
+<title>module~vkf_diagnostics</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node4"><a xlink:href="../module/vkf_diagnostics.html" xlink:title="vkf_diagnostics">
+<polygon fill="#337ab7" stroke="#337ab7" points="702.87,-720.68 610.35,-720.68 610.35,-696.41 702.87,-696.41 702.87,-720.68"/>
+<text xml:space="preserve" text-anchor="middle" x="656.61" y="-704.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_diagnostics</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_diagnostics&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge3" class="edge">
+<title>module~vkf_diagnostics&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M611.57,-721.14C585.07,-729 550.78,-739.66 520.84,-750.54"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_math~~UsedByGraph_node5" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node5"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="299.31,-785.68 224.04,-785.68 224.04,-761.41 299.31,-761.41 299.31,-785.68"/>
+<text xml:space="preserve" text-anchor="middle" x="261.68" y="-769.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge4" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M236.49,-786.15C206.18,-801.15 156.19,-823.04 139.41,-813.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M137.41,-813.54C48.26,-763.1 33.66,-622.67 31.44,-566.36"/>
+<polygon fill="#000000" stroke="#000000" points="34.95,-566.51 31.17,-556.61 27.95,-566.7 34.95,-566.51"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_math~~UsedByGraph_edge79" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.22,-761.21C241.8,-748.61 227.24,-728.3 216.54,-709.54 188.24,-659.91 161.82,-598.09 148.48,-565.35"/>
+<polygon fill="#000000" stroke="#000000" points="151.88,-564.42 144.89,-556.46 145.39,-567.04 151.88,-564.42"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge5" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M350.63,-344.95C325.57,-341.59 291.18,-339.97 262.68,-349.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.68,-349.54C209.58,-366.7 185.57,-321.72 139.41,-349.54"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_math~~UsedByGraph_edge32" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M374.43,-363.82C364.47,-376.05 350.08,-395.8 342.81,-415.54 297.33,-539.08 353.53,-586.47 306.81,-709.54 300.84,-725.27 290.22,-740.86 280.89,-752.72"/>
+<polygon fill="#000000" stroke="#000000" points="278.4,-750.23 274.76,-760.18 283.81,-754.67 278.4,-750.23"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_math~~UsedByGraph_node7" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node7"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="303.81,-401.68 219.54,-401.68 219.54,-377.41 303.81,-377.41 303.81,-401.68"/>
+<text xml:space="preserve" text-anchor="middle" x="261.68" y="-385.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_math~~UsedByGraph_edge46" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M350.65,-362.23C339.28,-365.76 326.36,-369.77 314,-373.61"/>
+<polygon fill="#000000" stroke="#000000" points="313.29,-370.16 304.78,-376.47 315.37,-376.85 313.29,-370.16"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge60" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M371.97,-364.17C350.9,-384.49 309.27,-424.62 283.91,-449.07"/>
+<polygon fill="#000000" stroke="#000000" points="281.54,-446.49 276.77,-455.96 286.4,-451.53 281.54,-446.49"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_math~~UsedByGraph_node20" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node20"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="288.68,-207.68 234.68,-207.68 234.68,-183.41 288.68,-183.41 288.68,-207.68"/>
+<text xml:space="preserve" text-anchor="middle" x="261.68" y="-191.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_math~~UsedByGraph_edge75" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M358.29,-338.91C352.58,-335.24 347.02,-330.78 342.81,-325.54 312.2,-287.39 337.79,-259.4 306.81,-221.54 304.31,-218.49 301.36,-215.72 298.17,-213.21"/>
+<polygon fill="#000000" stroke="#000000" points="300.3,-210.43 290.06,-207.73 296.38,-216.23 300.3,-210.43"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_math~~UsedByGraph_edge80" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.68,-349.54C240.43,-356.34 231.72,-353.52 216.54,-368.54 173.28,-411.35 152.34,-482.62 144,-519.25"/>
+<polygon fill="#000000" stroke="#000000" points="140.63,-518.26 141.95,-528.77 147.47,-519.73 140.63,-518.26"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge86" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M350.65,-339.73C338.04,-335.41 323.54,-330.43 310,-325.78"/>
+<polygon fill="#000000" stroke="#000000" points="311.43,-322.57 300.83,-322.64 309.16,-329.19 311.43,-322.57"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge6" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M236.67,-376.93C206.3,-361.77 155.97,-339.56 139.41,-349.54"/>
+</g>
+<!-- module~vkf_gui -->
+<g id="module~~vkf_math~~UsedByGraph_node8" class="node">
+<title>module~vkf_gui</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node8"><a xlink:href="../module/vkf_gui.html" xlink:title="vkf_gui">
+<polygon fill="#337ab7" stroke="#337ab7" points="683.61,-678.68 629.61,-678.68 629.61,-654.41 683.61,-654.41 683.61,-678.68"/>
+<text xml:space="preserve" text-anchor="middle" x="656.61" y="-662.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_gui</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_gui&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge7" class="edge">
+<title>module~vkf_gui&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M629.5,-677C623.03,-680.03 616.26,-683.6 610.35,-687.54 592.29,-699.59 591.93,-707.82 574.35,-720.54 552.26,-736.53 545.94,-739.89 520.84,-750.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-750.54C470.53,-771.04 478.53,-809.29 429.33,-827.54 393.28,-840.92 381.12,-830.86 342.81,-827.54 306.79,-824.42 297.46,-803.68 262.68,-813.54"/>
+</g>
+<!-- module~vkf_handles -->
+<g id="module~~vkf_math~~UsedByGraph_node9" class="node">
+<title>module~vkf_handles</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node9"><a xlink:href="../module/vkf_handles.html" xlink:title="vkf_handles">
+<polygon fill="#337ab7" stroke="#337ab7" points="693.87,-540.68 619.35,-540.68 619.35,-516.41 693.87,-516.41 693.87,-540.68"/>
+<text xml:space="preserve" text-anchor="middle" x="656.61" y="-524.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge8" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M634.17,-541.02C598.59,-561.89 525.33,-605.51 465.33,-645.54 448.91,-656.5 445.94,-660.88 429.33,-671.54 411.16,-683.22 407.94,-689.96 387.07,-695.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-695.54C357.18,-701.33 284.98,-675.25 262.68,-657.54"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_math~~UsedByGraph_edge25" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M619.14,-533.96C602,-536.5 581.46,-539.55 563.59,-542.2"/>
+<polygon fill="#000000" stroke="#000000" points="563.18,-538.72 553.8,-543.65 564.2,-545.65 563.18,-538.72"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge35" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M639.83,-515.93C630.11,-507.42 618.07,-495.42 610.35,-482.54 582.8,-436.62 611.5,-406.12 574.35,-367.54 556.85,-349.36 545.79,-352.34 520.84,-348.54"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_math~~UsedByGraph_edge47" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M618.98,-523.24C591.87,-519.29 554.03,-513.7 520.84,-508.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-508.54C494.19,-504.71 389.77,-467.76 342.81,-443.54 323.42,-433.55 303.06,-419.78 287.71,-408.64"/>
+<polygon fill="#000000" stroke="#000000" points="290.2,-406.13 280.07,-403.01 286.04,-411.76 290.2,-406.13"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge61" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-508.54C460.95,-499.55 445.65,-505.89 387.07,-505.54"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_math~~UsedByGraph_edge81" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-695.54C332.52,-709.61 309,-724.06 262.68,-695.54"/>
+</g>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_math~~UsedByGraph_node10" class="node">
+<title>module~vkf_hud</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node10"><a xlink:href="../module/vkf_hud.html" xlink:title="vkf_hud">
+<polygon fill="#337ab7" stroke="#337ab7" points="546.84,-53.68 492.84,-53.68 492.84,-29.41 546.84,-29.41 546.84,-53.68"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-37.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge9" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M492.57,-40.82C465.96,-40.25 423.63,-39.82 387.07,-41.54"/>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge36" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M492.44,-48.52C482.44,-52.48 471.89,-58.52 465.33,-67.54 397.25,-161.19 492.68,-228.63 429.33,-325.54 427.76,-327.94 425.89,-330.15 423.82,-332.19"/>
+<polygon fill="#000000" stroke="#000000" points="421.87,-329.27 416.24,-338.24 426.24,-334.74 421.87,-329.27"/>
+</g>
+<!-- module~vkf_line_chain&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge10" class="edge">
+<title>module~vkf_line_chain&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.05,-748C356.37,-752.07 349.13,-756.77 342.81,-761.54 325.49,-774.62 325.03,-782.75 306.81,-794.54 288.88,-806.14 283.21,-807.67 262.68,-813.54"/>
+</g>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_math~~UsedByGraph_node12" class="node">
+<title>module~vkf_line_segments</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node12"><a xlink:href="../module/vkf_line_segments.html" xlink:title="vkf_line_segments">
+<polygon fill="#337ab7" stroke="#337ab7" points="574.35,-678.68 465.33,-678.68 465.33,-654.41 574.35,-654.41 574.35,-678.68"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-662.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge11" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-775.54C357.05,-770.44 290.07,-805.77 262.68,-813.54"/>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge37" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M510.19,-653.99C498.25,-636.07 476.9,-601.76 465.33,-569.54 435.99,-487.83 478.52,-449.09 429.33,-377.54 427.71,-375.18 425.79,-373 423.69,-370.98"/>
+<polygon fill="#000000" stroke="#000000" points="426.08,-368.4 416.06,-364.96 421.74,-373.9 426.08,-368.4"/>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_line_chain -->
+<g id="module~~vkf_math~~UsedByGraph_edge56" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_line_chain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M492.31,-679.11C483.66,-683.29 474.05,-688.03 465.33,-692.54 449.93,-700.51 433.05,-709.72 418.92,-717.57"/>
+<polygon fill="#000000" stroke="#000000" points="417.52,-714.34 410.5,-722.27 420.93,-720.46 417.52,-714.34"/>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge87" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.15,-679.05C478.08,-682.68 471.04,-687.16 465.33,-692.54 441.57,-714.92 453.42,-734.53 429.33,-756.54 414.13,-770.44 407.33,-779.24 387.07,-775.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-775.54C364.81,-771.85 354.78,-773.3 342.81,-756.54 292.47,-686.09 337.91,-449.36 306.81,-368.54 301.41,-354.51 291.66,-340.92 282.7,-330.33"/>
+<polygon fill="#000000" stroke="#000000" points="285.42,-328.13 276.16,-322.99 280.2,-332.78 285.42,-328.13"/>
+</g>
+<!-- module~vkf_model -->
+<g id="module~~vkf_math~~UsedByGraph_node13" class="node">
+<title>module~vkf_model</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node13"><a xlink:href="../module/vkf_model.html" xlink:title="vkf_model">
+<polygon fill="#337ab7" stroke="#337ab7" points="552.98,-480.68 486.71,-480.68 486.71,-456.41 552.98,-456.41 552.98,-480.68"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-464.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge12" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.22,-481.12C479.67,-484.86 471.9,-489.36 465.33,-494.54 397.99,-547.61 380.96,-566.76 342.81,-643.54 312.11,-705.33 351.21,-741.74 306.81,-794.54 293.07,-810.89 283.21,-807.67 262.68,-813.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.68,-813.54C208.82,-828.25 186.31,-840.09 139.41,-813.54"/>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge38" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.37,-456.12C492.46,-437.68 460.7,-402.53 429.33,-377.54 426.11,-374.98 422.62,-372.46 419.07,-370.07"/>
+<polygon fill="#000000" stroke="#000000" points="421.27,-367.32 410.96,-364.88 417.5,-373.22 421.27,-367.32"/>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge62" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M491.2,-481.17C464.96,-491.98 424.14,-505.76 387.07,-505.54"/>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge88" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M500.29,-456.05C475.36,-439.66 429.29,-410.72 387.07,-391.54"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge13" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M235.82,-456.95C229.24,-453.08 222.35,-448.52 216.54,-443.54 175.49,-408.4 185.69,-321.65 139.41,-349.54"/>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_math~~UsedByGraph_node15" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node15"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="693.12,-361.68 620.1,-361.68 620.1,-337.41 693.12,-337.41 693.12,-361.68"/>
+<text xml:space="preserve" text-anchor="middle" x="656.61" y="-345.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge14" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M630.9,-336.91C624.01,-332.98 616.68,-328.39 610.35,-323.54 592.38,-309.79 592.83,-300.59 574.35,-287.54 516.04,-246.38 498.95,-234.26 429.33,-218.54 393.02,-210.34 294.98,-217.04 262.68,-235.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.68,-235.54C192.81,-264.98 202.65,-311.17 139.41,-349.54"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge39" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M619.64,-352.06C592.36,-353.3 554.03,-353.59 520.84,-348.54"/>
+</g>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_math~~UsedByGraph_node18" class="node">
+<title>module~vkf_sphere</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node18"><a xlink:href="../module/vkf_sphere.html" xlink:title="vkf_sphere">
+<polygon fill="#337ab7" stroke="#337ab7" points="554.1,-400.68 485.58,-400.68 485.58,-376.41 554.1,-376.41 554.1,-400.68"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-384.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_math~~UsedByGraph_edge71" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M619.85,-359.89C603.14,-364.73 583.07,-370.53 565.38,-375.65"/>
+<polygon fill="#000000" stroke="#000000" points="564.54,-372.25 555.9,-378.4 566.48,-378.98 564.54,-372.25"/>
+</g>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_math~~UsedByGraph_node19" class="node">
+<title>module~vkf_terrain</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node19"><a xlink:href="../module/vkf_terrain.html" xlink:title="vkf_terrain">
+<polygon fill="#337ab7" stroke="#337ab7" points="554.1,-320.68 485.58,-320.68 485.58,-296.41 554.1,-296.41 554.1,-320.68"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-304.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_math~~UsedByGraph_edge73" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M619.85,-338.66C603.14,-333.58 583.07,-327.47 565.38,-322.09"/>
+<polygon fill="#000000" stroke="#000000" points="566.48,-318.77 555.9,-319.21 564.45,-325.47 566.48,-318.77"/>
+</g>
+<!-- module~vkf_shapes -->
+<g id="module~~vkf_math~~UsedByGraph_node16" class="node">
+<title>module~vkf_shapes</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node16"><a xlink:href="../module/vkf_shapes.html" xlink:title="vkf_shapes">
+<polygon fill="#337ab7" stroke="#337ab7" points="691.62,-243.68 621.6,-243.68 621.6,-219.41 691.62,-219.41 691.62,-243.68"/>
+<text xml:space="preserve" text-anchor="middle" x="656.61" y="-227.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge15" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M647.9,-219.2C634.98,-199.48 607.16,-160.84 574.35,-138.54 553.48,-124.36 545.99,-121.61 520.84,-119.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-119.54C492.86,-117.4 486.89,-110.18 465.33,-95.54 446.87,-83.01 447.79,-73.09 429.33,-60.54 412.3,-48.97 407.64,-40.57 387.07,-41.54"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_math~~UsedByGraph_edge26" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M624.72,-244.14C619.17,-247.7 613.99,-252.13 610.35,-257.54 544,-356.16 644.06,-426.27 574.35,-522.54 571.15,-526.96 566.99,-530.67 562.4,-533.76"/>
+<polygon fill="#000000" stroke="#000000" points="560.88,-530.6 553.88,-538.55 564.31,-536.7 560.88,-530.6"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge40" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-119.54C493.69,-117.5 481.78,-119.4 465.33,-138.54 410.17,-202.73 477.45,-255.92 429.33,-325.54 427.7,-327.9 425.78,-330.08 423.68,-332.1"/>
+<polygon fill="#000000" stroke="#000000" points="421.73,-329.17 416.04,-338.11 426.06,-334.68 421.73,-329.17"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge89" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-119.54C462.36,-114.96 332.47,-239.14 282.64,-289.13"/>
+<polygon fill="#000000" stroke="#000000" points="280.44,-286.38 275.89,-295.95 285.41,-291.3 280.44,-286.38"/>
+</g>
+<!-- module~vkf_sky -->
+<g id="module~~vkf_math~~UsedByGraph_node17" class="node">
+<title>module~vkf_sky</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node17"><a xlink:href="../module/vkf_sky.html" xlink:title="vkf_sky">
+<polygon fill="#337ab7" stroke="#337ab7" points="413.07,-93.68 359.07,-93.68 359.07,-69.41 413.07,-69.41 413.07,-93.68"/>
+<text xml:space="preserve" text-anchor="middle" x="386.07" y="-77.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge16" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M358.77,-73.12C331.82,-66.25 290.09,-60.72 262.68,-81.54"/>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_math~~UsedByGraph_edge76" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M362.34,-93.92C355.78,-97.92 348.78,-102.6 342.81,-107.54 318.42,-127.75 294.51,-155.31 279.25,-174.17"/>
+<polygon fill="#000000" stroke="#000000" points="276.53,-171.97 273.04,-181.97 282,-176.32 276.53,-171.97"/>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge90" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M380.35,-93.77C369.23,-122.07 339.79,-193.91 306.81,-249.54 298.85,-262.96 288.59,-277.06 279.97,-288.22"/>
+<polygon fill="#000000" stroke="#000000" points="277.29,-285.96 273.85,-295.98 282.79,-290.3 277.29,-285.96"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge17" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-429.54C310.53,-440.71 286.24,-439.25 216.54,-410.54 176.13,-393.9 176.84,-326.98 139.41,-349.54"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge41" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.25,-379.11C469.24,-374.61 449.84,-369.17 432.53,-364.31"/>
+<polygon fill="#000000" stroke="#000000" points="433.55,-360.96 422.98,-361.63 431.66,-367.7 433.55,-360.96"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_math~~UsedByGraph_edge48" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.79,-401.17C461.48,-411.15 422.49,-424.24 387.07,-429.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-429.54C352.33,-434.45 316.51,-420.29 292.13,-407.49"/>
+<polygon fill="#000000" stroke="#000000" points="293.88,-404.46 283.43,-402.69 290.5,-410.58 293.88,-404.46"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge63" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-429.54C355.68,-433.95 323.8,-444.56 299.95,-453.75"/>
+<polygon fill="#000000" stroke="#000000" points="298.69,-450.49 290.68,-457.43 301.26,-457 298.69,-450.49"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge91" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.29,-397.07C457.66,-402.31 418.11,-405.64 387.07,-391.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-391.54C366.32,-383.03 360.43,-383.21 342.81,-372.54 321.93,-359.9 300.29,-342.59 284.76,-329.32"/>
+<polygon fill="#000000" stroke="#000000" points="287.37,-326.95 277.53,-323.03 282.78,-332.23 287.37,-326.95"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge18" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M503.1,-296.08C461.38,-264.65 345.48,-187.98 262.68,-235.54"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge42" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.25,-319.5C469.08,-324.78 449.47,-331.18 432.04,-336.87"/>
+<polygon fill="#000000" stroke="#000000" points="431.38,-333.4 422.96,-339.83 433.55,-340.06 431.38,-333.4"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge64" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-311.54C365.34,-317.46 357.37,-315.98 342.81,-330.54 315.24,-358.11 326.61,-376.95 306.81,-410.54 299.07,-423.67 288.98,-437.35 280.4,-448.23"/>
+<polygon fill="#000000" stroke="#000000" points="277.85,-445.83 274.3,-455.81 283.3,-450.22 277.85,-445.83"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge92" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.32,-304.48C458.22,-302.33 419.4,-301.85 387.07,-311.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-311.54C363.94,-317.88 339.83,-318.75 318.63,-317.54"/>
+<polygon fill="#000000" stroke="#000000" points="318.93,-314.05 308.69,-316.79 318.4,-321.03 318.93,-314.05"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge19" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M234.41,-208.14C228.11,-211.9 221.72,-216.41 216.54,-221.54 169.34,-268.27 196.29,-315.26 139.41,-349.54"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge20" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M96.01,-542.54C88.2,-542.54 80.02,-542.54 72.21,-542.54"/>
+<polygon fill="#000000" stroke="#000000" points="72.25,-539.04 62.25,-542.54 72.25,-546.04 72.25,-539.04"/>
+</g>
+<!-- module~vkf_view -->
+<g id="module~~vkf_math~~UsedByGraph_node22" class="node">
+<title>module~vkf_view</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node22"><a xlink:href="../module/vkf_view.html" xlink:title="vkf_view">
+<polygon fill="#337ab7" stroke="#337ab7" points="548.1,-171.68 491.58,-171.68 491.58,-147.41 548.1,-147.41 548.1,-171.68"/>
+<text xml:space="preserve" text-anchor="middle" x="519.84" y="-155.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge21" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M491.33,-150.33C482.23,-146.27 472.58,-140.75 465.33,-133.54 439.68,-108.04 455.36,-85.66 429.33,-60.54 414.51,-46.24 407.64,-40.57 387.07,-41.54"/>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge43" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M514.63,-172.17C504.22,-201.9 474.75,-277.46 429.33,-325.54 426.98,-328.03 424.34,-330.37 421.56,-332.55"/>
+<polygon fill="#000000" stroke="#000000" points="419.82,-329.5 413.62,-338.09 423.83,-335.24 419.82,-329.5"/>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge22" class="edge">
+<title>module~vkf_web_writer&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M216.27,-319.09C192.37,-325.45 163.04,-335.3 139.41,-349.54"/>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_math~~UsedByGraph_node24" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node24"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="811.14,-490.68 738.87,-490.68 738.87,-466.41 811.14,-466.41 811.14,-490.68"/>
+<text xml:space="preserve" text-anchor="middle" x="775" y="-474.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge23" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M771.91,-465.92C760.49,-397.26 706.19,-71.52 702.87,-67.54 633.89,15.06 572.03,-6.48 465.33,-20.54 429.63,-25.25 423.04,-39.85 387.07,-41.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-41.54C327.84,-41.72 308.25,-46.93 262.68,-81.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.68,-81.54C156.56,-160.62 251.18,-281.73 139.41,-349.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M137.41,-349.54C74.9,-387.46 46.49,-476.34 36.11,-518.95"/>
+<polygon fill="#000000" stroke="#000000" points="32.71,-518.12 33.88,-528.65 39.53,-519.68 32.71,-518.12"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_clock -->
+<g id="module~~vkf_math~~UsedByGraph_edge28" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_clock</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M770.75,-491.14C757.89,-540.7 710.97,-720.05 702.87,-729.54 701,-731.73 698.85,-733.71 696.53,-735.49"/>
+<polygon fill="#000000" stroke="#000000" points="694.89,-732.39 688.22,-740.63 698.57,-738.35 694.89,-732.39"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_diagnostics -->
+<g id="module~~vkf_math~~UsedByGraph_edge30" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_diagnostics</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M771.1,-491.11C761.57,-531.49 730.29,-657.04 702.87,-687.54 702.31,-688.17 701.72,-688.78 701.11,-689.38"/>
+<polygon fill="#000000" stroke="#000000" points="699.27,-686.37 693.49,-695.25 703.55,-691.92 699.27,-686.37"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge44" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-309.54C606.24,-271.45 582.49,-357.92 520.84,-348.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-348.54C490.39,-344.21 458.1,-344.86 432.6,-346.64"/>
+<polygon fill="#000000" stroke="#000000" points="432.61,-343.13 422.91,-347.41 433.16,-350.11 432.61,-343.13"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_gui -->
+<g id="module~~vkf_math~~UsedByGraph_edge49" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_gui</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M766.19,-491.17C746.72,-522.61 695.89,-604.71 671.31,-644.41"/>
+<polygon fill="#000000" stroke="#000000" points="668.48,-642.34 666.19,-652.68 674.43,-646.02 668.48,-642.34"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_math~~UsedByGraph_edge51" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M744.63,-491.16C730.3,-497.32 712.84,-504.82 697.33,-511.48"/>
+<polygon fill="#000000" stroke="#000000" points="696.17,-508.17 688.36,-515.33 698.93,-514.6 696.17,-508.17"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_math~~UsedByGraph_edge53" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M772.18,-466.06C762.9,-404.58 719.13,-134.75 657.61,-81.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-81.54C628.39,-58 587.83,-48.31 558.31,-44.32"/>
+<polygon fill="#000000" stroke="#000000" points="559.05,-40.88 548.71,-43.19 558.23,-47.84 559.05,-40.88"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge65" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M742.63,-465.91C730.42,-461.54 716.18,-457.1 702.87,-454.54 599.15,-434.61 565.62,-414.43 465.33,-447.54 424.22,-461.12 430.36,-505.8 387.07,-505.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-505.54C355.63,-505.02 323.76,-495.33 299.92,-486.14"/>
+<polygon fill="#000000" stroke="#000000" points="301.23,-482.89 290.64,-482.41 298.62,-489.39 301.23,-482.89"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_math~~UsedByGraph_edge69" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-81.54C610.31,-42.36 580.57,-77.1 520.84,-81.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-81.54C487.19,-83.9 451.14,-83.7 424.75,-83.02"/>
+<polygon fill="#000000" stroke="#000000" points="424.98,-79.53 414.88,-82.73 424.77,-86.53 424.98,-79.53"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_math~~UsedByGraph_edge77" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.84,-81.54C477.33,-84.63 380.23,-127.32 342.81,-145.54 324.31,-154.56 304.69,-166.75 289.49,-176.84"/>
+<polygon fill="#000000" stroke="#000000" points="287.78,-173.77 281.45,-182.26 291.7,-179.57 287.78,-173.77"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_math~~UsedByGraph_edge83" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M771.37,-466.29C764.72,-438.21 744.75,-368.57 702.87,-328.54 687.1,-313.47 674.88,-322.87 657.61,-309.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-309.54C637.58,-295.63 625.27,-302.74 610.35,-285.54 579.4,-249.86 605.92,-220.68 574.35,-185.54 569.93,-180.62 564.37,-176.53 558.52,-173.17"/>
+<polygon fill="#000000" stroke="#000000" points="560.41,-170.21 549.9,-168.86 557.27,-176.47 560.41,-170.21"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_math~~UsedByGraph_edge93" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-309.54C600.54,-267.05 411.91,-289.56 342.81,-297.54 334.93,-298.45 326.63,-299.55 318.48,-300.7"/>
+<polygon fill="#000000" stroke="#000000" points="318,-297.23 308.61,-302.13 319.01,-304.15 318,-297.23"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_math~~UsedByGraph_node25" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_math~~UsedByGraph_node25"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="908.16,-490.68 847.14,-490.68 847.14,-466.41 908.16,-466.41 908.16,-490.68"/>
+<text xml:space="preserve" text-anchor="middle" x="877.65" y="-474.94" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_math~~UsedByGraph_edge24" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C706.08,-649.77 763.79,-733.57 702.87,-771.54 667.97,-793.29 651.2,-776.27 610.35,-771.54 569.76,-766.85 559.25,-736.59 520.84,-750.54"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_math~~UsedByGraph_edge27" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C724.9,-642.8 709.3,-624.56 657.61,-626.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-626.54C609.42,-628.31 564.8,-592.92 540.27,-569.22"/>
+<polygon fill="#000000" stroke="#000000" points="542.78,-566.78 533.24,-562.17 537.83,-571.73 542.78,-566.78"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_clock -->
+<g id="module~~vkf_math~~UsedByGraph_edge29" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_clock</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C721.19,-644.03 745.41,-693.69 702.87,-729.54 700.99,-731.13 698.96,-732.62 696.85,-734.03"/>
+<polygon fill="#000000" stroke="#000000" points="695.45,-730.8 688.54,-738.83 698.95,-736.86 695.45,-730.8"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_diagnostics -->
+<g id="module~~vkf_math~~UsedByGraph_edge31" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_diagnostics</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C734.47,-639.63 737.9,-665.01 702.87,-687.54 701.07,-688.7 699.19,-689.83 697.27,-690.93"/>
+<polygon fill="#000000" stroke="#000000" points="695.99,-687.65 688.79,-695.41 699.27,-693.84 695.99,-687.65"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_math~~UsedByGraph_edge33" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-813.54C353.18,-815.28 318.77,-802.62 294.58,-791.09"/>
+<polygon fill="#000000" stroke="#000000" points="296.42,-788.1 285.91,-786.78 293.3,-794.37 296.42,-788.1"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_math~~UsedByGraph_edge45" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C695.47,-652.54 755.14,-518.66 702.87,-454.54 643.72,-381.98 613.39,-362.63 520.84,-348.54"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_gui -->
+<g id="module~~vkf_math~~UsedByGraph_edge50" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_gui</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C747.33,-635.37 717.36,-645.68 694.5,-653.63"/>
+<polygon fill="#000000" stroke="#000000" points="693.62,-650.23 685.33,-656.82 695.93,-656.84 693.62,-650.23"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_math~~UsedByGraph_edge52" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C727.84,-641.83 687.89,-584.46 669.08,-551.02"/>
+<polygon fill="#000000" stroke="#000000" points="672.29,-549.59 664.45,-542.46 666.13,-552.92 672.29,-549.59"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_math~~UsedByGraph_edge54" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-41.54C627.34,-22.15 587.27,-24.96 558.18,-30.91"/>
+<polygon fill="#000000" stroke="#000000" points="557.67,-27.43 548.7,-33.06 559.23,-34.26 557.67,-27.43"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_math~~UsedByGraph_edge57" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-626.54C621.85,-627.84 585.19,-639.43 558.65,-649.8"/>
+<polygon fill="#000000" stroke="#000000" points="557.65,-646.43 549.69,-653.42 560.27,-652.92 557.65,-646.43"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_model -->
+<g id="module~~vkf_math~~UsedByGraph_edge58" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_model</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-468.54C629.41,-450.38 592.93,-451.55 564.53,-456.62"/>
+<polygon fill="#000000" stroke="#000000" points="563.89,-453.18 554.79,-458.59 565.28,-460.04 563.89,-453.18"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_math~~UsedByGraph_edge66" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-626.54C513.35,-632 466.03,-628.85 342.81,-557.54 314.66,-541.25 290.83,-511.72 276.65,-491.4"/>
+<polygon fill="#000000" stroke="#000000" points="279.65,-489.59 271.16,-483.25 273.84,-493.5 279.65,-489.59"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_math~~UsedByGraph_edge67" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M873.59,-490.97C864.91,-522.85 836.77,-606.42 776,-626.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C664.34,-662.85 773.25,-468.15 702.87,-376.54 700.64,-373.64 698,-370.99 695.14,-368.57"/>
+<polygon fill="#000000" stroke="#000000" points="697.44,-365.92 687.28,-362.93 693.36,-371.61 697.44,-365.92"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shapes -->
+<g id="module~~vkf_math~~UsedByGraph_edge68" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shapes</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-251.54C756.64,-232.17 727.89,-227.09 703.31,-226.89"/>
+<polygon fill="#000000" stroke="#000000" points="703.44,-223.39 693.52,-227.09 703.59,-230.38 703.44,-223.39"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_math~~UsedByGraph_edge70" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M873.98,-465.98C865.58,-429.04 836.57,-319.12 776,-251.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-251.54C715.49,-186.25 759.96,-134.08 702.87,-67.54 687.76,-49.94 676.74,-54.67 657.61,-41.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-41.54C585.45,6.59 544.16,11.46 465.33,-20.54 444.65,-28.94 446.94,-41.84 429.33,-55.54 426.08,-58.07 422.57,-60.56 419.01,-62.94"/>
+<polygon fill="#000000" stroke="#000000" points="417.44,-59.79 410.89,-68.12 421.21,-65.69 417.44,-59.79"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_math~~UsedByGraph_edge72" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-626.54C715.51,-645.91 742.53,-554.7 702.87,-507.54 685.78,-487.22 679.43,-483.67 657.61,-468.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-468.54C622.3,-445.45 582.12,-422.14 554.35,-406.69"/>
+<polygon fill="#000000" stroke="#000000" points="556.12,-403.67 545.67,-401.9 552.74,-409.8 556.12,-403.67"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_math~~UsedByGraph_edge74" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-271.54C621.53,-269.83 584.23,-281.17 557.52,-291.73"/>
+<polygon fill="#000000" stroke="#000000" points="556.44,-288.39 548.52,-295.44 559.1,-294.86 556.44,-288.39"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_math~~UsedByGraph_edge82" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-626.54C633.81,-627.28 627.98,-632.69 610.35,-645.54 590.48,-660.02 594.04,-672.82 574.35,-687.54 531.81,-719.36 506.02,-702.39 465.33,-736.54 443.52,-754.85 450.26,-770.23 429.33,-789.54 413.46,-804.19 408.64,-812.37 387.07,-813.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.07,-813.54C337.19,-815.54 284.66,-709.08 262.68,-695.54"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_math~~UsedByGraph_edge84" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M774,-251.54C738.97,-212.46 710.03,-274.17 657.61,-271.54"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M655.61,-271.54C633.82,-270.45 626.5,-267.21 610.35,-252.54 585.33,-229.81 598.74,-208.95 574.35,-185.54 569.79,-181.16 564.34,-177.39 558.7,-174.18"/>
+<polygon fill="#000000" stroke="#000000" points="560.34,-171.09 549.84,-169.7 557.18,-177.34 560.34,-171.09"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_math~~UsedByGraph_edge94" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M846.73,-478.54C839.16,-478.54 830.86,-478.54 822.69,-478.54"/>
+<polygon fill="#000000" stroke="#000000" points="822.83,-475.04 812.83,-478.54 822.83,-482.04 822.83,-475.04"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_mathUsedByGraph = svgPanZoom('#modulevkf_mathUsedByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pi~3"></span>
+              real(kind=wp),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>pi</strong></td>
+<td> =</td>
+                <td>acos(-1.0_wp)</td>
+            <td>
+                <p>pi</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-quat_identity"></span>
+              real(kind=wp),
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>quat_identity</strong>(4)</td>
+<td> =</td>
+                <td>[0.0_wp, 0.0_wp, 0.0_wp, 1.0_wp]</td>
+            <td>
+                <p>the identity rotation</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-wp"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>wp</strong></td>
+<td> =</td>
+                <td>real64</td>
+            <td>
+                <p>working precision</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-cross"></span> <h3>public pure function <a href='../proc/cross.html'>cross</a>(a, b) result(c)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The cross product a x b.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~48"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(3)</td>
+            <td>
+<p>the vectors</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~22"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(3)</td>
+            <td>
+<p>the vectors</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-frame_matrix"></span> <h3>public pure function <a href='../proc/frame_matrix.html'>frame_matrix</a>(position, attitude, scale, pivot) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A frame's local-to-parent transform, as OpenFrames' FrameTransform builds
+it: translate(position) * rotate(attitude) * scale(scale) * translate(-pivot).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(3)</td>
+            <td>
+<p>origin in the parent frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-attitude~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>attitude</strong>(4)</td>
+            <td>
+<p>quaternion [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-scale~10"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>scale</strong>(3)</td>
+            <td>
+<p>scale along each local axis (default 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-pivot~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>pivot</strong>(3)</td>
+            <td>
+<p>local point placed at <code>position</code> (default 0)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4,4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-identity_matrix"></span> <h3>public pure function <a href='../proc/identity_matrix.html'>identity_matrix</a>() result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The 4x4 identity matrix.</p>
+
+  <h4>Arguments</h4>
+    <em>None</em>
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4,4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_conjugate"></span> <h3>public pure function <a href='../proc/quat_conjugate.html'>quat_conjugate</a>(q) result(c)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The conjugate of q: the inverse rotation, for a unit quaternion.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~22"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>quaternion [x, y, z, w]</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_from_axis_angle"></span> <h3>public pure function <a href='../proc/quat_from_axis_angle.html'>quat_from_axis_angle</a>(axis, angle) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The rotation by <code>angle</code> (radians) about <code>axis</code> (need not be unit length).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-axis~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>axis</strong>(3)</td>
+            <td>
+<p>rotation axis (any length; zero: the identity)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-angle~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>angle</strong></td>
+            <td>
+<p>(radians)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_from_matrix"></span> <h3>public pure function <a href='../proc/quat_from_matrix.html'>quat_from_matrix</a>(m) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The unit quaternion of a 3x3 rotation matrix (columns: the rotated
+axes; the inverse of quat_to_matrix), by Shepperd's method (from the
+largest of w and the vector components, for accuracy).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~45"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>m</strong>(3,3)</td>
+            <td>
+<p>rotation matrix (columns: the rotated axes)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_from_vectors"></span> <h3>public pure function <a href='../proc/quat_from_vectors.html'>quat_from_vectors</a>(from, to) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The shortest rotation taking the direction of <code>from</code> to that of <code>to</code>
+(OpenSceneGraph's osg::Quat::makeRotate(from, to)); a half turn about a
+perpendicular axis if they are opposite, the identity if either is zero.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-from~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>from</strong>(3)</td>
+            <td>
+<p>directions (any length)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-to~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>to</strong>(3)</td>
+            <td>
+<p>directions (any length)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_multiply"></span> <h3>public pure function <a href='../proc/quat_multiply.html'>quat_multiply</a>(a, b) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The product a*b: rotating by b, then by a.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~46"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(4)</td>
+            <td>
+<p>quaternions [x, y, z, w]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(4)</td>
+            <td>
+<p>quaternions [x, y, z, w]</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_normalize"></span> <h3>public pure function <a href='../proc/quat_normalize.html'>quat_normalize</a>(q) result(u)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>q / |q| (the identity for a zero quaternion).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~23"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>quaternion [x, y, z, w] (any length)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_rotate"></span> <h3>public pure function <a href='../proc/quat_rotate.html'>quat_rotate</a>(q, v) result(r)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The vector v rotated by the unit quaternion q.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~24"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>unit quaternion [x, y, z, w], and the vector</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-v~57"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>v</strong>(3)</td>
+            <td>
+<p>unit quaternion [x, y, z, w], and the vector</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_slerp"></span> <h3>public pure function <a href='../proc/quat_slerp.html'>quat_slerp</a>(t, a, b) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Spherical linear interpolation from <code>a</code> (t = 0) to <code>b</code> (t = 1), along the
+shorter arc; linear when the two are nearly equal. As OpenSceneGraph's
+osg::Quat::slerp, which OpenFrames' TrajectoryFollower uses, except that
+the linear case is normalized (OSG's isn't: a quaternion a little short of
+unit length, its rotation matrix then also scaling, by a millionth for
+attitudes 0.25 deg apart, a kilometre at the Moon's distance).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~61"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the fraction of the way (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-a~47"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>a</strong>(4)</td>
+            <td>
+<p>unit quaternions [x, y, z, w] at t = 0 and t = 1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-b~21"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>b</strong>(4)</td>
+            <td>
+<p>unit quaternions [x, y, z, w] at t = 0 and t = 1</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quat_to_matrix"></span> <h3>public pure function <a href='../proc/quat_to_matrix.html'>quat_to_matrix</a>(q) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The 3x3 rotation matrix of the unit quaternion q (columns: the rotated axes).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-q~25"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>q</strong>(4)</td>
+            <td>
+<p>unit quaternion [x, y, z, w]</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (3,3)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-rigid_inverse"></span> <h3>public pure function <a href='../proc/rigid_inverse.html'>rigid_inverse</a>(m) result(inv)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The inverse of a rigid transform (rotation and translation): [R' -R't].</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-m~46"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>m</strong>(4,4)</td>
+            <td>
+<p>rigid transform (rotation and translation)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4,4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-translation_matrix"></span> <h3>public pure function <a href='../proc/translation_matrix.html'>translation_matrix</a>(t) result(m)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The 4x4 transform translating by <code>t</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~62"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong>(3)</td>
+            <td>
+<p>translation</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4,4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_rgba"></span> <h3>public pure subroutine <a href='../proc/set_rgba.html'>set_rgba</a>(rgba, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set <code>rgba</code> from <code>color</code>: [r, g, b] (alpha unchanged) or [r, g, b, a].</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~35"></span>
+              real(kind=wp),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~55"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

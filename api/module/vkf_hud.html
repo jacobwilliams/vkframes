@@ -1,0 +1,2074 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_hud &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_hud
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 0.9% of total for modules and submodules.">127 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_hud.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_hud.f90.html'>vkf_hud.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_hud</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_hud.html#interface-hudtext">HUDText</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_hud.html#type-hudtext">HUDText</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-alignment">alignment</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-color~2">color</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-font">font</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-is_shown">is_shown</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-new_hud_text">new_hud_text</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-position~2">position</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-revision">revision</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-size">size</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-text">text</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-set_alignment">set_alignment</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-set_color~2">set_color</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-set_font">set_font</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-set_position~2">set_position</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-set_size">set_size</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-set_text">set_text</a>
+            <a class="list-group-item" href="../module/vkf_hud.html#proc-show">show</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>HUD text: text drawn on top of the scene at a fixed place in a window, as
+OpenFrames' HUD text (one per RenderRectangle there; any number here).</p>
+<p>Its position is (x, y) from 0 to 1 across the window, left to right and
+bottom to top, and the text's alignment (an ALIGN_* constant) says which
+point of the text is there; its size is in window units (logical pixels).
+Everything can change at any time, also while shown: the text (e.g. a
+clock; up to 256 characters, or twice the text's length when first shown
+if more: longer ones are cut), color, position, size and alignment in
+place, and the font (the text is made again). Moved each frame to an
+object's place on the screen (<a href="../type/windowproxy.html#boundprocedure-screen_position">screen_position</a>), it is a
+callout that follows the object. A HUDText can be shown in several
+windows (<a href="../type/windowproxy.html#boundprocedure-add_hud_text">add_hud_text</a>); it is not owned by them and must
+stay alive while shown.</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='vkf_frames.html'>vkf_frames</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_hud~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_hudUsesGraph" width="641pt" height="326pt"
+ viewBox="0.00 0.00 641.00 326.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_hud~~UsesGraph" class="graph" transform="scale(0.967401 0.967401) rotate(0) translate(4 333.49)">
+<title>module~~vkf_hud~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-333.49 658.6,-333.49 658.6,4 -4,4"/>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_hud~~UsesGraph_node1" class="node">
+<title>module~vkf_hud</title>
+<polygon fill="none" stroke="black" points="654.6,-267.49 600.6,-267.49 600.6,-243.22 654.6,-243.22 654.6,-267.49"/>
+<text xml:space="preserve" text-anchor="middle" x="627.6" y="-251.76" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_hud</text>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_hud~~UsesGraph_node2" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node2"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="564.6,-187.49 494.58,-187.49 494.58,-163.22 564.6,-163.22 564.6,-187.49"/>
+<text xml:space="preserve" text-anchor="middle" x="529.59" y="-171.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_hud~~UsesGraph_edge1" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M611.6,-242.86C596.24,-230.06 572.14,-209.98 554.22,-195.05"/>
+<polygon fill="#000000" stroke="#000000" points="556.57,-192.45 546.65,-188.74 552.09,-197.83 556.57,-192.45"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_node3" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node3"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-267.49 140.52,-267.49 140.52,-243.22 200.79,-243.22 200.79,-267.49"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-251.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge2" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.21,-267.11C567.68,-280.91 510.33,-302.96 458.58,-311.36 421.61,-317.36 411.01,-318.82 374.31,-311.36 336.4,-303.65 332.85,-276.3 294.17,-277.36"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge7" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.96,-187.73C512.81,-208.84 489.58,-252.07 458.58,-278.36 443.22,-291.38 435.9,-289.3 417.44,-297.36"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M415.44,-297.36C365.38,-319.21 348.78,-275.86 294.17,-277.36"/>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_hud~~UsesGraph_node4" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node4"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-147.49 129.27,-147.49 129.27,-123.22 212.04,-123.22 212.04,-147.49"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-131.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_hud~~UsesGraph_edge3" class="edge">
+<title>module~vkf_frames&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M526.82,-163.07C521.96,-134.42 505.5,-63.45 458.58,-34.36 379.05,14.95 331.82,7.32 248.04,-34.36 215.44,-50.58 193.05,-88.09 181.3,-112.55"/>
+<polygon fill="#000000" stroke="#000000" points="178.24,-110.82 177.28,-121.37 184.61,-113.72 178.24,-110.82"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_hud~~UsesGraph_node6" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node6"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="454.08,-227.49 378.81,-227.49 378.81,-203.22 454.08,-203.22 454.08,-227.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-211.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_hud~~UsesGraph_edge4" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.34,-187.69C484.49,-191.23 473.59,-195.15 463.17,-198.9"/>
+<polygon fill="#000000" stroke="#000000" points="462.19,-195.53 453.97,-202.21 464.56,-202.12 462.19,-195.53"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_hud~~UsesGraph_node7" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node7"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="458.58,-147.49 374.31,-147.49 374.31,-123.22 458.58,-123.22 458.58,-147.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-131.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_hud~~UsesGraph_edge5" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.34,-163.03C484.49,-159.49 473.59,-155.56 463.17,-151.81"/>
+<polygon fill="#000000" stroke="#000000" points="464.56,-148.6 453.97,-148.5 462.19,-155.18 464.56,-148.6"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_hud~~UsesGraph_node8" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node8"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="322.93,-147.49 263.41,-147.49 263.41,-123.22 322.93,-123.22 322.93,-147.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-131.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_hud~~UsesGraph_edge6" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M519.1,-162.85C506.96,-148 484.4,-124.03 458.58,-114.36 418.03,-99.17 368.34,-109.09 334.27,-119.86"/>
+<polygon fill="#000000" stroke="#000000" points="333.16,-116.54 324.79,-123.02 335.38,-123.18 333.16,-116.54"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_hud~~UsesGraph_node9" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node9"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="443.58,-269.49 389.31,-269.49 389.31,-245.22 443.58,-245.22 443.58,-269.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-253.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_hud~~UsesGraph_edge8" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.45,-187.59C503.06,-200.68 480.48,-221.55 458.58,-236.36 456.98,-237.44 455.32,-238.5 453.62,-239.54"/>
+<polygon fill="#000000" stroke="#000000" points="451.96,-236.46 444.99,-244.44 455.41,-242.55 451.96,-236.46"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_hud~~UsesGraph_node10" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node10"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="443.44,-67.49 389.44,-67.49 389.44,-43.22 443.44,-43.22 443.44,-67.49"/>
+<text xml:space="preserve" text-anchor="middle" x="416.44" y="-51.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_hud~~UsesGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M521.42,-162.96C509.94,-143.82 485.9,-106.66 458.58,-81.36 455.85,-78.83 452.85,-76.41 449.74,-74.12"/>
+<polygon fill="#000000" stroke="#000000" points="451.79,-71.28 441.55,-68.57 447.87,-77.08 451.79,-71.28"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_hud~~UsesGraph_node11" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node11"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="335.31,-227.49 251.04,-227.49 251.04,-203.22 335.31,-203.22 335.31,-227.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-211.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_hud~~UsesGraph_edge10" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.37,-178.25C462.98,-181.21 415.26,-186.51 374.31,-194.36 365.27,-196.09 355.75,-198.27 346.54,-200.56"/>
+<polygon fill="#000000" stroke="#000000" points="345.8,-197.14 336.99,-203.02 347.55,-203.92 345.8,-197.14"/>
+</g>
+<!-- module~vkf_web_writer -->
+<g id="module~~vkf_hud~~UsesGraph_node12" class="node">
+<title>module~vkf_web_writer</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node12"><a xlink:href="../module/vkf_web_writer.html" xlink:title="vkf_web_writer">
+<polygon fill="#337ab7" stroke="#337ab7" points="338.31,-329.49 248.04,-329.49 248.04,-305.22 338.31,-305.22 338.31,-329.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-313.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_web_writer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_hud~~UsesGraph_edge11" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M415.44,-297.36C395.07,-306.25 371.18,-311.22 350.03,-313.98"/>
+<polygon fill="#000000" stroke="#000000" points="349.63,-310.5 340.1,-315.13 350.43,-317.46 349.63,-310.5"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_hud~~UsesGraph_node5" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node5"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-267.49 0,-267.49 0,-243.22 93.27,-243.22 93.27,-267.49"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-251.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_hud~~UsesGraph_edge12" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-255.36C129.53,-255.36 117.21,-255.36 105.08,-255.36"/>
+<polygon fill="#000000" stroke="#000000" points="105.08,-251.86 95.08,-255.36 105.08,-258.86 105.08,-251.86"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge13" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391.08,-227.79C385.57,-230.61 379.74,-233.58 374.31,-236.36 338.69,-254.56 334.17,-276.26 294.17,-277.36"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_hud~~UsesGraph_edge14" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M378.4,-215.36C368.48,-215.36 357.55,-215.36 346.96,-215.36"/>
+<polygon fill="#000000" stroke="#000000" points="347.16,-211.86 337.16,-215.36 347.16,-218.86 347.16,-211.86"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge17" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M407.05,-147.7C393.51,-167.27 365.6,-206.3 338.31,-236.36 320.31,-256.18 320.94,-276.62 294.17,-277.36"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M292.17,-277.36C265.13,-278.1 235.21,-272.67 211.95,-267.03"/>
+<polygon fill="#000000" stroke="#000000" points="213.13,-263.71 202.57,-264.64 211.4,-270.5 213.13,-263.71"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_hud~~UsesGraph_edge15" class="edge">
+<title>module~vkf_geometry&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.01,-147.98C364.78,-151.41 351.1,-154.65 338.31,-156.36 298.54,-161.67 287.8,-161.72 248.04,-156.36 239.13,-155.15 229.78,-153.2 220.81,-150.95"/>
+<polygon fill="#000000" stroke="#000000" points="221.73,-147.57 211.17,-148.37 219.92,-154.33 221.73,-147.57"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_hud~~UsesGraph_edge16" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M374.05,-135.36C361.23,-135.36 347.13,-135.36 334.4,-135.36"/>
+<polygon fill="#000000" stroke="#000000" points="334.67,-131.86 324.67,-135.36 334.67,-138.86 334.67,-131.86"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_hud~~UsesGraph_edge18" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M263,-135.36C251.14,-135.36 237.06,-135.36 223.55,-135.36"/>
+<polygon fill="#000000" stroke="#000000" points="223.91,-131.86 213.91,-135.36 223.91,-138.86 223.91,-131.86"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge19" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.15,-263.82C364.72,-269.31 327.24,-276.45 294.17,-277.36"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge23" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M292.17,-95.36C273.42,-105.58 263.8,-99.95 248.04,-114.36 211.94,-147.35 189.41,-201.46 178.83,-232.17"/>
+<polygon fill="#000000" stroke="#000000" points="175.52,-231.03 175.72,-241.62 182.17,-233.22 175.52,-231.03"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_hud~~UsesGraph_edge20" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.18,-62.81C358.77,-71.66 310.72,-86.34 294.17,-95.36"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M292.17,-95.36C279.88,-102.06 250.13,-111.96 223.26,-120.23"/>
+<polygon fill="#000000" stroke="#000000" points="222.36,-116.84 213.82,-123.1 224.4,-123.54 222.36,-116.84"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_hud~~UsesGraph_edge22" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M394.68,-67.93C388.08,-72.07 380.81,-76.79 374.31,-81.36 357.72,-93.01 355.08,-97.97 338.31,-109.36 334.42,-112 330.25,-114.66 326.09,-117.22"/>
+<polygon fill="#000000" stroke="#000000" points="324.61,-114.03 317.82,-122.17 328.2,-120.04 324.61,-114.03"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_hud~~UsesGraph_node13" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_hud~~UsesGraph_node13"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="320.31,-67.49 266.04,-67.49 266.04,-43.22 320.31,-43.22 320.31,-67.49"/>
+<text xml:space="preserve" text-anchor="middle" x="293.17" y="-51.76" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_hud~~UsesGraph_edge21" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M389.13,-55.36C372.37,-55.36 350.38,-55.36 331.79,-55.36"/>
+<polygon fill="#000000" stroke="#000000" points="331.95,-51.86 321.95,-55.36 331.95,-58.86 331.95,-51.86"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge26" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.37,-227.9C240.75,-232.42 225.35,-237.54 211.56,-242.11"/>
+<polygon fill="#000000" stroke="#000000" points="210.73,-238.7 202.35,-245.17 212.94,-245.34 210.73,-238.7"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_hud~~UsesGraph_edge24" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M269.96,-202.75C262.88,-198.61 255.06,-193.9 248.04,-189.36 230.81,-178.22 211.98,-164.92 197.33,-154.31"/>
+<polygon fill="#000000" stroke="#000000" points="199.73,-151.73 189.59,-148.67 195.61,-157.39 199.73,-151.73"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_hud~~UsesGraph_edge25" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M250.77,-218.62C217.7,-221.61 170.28,-226.73 129.27,-234.36 120.67,-235.96 111.64,-237.95 102.84,-240.08"/>
+<polygon fill="#000000" stroke="#000000" points="102.2,-236.63 93.35,-242.44 103.9,-243.42 102.2,-236.63"/>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_hud~~UsesGraph_edge28" class="edge">
+<title>module~vkf_web_writer&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M267.79,-304.81C250.06,-295.69 225.83,-283.23 206.13,-273.09"/>
+<polygon fill="#000000" stroke="#000000" points="207.85,-270.04 197.35,-268.58 204.64,-276.26 207.85,-270.04"/>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_hud~~UsesGraph_edge27" class="edge">
+<title>module~vkf_web_writer&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.56,-306.2C214.81,-297.99 169.26,-286.53 129.27,-276.36 121.18,-274.3 112.65,-272.12 104.27,-269.97"/>
+<polygon fill="#000000" stroke="#000000" points="105.41,-266.65 94.86,-267.55 103.67,-273.43 105.41,-266.65"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_hudUsesGraph = svgPanZoom('#modulevkf_hudUsesGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_hud~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_hudUsedByGraph" width="267pt" height="52pt"
+ viewBox="0.00 0.00 267.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_hud~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_hud~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 263.29,-48.27 263.29,4 -4,4"/>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_hud~~UsedByGraph_node1" class="node">
+<title>module~vkf_hud</title>
+<polygon fill="none" stroke="black" points="54,-44.27 0,-44.27 0,-20 54,-20 54,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_hud</text>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_hud~~UsedByGraph_node2" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_hud~~UsedByGraph_node2"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="162.27,-24.27 90,-24.27 90,0 162.27,0 162.27,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="126.13" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_hud~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M89.52,-19.47C81.73,-21.07 73.47,-22.77 65.61,-24.39"/>
+<polygon fill="#000000" stroke="#000000" points="65.06,-20.93 55.97,-26.38 66.47,-27.79 65.06,-20.93"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_hud~~UsedByGraph_node3" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_hud~~UsedByGraph_node3"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="259.29,-44.27 198.27,-44.27 198.27,-20 259.29,-20 259.29,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="228.78" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_hud~~UsedByGraph_edge2" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M197.78,-32.69C186.63,-32.87 173.87,-33.05 162.27,-33.13 130.15,-33.38 122.12,-33.39 90,-33.13 82.12,-33.07 73.67,-32.96 65.63,-32.84"/>
+<polygon fill="#000000" stroke="#000000" points="65.81,-29.34 55.76,-32.68 65.7,-36.34 65.81,-29.34"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_hud~~UsedByGraph_edge3" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M197.86,-26.19C190.21,-24.67 181.8,-23 173.54,-21.36"/>
+<polygon fill="#000000" stroke="#000000" points="174.42,-17.96 163.93,-19.45 173.05,-24.83 174.42,-17.96"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-hudtext"></span>
+      <h3>public        interface <a href='../interface/hudtext.html'>HUDText</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The HUDText constructor: <code>HUDText(...)</code> makes one (see <a href="../proc/new_hud_text.html">new_hud_text</a> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_hud_text.html'>new_hud_text</a>(text, position, alignment, size, color, font) result(h)  
+
+    </h3>
+    
+  <p>HUD text <code>text</code>, optionally at <code>position</code> ([x, y], 0 to 1; default near
+the bottom left), with <code>alignment</code> (default ALIGN_LEFT_BOTTOM), <code>size</code>
+(window units; default 20), <code>color</code> ([r, g, b] or [r, g, b, a]; default
+white) and <code>font</code> (default: the default font).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-text~6"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>text</strong></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(2)</td>
+            <td>
+<p>[x, y] (0 to 1 across the window, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alignment~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alignment</strong></td>
+            <td>
+<p>an ALIGN_* constant</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>character height (window units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~23"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-font~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>font</strong></td>
+            <td>
+<p>font file</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/hudtext.html'>HUDText</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-hudtext"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/hudtext.html'>HUDText</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>HUD text (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alignment_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alignment_</strong></td>
+<td> =</td>
+                <td>ALIGN_LEFT_BOTTOM</td>
+            <td>
+<p>the point of the text at <code>position_</code> (ALIGN_*)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color_~2"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color_</strong>(4)</td>
+<td> =</td>
+                <td>[1.0_wp, 1.0_wp, 1.0_wp, 1.0_wp]</td>
+            <td>
+<p>[r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-font_"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>font_</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>font file (unallocated: the default font)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position_~2"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position_</strong>(2)</td>
+<td> =</td>
+                <td>[0.01_wp, 0.01_wp]</td>
+            <td>
+<p>[x, y] (0 to 1 across the window, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-revision_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>revision_</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>incremented by each change</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shown~3"></span>
+              logical,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shown</strong></td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>false while hidden</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size_~2"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size_</strong></td>
+<td> =</td>
+                <td>20.0_wp</td>
+            <td>
+<p>character height (window units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-text_"></span>
+              character(len=:),
+            </td>
+              <td>private,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>text_</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The HUDText constructor: <code>HUDText(...)</code> makes one (see <a href="../proc/new_hud_text.html">new_hud_text</a> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_hud_text.html'>new_hud_text</a></strong>
+                    (text, position, alignment, size, color, font)
+                  </td>
+                  <td><p>HUD text <code>text</code>, optionally at <code>position</code> ([x, y], 0 to 1; default near
+the bottom left), with <code>alignment</code> (default ALIGN_LEFT_BOTTOM), <code>size</code>
+(window units; default 20), <code>color</code> ([r, g, b] or [r, g, b, a]; default
+white) and <code>font</code> (default: the default font).</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-alignment~2'>alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-color~22'>color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-font~3'>font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-is_shown'>is_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-position~5'>position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-revision'>revision</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-set_alignment'>set_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-set_color~5'>set_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-set_font'>set_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-set_position~2'>set_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-set_size'>set_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-set_text'>set_text</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-show~4'>show</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-size~2'>size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/hudtext.html#boundprocedure-text~5'>text</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-alignment"></span> <h3>private pure function <a href='../proc/alignment.html'>alignment</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Which point of the text is at its position (an ALIGN_* constant).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~239"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-color~2"></span> <h3>private pure function <a href='../proc/color~2.html'>color</a>(self) result(c)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The color: [r, g, b, a] (0 to 1).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~243"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-font"></span> <h3>private  function <a href='../proc/font.html'>font</a>(self) result(f)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The font file ('' for the default font).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~245"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-is_shown"></span> <h3>private pure function <a href='../proc/is_shown.html'>is_shown</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>True if the text is shown.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~247"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_hud_text"></span> <h3>private  function <a href='../proc/new_hud_text.html'>new_hud_text</a>(text, position, alignment, size, color, font) result(h)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>HUD text <code>text</code>, optionally at <code>position</code> ([x, y], 0 to 1; default near
+the bottom left), with <code>alignment</code> (default ALIGN_LEFT_BOTTOM), <code>size</code>
+(window units; default 20), <code>color</code> ([r, g, b] or [r, g, b, a]; default
+white) and <code>font</code> (default: the default font).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-text~6"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>text</strong></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(2)</td>
+            <td>
+<p>[x, y] (0 to 1 across the window, y up)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alignment~3"></span>
+              integer,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alignment</strong></td>
+            <td>
+<p>an ALIGN_* constant</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>character height (window units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~23"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-font~4"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>font</strong></td>
+            <td>
+<p>font file</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/hudtext.html'>HUDText</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-position~2"></span> <h3>private pure function <a href='../proc/position~2.html'>position</a>(self) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Where the text is: [x, y] (0 to 1 across the window, y up).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~237"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (2)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-revision"></span> <h3>private pure function <a href='../proc/revision.html'>revision</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Number of changes so far (for the windows drawing the text to update it).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~248"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-size"></span> <h3>private pure function <a href='../proc/size.html'>size</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The size of the text: character height (window units).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~241"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-text"></span> <h3>private  function <a href='../proc/text.html'>text</a>(self) result(t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The text (as shown: '' while hidden).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~235"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_alignment"></span> <h3>private  subroutine <a href='../proc/set_alignment.html'>set_alignment</a>(self, alignment)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set which point of the text is at its position.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~238"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-alignment~4"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>alignment</strong></td>
+            <td>
+<p>an ALIGN_* constant</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_color~2"></span> <h3>private  subroutine <a href='../proc/set_color~2.html'>set_color</a>(self, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>[r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~242"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~24"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] or [r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_font"></span> <h3>private  subroutine <a href='../proc/set_font.html'>set_font</a>(self, font)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set the font (the text is made again when next drawn).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~244"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-font~5"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>font</strong></td>
+            <td>
+<p>font file</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_position~2"></span> <h3>private  subroutine <a href='../proc/set_position~2.html'>set_position</a>(self, position)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set where the text is.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~236"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-position~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>position</strong>(2)</td>
+            <td>
+<p>[x, y] (0 to 1 across the window, y up)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_size"></span> <h3>private  subroutine <a href='../proc/set_size.html'>set_size</a>(self, size)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set the size of the text.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~240"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>character height (window units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_text"></span> <h3>private  subroutine <a href='../proc/set_text.html'>set_text</a>(self, text)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Set the text (up to 256 characters, or twice the first text's length; see the module documentation).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~234"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-text~7"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>text</strong></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-show"></span> <h3>private  subroutine <a href='../proc/show.html'>show</a>(self, shown)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Show (true) or hide the text (OpenFrames' enable HUD text).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~246"></span>
+              class(<a href='../type/hudtext.html'>HUDText</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shown~4"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shown</strong></td>
+            <td>
+<p>true: show; false: hide</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

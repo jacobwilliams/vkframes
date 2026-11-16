@@ -1,0 +1,3997 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_web_writer &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_web_writer
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 4.2% of total for modules and submodules.">620 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_web_writer.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_web_writer.f90.html'>vkf_web_writer.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_web_writer</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_web_writer.html#variable-web_chunk">WEB_CHUNK</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#variable-max_depth">max_depth</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_web_writer.html#type-webasset">WebAsset</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#type-webwriter">WebWriter</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-add_asset">add_asset</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-base64_decode">base64_decode</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-base64_encode">base64_encode</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-escape_html">escape_html</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-json_number">json_number</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-json_text">json_text</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-lower">lower</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-mime_of">mime_of</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-num_bytes">num_bytes</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-quoted">quoted</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-read_bytes">read_bytes</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-reserve~3">reserve</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-write_html">write_html</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-begin_array">begin_array</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-begin_line_item">begin_line_item</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-begin_mesh_item">begin_mesh_item</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-begin_object">begin_object</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-begin_point_item">begin_point_item</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-emit">emit</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-end_array">end_array</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-end_object">end_object</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_chunk">put_chunk</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_chunk_points">put_chunk_points</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_f32">put_f32</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_f64">put_f64</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_int">put_int</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_ints">put_ints</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_logical">put_logical</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_real">put_real</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_reals">put_reals</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_ref">put_ref</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_string">put_string</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_strings">put_strings</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-put_u32">put_u32</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-start_value">start_value</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-warn_once">warn_once</a>
+            <a class="list-group-item" href="../module/vkf_web_writer.html#proc-write_base64">write_base64</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Writing a scene for the web (WindowProxy%export_web): the page's scene
+description (JSON), its binary arrays (one buffer of float32, float64 and
+uint32 arrays, referred to from the JSON by byte offset and count), its
+assets (textures and models, copied from their files), and the page
+itself (one self-contained HTML file: the JSON, the arrays and the assets
+inlined, base64 for the binary ones, and vkframes' Three.js viewer,
+data/web/vkf_viewer.js).</p>
+<p>Frames write what they draw through the item writers here
+(<a href="../type/webwriter.html#boundprocedure-begin_line_item">begin_line_item</a>, <a href="../type/webwriter.html#boundprocedure-begin_point_item">begin_point_item</a>,
+<a href="../type/webwriter.html#boundprocedure-begin_mesh_item">begin_mesh_item</a>): positions in float32, cut into chunks
+that each have their own origin (in double precision), so that points far
+from the frame's origin keep their precision (the viewer places each chunk
+at its origin, and Three.js composes the transforms in double precision);
+times in float32 relative to the export's reference time
+(<a href="../type/webwriter.html#variable-t_ref">t_ref</a>).</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_fortran_env'>iso_fortran_env</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_web_writer~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_web_writerUsesGraph" width="324pt" height="52pt"
+ viewBox="0.00 0.00 324.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_web_writer~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48.27)">
+<title>module~~vkf_web_writer~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-48.27 319.81,-48.27 319.81,4 -4,4"/>
+<!-- module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsesGraph_node1" class="node">
+<title>module~vkf_web_writer</title>
+<polygon fill="none" stroke="black" points="315.81,-44.27 225.54,-44.27 225.54,-20 315.81,-20 315.81,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="270.68" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_web_writer</text>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_web_writer~~UsesGraph_node2" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_web_writer~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-44.27 0,-44.27 0,-20 93.27,-20 93.27,-44.27"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-28.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_web_writer~~UsesGraph_edge1" class="edge">
+<title>module~vkf_web_writer&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.17,-32.79C213.57,-32.93 201.09,-33.06 189.54,-33.13 162.75,-33.3 156.06,-33.3 129.27,-33.13 121.37,-33.09 113.04,-33.01 104.84,-32.92"/>
+<polygon fill="#000000" stroke="#000000" points="104.95,-29.43 94.91,-32.81 104.87,-36.43 104.95,-29.43"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_web_writer~~UsesGraph_node3" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_web_writer~~UsesGraph_node3"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="189.54,-24.27 129.27,-24.27 129.27,0 189.54,0 189.54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="159.41" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_web_writer~~UsesGraph_edge2" class="edge">
+<title>module~vkf_web_writer&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.23,-24C217.21,-22.53 208.89,-21.01 200.99,-19.56"/>
+<polygon fill="#000000" stroke="#000000" points="201.75,-16.14 191.28,-17.79 200.49,-23.03 201.75,-16.14"/>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_web_writer~~UsesGraph_edge3" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.01,-17.44C121.44,-18.81 113.02,-20.33 104.56,-21.86"/>
+<polygon fill="#000000" stroke="#000000" points="104.18,-18.37 94.96,-23.59 105.42,-25.26 104.18,-18.37"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_web_writer~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_web_writerUsedByGraph" width="641pt" height="420pt"
+ viewBox="0.00 0.00 641.00 420.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_web_writer~~UsedByGraph" class="graph" transform="scale(0.963736 0.963736) rotate(0) translate(4 432.27)">
+<title>module~~vkf_web_writer~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-432.27 661.12,-432.27 661.12,4 -4,4"/>
+<!-- module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node1" class="node">
+<title>module~vkf_web_writer</title>
+<polygon fill="none" stroke="black" points="90.27,-208.27 0,-208.27 0,-184 90.27,-184 90.27,-208.27"/>
+<text xml:space="preserve" text-anchor="middle" x="45.13" y="-192.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_web_writer</text>
+</g>
+<!-- module~vkf_artists -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node2" class="node">
+<title>module~vkf_artists</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node2"><a xlink:href="../module/vkf_artists.html" xlink:title="vkf_artists">
+<polygon fill="#337ab7" stroke="#337ab7" points="319.19,-306.27 254.42,-306.27 254.42,-282 319.19,-282 319.19,-306.27"/>
+<text xml:space="preserve" text-anchor="middle" x="286.8" y="-290.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_artists</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge1" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.03,-286.16C228.59,-279.24 192.32,-268.12 162.28,-254.13"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node3" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node3"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="196.29,-208.27 126.27,-208.27 126.27,-184 196.29,-184 196.29,-208.27"/>
+<text xml:space="preserve" text-anchor="middle" x="161.28" y="-192.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_artists&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge13" class="edge">
+<title>module~vkf_artists&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M269.9,-281.52C248.87,-264.84 211.59,-235.26 186.9,-215.67"/>
+<polygon fill="#000000" stroke="#000000" points="189.31,-213.11 179.3,-209.64 184.96,-218.6 189.31,-213.11"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge2" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M126.03,-196.13C118.44,-196.13 110.21,-196.13 102.01,-196.13"/>
+<polygon fill="#000000" stroke="#000000" points="102.03,-192.64 92.03,-196.14 102.03,-199.64 102.03,-192.64"/>
+</g>
+<!-- module~vkf_line_segments -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node4" class="node">
+<title>module~vkf_line_segments</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node4"><a xlink:href="../module/vkf_line_segments.html" xlink:title="vkf_line_segments">
+<polygon fill="#337ab7" stroke="#337ab7" points="341.31,-428.27 232.29,-428.27 232.29,-404 341.31,-404 341.31,-428.27"/>
+<text xml:space="preserve" text-anchor="middle" x="286.8" y="-412.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_line_segments</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge3" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M244.49,-403.63C240.08,-401.25 235.89,-398.44 232.29,-395.13 180.71,-347.86 225.71,-283.67 162.28,-254.13"/>
+</g>
+<!-- module~vkf_line_segments&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge16" class="edge">
+<title>module~vkf_line_segments&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M242.39,-403.62C238.63,-401.26 235.16,-398.46 232.29,-395.13 186.06,-341.62 226.61,-304.03 196.29,-240.13 192.48,-232.1 187,-224.15 181.56,-217.26"/>
+<polygon fill="#000000" stroke="#000000" points="184.39,-215.2 175.28,-209.79 179.03,-219.7 184.39,-215.2"/>
+</g>
+<!-- module~vkf_model -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node5" class="node">
+<title>module~vkf_model</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node5"><a xlink:href="../module/vkf_model.html" xlink:title="vkf_model">
+<polygon fill="#337ab7" stroke="#337ab7" points="319.94,-386.27 253.67,-386.27 253.67,-362 319.94,-362 319.94,-386.27"/>
+<text xml:space="preserve" text-anchor="middle" x="286.8" y="-370.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_model</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge4" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M253.73,-361.64C246.27,-357.92 238.65,-353.4 232.29,-348.13 192.16,-314.92 209.5,-276.13 162.28,-254.13"/>
+</g>
+<!-- module~vkf_model&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge17" class="edge">
+<title>module~vkf_model&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M253.26,-363.39C245.56,-359.58 237.94,-354.58 232.29,-348.13 198.92,-310.1 220.1,-284.78 196.29,-240.13 192.04,-232.17 186.36,-224.15 180.86,-217.19"/>
+<polygon fill="#000000" stroke="#000000" points="183.66,-215.08 174.59,-209.6 178.26,-219.54 183.66,-215.08"/>
+</g>
+<!-- module~vkf_shapes -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node6" class="node">
+<title>module~vkf_shapes</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node6"><a xlink:href="../module/vkf_shapes.html" xlink:title="vkf_shapes">
+<polygon fill="#337ab7" stroke="#337ab7" points="449.58,-388.27 379.56,-388.27 379.56,-364 449.58,-364 449.58,-388.27"/>
+<text xml:space="preserve" text-anchor="middle" x="414.57" y="-372.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shapes</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge5" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M285.8,-334.13C263.85,-321.68 254.08,-327.87 232.29,-315.13 196.66,-294.31 199.53,-271.9 162.28,-254.13"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge11" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M395.68,-363.69C389.76,-359.48 383.19,-354.68 377.31,-350.13 360.84,-337.39 358.8,-331.44 341.31,-320.13 336.78,-317.21 331.87,-314.39 326.92,-311.76"/>
+<polygon fill="#000000" stroke="#000000" points="328.68,-308.73 318.17,-307.34 325.52,-314.98 328.68,-308.73"/>
+</g>
+<!-- module~vkf_shapes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge19" class="edge">
+<title>module~vkf_shapes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M379.08,-364.98C343.29,-353.35 291.94,-336.49 287.8,-334.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M285.8,-334.13C263.85,-321.68 251.06,-332.01 232.29,-315.13 204.79,-290.42 215.7,-271.6 196.29,-240.13 191.55,-232.45 185.74,-224.51 180.26,-217.53"/>
+<polygon fill="#000000" stroke="#000000" points="183.1,-215.47 174.1,-209.89 177.65,-219.87 183.1,-215.47"/>
+</g>
+<!-- module~vkf_sky -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node7" class="node">
+<title>module~vkf_sky</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node7"><a xlink:href="../module/vkf_sky.html" xlink:title="vkf_sky">
+<polygon fill="#337ab7" stroke="#337ab7" points="441.57,-308.27 387.57,-308.27 387.57,-284 441.57,-284 441.57,-308.27"/>
+<text xml:space="preserve" text-anchor="middle" x="414.57" y="-292.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sky</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sky&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge6" class="edge">
+<title>module~vkf_sky&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M387.15,-286.31C373.62,-281.64 356.77,-276.38 341.31,-273.13 263,-256.69 234.82,-287.91 162.28,-254.13"/>
+</g>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node8" class="node">
+<title>module~vkf_sphere</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node8"><a xlink:href="../module/vkf_sphere.html" xlink:title="vkf_sphere">
+<polygon fill="#337ab7" stroke="#337ab7" points="321.06,-104.27 252.54,-104.27 252.54,-80 321.06,-80 321.06,-104.27"/>
+<text xml:space="preserve" text-anchor="middle" x="286.8" y="-88.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge7" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.31,-83.58C226.06,-78.8 189.55,-76.54 162.28,-92.14"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge20" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.9,-104.64C247.17,-108.43 239.14,-112.98 232.29,-118.14 210.91,-134.25 190.98,-157.6 177.9,-174.55"/>
+<polygon fill="#000000" stroke="#000000" points="175.15,-172.39 171.93,-182.48 180.74,-176.59 175.15,-172.39"/>
+</g>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node9" class="node">
+<title>module~vkf_terrain</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node9"><a xlink:href="../module/vkf_terrain.html" xlink:title="vkf_terrain">
+<polygon fill="#337ab7" stroke="#337ab7" points="321.06,-24.27 252.54,-24.27 252.54,0 321.06,0 321.06,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="286.8" y="-8.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge8" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.9,-24.75C251.75,-29.61 241.4,-35.38 232.29,-41.14 199.74,-61.69 195.7,-73.03 162.28,-92.14"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M160.28,-92.14C121.45,-114.34 84.75,-151.78 63.89,-175.16"/>
+<polygon fill="#000000" stroke="#000000" points="61.4,-172.69 57.46,-182.52 66.67,-177.3 61.4,-172.69"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge21" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.28,-23.96C245.04,-27.66 237.89,-32.34 232.29,-38.14 222.31,-48.47 188.09,-131.75 171.47,-173.06"/>
+<polygon fill="#000000" stroke="#000000" points="168.32,-171.52 167.85,-182.1 174.82,-174.12 168.32,-171.52"/>
+</g>
+<!-- module~vkf_window -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node10" class="node">
+<title>module~vkf_window</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node10"><a xlink:href="../module/vkf_window.html" xlink:title="vkf_window">
+<polygon fill="#337ab7" stroke="#337ab7" points="560.1,-226.27 487.83,-226.27 487.83,-202 560.1,-202 560.1,-226.27"/>
+<text xml:space="preserve" text-anchor="middle" x="523.97" y="-210.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_window</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge9" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M285.8,-178.13C221.62,-184.16 220.46,-281.88 162.28,-254.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M160.28,-254.13C133.09,-241.17 102.69,-225.67 80.11,-213.96"/>
+<polygon fill="#000000" stroke="#000000" points="81.84,-210.92 71.35,-209.41 78.61,-217.13 81.84,-210.92"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge23" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M487.56,-210.1C458.02,-206.59 414.83,-201.14 377.31,-195.13 337.33,-188.74 328.26,-176.44 287.8,-178.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M285.8,-178.13C259.96,-180.56 231.26,-184.65 208.04,-188.33"/>
+<polygon fill="#000000" stroke="#000000" points="207.58,-184.86 198.27,-189.9 208.7,-191.77 207.58,-184.86"/>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge28" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M509.93,-226.6C496.1,-239.51 473.33,-259.89 451.83,-275.13 450.66,-275.96 449.46,-276.79 448.23,-277.61"/>
+<polygon fill="#000000" stroke="#000000" points="446.49,-274.57 439.88,-282.85 450.21,-280.5 446.49,-274.57"/>
+</g>
+<!-- module~vkf_handles -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node11" class="node">
+<title>module~vkf_handles</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node11"><a xlink:href="../module/vkf_handles.html" xlink:title="vkf_handles">
+<polygon fill="#337ab7" stroke="#337ab7" points="451.83,-266.27 377.31,-266.27 377.31,-242 451.83,-242 451.83,-266.27"/>
+<text xml:space="preserve" text-anchor="middle" x="414.57" y="-250.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_handles</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge35" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M489.28,-226.68C479.88,-230.18 469.53,-234.04 459.63,-237.72"/>
+<polygon fill="#000000" stroke="#000000" points="458.7,-234.33 450.55,-241.1 461.15,-240.89 458.7,-234.33"/>
+</g>
+<!-- module~vkf_hud -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node12" class="node">
+<title>module~vkf_hud</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node12"><a xlink:href="../module/vkf_hud.html" xlink:title="vkf_hud">
+<polygon fill="#337ab7" stroke="#337ab7" points="441.57,-186.27 387.57,-186.27 387.57,-162 441.57,-162 441.57,-186.27"/>
+<text xml:space="preserve" text-anchor="middle" x="414.57" y="-170.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_hud</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge37" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M489.28,-201.59C477.6,-197.24 464.44,-192.34 452.52,-187.9"/>
+<polygon fill="#000000" stroke="#000000" points="453.99,-184.71 443.4,-184.5 451.55,-191.27 453.99,-184.71"/>
+</g>
+<!-- module~vkf_view -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node14" class="node">
+<title>module~vkf_view</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node14"><a xlink:href="../module/vkf_view.html" xlink:title="vkf_view">
+<polygon fill="#337ab7" stroke="#337ab7" points="442.83,-144.27 386.31,-144.27 386.31,-120 442.83,-120 442.83,-144.27"/>
+<text xml:space="preserve" text-anchor="middle" x="414.57" y="-128.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_view</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_window&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge40" class="edge">
+<title>module~vkf_window&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M509.93,-201.67C496.1,-188.76 473.33,-168.38 451.83,-153.13 450.66,-152.31 449.46,-151.48 448.23,-150.66"/>
+<polygon fill="#000000" stroke="#000000" points="450.21,-147.77 439.88,-145.42 446.49,-153.7 450.21,-147.77"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge10" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M376.85,-265.81C362.27,-270.45 345.4,-275.82 330.29,-280.62"/>
+<polygon fill="#000000" stroke="#000000" points="329.56,-277.18 321.09,-283.55 331.69,-283.85 329.56,-277.18"/>
+</g>
+<!-- module~vkf_handles&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge14" class="edge">
+<title>module~vkf_handles&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.03,-245.7C332.17,-235.35 256.08,-217.78 207.55,-206.58"/>
+<polygon fill="#000000" stroke="#000000" points="208.45,-203.2 197.92,-204.36 206.88,-210.02 208.45,-203.2"/>
+</g>
+<!-- module~vkf_hud&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge15" class="edge">
+<title>module~vkf_hud&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M387.24,-161.69C356.34,-147.74 306.89,-127.6 287.8,-132.13"/>
+</g>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node13" class="node">
+<title>module~vkf_shadow</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node13"><a xlink:href="../module/vkf_shadow.html" xlink:title="vkf_shadow">
+<polygon fill="#337ab7" stroke="#337ab7" points="451.08,-64.27 378.06,-64.27 378.06,-40 451.08,-40 451.08,-64.27"/>
+<text xml:space="preserve" text-anchor="middle" x="414.57" y="-48.54" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_shadow</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge18" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.67,-46.74C338.6,-42.83 275.9,-42.42 232.29,-71.14 196.32,-94.82 176.98,-143.65 168.23,-172.77"/>
+<polygon fill="#000000" stroke="#000000" points="164.94,-171.54 165.61,-182.11 171.68,-173.43 164.94,-171.54"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge30" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.87,-63.49C363.61,-68.03 347.04,-73.29 332.03,-78.07"/>
+<polygon fill="#000000" stroke="#000000" points="331.34,-74.61 322.87,-80.98 333.46,-81.28 331.34,-74.61"/>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge32" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.87,-40.78C363.61,-36.24 347.04,-30.98 332.03,-26.2"/>
+<polygon fill="#000000" stroke="#000000" points="333.46,-22.99 322.87,-23.29 331.34,-29.66 333.46,-22.99"/>
+</g>
+<!-- module~vkf_view&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge22" class="edge">
+<title>module~vkf_view&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M385.91,-128.51C360.14,-125.98 320.83,-124.29 287.8,-132.13"/>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_web_writer~~UsedByGraph_node15" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_web_writer~~UsedByGraph_node15"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="657.12,-226.27 596.1,-226.27 596.1,-202 657.12,-202 657.12,-226.27"/>
+<text xml:space="preserve" text-anchor="middle" x="626.61" y="-210.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_artists -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge12" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_artists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-336.13C489.38,-351.69 388.3,-325.14 330.18,-307.63"/>
+<polygon fill="#000000" stroke="#000000" points="331.54,-304.39 320.95,-304.81 329.49,-311.08 331.54,-304.39"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge24" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M413.57,-92.14C384.33,-94.41 316.33,-125.36 287.8,-132.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M285.8,-132.13C250.02,-140.63 213.11,-161.66 189.07,-177.31"/>
+<polygon fill="#000000" stroke="#000000" points="187.23,-174.33 180.85,-182.79 191.11,-180.15 187.23,-174.33"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_line_segments -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge25" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_line_segments</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M413.57,-416.13C394.22,-420.75 372.71,-422.08 353.03,-421.88"/>
+<polygon fill="#000000" stroke="#000000" points="353.28,-418.39 343.2,-421.64 353.11,-425.39 353.28,-418.39"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_model -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge26" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_model</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-336.13C468.81,-360.82 473.46,-402.32 415.57,-416.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M413.57,-416.13C405.16,-418.14 363.3,-403.33 330.15,-390.74"/>
+<polygon fill="#000000" stroke="#000000" points="331.75,-387.61 321.16,-387.3 329.25,-394.15 331.75,-387.61"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shapes -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge27" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shapes</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-336.13C502.95,-345.41 480.13,-354.15 460.69,-361.08"/>
+<polygon fill="#000000" stroke="#000000" points="459.68,-357.73 451.41,-364.34 462,-364.33 459.68,-357.73"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sky -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge29" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sky</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-336.13C509.26,-342.48 474.03,-327.23 447.63,-313.76"/>
+<polygon fill="#000000" stroke="#000000" points="449.48,-310.78 439,-309.25 446.24,-316.99 449.48,-310.78"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge31" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-92.14C479.66,-72.07 463.16,-88.43 415.57,-92.14"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M413.57,-92.14C386.82,-94.22 356.77,-94.3 332.75,-93.82"/>
+<polygon fill="#000000" stroke="#000000" points="333.08,-90.33 323,-93.59 332.91,-97.33 333.08,-90.33"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge33" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M620.05,-201.7C607.52,-175.47 574.29,-114.99 524.97,-92.14"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-92.14C485.18,-74.63 489.99,-47.82 451.83,-31.14 414,-14.6 366.82,-10.65 332.78,-10.37"/>
+<polygon fill="#000000" stroke="#000000" points="332.83,-6.87 322.84,-10.4 332.85,-13.87 332.83,-6.87"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_window -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge34" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_window</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M595.69,-214.13C588.12,-214.13 579.82,-214.13 571.65,-214.13"/>
+<polygon fill="#000000" stroke="#000000" points="571.79,-210.64 561.79,-214.14 571.79,-217.64 571.79,-210.64"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_handles -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge36" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_handles</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M620.05,-226.57C607.52,-252.8 574.29,-313.28 524.97,-336.13"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-336.13C485.18,-353.64 485.8,-299.23 451.83,-275.13 450.66,-274.31 449.46,-273.48 448.23,-272.66"/>
+<polygon fill="#000000" stroke="#000000" points="450.21,-269.77 439.88,-267.42 446.49,-275.7 450.21,-269.77"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_hud -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge38" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_hud</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-92.14C485.18,-74.63 485.8,-129.04 451.83,-153.13 450.66,-153.96 449.46,-154.79 448.23,-155.61"/>
+<polygon fill="#000000" stroke="#000000" points="446.49,-152.57 439.88,-160.85 450.21,-158.5 446.49,-152.57"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge39" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-92.14C503.5,-83.12 481.37,-74.6 462.29,-67.76"/>
+<polygon fill="#000000" stroke="#000000" points="463.47,-64.46 452.87,-64.44 461.14,-71.06 463.47,-64.46"/>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_view -->
+<g id="module~~vkf_web_writer~~UsedByGraph_edge41" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_view</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M522.97,-92.14C509.26,-85.79 474.03,-101.04 447.63,-114.51"/>
+<polygon fill="#000000" stroke="#000000" points="446.24,-111.28 439,-119.02 449.48,-117.49 446.24,-111.28"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_web_writerUsedByGraph = svgPanZoom('#modulevkf_web_writerUsedByGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-web_chunk"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>WEB_CHUNK</strong></td>
+<td> =</td>
+                <td>8192</td>
+            <td>
+                <p>points per chunk of a line or point item</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_depth"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>max_depth</strong></td>
+<td> =</td>
+                <td>64</td>
+            <td>
+                <p>JSON nesting</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-webasset"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/webasset.html'>WebAsset</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A file inlined in the page (a texture or a model).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mime"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>mime</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>its media type</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-path~9"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the file</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-webwriter"></span>
+      <h3>
+        type, public&nbsp;::&nbsp;
+        <a href='../type/webwriter.html'>WebWriter</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>The scene being written (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-animate~2"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>animate</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>animated (else a snapshot at <code>now</code>)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-assets"></span>
+              type(<a href='../type/webasset.html'>WebAsset</a>),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>assets</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the assets (1:n_assets)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bin"></span>
+              integer(kind=int8),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>bin</strong>(:)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the binary buffer (1:nb used)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-depth~7"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>depth</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>the current nesting (0: the top level)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-first~10"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>first</strong>(0:max_depth)</td>
+<td> =</td>
+                <td>.true.</td>
+            <td>
+<p>nothing written yet at each depth</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-json"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>json</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the JSON so far (1:nj used)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-max_points~4"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>max_points</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>the most points written for a curve (0: all)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_assets"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n_assets</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>assets added</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nb"></span>
+              integer(kind=int64),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nb</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>bytes of <code>bin</code> used</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-nj"></span>
+              integer(kind=int64),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>nj</strong></td>
+<td> =</td>
+                <td>0</td>
+            <td>
+<p>characters of <code>json</code> used</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-now~3"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>now</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the scene's time (a snapshot's, or the animation's start)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-samples~3"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>samples</strong></td>
+<td> =</td>
+                <td>600</td>
+            <td>
+<p>poses sampled across the range for each followed frame</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t_end~2"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t_end</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the animation's time range</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t_ref"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t_ref</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>times are written relative to it</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t_start~2"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t_start</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the animation's time range</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-warned~2"></span>
+              character(len=:),
+            </td>
+              <td>public,</td>
+            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>warned</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+<p>the warnings given ('|key|key|')</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-add_asset'>add_asset</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-begin_array'>begin_array</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-begin_line_item'>begin_line_item</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-begin_mesh_item'>begin_mesh_item</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-begin_object'>begin_object</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-begin_point_item'>begin_point_item</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-end_array'>end_array</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-end_object'>end_object</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-json_text'>json_text</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-num_bytes'>num_bytes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  generic, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put~2'>put</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/type/webwriter.html#boundprocedure-put_string'>put_string</a>, <a href='/home/runner/work/vkframes/vkframes/web/api/type/webwriter.html#boundprocedure-put_real'>put_real</a>, <a href='/home/runner/work/vkframes/vkframes/web/api/type/webwriter.html#boundprocedure-put_int'>put_int</a>, <a href='/home/runner/work/vkframes/vkframes/web/api/type/webwriter.html#boundprocedure-put_logical'>put_logical</a>, <a href='/home/runner/work/vkframes/vkframes/web/api/type/webwriter.html#boundprocedure-put_reals'>put_reals</a>, <a href='/home/runner/work/vkframes/vkframes/web/api/type/webwriter.html#boundprocedure-put_ints'>put_ints</a>, <a href='/home/runner/work/vkframes/vkframes/web/api/type/webwriter.html#boundprocedure-put_strings'>put_strings</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_f32'>put_f32</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_f64'>put_f64</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_int'>put_int</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_ints'>put_ints</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_logical'>put_logical</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_real'>put_real</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_reals'>put_reals</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_string'>put_string</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_strings'>put_strings</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-put_u32'>put_u32</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-warn_once'>warn_once</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/webwriter.html#boundprocedure-write_html'>write_html</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-add_asset"></span> <h3>private  function <a href='../proc/add_asset.html'>add_asset</a>(self, path, mime) result(id)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The asset number (0-based, as the page's) of a file to inline (once
+for each file); -1 if it doesn't exist.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~727"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-path~10"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+            <td>
+<p>the file</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mime~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mime</strong></td>
+            <td>
+<p>its media type (default: from its extension)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-base64_decode"></span> <h3>public  function <a href='../proc/base64_decode.html'>base64_decode</a>(s) result(bytes)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Base64 text as bytes (the inverse of base64_encode; for tests).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~44"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>base64 text</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=int8), allocatable, (:)</small>
+    </h4>
+    <p>the bytes</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-base64_encode"></span> <h3>public  function <a href='../proc/base64_encode.html'>base64_encode</a>(bytes) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Bytes as base64 (RFC 4648, with padding).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bytes~4"></span>
+              integer(kind=int8),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bytes</strong>(:)</td>
+            <td>
+<p>the bytes</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    <p>their base64 text</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-escape_html"></span> <h3>private pure function <a href='../proc/escape_html.html'>escape_html</a>(s) result(t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Text for HTML (&lt;, &gt; and &amp; escaped).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~42"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    <p>the text escaped</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-json_number"></span> <h3>public  function <a href='../proc/json_number.html'>json_number</a>(x) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A number as JSON (17 significant digits; whole numbers without a
+fraction; beyond +-1e30, +-1e30, as the viewer's shaders are single
+precision).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~24"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong></td>
+            <td>
+<p>the number</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    <p>its JSON text</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-json_text"></span> <h3>private  function <a href='../proc/json_text.html'>json_text</a>(self) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The JSON written so far.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~715"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-lower"></span> <h3>private pure function <a href='../proc/lower.html'>lower</a>(s) result(t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Text in lower case (ASCII).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~41"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=len)</small>
+    </h4>
+    <p>in lower case</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-mime_of"></span> <h3>private  function <a href='../proc/mime_of.html'>mime_of</a>(path) result(mime)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A media type from a file's extension.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-path~11"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+            <td>
+<p>the file</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    <p>e.g. image/png</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-num_bytes"></span> <h3>private pure function <a href='../proc/num_bytes.html'>num_bytes</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The binary buffer's size so far (bytes).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~716"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=int64)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-quoted"></span> <h3>private  function <a href='../proc/quoted.html'>quoted</a>(s) result(q)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A JSON string (quoted, escaped; '&lt;' as &lt;, so no '</script>' in the page).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~38"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    <p>the JSON string</p>
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-read_bytes"></span> <h3>private  function <a href='../proc/read_bytes.html'>read_bytes</a>(path, bytes) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A file's bytes; false if it can't be read.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-path~12"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>path</strong></td>
+            <td>
+<p>the file</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bytes~2"></span>
+              integer(kind=int8),
+            </td>
+<td>intent(out),</td>
+              <td></td>            <td>
+              allocatable
+            </td>
+            <td>::</td>
+            <td><strong>bytes</strong>(:)</td>
+            <td>
+<p>its contents</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-reserve~3"></span> <h3>private  function <a href='../proc/reserve~3.html'>reserve</a>(self, n, align) result(offset)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Room for n more bytes, after padding to <code>align</code>; the offset where they go.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~717"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n~93"></span>
+              integer(kind=int64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>n</strong></td>
+            <td>
+<p>bytes needed</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-align"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>align</strong></td>
+            <td>
+<p>the offset's alignment (bytes)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer(kind=int64)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-write_html"></span> <h3>private  function <a href='../proc/write_html.html'>write_html</a>(self, file, title, viewer, three_version) result(ok)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Write the page: <code>file</code> (HTML), titled <code>title</code>, with the JSON written
+(one complete object), the buffer and the assets inlined, and the
+viewer script <code>viewer</code> (a file: data/web/vkf_viewer.js) inlined.
+Three.js (<code>three_version</code>) is loaded from a CDN. False if a file can't be
+read or written.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~729"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-file~21"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>file</strong></td>
+            <td>
+<p>the page (.html)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-title~7"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>title</strong></td>
+            <td>
+<p>its title</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~53"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>the viewer script's file</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-three_version~2"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>three_version</strong></td>
+            <td>
+<p>the Three.js version, e.g. 0.170.0</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>logical</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-begin_array"></span> <h3>private  subroutine <a href='../proc/begin_array.html'>begin_array</a>(self, key)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Begin an array (a value of <code>key</code>, or in an array).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~706"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~11"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>(absent: in an array, or the top level)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-begin_line_item"></span> <h3>private  subroutine <a href='../proc/begin_line_item.html'>begin_line_item</a>(self, xyz, rgba, width, segments, times, colors)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Begin a line item (the caller adds keys, then calls end_object): a
+strip through points xyz(3, n), or separate segments (points 1-2, 3-4,
+...), of color rgba and width (window units), with each point's time
+(trace mode, trails) and color (4, n) if given. Chunks of a strip
+share their end points.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~724"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xyz~18"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xyz</strong>(:,:)</td>
+            <td>
+<p>(3, n) points</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~31"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-width~25"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>width</strong></td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-segments~5"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>segments</strong></td>
+            <td>
+<p>separate segments (else a strip)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-times~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>times</strong>(:)</td>
+            <td>
+<p>(n)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-colors~7"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>colors</strong>(:,:)</td>
+            <td>
+<p>(4, n)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-begin_mesh_item"></span> <h3>private  subroutine <a href='../proc/begin_mesh_item.html'>begin_mesh_item</a>(self, xyz, idx, rgba, normals, colors, times, two_sided)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Begin a mesh item: triangles idx(3, m) (1-based) through points xyz(3,
+n), of color rgba; lit (with normals) or unlit (transparent, both
+sides, no depth written); per-vertex colors (4, n) and times if given.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~726"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xyz~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xyz</strong>(:,:)</td>
+            <td>
+<p>(3, n) the vertices</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-idx~10"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>idx</strong>(:,:)</td>
+            <td>
+<p>(3, m) the triangles' vertices (1-based)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~33"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-normals~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>normals</strong>(:,:)</td>
+            <td>
+<p>(3, n) (present: lit)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-colors~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>colors</strong>(:,:)</td>
+            <td>
+<p>(4, n)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-times~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>times</strong>(:)</td>
+            <td>
+<p>(n)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-two_sided~5"></span>
+              logical,
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>two_sided</strong></td>
+            <td>
+<p>a lit mesh's both sides drawn (default false)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-begin_object"></span> <h3>private  subroutine <a href='../proc/begin_object.html'>begin_object</a>(self, key)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Begin an object (a value of <code>key</code>, or in an array).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~704"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~10"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>(absent: in an array, or the top level)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-begin_point_item"></span> <h3>private  subroutine <a href='../proc/begin_point_item.html'>begin_point_item</a>(self, xyz, rgba, size, shape, attenuation, times, colors)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Begin a point (marker) item: points xyz(3, n), of color rgba, <code>size</code>
+window units, a MARKER_* <code>shape</code>, shrinking beyond <code>attenuation</code> from
+the camera (0: never), with times and colors if given.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~725"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xyz~19"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xyz</strong>(:,:)</td>
+            <td>
+<p>(3, n) the points</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rgba~32"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rgba</strong>(4)</td>
+            <td>
+<p>[r, g, b, a]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-size~18"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>size</strong></td>
+            <td>
+<p>window units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shape~8"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shape</strong></td>
+            <td>
+<p>MARKER_*</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-attenuation"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>attenuation</strong></td>
+            <td>
+<p>the distance beyond which markers shrink (0: never)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-times~8"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>times</strong>(:)</td>
+            <td>
+<p>(n)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-colors~8"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>colors</strong>(:,:)</td>
+            <td>
+<p>(4, n)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-emit"></span> <h3>private  subroutine <a href='../proc/emit.html'>emit</a>(self, s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Append text to the JSON.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~702"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-s~34"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>s</strong></td>
+            <td>
+<p>the text</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-end_array"></span> <h3>private  subroutine <a href='../proc/end_array.html'>end_array</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>End the array begun last.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~707"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-end_object"></span> <h3>private  subroutine <a href='../proc/end_object.html'>end_object</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>End the object begun last.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~705"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_chunk"></span> <h3>private  subroutine <a href='../proc/put_chunk.html'>put_chunk</a>(self, xyz, lo, hi, times, colors)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>One chunk of points lo .. hi, with their times and colors if given.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~723"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xyz~17"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xyz</strong>(:,:)</td>
+            <td>
+<p>(3, n) all the points</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lo~18"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lo</strong></td>
+            <td>
+<p>the chunk's first point</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-hi~19"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>hi</strong></td>
+            <td>
+<p>its last point</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-times~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>times</strong>(:)</td>
+            <td>
+<p>(n) the points' times</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-colors~6"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>colors</strong>(:,:)</td>
+            <td>
+<p>(4, n) their colors</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_chunk_points"></span> <h3>private  subroutine <a href='../proc/put_chunk_points.html'>put_chunk_points</a>(self, xyz)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Points xyz(3, i1:i2) relative to their bounding box's center: the
+chunk's origin ("o", double precision) and the points ("p", float32).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~722"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-xyz~16"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>xyz</strong>(:,:)</td>
+            <td>
+<p>(3, n) the points</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_f32"></span> <h3>private  subroutine <a href='../proc/put_f32.html'>put_f32</a>(self, key, values)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Values as float32 in the buffer (the JSON: [byte offset, count]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~719"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~20"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-values~8"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>values</strong>(:)</td>
+            <td>
+<p>the values (rounded to single precision)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_f64"></span> <h3>private  subroutine <a href='../proc/put_f64.html'>put_f64</a>(self, key, values)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Values as float64 in the buffer.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~720"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~21"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-values~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>values</strong>(:)</td>
+            <td>
+<p>the values</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_int"></span> <h3>private  subroutine <a href='../proc/put_int.html'>put_int</a>(self, key, value)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A whole number.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~710"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~14"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-value~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>value</strong></td>
+            <td>
+<p>the number</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_ints"></span> <h3>private  subroutine <a href='../proc/put_ints.html'>put_ints</a>(self, key, values)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A small array of whole numbers, inline (large ones: put_u32).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~713"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~17"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-values~6"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>values</strong>(:)</td>
+            <td>
+<p>the numbers</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_logical"></span> <h3>private  subroutine <a href='../proc/put_logical.html'>put_logical</a>(self, key, value)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A boolean (true or false).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~711"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~15"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-value~6"></span>
+              logical,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>value</strong></td>
+            <td>
+<p>the value</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_real"></span> <h3>private  subroutine <a href='../proc/put_real.html'>put_real</a>(self, key, value)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A number (see <a href="../proc/json_number.html">json_number</a>).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~709"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~13"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-value~4"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>value</strong></td>
+            <td>
+<p>the number</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_reals"></span> <h3>private  subroutine <a href='../proc/put_reals.html'>put_reals</a>(self, key, values)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A small array of numbers, inline (large ones: put_f32, put_f64).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~712"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~16"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-values~5"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>values</strong>(:)</td>
+            <td>
+<p>the numbers</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_ref"></span> <h3>private  subroutine <a href='../proc/put_ref.html'>put_ref</a>(self, key, offset, count)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The reference to an array in the buffer: [byte offset, count].</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~718"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~19"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-offset~3"></span>
+              integer(kind=int64),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>offset</strong></td>
+            <td>
+<p>the array's byte offset in the buffer (0-based)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-count~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>count</strong></td>
+            <td>
+<p>its number of values</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_string"></span> <h3>private  subroutine <a href='../proc/put_string.html'>put_string</a>(self, key, value)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A string value (quoted and escaped).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~708"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~12"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-value~3"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>value</strong></td>
+            <td>
+<p>the string</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_strings"></span> <h3>private  subroutine <a href='../proc/put_strings.html'>put_strings</a>(self, key, values)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>An array of strings (each without its trailing blanks).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~714"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~18"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-values~7"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>values</strong>(:)</td>
+            <td>
+<p>the strings</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-put_u32"></span> <h3>private  subroutine <a href='../proc/put_u32.html'>put_u32</a>(self, key, values)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Values as uint32 in the buffer.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~721"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~22"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>its key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-values~10"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>values</strong>(:)</td>
+            <td>
+<p>the values (0 or more)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-start_value"></span> <h3>private  subroutine <a href='../proc/start_value.html'>start_value</a>(self, key)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A separator if something came before at this depth, and the key.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~703"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~9"></span>
+              character(len=*),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>the value's key (absent: in an array, or the top level)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-warn_once"></span> <h3>private  subroutine <a href='../proc/warn_once.html'>warn_once</a>(self, key, message)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Print a warning once for each key (e.g. a frame type not exported).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~728"></span>
+              class(<a href='../type/webwriter.html'>WebWriter</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-key~23"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>key</strong></td>
+            <td>
+<p>the warning's key</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-message"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>message</strong></td>
+            <td>
+<p>printed the first time</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-write_base64"></span> <h3>private  subroutine <a href='../proc/write_base64.html'>write_base64</a>(u, bytes)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Write bytes to a stream unit as base64.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-u~6"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>u</strong></td>
+            <td>
+<p>the unit (open for stream output)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-bytes~3"></span>
+              integer(kind=int8),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>bytes</strong>(:)</td>
+            <td>
+<p>the bytes</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>

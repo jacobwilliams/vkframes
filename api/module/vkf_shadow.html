@@ -1,0 +1,3829 @@
+<!-- -*- mode: jinja2 -*- -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="Modern Fortran spacecraft trajectory simulations with VulkanSceneGraph">
+    <meta name="author" content="Jacob Williams
+Jacob Williams" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>vkf_shadow &ndash; vkframes</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <!-- Font Awesome -->
+    <link href="../css/fontawesome.min.css" rel="stylesheet">
+    <link href="../css/brands.min.css" rel="stylesheet">
+    <link href="../css/regular.min.css" rel="stylesheet">
+    <link href="../css/solid.min.css" rel="stylesheet">
+    <link href="../css/v4-font-face.min.css" rel="stylesheet">
+    <link href="../css/v4-shims.min.css" rel="stylesheet">
+    <!-- MathJax -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@2.7.9/MathJax.js?config=TeX-AMS-MML_HTMLorMML" async
+            integrity="sha256-DViIOMYdwlM/axqoGDPeUyf0urLoHMN4QACBKyB58Uw=" crossorigin="anonymous"></script>
+    <!-- Other scripts and stylesheets -->
+    <link href="../css/local.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+      <link href="../css/user.css" rel="stylesheet">
+    <script src="../js/svg-pan-zoom.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <div class="container-fluid mb-sm-4 mb-xl-2">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+          <a class="navbar-brand" href="../index.html">vkframes </a>
+          <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar"
+                  aria-expanded="false" aria-controls="navbar" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon">
+          </button>
+
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="navbar-nav">
+                  <li class="nav-item">
+                    <a class="nav-link" href="../lists/files.html">Source Files</a>
+                  </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/modules.html">Modules</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/procedures.html">Procedures</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/absint.html">Abstract Interfaces</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="../lists/types.html">Derived Types</a>
+                </li>
+            </ul>
+              <div class="d-flex align-items-end flex-grow-1">
+                <form action="../search.html" role="search" class="ms-auto">
+                  <input type="text" class="form-control" aria-label="Search" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+                </form>
+              </div>
+          </div><!--/.nav-collapse -->
+        </div>
+      </nav>
+    </div>
+
+    <div class="container">
+  <div class="row">
+    <h1>vkf_shadow
+      <small>Module</small>
+      
+    </h1>
+      <div class="container p-2 mb-4 bg-light border rounded-3">
+    <div class="row align-items-center justify-content-between" id="info-bar">
+      <div class="col">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li class="list-inline-item" id="meta-license"><i class="fa fa-legal"></i> Apache-2.0</li>
+
+            <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
+              <a data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
+                 title=" 2.5% of total for modules and submodules.">373 statements</a>
+            </li>
+
+            <li class="list-inline-item" id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/vkf_shadow.f90"> Source File</a>
+            </li>
+        </ul>
+      </div>
+      <div class="col">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb justify-content-end mb-0">
+                <li class="breadcrumb-item"><a href='../sourcefile/vkf_shadow.f90.html'>vkf_shadow.f90</a></li>
+            <li class="breadcrumb-item active" aria-current="page">vkf_shadow</li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Enable Bootstrap tooltips
+    (function () {
+      const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+    })();
+  </script>
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+        <div id="sidebar">
+      <h3>Contents</h3>
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-shadow_all">SHADOW_ALL</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-shadow_antumbra">SHADOW_ANTUMBRA</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-shadow_penumbra">SHADOW_PENUMBRA</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-shadow_umbra">SHADOW_UMBRA</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-antumbra">antumbra</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-n_around~2">n_around</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-n_regions">n_regions</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-penumbra">penumbra</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#variable-umbra">umbra</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#inters-0"
+         aria-expanded="false" aria-controls="inters-0">
+         <h4 class="card-header bg-primary text-white">Interfaces</h4>
+      </a>
+      <div id="inters-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_shadow.html#interface-shadowcones">ShadowCones</a>
+        </div>
+      </div>
+    </div>
+
+  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#types-0"
+         aria-expanded="false" aria-controls="types-0">
+         <h4 class="card-header bg-primary text-white">Derived Types</h4>
+      </a>
+      <div id="types-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_shadow.html#type-shadowcones">ShadowCones</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#type-shadowregion">ShadowRegion</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#funcs-0"
+         aria-expanded="false" aria-controls="funcs-0">
+         <h4 class="card-header bg-primary text-white">Functions</h4>
+      </a>
+      <div id="funcs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-body">body</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-body_radius">body_radius</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-distance~2">distance</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-drawn_length">drawn_length</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-frame_radius">frame_radius</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-length">length</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-light">light</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-light_radius">light_radius</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-new_shadow_cones">new_shadow_cones</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-region_color">region_color</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-region_index">region_index</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-regions">regions</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-shadow_frame_info">shadow_frame_info</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-umbra_length">umbra_length</a>
+        </div>
+      </div>
+    </div>
+
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#subs-0"
+         aria-expanded="false" aria-controls="subs-0">
+         <h4 class="card-header bg-primary text-white">Subroutines</h4>
+      </a>
+      <div id="subs-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-apply_color">apply_color</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-place">place</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-region_extent">region_extent</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-set_body">set_body</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-set_body_radius">set_body_radius</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-set_length">set_length</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-set_light">set_light</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-set_light_radius">set_light_radius</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-set_region_color">set_region_color</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-set_regions">set_regions</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-shadow_bound">shadow_bound</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-shadow_build_contents">shadow_build_contents</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-shadow_late_update">shadow_late_update</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-shape_regions">shape_regions</a>
+            <a class="list-group-item" href="../module/vkf_shadow.html#proc-write_region">write_region</a>
+        </div>
+      </div>
+    </div>
+
+  
+  
+  
+  
+  
+  
+  
+
+
+  </div>
+
+    </div>
+
+    <div class="col-md-9" id='text'>
+      <p>Shadow cones: the regions of a celestial body's shadow in the light of
+another (e.g. the Earth's or the Moon's shadow in sunlight), drawn as
+transparent cones:</p>
+<ul>
+<li>the umbra (total eclipse: the light hidden), converging behind the body
+  to its apex, at d R / (Rs - R) from the body's center;</li>
+<li>the antumbra (annular eclipse: the light seen around the body), from the
+  umbra's apex outward, widening at the umbra's angle;</li>
+<li>the penumbra (partial eclipse), widening behind the body.</li>
+</ul>
+<p>(R and Rs: the body's and the light's radii; d: the distance between their
+centers. The edges are the lines tangent to both spheres: the outer
+tangents for the umbra and antumbra, half-angle asin((Rs - R) / d), the
+inner ones for the penumbra, asin((Rs + R) / d).) A body larger than its
+light has no apex: its umbra widens (or is a cylinder), with no antumbra.</p>
+<p>A ShadowCones is a frame of its own, made a child of the body (<a href="../proc/add_child.html">add_child</a>)
+for one body's shadow, and shown or hidden with <a href="../proc/show_contents.html">show_contents</a>: a scene
+without one does no shadow work at all. It refers to the body and the light
+frames (they must stay alive while set); each scene update, after the whole
+tree has moved (late_update), it moves itself to the body's center and
+turns its +z axis away from the light (its own position and attitude are
+set there, whatever its parent), and reshapes the cones for the distance
+between them: the cones' vertices are rewritten in place and uploaded only
+when the shape changed (not as the body only turns). Hidden, it does
+nothing (and is placed again when shown).</p>
+<p>The radii: given (<a href="../proc/set_body_radius.html">set_body_radius</a>, <a href="../proc/set_light_radius.html">set_light_radius</a>), or the frames'
+own: a Sphere's equatorial radius, a TerrainBody's (a light that is a plain
+ReferenceFrame needs its radius given: none, no shadow). The shadow is drawn to
+<a href="../proc/set_length.html">set_length</a> behind the body's center (default: twice the umbra's length;
+a hundred body radii without an apex); the umbra stops there if shorter.
+Each region has a color ([r, g, b, a]; the surfaces are unlit,
+transparent, seen from both sides, as the cones of vkf_shapes) and can be
+drawn or not (<a href="../proc/set_regions.html">set_regions</a>).</p>
+<p>Bodies in a shadow are not darkened (that needs shadows in the lighting).</p>
+<br>          <div class="card mb-4">
+      <h3 class="card-header card-title bg-light">Uses</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <ul class="list-inline">
+                  <li class="list-inline-item"><a href='vkf_layer.html'>vkf_layer</a></li>
+                  <li class="list-inline-item"><a href='vkf_math.html'>vkf_math</a></li>
+                  <li class="list-inline-item"><a href='http://fortranwiki.org/fortran/show/iso_c_binding'>iso_c_binding</a></li>
+                  <li class="list-inline-item"><a href='vkf_sphere.html'>vkf_sphere</a></li>
+                  <li class="list-inline-item"><a href='vkf_frames.html'>vkf_frames</a></li>
+                  <li class="list-inline-item"><a href='vkf_terrain.html'>vkf_terrain</a></li>
+              </ul>
+            </li>
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_shadow~~UsesGraph Pages: 1 -->
+<svg id="modulevkf_shadowUsesGraph" width="641pt" height="396pt"
+ viewBox="0.00 0.00 641.00 396.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_shadow~~UsesGraph" class="graph" transform="scale(0.815376 0.815376) rotate(0) translate(4 482.12)">
+<title>module~~vkf_shadow~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-482.12 782.14,-482.12 782.14,4 -4,4"/>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_shadow~~UsesGraph_node1" class="node">
+<title>module~vkf_shadow</title>
+<polygon fill="none" stroke="black" points="778.14,-152.4 705.12,-152.4 705.12,-128.13 778.14,-128.13 778.14,-152.4"/>
+<text xml:space="preserve" text-anchor="middle" x="741.63" y="-136.66" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_shadow</text>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_node2" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/iso_c_binding" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="212.04,-411.4 129.27,-411.4 129.27,-387.13 212.04,-387.13 212.04,-411.4"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-395.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge1" class="edge">
+<title>module~vkf_shadow&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M633.86,-397.26C598.52,-415.1 600.76,-437.15 564.6,-453.26 502.87,-480.77 482.03,-477.64 414.44,-477.26"/>
+</g>
+<!-- module~vkf_frames -->
+<g id="module~~vkf_shadow~~UsesGraph_node3" class="node">
+<title>module~vkf_frames</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node3"><a xlink:href="../module/vkf_frames.html" xlink:title="vkf_frames">
+<polygon fill="#337ab7" stroke="#337ab7" points="564.6,-251.4 494.58,-251.4 494.58,-227.13 564.6,-227.13 564.6,-251.4"/>
+<text xml:space="preserve" text-anchor="middle" x="529.59" y="-235.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_frames</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_shadow~~UsesGraph_edge2" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M740.58,-152.75C739.63,-197.55 729.42,-350.04 635.86,-397.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M633.86,-397.26C604.87,-411.9 558.89,-309.21 539.58,-262.06"/>
+<polygon fill="#000000" stroke="#000000" points="542.93,-260.99 535.94,-253.03 536.44,-263.61 542.93,-260.99"/>
+</g>
+<!-- module~vkf_layer -->
+<g id="module~~vkf_shadow~~UsesGraph_node4" class="node">
+<title>module~vkf_layer</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node4"><a xlink:href="../module/vkf_layer.html" xlink:title="vkf_layer">
+<polygon fill="#337ab7" stroke="#337ab7" points="319.93,-391.4 260.41,-391.4 260.41,-367.13 319.93,-367.13 319.93,-391.4"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-375.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_layer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge3" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M633.86,-397.26C592.89,-417.95 572.48,-378.5 530.59,-397.26"/>
+</g>
+<!-- module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_node5" class="node">
+<title>module~vkf_math</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node5"><a xlink:href="../module/vkf_math.html" xlink:title="vkf_math">
+<polygon fill="#337ab7" stroke="#337ab7" points="200.79,-137.4 140.52,-137.4 140.52,-113.13 200.79,-113.13 200.79,-137.4"/>
+<text xml:space="preserve" text-anchor="middle" x="170.65" y="-121.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_math</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge4" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M726.28,-127.79C697.69,-103.67 630.66,-50.78 564.6,-25.26 501.56,-0.91 481.81,-6.74 414.44,-1.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M412.44,-1.26C322.08,8.85 230.84,-67.07 191.61,-104.82"/>
+<polygon fill="#000000" stroke="#000000" points="189.38,-102.1 184.7,-111.61 194.29,-107.09 189.38,-102.1"/>
+</g>
+<!-- module~vkf_sphere -->
+<g id="module~~vkf_shadow~~UsesGraph_node6" class="node">
+<title>module~vkf_sphere</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node6"><a xlink:href="../module/vkf_sphere.html" xlink:title="vkf_sphere">
+<polygon fill="#337ab7" stroke="#337ab7" points="669.12,-173.4 600.6,-173.4 600.6,-149.13 669.12,-149.13 669.12,-173.4"/>
+<text xml:space="preserve" text-anchor="middle" x="634.86" y="-157.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_sphere</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_sphere -->
+<g id="module~~vkf_shadow~~UsesGraph_edge5" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_sphere</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M704.87,-147.43C697.05,-149 688.68,-150.68 680.57,-152.3"/>
+<polygon fill="#000000" stroke="#000000" points="679.95,-148.86 670.83,-154.26 681.32,-155.72 679.95,-148.86"/>
+</g>
+<!-- module~vkf_terrain -->
+<g id="module~~vkf_shadow~~UsesGraph_node7" class="node">
+<title>module~vkf_terrain</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node7"><a xlink:href="../module/vkf_terrain.html" xlink:title="vkf_terrain">
+<polygon fill="#337ab7" stroke="#337ab7" points="669.12,-131.4 600.6,-131.4 600.6,-107.13 669.12,-107.13 669.12,-131.4"/>
+<text xml:space="preserve" text-anchor="middle" x="634.86" y="-115.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_terrain</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_shadow&#45;&gt;module~vkf_terrain -->
+<g id="module~~vkf_shadow~~UsesGraph_edge6" class="edge">
+<title>module~vkf_shadow&#45;&gt;module~vkf_terrain</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M704.87,-133.1C697.05,-131.53 688.68,-129.85 680.57,-128.23"/>
+<polygon fill="#000000" stroke="#000000" points="681.32,-124.81 670.83,-126.27 679.95,-131.67 681.32,-124.81"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge7" class="edge">
+<title>module~vkf_frames&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M412.44,-321.26C359.19,-329.54 342.79,-305.76 291.17,-321.26"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge10" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M525.56,-251.73C516.21,-286.75 484.15,-384.31 414.44,-397.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M412.44,-397.26C385.47,-402.28 354.91,-397.68 331.22,-391.87"/>
+<polygon fill="#000000" stroke="#000000" points="332.21,-388.52 321.65,-389.35 330.43,-395.29 332.21,-388.52"/>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge11" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.39,-227.5C483.11,-224.03 470.42,-220.55 458.58,-218.26 385.23,-204.13 358.96,-234.65 291.17,-203.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-203.26C271.08,-194.42 265.26,-194.71 248.04,-184.26 228.94,-172.68 209.01,-157.16 194.31,-144.94"/>
+<polygon fill="#000000" stroke="#000000" points="196.93,-142.58 187.03,-138.81 192.42,-147.93 196.93,-142.58"/>
+</g>
+<!-- module~vkf_follower -->
+<g id="module~~vkf_shadow~~UsesGraph_node10" class="node">
+<title>module~vkf_follower</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node10"><a xlink:href="../module/vkf_follower.html" xlink:title="vkf_follower">
+<polygon fill="#337ab7" stroke="#337ab7" points="451.08,-251.4 375.81,-251.4 375.81,-227.13 451.08,-227.13 451.08,-251.4"/>
+<text xml:space="preserve" text-anchor="middle" x="413.44" y="-235.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_follower</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_follower -->
+<g id="module~~vkf_shadow~~UsesGraph_edge8" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_follower</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.34,-239.26C484.41,-239.26 473.37,-239.26 462.75,-239.26"/>
+<polygon fill="#000000" stroke="#000000" points="462.97,-235.76 452.97,-239.26 462.97,-242.76 462.97,-235.76"/>
+</g>
+<!-- module~vkf_geometry -->
+<g id="module~~vkf_shadow~~UsesGraph_node11" class="node">
+<title>module~vkf_geometry</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node11"><a xlink:href="../module/vkf_geometry.html" xlink:title="vkf_geometry">
+<polygon fill="#337ab7" stroke="#337ab7" points="455.58,-449.4 371.31,-449.4 371.31,-425.13 455.58,-425.13 455.58,-449.4"/>
+<text xml:space="preserve" text-anchor="middle" x="413.44" y="-433.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_geometry</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_shadow~~UsesGraph_edge9" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M524.68,-251.7C513.49,-286.79 480.66,-385.71 458.58,-411.26 456.45,-413.73 454.04,-416.01 451.45,-418.13"/>
+<polygon fill="#000000" stroke="#000000" points="449.6,-415.15 443.44,-423.78 453.63,-420.87 449.6,-415.15"/>
+</g>
+<!-- module~vkf_pick -->
+<g id="module~~vkf_shadow~~UsesGraph_node12" class="node">
+<title>module~vkf_pick</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node12"><a xlink:href="../module/vkf_pick.html" xlink:title="vkf_pick">
+<polygon fill="#337ab7" stroke="#337ab7" points="440.58,-95.4 386.31,-95.4 386.31,-71.13 440.58,-71.13 440.58,-95.4"/>
+<text xml:space="preserve" text-anchor="middle" x="413.44" y="-79.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_pick</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_shadow~~UsesGraph_edge12" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M519.44,-226.76C499.99,-200.18 454.32,-137.77 430.13,-104.7"/>
+<polygon fill="#000000" stroke="#000000" points="433.26,-103.05 424.53,-97.05 427.61,-107.19 433.26,-103.05"/>
+</g>
+<!-- module~vkf_text -->
+<g id="module~~vkf_shadow~~UsesGraph_node13" class="node">
+<title>module~vkf_text</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node13"><a xlink:href="../module/vkf_text.html" xlink:title="vkf_text">
+<polygon fill="#337ab7" stroke="#337ab7" points="440.44,-293.4 386.44,-293.4 386.44,-269.13 440.44,-269.13 440.44,-293.4"/>
+<text xml:space="preserve" text-anchor="middle" x="413.44" y="-277.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_text</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_text -->
+<g id="module~~vkf_shadow~~UsesGraph_edge13" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_text</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.34,-251.87C480.77,-256.86 465.13,-262.62 451.31,-267.7"/>
+<polygon fill="#000000" stroke="#000000" points="450.28,-264.35 442.1,-271.09 452.7,-270.92 450.28,-264.35"/>
+</g>
+<!-- module~vkf_trajectory -->
+<g id="module~~vkf_shadow~~UsesGraph_node14" class="node">
+<title>module~vkf_trajectory</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node14"><a xlink:href="../module/vkf_trajectory.html" xlink:title="vkf_trajectory">
+<polygon fill="#337ab7" stroke="#337ab7" points="332.31,-255.4 248.04,-255.4 248.04,-231.13 332.31,-231.13 332.31,-255.4"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-239.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_trajectory</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_shadow~~UsesGraph_edge14" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M518.59,-251.72C500.51,-272.86 460.01,-314.18 414.44,-321.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M412.44,-321.26C369.49,-327.94 329,-289.66 307.41,-264.35"/>
+<polygon fill="#000000" stroke="#000000" points="310.34,-262.4 301.29,-256.89 304.92,-266.84 310.34,-262.4"/>
+</g>
+<!-- module~vkf_web_writer -->
+<g id="module~~vkf_shadow~~UsesGraph_node15" class="node">
+<title>module~vkf_web_writer</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node15"><a xlink:href="../module/vkf_web_writer.html" xlink:title="vkf_web_writer">
+<polygon fill="#337ab7" stroke="#337ab7" points="458.58,-53.4 368.31,-53.4 368.31,-29.13 458.58,-29.13 458.58,-53.4"/>
+<text xml:space="preserve" text-anchor="middle" x="413.44" y="-37.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_web_writer</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_frames&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge15" class="edge">
+<title>module~vkf_frames&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M524.25,-226.78C510.89,-188.58 470.57,-75.09 458.58,-62.26 458.11,-61.76 457.62,-61.27 457.13,-60.79"/>
+<polygon fill="#000000" stroke="#000000" points="459.38,-58.11 449.32,-54.8 455.12,-63.66 459.38,-58.11"/>
+</g>
+<!-- module~vkf_layer&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge16" class="edge">
+<title>module~vkf_layer&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.13,-384.21C249.09,-386.09 236.16,-388.29 223.65,-390.42"/>
+<polygon fill="#000000" stroke="#000000" points="223.1,-386.96 213.83,-392.09 224.28,-393.86 223.1,-386.96"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~vkf_shadow~~UsesGraph_node8" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node8"><a xlink:href="http://fortranwiki.org/fortran/show/iso_fortran_env" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="93.27,-137.4 0,-137.4 0,-113.13 93.27,-113.13 93.27,-137.4"/>
+<text xml:space="preserve" text-anchor="middle" x="46.63" y="-121.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_math&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_shadow~~UsesGraph_edge17" class="edge">
+<title>module~vkf_math&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M140.12,-125.26C129.53,-125.26 117.21,-125.26 105.08,-125.26"/>
+<polygon fill="#000000" stroke="#000000" points="105.08,-121.76 95.08,-125.26 105.08,-128.76 105.08,-121.76"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge18" class="edge">
+<title>module~vkf_sphere&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-439.26C487.06,-472.94 467.74,-472.93 414.44,-477.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M412.44,-477.26C333.58,-483.67 246.53,-442.48 201.83,-417.47"/>
+<polygon fill="#000000" stroke="#000000" points="203.65,-414.48 193.23,-412.56 200.17,-420.56 203.65,-414.48"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_shadow~~UsesGraph_edge20" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M617.27,-173.8C600.78,-186.25 575.27,-205.52 556.19,-219.93"/>
+<polygon fill="#000000" stroke="#000000" points="554.22,-217.03 548.35,-225.85 558.44,-222.62 554.22,-217.03"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge22" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M633.54,-173.86C631.66,-216.91 618.75,-357.77 530.59,-397.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-397.26C482.29,-418.01 464.32,-388 414.44,-397.26"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge23" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-123.26C429.17,-87.92 396.28,-113.91 291.17,-123.26"/>
+</g>
+<!-- module~vkf_files -->
+<g id="module~~vkf_shadow~~UsesGraph_node9" class="node">
+<title>module~vkf_files</title>
+<g id="a_module~~vkf_shadow~~UsesGraph_node9"><a xlink:href="../module/vkf_files.html" xlink:title="vkf_files">
+<polygon fill="#337ab7" stroke="#337ab7" points="317.31,-175.4 263.04,-175.4 263.04,-151.13 317.31,-151.13 317.31,-175.4"/>
+<text xml:space="preserve" text-anchor="middle" x="290.17" y="-159.66" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkf_files</text>
+</a>
+</g>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_shadow~~UsesGraph_edge19" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.29,-159.6C580.05,-159.01 553.78,-158.97 530.59,-161.26"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_geometry -->
+<g id="module~~vkf_shadow~~UsesGraph_edge21" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_geometry</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M633.04,-173.79C629.98,-212.29 616.62,-331.2 564.6,-411.26 553.93,-427.68 545.8,-426.93 530.59,-439.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-439.26C511.43,-453.18 487.57,-454.6 466.1,-451.76"/>
+<polygon fill="#000000" stroke="#000000" points="466.75,-448.32 456.31,-450.12 465.59,-455.22 466.75,-448.32"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_shadow~~UsesGraph_edge24" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-123.26C502.86,-114.12 473.82,-103.94 451.47,-96.14"/>
+<polygon fill="#000000" stroke="#000000" points="452.79,-92.9 442.19,-92.91 450.48,-99.51 452.79,-92.9"/>
+</g>
+<!-- module~vkf_sphere&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge25" class="edge">
+<title>module~vkf_sphere&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M600.44,-148.76C580.26,-141.25 553.99,-131.58 530.59,-123.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-123.26C489.7,-109.44 493.09,-84.9 458.58,-62.26 456.97,-61.21 455.3,-60.18 453.59,-59.17"/>
+<polygon fill="#000000" stroke="#000000" points="455.34,-56.14 444.88,-54.44 452,-62.29 455.34,-56.14"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge26" class="edge">
+<title>module~vkf_terrain&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M609.25,-131.86C606.01,-134.31 603,-137.11 600.6,-140.26 538.8,-221.64 611.33,-296.63 530.59,-359.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-359.26C471.68,-403.42 439.37,-347.03 368.31,-335.26 333.94,-329.57 324.54,-311.24 291.17,-321.26"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_frames -->
+<g id="module~~vkf_shadow~~UsesGraph_edge28" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_frames</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M611.49,-131.67C607.66,-134.26 603.87,-137.16 600.6,-140.26 576.43,-163.2 555.39,-195.61 542.84,-217.02"/>
+<polygon fill="#000000" stroke="#000000" points="539.91,-215.1 537.99,-225.52 545.99,-218.57 539.91,-215.1"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge29" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-359.26C486.34,-392.04 467.01,-387.5 414.44,-397.26"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge30" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M623.37,-106.89C606.27,-87.83 570.29,-52.13 530.59,-39.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-39.26C477.73,-22.78 467.74,-5.59 414.44,-1.26"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_shadow~~UsesGraph_edge27" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M613.42,-131.7C593.23,-142.96 561.02,-158.26 530.59,-161.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-161.26C458.4,-168.2 375.98,-166.76 329.03,-165.04"/>
+<polygon fill="#000000" stroke="#000000" points="329.25,-161.54 319.12,-164.65 328.97,-168.54 329.25,-161.54"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_pick -->
+<g id="module~~vkf_shadow~~UsesGraph_edge31" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_pick</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-39.26C520.86,-36.76 481.62,-52.96 451.28,-66.4"/>
+<polygon fill="#000000" stroke="#000000" points="450.06,-63.11 442.37,-70.39 452.92,-69.5 450.06,-63.11"/>
+</g>
+<!-- module~vkf_terrain&#45;&gt;module~vkf_web_writer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge32" class="edge">
+<title>module~vkf_terrain&#45;&gt;module~vkf_web_writer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M528.59,-39.26C510.24,-33.32 489.35,-32.18 470.5,-33.06"/>
+<polygon fill="#000000" stroke="#000000" points="470.32,-29.56 460.58,-33.73 470.8,-36.54 470.32,-29.56"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge33" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.35,-231.22C350.81,-225.19 318.28,-215.81 291.17,-203.26"/>
+</g>
+<!-- module~vkf_follower&#45;&gt;module~vkf_trajectory -->
+<g id="module~~vkf_shadow~~UsesGraph_edge34" class="edge">
+<title>module~vkf_follower&#45;&gt;module~vkf_trajectory</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.4,-240.49C365.48,-240.81 354.55,-241.17 343.96,-241.52"/>
+<polygon fill="#000000" stroke="#000000" points="344.04,-238.02 334.16,-241.85 344.27,-245.01 344.04,-238.02"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge35" class="edge">
+<title>module~vkf_geometry&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-419.26C269.6,-407.73 245.21,-402.41 223.72,-400.1"/>
+<polygon fill="#000000" stroke="#000000" points="224.24,-396.63 213.98,-399.25 223.64,-403.6 224.24,-396.63"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge36" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.13,-424.68C369.05,-416.51 346.55,-405.75 327.73,-396.75"/>
+<polygon fill="#000000" stroke="#000000" points="329.33,-393.64 318.8,-392.48 326.31,-399.95 329.33,-393.64"/>
+</g>
+<!-- module~vkf_geometry&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge37" class="edge">
+<title>module~vkf_geometry&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M370.84,-438.7C346.15,-437.77 315.1,-433.37 291.17,-419.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-419.26C271.83,-409.04 261.08,-415.61 248.04,-400.26 184.15,-325.1 173.44,-200.53 171.83,-148.85"/>
+<polygon fill="#000000" stroke="#000000" points="175.33,-149.06 171.62,-139.14 168.34,-149.21 175.33,-149.06"/>
+</g>
+<!-- module~vkf_pick&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge38" class="edge">
+<title>module~vkf_pick&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.23,-95.81C362.16,-106.38 325.18,-120.24 291.17,-123.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-123.26C263.73,-125.53 235.07,-126.06 212.42,-126.01"/>
+<polygon fill="#000000" stroke="#000000" points="212.71,-122.51 202.69,-125.94 212.67,-129.51 212.71,-122.51"/>
+</g>
+<!-- module~vkf_text&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge39" class="edge">
+<title>module~vkf_text&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.08,-290.41C361.6,-298.8 324.09,-311.38 291.17,-321.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-321.26C251.83,-332.48 215.47,-359.93 193.32,-379.07"/>
+<polygon fill="#000000" stroke="#000000" points="191.02,-376.43 185.87,-385.69 195.67,-381.66 191.02,-376.43"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_layer -->
+<g id="module~~vkf_shadow~~UsesGraph_edge41" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_layer</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.93,-293.84C382.08,-297.84 374.72,-302.47 368.31,-307.26 347.46,-322.85 325.98,-343.32 311.01,-358.44"/>
+<polygon fill="#000000" stroke="#000000" points="308.53,-355.97 304.05,-365.57 313.54,-360.86 308.53,-355.97"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge42" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.33,-270.79C380.17,-267.8 373.8,-264.25 368.31,-260.26 349.49,-246.59 351.21,-235.83 332.31,-222.26 315.95,-210.52 309.45,-211.73 291.17,-203.26"/>
+</g>
+<!-- module~vkf_text&#45;&gt;module~vkf_files -->
+<g id="module~~vkf_shadow~~UsesGraph_edge40" class="edge">
+<title>module~vkf_text&#45;&gt;module~vkf_files</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M386.36,-272.3C379.92,-269.21 373.41,-265.24 368.31,-260.26 342.98,-235.56 356.12,-215.43 332.31,-189.26 330.12,-186.86 327.67,-184.6 325.07,-182.48"/>
+<polygon fill="#000000" stroke="#000000" points="327.28,-179.75 317.12,-176.75 323.19,-185.44 327.28,-179.75"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_c_binding -->
+<g id="module~~vkf_shadow~~UsesGraph_edge43" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M279.76,-255.77C259.73,-282.35 212.71,-344.76 187.8,-377.83"/>
+<polygon fill="#000000" stroke="#000000" points="185.25,-375.4 182.03,-385.49 190.84,-379.61 185.25,-375.4"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge45" class="edge">
+<title>module~vkf_trajectory&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M266.5,-230.71C260.23,-226.78 253.63,-222.17 248.04,-217.26 223.87,-196.03 200.97,-166.79 186.66,-147.02"/>
+<polygon fill="#000000" stroke="#000000" points="189.52,-144.99 180.87,-138.87 183.81,-149.05 189.52,-144.99"/>
+</g>
+<!-- module~vkf_trajectory&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_shadow~~UsesGraph_edge44" class="edge">
+<title>module~vkf_trajectory&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M263.33,-230.64C220.01,-209.48 132.7,-166.82 83.48,-142.78"/>
+<polygon fill="#000000" stroke="#000000" points="85.18,-139.71 74.66,-138.47 82.11,-146 85.18,-139.71"/>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;module~vkf_math -->
+<g id="module~~vkf_shadow~~UsesGraph_edge47" class="edge">
+<title>module~vkf_web_writer&#45;&gt;module~vkf_math</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-85.26C263,-92.07 234.26,-101.81 211.75,-109.98"/>
+<polygon fill="#000000" stroke="#000000" points="210.83,-106.58 202.65,-113.32 213.25,-113.15 210.83,-106.58"/>
+</g>
+<!-- module~vkf_web_writer&#45;&gt;iso_fortran_env -->
+<g id="module~~vkf_shadow~~UsesGraph_edge46" class="edge">
+<title>module~vkf_web_writer&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.54,-53.9C358.3,-63.7 323.04,-76.98 291.17,-85.26"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.17,-85.26C219.91,-103.27 199.62,-91.1 129.27,-104.26 120.67,-105.87 111.64,-107.88 102.85,-110"/>
+<polygon fill="#000000" stroke="#000000" points="102.2,-106.55 93.35,-112.37 103.9,-113.34 102.2,-106.55"/>
+</g>
+</g>
+</svg>
+</div>                <script>
+                  var panmodulevkf_shadowUsesGraph = svgPanZoom('#modulevkf_shadowUsesGraph',
+                    {zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true,}
+                  );
+                </script>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsesGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsesGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+          <div class="card">
+      <h3 class="card-header card-title bg-light">Used by</h3>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: module~~vkf_shadow~~UsedByGraph Pages: 1 -->
+<svg id="modulevkf_shadowUsedByGraph" width="178pt" height="32pt"
+ viewBox="0.00 0.00 178.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~vkf_shadow~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>module~~vkf_shadow~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 174.04,-28.27 174.04,4 -4,4"/>
+<!-- module~vkf_shadow -->
+<g id="module~~vkf_shadow~~UsedByGraph_node1" class="node">
+<title>module~vkf_shadow</title>
+<polygon fill="none" stroke="black" points="73.02,-24.27 0,-24.27 0,0 73.02,0 73.02,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="36.51" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">vkf_shadow</text>
+</g>
+<!-- module~vkframes -->
+<g id="module~~vkf_shadow~~UsedByGraph_node2" class="node">
+<title>module~vkframes</title>
+<g id="a_module~~vkf_shadow~~UsedByGraph_node2"><a xlink:href="../module/vkframes.html" xlink:title="vkframes">
+<polygon fill="#337ab7" stroke="#337ab7" points="170.04,-24.27 109.02,-24.27 109.02,0 170.04,0 170.04,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="139.53" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">vkframes</text>
+</a>
+</g>
+</g>
+<!-- module~vkframes&#45;&gt;module~vkf_shadow -->
+<g id="module~~vkf_shadow~~UsedByGraph_edge1" class="edge">
+<title>module~vkframes&#45;&gt;module~vkf_shadow</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M108.77,-12.13C101.25,-12.13 92.99,-12.13 84.85,-12.13"/>
+<polygon fill="#000000" stroke="#000000" points="85,-8.64 75,-12.14 85,-15.64 85,-8.64"/>
+</g>
+</g>
+</svg>
+</div>          <div>
+            <a type="button" class="graph-help" data-bs-toggle="modal" href="#UsedByGraph-help-text">Help</a>
+          </div>
+          <div class="modal fade" id="UsedByGraph-help-text" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+<p>Nodes of different colours represent the following: </p>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 14.1.2 (20260126.1125)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="511pt" height="32pt"
+ viewBox="0.00 0.00 511.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28.27)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28.27 506.88,-28.27 506.88,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24.27 0,-24.27 0,0 54,0 54,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="27" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="144.13,-24.27 71.87,-24.27 71.87,0 144.13,0 144.13,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="108" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="231.63,-24.27 162.37,-24.27 162.37,0 231.63,0 231.63,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="197" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="306.26,-24.27 249.74,-24.27 249.74,0 306.26,0 306.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="278" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="381.26,-24.27 324.74,-24.27 324.74,0 381.26,0 381.26,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="353" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="502.88,-24.27 399.12,-24.27 399.12,0 502.88,0 502.88,-24.27"/>
+<text xml:space="preserve" text-anchor="middle" x="451" y="-8.53" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+<p>Solid arrows point from a submodule to the (sub)module which it is
+descended from. Dashed arrows point from a module or program unit to 
+modules which it uses.
+</p>
+ </div>
+            </div>
+          </div>
+        </div>
+            </li>
+        </ul>
+      </div>
+    </div>
+
+      <br>
+
+
+        <section>
+          <h2>Variables</h2>
+            <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shadow_all"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SHADOW_ALL</strong></td>
+<td> =</td>
+                <td>7</td>
+            <td>
+                <p>SHADOW_UMBRA + SHADOW_PENUMBRA + SHADOW_ANTUMBRA</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shadow_antumbra"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SHADOW_ANTUMBRA</strong></td>
+<td> =</td>
+                <td>4</td>
+            <td>
+                <p>The regions (combine with ior).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shadow_penumbra"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SHADOW_PENUMBRA</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>The regions (combine with ior).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shadow_umbra"></span>
+              integer,
+            </td>
+              <td>public,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>SHADOW_UMBRA</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>The regions (combine with ior).</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-antumbra"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>antumbra</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>region indices</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_around~2"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>n_around</strong></td>
+<td> =</td>
+                <td>128</td>
+            <td>
+                <p>segments around each cone</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-n_regions"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>n_regions</strong></td>
+<td> =</td>
+                <td>3</td>
+            <td>
+                <p>umbra, penumbra and antumbra</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-penumbra"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>penumbra</strong></td>
+<td> =</td>
+                <td>2</td>
+            <td>
+                <p>region indices</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-umbra"></span>
+              integer,
+            </td>
+              <td>private,</td>
+            <td>
+parameter               
+            </td>
+            <td>::</td>
+            <td><strong>umbra</strong></td>
+<td> =</td>
+                <td>1</td>
+            <td>
+                <p>region indices</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Interfaces</h2>
+              <div class="card">
+    <div class="card-header bg-light codesum">
+      <span class="anchor" id="interface-shadowcones"></span>
+      <h3>public        interface <a href='../interface/shadowcones.html'>ShadowCones</a> 
+      </h3>
+    </div>
+      <div class="card-body">
+        <p>The ShadowCones constructor: <code>ShadowCones(...)</code> makes one (see <a href="../proc/new_shadow_cones.html">new_shadow_cones</a> for its
+arguments).</p>
+      </div>
+    <ul class="list-group">
+          <li class="list-group-item">
+                <h3>
+    private  function <a href='../proc/new_shadow_cones.html'>new_shadow_cones</a>(name, body, light, body_radius, light_radius) result(s)  
+
+    </h3>
+    
+  <p>The shadow named <code>name</code> of <code>body</code> in the light of <code>light</code> (frames of the
+same tree; optional here, set later with set_body and set_light), with
+their radii if given (else the frames': see the module documentation).
+Its axes and name label are hidden.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~30"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+<p>the frame's name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-body~3"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>body</strong></td>
+            <td>
+<p>the body casting the shadow, the light (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-light~5"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>light</strong></td>
+            <td>
+<p>the body casting the shadow, the light (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-body_radius~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>body_radius</strong></td>
+            <td>
+<p>scene units (default: the frames' own)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-light_radius~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>light_radius</strong></td>
+            <td>
+<p>scene units (default: the frames' own)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/shadowcones.html'>ShadowCones</a>)</small>
+    </h4>
+    
+
+          </li>
+    </ul>
+  </div>
+
+        </section>
+        <br>
+
+
+        <section>
+          <h2>Derived Types</h2>
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-shadowcones"></span>
+      <h3>
+        type, public, extends(<a href='../type/referenceframe.html'>ReferenceFrame</a>)&nbsp;::&nbsp;
+        <a href='../type/shadowcones.html'>ShadowCones</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A body's shadow cones (see the module documentation).</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-body_"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>body_</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>the body casting the shadow (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-body_radius_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>body_radius_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>(0: the frames' own)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-distance_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>distance_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>body to light at the last update (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-drawn_length_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>drawn_length_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>the length drawn at the last update (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-length_~3"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>length_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>(0: automatic)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-light_"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+              <td>private,</td>
+            <td>
+              pointer
+            </td>
+            <td>::</td>
+            <td><strong>light_</strong></td>
+<td>=&gt; </td>
+                <td>null()</td>
+            <td>
+<p>the light (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-light_radius_"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>light_radius_</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>(0: the frames' own)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-region"></span>
+              type(<a href='../type/shadowregion.html'>ShadowRegion</a>),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>region</strong>(n_regions)</td>
+                <td></td>
+                <td></td>
+            <td>
+<p>umbra, penumbra and antumbra</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-regions_"></span>
+              integer,
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>regions_</strong></td>
+<td> =</td>
+                <td>SHADOW_ALL</td>
+            <td>
+<p>an ior of SHADOW_UMBRA, SHADOW_PENUMBRA, SHADOW_ANTUMBRA</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-shaped"></span>
+              real(kind=wp),
+            </td>
+              <td>private</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>shaped</strong>(4)</td>
+<td> =</td>
+                <td>-1.0_wp</td>
+            <td>
+<p>R, Rs, d and length the cones have now</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+        <h4>Constructor</h4>
+          <p>The ShadowCones constructor: <code>ShadowCones(...)</code> makes one (see <a href="../proc/new_shadow_cones.html">new_shadow_cones</a> for its
+arguments).</p>
+        <table class="table table-striped varlist">
+          <tbody>
+                <tr>
+                  <td>
+                        private
+
+                    
+                    function
+                    <strong><a href='/home/runner/work/vkframes/vkframes/web/api/proc/new_shadow_cones.html'>new_shadow_cones</a></strong>
+                    (name, body, light, body_radius, light_radius)
+                  </td>
+                  <td><p>The shadow named <code>name</code> of <code>body</code> in the light of <code>light</code> (frames of the
+same tree; optional here, set later with set_body and set_light), with
+their radii if given (else the frames': see the module documentation).
+Its axes and name label are hidden.</p></td>
+                </tr>
+          </tbody>
+        </table>
+
+
+        <h4>Type-Bound Procedures</h4>
+        <table class="table table-striped varlist">
+          <tbody>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-add_child'>add_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-attitude'>attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_labels_shown'>axes_labels_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axes_shown'>axes_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-axis_label'>axis_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-body~2'>body</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-body_radius~8'>body_radius</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-bound~13'>bound</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/shadow_bound.html'>shadow_bound</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-build_contents~13'>build_contents</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/shadow_build_contents.html'>shadow_build_contents</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child~2'>child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-child_index'>child_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-clear_web_poses'>clear_web_poses</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-color~17'>color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-contents_shown'>contents_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-data_time_range'>data_time_range</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-detach'>detach</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-distance~4'>distance</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-drawn_length'>drawn_length</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-export_web~6'>export_web</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follow'>follow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follow_frame'>follow_frame</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-follower'>follower</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-frame_info~15'>frame_info</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/shadow_frame_info.html'>shadow_frame_info</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-frame_string'>frame_string</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-has_light_source'>has_light_source</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-is_following'>is_following</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_alignment'>label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_font'>label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-label_size'>label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-late_update~3'>late_update</a></strong> => <a href='/home/runner/work/vkframes/vkframes/web/api/proc/shadow_late_update.html'>shadow_late_update</a></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-length~11'>length</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-light~4'>light</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_ambient'>light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_diffuse'>light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-light_radius'>light_radius</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_source_enabled'>light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-light_specular'>light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-local_matrix'>local_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-local_matrix_at'>local_matrix_at</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-motion_key'>motion_key</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_x_axis'>move_x_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_y_axis'>move_y_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-move_z_axis'>move_z_axis</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name~8'>name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_on_top'>name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-name_label_shown'>name_label_shown</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-node~4'>node</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_children'>num_children</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-num_parents'>num_parents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent'>parent</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-parent_index'>parent_index</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-pick~2'>pick</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-pickable'>pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position~2'>position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-position_of'>position_of</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-realize'>realize</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-record_web_pose'>record_web_pose</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-region_color'>region_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-region_extent'>region_extent</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-regions'>regions</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-remove_child'>remove_child</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-reposition_axes'>reposition_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_attitude'>set_attitude</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-set_body'>set_body</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-set_body_radius'>set_body_radius</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_color~3'>set_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_alignment'>set_label_alignment</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_font'>set_label_font</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_label_size'>set_label_size</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-set_length'>set_length</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-set_light'>set_light</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_ambient'>set_light_ambient</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_diffuse'>set_light_diffuse</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-set_light_radius'>set_light_radius</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_source_enabled'>set_light_source_enabled</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_light_specular'>set_light_specular</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name'>set_name</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_name_label_on_top'>set_name_label_on_top</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_pickable'>set_pickable</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_position'>set_position</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-set_region_color'>set_region_color</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-set_regions'>set_regions</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_x_label'>set_x_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_y_label'>set_y_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-set_z_label'>set_z_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes'>show_axes</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_axes_labels'>show_axes_labels</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_contents'>show_contents</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_decorations'>show_decorations</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-show_name_label'>show_name_label</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-sync'>sync</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/shadowcones.html#boundprocedure-umbra_length'>umbra_length</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-unfollow'>unfollow</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-update'>update</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-world_matrix'>world_matrix</a></strong></td>
+                  <td></td>
+              </tr>
+              <tr>
+                <td>  procedure, public ::
+  <strong><a href='../type/referenceframe.html#boundprocedure-world_matrix_at'>world_matrix_at</a></strong></td>
+                  <td></td>
+              </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum">
+      <span class="anchor" id="type-shadowregion"></span>
+      <h3>
+        type, private&nbsp;::&nbsp;
+        <a href='../type/shadowregion.html'>ShadowRegion</a>
+        
+      </h3>
+    </div>
+    <div class="card-body">
+      <p>A shadow region's surface: a frustum along z from z0 (radius r0) to z1
+(radius r1), in the shadow frame's coordinates.</p>
+
+        <h4>Components</h4>
+          <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~63"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(4)</td>
+<td> =</td>
+                <td>1.0_wp</td>
+            <td>
+<p>[r, g, b, a] (0 to 1)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-drawn~3"></span>
+              logical,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>drawn</strong></td>
+<td> =</td>
+                <td>.false.</td>
+            <td>
+<p>has a surface (and is to be drawn)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mesh~17"></span>
+              type(c_ptr),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mesh</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>the surface: rings of vertices at z0 and z1</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r0"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r0</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>radius at z0 (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r1~2"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r1</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>radius at z1 (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-switch~3"></span>
+              type(c_ptr),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>switch</strong></td>
+<td> =</td>
+                <td>c_null_ptr</td>
+            <td>
+<p>shows or hides the mesh (null until built)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-z0"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>z0</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>start along z (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-z1"></span>
+              real(kind=wp),
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>z1</strong></td>
+<td> =</td>
+                <td>0.0_wp</td>
+            <td>
+<p>end along z (scene units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Functions</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-body"></span> <h3>private  function <a href='../proc/body.html'>body</a>(self) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body casting the shadow (null if not set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~864"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>class(<a href='../type/referenceframe.html'>ReferenceFrame</a>), pointer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-body_radius"></span> <h3>private  function <a href='../proc/body_radius.html'>body_radius</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's radius used (0: none known).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~869"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-distance~2"></span> <h3>private pure function <a href='../proc/distance~2.html'>distance</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The distance between the body and the light at the last update.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~874"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-drawn_length"></span> <h3>private pure function <a href='../proc/drawn_length.html'>drawn_length</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The length drawn at the last update.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~873"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-frame_radius"></span> <h3>private  function <a href='../proc/frame_radius.html'>frame_radius</a>(frame) result(r)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A body's own radius: a Sphere's equatorial one, a TerrainBody's; else 0.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-frame~22"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>frame</strong></td>
+            <td>
+<p>the body or the light</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-length"></span> <h3>private pure function <a href='../proc/length.html'>length</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The length set (0: automatic).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~872"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-light"></span> <h3>private  function <a href='../proc/light.html'>light</a>(self) result(p)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The light (null if not set).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~866"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>class(<a href='../type/referenceframe.html'>ReferenceFrame</a>), pointer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-light_radius"></span> <h3>private  function <a href='../proc/light_radius.html'>light_radius</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The light's radius used (0: none known).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~870"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-new_shadow_cones"></span> <h3>private  function <a href='../proc/new_shadow_cones.html'>new_shadow_cones</a>(name, body, light, body_radius, light_radius) result(s)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The shadow named <code>name</code> of <code>body</code> in the light of <code>light</code> (frames of the
+same tree; optional here, set later with set_body and set_light), with
+their radii if given (else the frames': see the module documentation).
+Its axes and name label are hidden.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-name~30"></span>
+              character(len=*),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>name</strong></td>
+            <td>
+<p>the frame's name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-body~3"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>body</strong></td>
+            <td>
+<p>the body casting the shadow, the light (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-light~5"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td>optional,</td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>light</strong></td>
+            <td>
+<p>the body casting the shadow, the light (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-body_radius~9"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>body_radius</strong></td>
+            <td>
+<p>scene units (default: the frames' own)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-light_radius~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>light_radius</strong></td>
+            <td>
+<p>scene units (default: the frames' own)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>type(<a href='../type/shadowcones.html'>ShadowCones</a>)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-region_color"></span> <h3>private  function <a href='../proc/region_color.html'>region_color</a>(self, region) result(c)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A region's color [r, g, b, a] (0 for an unknown region).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~878"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-region~3"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>region</strong></td>
+            <td>
+<p>SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp), (4)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-region_index"></span> <h3>private pure function <a href='../proc/region_index.html'>region_index</a>(region) result(k)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The index in self%region of SHADOW_UMBRA, SHADOW_PENUMBRA or
+SHADOW_ANTUMBRA (0 for anything else).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-region~4"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>region</strong></td>
+            <td>
+<p>SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-regions"></span> <h3>private pure function <a href='../proc/regions.html'>regions</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The regions drawn: an ior of SHADOW_UMBRA, SHADOW_PENUMBRA and
+SHADOW_ANTUMBRA.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~876"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>integer</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-shadow_frame_info"></span> <h3>private  function <a href='../proc/shadow_frame_info.html'>shadow_frame_info</a>(self) result(info)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>What kind of frame this is: 'ShadowCones'.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~881"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>character(len=:), allocatable</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-umbra_length"></span> <h3>private pure function <a href='../proc/umbra_length.html'>umbra_length</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The distance from the body's center to the umbra's apex at the last
+update (huge() for a body no smaller than its light; 0 before).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~880"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+    <h4>
+    Return Value
+    <small>real(kind=wp)</small>
+    </h4>
+    
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+        <section>
+          <h2>Subroutines</h2>
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-apply_color"></span> <h3>private  subroutine <a href='../proc/apply_color.html'>apply_color</a>(g)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A region's color, through its mesh's material (the unlit shader
+multiplies the vertex color, white, by the diffuse color).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-g~6"></span>
+              type(<a href='../type/shadowregion.html'>ShadowRegion</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>g</strong></td>
+            <td>
+<p>the region (umbra, penumbra or antumbra)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-place"></span> <h3>private  subroutine <a href='../proc/place.html'>place</a>(self)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>Move the shadow to the body's center (in the parent's coordinates) with its
++z axis away from the light, and reshape the cones if the radii, the
+distance or the length set changed.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~885"></span>
+              type(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-region_extent"></span> <h3>private  subroutine <a href='../proc/region_extent.html'>region_extent</a>(self, region, drawn, z0, r0, z1, r1)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A region's surface at the last update, along the frame's +z axis (away
+from the light; the body's center at the origin): drawn, from z0
+(radius r0) to z1 (radius r1).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~879"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-region~5"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>region</strong></td>
+            <td>
+<p>SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-drawn~4"></span>
+              logical,
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>drawn</strong></td>
+            <td>
+<p>it has a surface and is drawn</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-z0~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>z0</strong></td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r0~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r0</strong></td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-z1~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>z1</strong></td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r1~3"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r1</strong></td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_body"></span> <h3>private  subroutine <a href='../proc/set_body.html'>set_body</a>(self, body, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body casting the shadow (it must stay alive while set), and its
+radius (optional: see set_body_radius).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~863"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-body~4"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>body</strong></td>
+            <td>
+<p>the body casting the shadow (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~32"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>scene units (see set_body_radius)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_body_radius"></span> <h3>private  subroutine <a href='../proc/set_body_radius.html'>set_body_radius</a>(self, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The body's radius (scene units; 0: the body's own, a Sphere's
+equatorial radius or a TerrainBody's).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~867"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~34"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>scene units (0: the body's own)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_length"></span> <h3>private  subroutine <a href='../proc/set_length.html'>set_length</a>(self, length)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>How far behind the body's center the shadow is drawn (scene units; 0:
+automatic, twice the umbra's length).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~871"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-length~12"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>length</strong></td>
+            <td>
+<p>scene units (0: automatic)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_light"></span> <h3>private  subroutine <a href='../proc/set_light.html'>set_light</a>(self, light, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The light (e.g. the Sun; it must stay alive while set), and its radius
+(optional: see set_light_radius).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~865"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-light~6"></span>
+              class(<a href='../type/referenceframe.html'>ReferenceFrame</a>),
+            </td>
+<td>intent(in),</td>
+              <td></td>            <td>
+              target
+            </td>
+            <td>::</td>
+            <td><strong>light</strong></td>
+            <td>
+<p>the light, e.g. the Sun (not owned)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~33"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in),</td>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>scene units (see set_light_radius)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_light_radius"></span> <h3>private  subroutine <a href='../proc/set_light_radius.html'>set_light_radius</a>(self, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The light's radius (scene units; 0: the light's own, if a Sphere).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~868"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~35"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>scene units (0: the light's own)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_region_color"></span> <h3>private  subroutine <a href='../proc/set_region_color.html'>set_region_color</a>(self, region, color)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A region's color (region: one of SHADOW_UMBRA, SHADOW_PENUMBRA,
+SHADOW_ANTUMBRA; [r, g, b], alpha unchanged, or [r, g, b, a]).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~877"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-region~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>region</strong></td>
+            <td>
+<p>SHADOW_UMBRA, SHADOW_PENUMBRA or SHADOW_ANTUMBRA</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-color~64"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>color</strong>(:)</td>
+            <td>
+<p>[r, g, b] (alpha unchanged) or [r, g, b, a], 0 to 1</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-set_regions"></span> <h3>private  subroutine <a href='../proc/set_regions.html'>set_regions</a>(self, regions)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The regions to draw: an ior of SHADOW_UMBRA, SHADOW_PENUMBRA and
+SHADOW_ANTUMBRA (default SHADOW_ALL).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~875"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-regions~2"></span>
+              integer,
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>regions</strong></td>
+            <td>
+<p>an ior of SHADOW_UMBRA, SHADOW_PENUMBRA, SHADOW_ANTUMBRA</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-shadow_bound"></span> <h3>private  subroutine <a href='../proc/shadow_bound.html'>shadow_bound</a>(self, center, radius)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The drawn regions' bounding sphere (frame coordinates).</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~882"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-center~31"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>center</strong>(3)</td>
+            <td>
+<p>the bounding sphere, frame coordinates (scene units)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-radius~36"></span>
+              real(kind=wp),
+            </td>
+<td>intent(out)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>radius</strong></td>
+            <td>
+<p>the bounding sphere, frame coordinates (scene units)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-shadow_build_contents"></span> <h3>private  subroutine <a href='../proc/shadow_build_contents.html'>shadow_build_contents</a>(self, viewer, group)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A switch with a mesh for each region (vertices written at each change
+of shape), under <code>group</code>.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~883"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-viewer~58"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>viewer</strong></td>
+            <td>
+<p>a window's viewer (null: headless)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-group~29"></span>
+              type(c_ptr),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>group</strong></td>
+            <td>
+<p>the frame's contents group</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-shadow_late_update"></span> <h3>private recursive subroutine <a href='../proc/shadow_late_update.html'>shadow_late_update</a>(self, t)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>After the tree's update for time t: the shadow moved to the body, turned
+away from the light, and reshaped if the distance or a setting changed.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~884"></span>
+              class(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~69"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong></td>
+            <td>
+<p>the scene time</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-shape_regions"></span> <h3>private  subroutine <a href='../proc/shape_regions.html'>shape_regions</a>(self, r, rs, d)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>The regions' frustums for body radius r, light radius rs and distance d
+(see the module documentation), written to their meshes.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-self~886"></span>
+              type(<a href='../type/shadowcones.html'>ShadowCones</a>),
+            </td>
+<td>intent(inout)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>self</strong></td>
+            <td>
+
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r~20"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r</strong></td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rs~2"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rs</strong></td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-d~19"></span>
+              real(kind=wp),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>d</strong></td>
+            <td>
+<p>scene units</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+              <div class="card">
+    <div class="card-header codesum"><span class="anchor" id="proc-write_region"></span> <h3>private  subroutine <a href='../proc/write_region.html'>write_region</a>(g)  
+</h3></div>
+    <div class="card-body">
+          
+  <p>A region's frustum into its mesh (uploaded), and shown or hidden.</p>
+
+  <h4>Arguments</h4>
+      <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th scope="col">Type</th>
+<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+        <th scope="col"></th>
+        <th scope="col">Name</th>
+        <th scope="col"></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-g~7"></span>
+              type(<a href='../type/shadowregion.html'>ShadowRegion</a>),
+            </td>
+<td>intent(in)</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>g</strong></td>
+            <td>
+<p>the region (umbra, penumbra or antumbra)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+    </div>
+  </div>
+
+        </section>
+        <br>
+
+
+
+    </div>
+  </div>
+
+      <hr>
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+        <div class="row justify-content-between">
+          <div class="col">
+            <p>
+              vkframes
+ was developed by Jacob Williams
+Jacob Williams<br>              &copy; 2026 Apache-2.0
+</p>
+          </div>
+          <div class="col">
+            <p class="text-end">
+              Documentation generated by
+              <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+ on 2026-11-16 04:03 +0000             </p>
+          </div>
+        </div>
+        <br>
+      </div> <!-- /container -->
+    </footer>
+  </body>
+</html>
